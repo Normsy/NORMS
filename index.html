@@ -45,6 +45,30 @@
             color: #888;
         }
         .close-btn:hover { color: #fff; }
+
+        /* TAB TOGGLES FOR LOGIN / SIGNUP */
+        .auth-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 8px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+        .auth-tab.active {
+            color: #fff;
+            border-bottom: 2px solid #fff;
+        }
+
         .auth-input {
             width: 100%;
             padding: 12px;
@@ -65,11 +89,6 @@
             color: #000;
             font-weight: 600;
             cursor: pointer;
-        }
-        .auth-btn-alt {
-            background: transparent;
-            color: #ccc;
-            border: 1px solid #444;
         }
 
         /* DASHBOARD STYLES */
@@ -148,15 +167,21 @@
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
             <h2 id="modal-title">Welcome to NORMS</h2>
-            <p id="modal-subtitle" style="font-size:0.85em; color:#aaa; margin-bottom:15px;">Please log in or create an account to purchase items.</p>
             
+            <!-- Auth View Toggles -->
+            <div class="auth-tabs">
+                <button type="button" id="tab-login" class="auth-tab active">Log In</button>
+                <button type="button" id="tab-signup" class="auth-tab">Sign Up</button>
+            </div>
+
             <form id="auth-form" onsubmit="return false;">
-                <input type="text" id="full-name" class="auth-input" placeholder="Full Name (e.g. Clark John)" required />
+                <!-- Display Name (Hidden during Log In, shown during Sign Up) -->
+                <input type="text" id="full-name" class="auth-input" placeholder="Display Name" style="display: none;" />
+                
                 <input type="email" id="email" class="auth-input" placeholder="Email" required />
                 <input type="password" id="password" class="auth-input" placeholder="Password" required />
                 
-                <button type="button" id="btn-login" class="auth-btn">Log In</button>
-                <button type="button" id="btn-signup" class="auth-btn auth-btn-alt">Sign Up</button>
+                <button type="button" id="btn-submit" class="auth-btn">Log In</button>
             </form>
 
             <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #888;"></p>
@@ -321,9 +346,31 @@
       const nameInput = document.getElementById('full-name');
       const emailInput = document.getElementById('email');
       const passwordInput = document.getElementById('password');
-      const btnLogin = document.getElementById('btn-login');
-      const btnSignup = document.getElementById('btn-signup');
+      const btnSubmit = document.getElementById('btn-submit');
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
       const userStatus = document.getElementById('user-status');
+
+      let currentMode = 'login'; // Mode state: 'login' or 'signup'
+
+      // Mode Switchers
+      tabLogin.addEventListener('click', () => {
+        currentMode = 'login';
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        nameInput.style.display = 'none';
+        btnSubmit.innerText = 'Log In';
+        userStatus.innerText = '';
+      });
+
+      tabSignup.addEventListener('click', () => {
+        currentMode = 'signup';
+        tabSignup.classList.add('active');
+        tabLogin.classList.remove('active');
+        nameInput.style.display = 'block';
+        btnSubmit.innerText = 'Sign Up';
+        userStatus.innerText = '';
+      });
 
       // Direct Buy Button Handler
       async function handleBuy(e) {
@@ -362,64 +409,58 @@
       closeModal.addEventListener('click', () => authModal.style.display = 'none');
       window.addEventListener('click', (e) => { if (e.target === authModal) authModal.style.display = 'none'; });
 
-      // Sign Up Handler
-      btnSignup.addEventListener('click', async (e) => {
+      // Unified Form Submit Handler
+      btnSubmit.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
 
-        const fullName = nameInput.value.trim();
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
-        if (!fullName || !email || !password) {
-            userStatus.innerText = 'Please fill out all fields (Name, Email, Password).';
-            return;
-        }
-
-        userStatus.innerText = 'Creating account...';
-        const { data, error } = await supabaseClient.auth.signUp({
-          email: email,
-          password: password,
-          options: {
-            data: {
-              full_name: fullName
+        if (currentMode === 'signup') {
+            const fullName = nameInput.value.trim();
+            if (!fullName || !email || !password) {
+                userStatus.innerText = 'Please enter Display Name, Email, and Password.';
+                return;
             }
-          }
-        });
 
-        if (error) {
-            userStatus.innerText = error.message;
+            userStatus.innerText = 'Creating account...';
+            const { data, error } = await supabaseClient.auth.signUp({
+              email: email,
+              password: password,
+              options: {
+                data: {
+                  full_name: fullName
+                }
+              }
+            });
+
+            if (error) {
+                userStatus.innerText = error.message;
+            } else {
+                userStatus.innerText = 'Account created! Check your email to confirm.';
+                alert('Account created! Please check your email to verify.');
+            }
         } else {
-            userStatus.innerText = 'Account created! Check your email to confirm.';
-            alert('Account created! Please check your email to verify.');
-        }
-      });
+            // Log In Mode
+            if (!email || !password) {
+                userStatus.innerText = 'Please enter both an email and password.';
+                return;
+            }
 
-      // Log In Handler
-      btnLogin.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+            userStatus.innerText = 'Logging in...';
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email: email,
+              password: password,
+            });
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!email || !password) {
-            userStatus.innerText = 'Please enter both an email and password.';
-            return;
-        }
-
-        userStatus.innerText = 'Logging in...';
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: email,
-          password: password,
-        });
-
-        if (error) {
-            userStatus.innerText = error.message;
-        } else {
-            authModal.style.display = 'none';
-            userStatus.innerText = '';
-            checkUser();
+            if (error) {
+                userStatus.innerText = error.message;
+            } else {
+                authModal.style.display = 'none';
+                userStatus.innerText = '';
+                checkUser();
+            }
         }
       });
 
