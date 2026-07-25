@@ -10,7 +10,90 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Modals Common Styles */
+        body {
+            padding-bottom: 70px; /* Space for sticky bottom navigation */
+        }
+
+        /* GAME ICONS SCROLL BAR (STARPETS STYLE) */
+        .game-selector-container {
+            padding: 15px 10px;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            gap: 15px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        .game-selector-container::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+
+        .game-icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 65px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+        .game-icon-card.active, .game-icon-card:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+        .game-icon-img {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 2px solid transparent;
+            background: #222;
+        }
+        .game-icon-card.active .game-icon-img {
+            border-color: #ff9800;
+        }
+        .game-icon-label {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            color: #fff;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* STICKY BOTTOM NAVIGATION BAR */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: #111;
+            border-top: 1px solid #222;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 999;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.7rem;
+            gap: 3px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+        }
+        .nav-item.active, .nav-item:hover {
+            color: #fff;
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+        }
+
+        /* MODAL STYLES */
         .modal {
             display: none;
             position: fixed;
@@ -46,7 +129,6 @@
         }
         .close-btn:hover { color: #fff; }
 
-        /* Auth Tabs */
         .auth-tabs {
             display: flex;
             gap: 10px;
@@ -91,7 +173,6 @@
             cursor: pointer;
         }
 
-        /* DASHBOARD MODAL STYLES */
         .dash-cards {
             display: flex;
             flex-direction: column;
@@ -117,36 +198,6 @@
             font-weight: 600;
         }
 
-        /* STORE GAME CATEGORY TABS */
-        .game-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin: 25px 0 35px 0;
-            flex-wrap: wrap;
-        }
-        .game-tab-btn {
-            background: #181818;
-            border: 1px solid #333;
-            color: #aaa;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .game-tab-btn:hover {
-            border-color: #666;
-            color: #fff;
-        }
-        .game-tab-btn.active {
-            background: #fff;
-            color: #000;
-            border-color: #fff;
-        }
-
-        /* CARD DISPLAY CONTROL FOR FILTERING */
         .card.hidden {
             display: none !important;
         }
@@ -158,22 +209,131 @@
     <canvas id="bg"></canvas>
     <div class="overlay"></div>
 
-    <!-- NAVBAR -->
+    <!-- TOP NAVBAR -->
     <nav>
         <div class="logo">
             NORMS
         </div>
         <div class="nav-links">
-            <a href="#store">Store</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
             <a href="https://discord.gg/kwRwuW4WUM" target="_blank">Discord</a>
-            
-            <!-- Dashboard link (Shown only when logged in) -->
-            <a href="#" id="dash-nav-btn" style="display:none; color: #4CAF50; font-weight: 600;">Dashboard</a>
-            <a href="#" id="auth-nav-btn">Login</a>
         </div>
     </nav>
+
+    <!-- HERO -->
+    <section class="hero" style="min-height: 25vh;">
+        <div class="hero-content">
+            <h1>NORMS</h1>
+            <p>Premium Roblox Marketplace</p>
+        </div>
+    </section>
+
+    <!-- STARPETS-STYLE GAME CATEGORY SELECTOR -->
+    <div class="game-selector-container">
+        <div class="game-icon-card active" data-game="all">
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#ff9800; color:#000; font-weight:bold;">ALL</div>
+            <span class="game-icon-label">All Games</span>
+        </div>
+        <div class="game-icon-card" data-game="grow-a-garden-2">
+            <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
+            <span class="game-icon-label">Grow a Garden 2</span>
+        </div>
+        <div class="game-icon-card" data-game="bloxfruits">
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888;">BF</div>
+            <span class="game-icon-label">Blox Fruits</span>
+        </div>
+        <div class="game-icon-card" data-game="mm2">
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888;">MM2</div>
+            <span class="game-icon-label">MM2</span>
+        </div>
+    </div>
+
+    <!-- STORE ITEMS -->
+    <section id="store">
+        <div class="products">
+            <!-- Item 1 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="badge">BEST SELLER</div>
+                <div class="product-image">
+                    <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
+                </div>
+                <h3>Black Dragon</h3>
+                <p class="price">₱1500</p>
+                <div class="stock">17 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="product-image">
+                    <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
+                </div>
+                <h3>Sun Bloom</h3>
+                <p class="price">₱10</p>
+                <div class="stock">52 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="product-image">
+                    <img src="assets/items/Star Fruit.png" alt="Star Fruit">
+                </div>
+                <h3>Star Fruit</h3>
+                <p class="price">₱20</p>
+                <div class="stock">31 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="product-image">
+                    <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
+                </div>
+                <h3>Dragon Breath</h3>
+                <p class="price">₱10</p>
+                <div class="stock">9 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="product-image">
+                    <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
+                </div>
+                <h3>Super Sprinkler</h3>
+                <p class="price">₱0.50</p>
+                <div class="stock">4 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="card" data-category="grow-a-garden-2">
+                <div class="product-image">
+                    <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
+                </div>
+                <h3>Super Watering Can</h3>
+                <p class="price">₱0.50</p>
+                <div class="stock">15 Available</div>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STICKY BOTTOM NAVIGATION BAR -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <span class="nav-icon">🛒</span>
+            <span>Market</span>
+        </button>
+        <a href="https://m.me/claditch" target="_blank" class="nav-item">
+            <span class="nav-icon">⚡</span>
+            <span>Contact</span>
+        </a>
+        <button id="profile-nav-btn" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span id="profile-nav-label">Profile</span>
+        </button>
+    </div>
 
     <!-- LOGIN / SIGNUP MODAL -->
     <div id="auth-modal" class="modal">
@@ -181,7 +341,6 @@
             <span class="close-btn" id="close-auth-modal">&times;</span>
             <h2 id="modal-title">Welcome to NORMS</h2>
             
-            <!-- Auth View Toggles -->
             <div class="auth-tabs">
                 <button type="button" id="tab-login" class="auth-tab active">Log In</button>
                 <button type="button" id="tab-signup" class="auth-tab">Sign Up</button>
@@ -203,7 +362,7 @@
     <div id="dash-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-dash-modal">&times;</span>
-            <h2 style="margin-bottom: 5px;">User Dashboard</h2>
+            <h2 style="margin-bottom: 5px;">User Profile</h2>
             <span id="dash-user-email" style="color:#aaa; font-size:0.85em;"></span>
 
             <div class="dash-cards">
@@ -225,128 +384,10 @@
         </div>
     </div>
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>NORMS</h1>
-            <p>Premium Roblox Digital Marketplace</p>
-            <a href="#store" class="hero-btn">Browse Store</a>
-        </div>
-    </section>
-
-    <!-- STORE -->
-    <section id="store">
-        <h2>Store Items</h2>
-
-        <!-- GAME CATEGORY SELECTION TABS -->
-        <div class="game-tabs">
-            <button type="button" class="game-tab-btn active" data-game="all">All Items</button>
-            <button type="button" class="game-tab-btn" data-game="grow-a-garden-2">Grow a Garden 2</button>
-            <button type="button" class="game-tab-btn" data-game="other-game">Other Roblox Games</button>
-        </div>
-
-        <div class="products">
-            <!-- Item 1 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="badge">BEST SELLER</div>
-                <div class="product-image">
-                    <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
-                </div>
-                <h3>Black Dragon</h3>
-                <p class="price">₱1500</p>
-                <div class="stock">17 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-
-            <!-- Item 2 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
-                </div>
-                <h3>Sun Bloom</h3>
-                <p class="price">₱10</p>
-                <div class="stock">52 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-
-            <!-- Item 3 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Star Fruit.png" alt="Star Fruit">
-                </div>
-                <h3>Star Fruit</h3>
-                <p class="price">₱20</p>
-                <div class="stock">31 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-
-            <!-- Item 4 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
-                </div>
-                <h3>Dragon Breath</h3>
-                <p class="price">₱10</p>
-                <div class="stock">9 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-
-            <!-- Item 5 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
-                </div>
-                <h3>Super Sprinkler</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">4 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-
-            <!-- Item 6 (Grow a Garden 2) -->
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
-                </div>
-                <h3>Super Watering Can</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">15 Available</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about">
-        <h2>Why NORMS?</h2>
-        <p>
-            Fast Delivery.<br>
-            Trusted Service.<br>
-            Premium Roblox Items.
-        </p>
-    </section>
-
-    <!-- CONTACT -->
-    <section id="contact">
-        <h2>Contact</h2>
-        <p>Need help or want to buy? Connect with us below!</p>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
-            <a class="hero-btn" href="https://m.me/claditch" target="_blank" style="margin-top: 0;">
-                Message on Facebook
-            </a>
-            <a class="hero-btn" href="https://discord.gg/kwRwuW4WUM" target="_blank" style="margin-top: 0; background: #5865F2;">
-                Join Discord Server
-            </a>
-        </div>
-    </section>
-
-    <footer>
-        © 2026 NORMS
-    </footer>
-
     <script src="canvas.js"></script>
     <script src="script.js"></script>
 
-    <!-- SUPABASE AUTHENTICATION ENGINE -->
+    <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
@@ -354,12 +395,11 @@
 
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      // UI Elements
       const authModal = document.getElementById('auth-modal');
       const dashModal = document.getElementById('dash-modal');
       
-      const authNavBtn = document.getElementById('auth-nav-btn');
-      const dashNavBtn = document.getElementById('dash-nav-btn');
+      const profileNavBtn = document.getElementById('profile-nav-btn');
+      const profileNavLabel = document.getElementById('profile-nav-label');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeDashModal = document.getElementById('close-dash-modal');
@@ -377,29 +417,29 @@
 
       let currentMode = 'login'; 
 
-      // GAME CATEGORY TAB FILTERING
-      const gameTabBtns = document.querySelectorAll('.game-tab-btn');
+      // Game Selector Click Handlers
+      const gameCards = document.querySelectorAll('.game-icon-card');
       const productCards = document.querySelectorAll('.products .card');
 
-      gameTabBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          gameTabBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
+      gameCards.forEach(card => {
+        card.addEventListener('click', () => {
+          gameCards.forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
 
-          const selectedGame = btn.getAttribute('data-game');
+          const selectedGame = card.getAttribute('data-game');
 
-          productCards.forEach(card => {
-            const cardCategory = card.getAttribute('data-category');
-            if (selectedGame === 'all' || cardCategory === selectedGame) {
-              card.classList.remove('hidden');
+          productCards.forEach(product => {
+            const category = product.getAttribute('data-category');
+            if (selectedGame === 'all' || category === selectedGame) {
+              product.classList.remove('hidden');
             } else {
-              card.classList.add('hidden');
+              product.classList.add('hidden');
             }
           });
         });
       });
 
-      // Tab Switchers (Log In vs Sign Up)
+      // Tab Switchers
       tabLogin.addEventListener('click', () => {
         currentMode = 'login';
         tabLogin.classList.add('active');
@@ -418,7 +458,7 @@
         userStatus.innerText = '';
       });
 
-      // Direct Buy Button Handler
+      // Buy Trigger
       async function handleBuy(e) {
         if (e) {
           e.preventDefault();
@@ -434,32 +474,22 @@
         }
       }
 
-      // Open Dashboard Modal from Navbar
-      dashNavBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        dashModal.style.display = 'flex';
-      });
-
-      // Login / Logout Nav Action
-      authNavBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
+      // Profile Nav Click
+      profileNavBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-          await supabaseClient.auth.signOut();
-          checkUser();
+          dashModal.style.display = 'flex';
         } else {
           authModal.style.display = 'flex';
         }
       });
 
-      dashLogoutBtn.addEventListener('click', async (e) => {
-        e.preventDefault();
+      dashLogoutBtn.addEventListener('click', async () => {
         dashModal.style.display = 'none';
         await supabaseClient.auth.signOut();
         checkUser();
       });
 
-      // Modal Close Controls
       closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
       closeDashModal.addEventListener('click', () => dashModal.style.display = 'none');
       
@@ -468,11 +498,9 @@
         if (e.target === dashModal) dashModal.style.display = 'none'; 
       });
 
-      // Auth Submission Handler
+      // Auth Action
       btnSubmit.addEventListener('click', async (e) => {
         e.preventDefault();
-        e.stopPropagation();
-
         const email = emailInput.value.trim();
         const password = passwordInput.value.trim();
 
@@ -487,23 +515,17 @@
             const { data, error } = await supabaseClient.auth.signUp({
               email: email,
               password: password,
-              options: {
-                data: {
-                  full_name: fullName
-                }
-              }
+              options: { data: { full_name: fullName } }
             });
 
             if (error) {
                 userStatus.innerText = error.message;
             } else {
-                userStatus.innerText = 'Account created! Check your email to confirm.';
                 alert('Account created! Please check your email to verify.');
             }
         } else {
-            // Log In Mode
             if (!email || !password) {
-                userStatus.innerText = 'Please enter both an email and password.';
+                userStatus.innerText = 'Please enter email and password.';
                 return;
             }
 
@@ -523,20 +545,14 @@
         }
       });
 
-      // Check User Session State
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
           const displayName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-          
-          dashNavBtn.innerText = displayName;
-          dashNavBtn.style.display = 'inline';
-          authNavBtn.innerText = 'Logout';
-          
+          profileNavLabel.innerText = displayName;
           dashUserEmail.innerText = `${displayName} (${session.user.email})`;
         } else {
-          dashNavBtn.style.display = 'none';
-          authNavBtn.innerText = 'Login';
+          profileNavLabel.innerText = 'Profile';
         }
       }
 
