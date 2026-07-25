@@ -10,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Login Modal & UI Styles */
+        /* Modal & Dashboard Custom Styles */
         .modal {
             display: none;
             position: fixed;
@@ -18,10 +18,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 1000;
             justify-content: center;
             align-items: center;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
             background: #111;
@@ -70,6 +71,50 @@
             color: #ccc;
             border: 1px solid #444;
         }
+
+        /* COOL DASHBOARD STYLES */
+        #dashboard-section {
+            display: none;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 25px;
+            background: rgba(20, 20, 20, 0.9);
+            border: 1px solid #333;
+            border-radius: 12px;
+            color: #fff;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            text-align: left;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .dash-card {
+            background: #181818;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #282828;
+        }
+        .dash-card h4 {
+            margin: 0 0 10px 0;
+            color: #888;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .dash-card p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
         #user-display {
             color: #aaa;
             font-size: 0.9em;
@@ -97,16 +142,21 @@
         </div>
     </nav>
 
-    <!-- LOGIN MODAL -->
+    <!-- LOGIN / SIGNUP MODAL -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-modal">&times;</span>
             <h2 id="modal-title">Welcome to NORMS</h2>
-            <input type="email" id="email" class="auth-input" placeholder="Email" required />
-            <input type="password" id="password" class="auth-input" placeholder="Password" required />
+            <p id="modal-subtitle" style="font-size:0.85em; color:#aaa; margin-bottom:15px;">Please log in or create an account to purchase items.</p>
             
-            <button id="btn-login" class="auth-btn">Log In</button>
-            <button id="btn-signup" class="auth-btn auth-btn-alt">Sign Up</button>
+            <form id="auth-form" onsubmit="return false;">
+                <input type="email" id="email" class="auth-input" placeholder="Email" required />
+                <input type="password" id="password" class="auth-input" placeholder="Password" required />
+                
+                <button type="button" id="btn-login" class="auth-btn">Log In</button>
+                <button type="button" id="btn-signup" class="auth-btn auth-btn-alt">Sign Up</button>
+            </form>
+
             <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #888;"></p>
         </div>
     </div>
@@ -117,6 +167,31 @@
             <h1>NORMS</h1>
             <p>Premium Roblox Digital Marketplace</p>
             <a href="#store" class="hero-btn">Browse Store</a>
+        </div>
+    </section>
+
+    <!-- USER DASHBOARD (Revealed when logged in) -->
+    <section id="dashboard-section">
+        <div class="dashboard-header">
+            <div>
+                <h2 style="margin:0;">User Dashboard</h2>
+                <span id="dash-user-email" style="color:#aaa; font-size:0.9em;"></span>
+            </div>
+            <button id="dash-logout-btn" class="auth-btn" style="width:auto; padding:8px 16px; margin:0; background:#d9534f; color:#fff;">Logout</button>
+        </div>
+        <div class="dashboard-cards">
+            <div class="dash-card">
+                <h4>Account Status</h4>
+                <p style="color:#4CAF50;">● Verified Member</p>
+            </div>
+            <div class="dash-card">
+                <h4>Purchases</h4>
+                <p>Ready to Order</p>
+            </div>
+            <div class="dash-card">
+                <h4>Support Link</h4>
+                <p><a href="https://m.me/claditch" target="_blank" style="color:#fff; text-decoration:underline;">Direct Messenger</a></p>
+            </div>
         </div>
     </section>
 
@@ -133,7 +208,7 @@
                 <h3>Black Dragon</h3>
                 <p class="price">₱1500</p>
                 <div class="stock">17 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
 
             <!-- Item 2 -->
@@ -144,7 +219,7 @@
                 <h3>Sun Bloom</h3>
                 <p class="price">₱10</p>
                 <div class="stock">52 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
 
             <!-- Item 3 -->
@@ -155,7 +230,7 @@
                 <h3>Star Fruit</h3>
                 <p class="price">₱20</p>
                 <div class="stock">31 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
 
             <!-- Item 4 -->
@@ -166,7 +241,7 @@
                 <h3>Dragon Breath</h3>
                 <p class="price">₱10</p>
                 <div class="stock">9 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
 
             <!-- Item 5 -->
@@ -177,7 +252,7 @@
                 <h3>Super Sprinkler</h3>
                 <p class="price">₱0.50</p>
                 <div class="stock">4 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
 
             <!-- Item 6 -->
@@ -188,7 +263,7 @@
                 <h3>Super Watering Can</h3>
                 <p class="price">₱0.50</p>
                 <div class="stock">15 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
+                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
             </div>
         </div>
     </section>
@@ -237,6 +312,9 @@
       const authNavBtn = document.getElementById('auth-nav-btn');
       const closeModal = document.getElementById('close-modal');
       const userDisplay = document.getElementById('user-display');
+      const dashboardSection = document.getElementById('dashboard-section');
+      const dashUserEmail = document.getElementById('dash-user-email');
+      const dashLogoutBtn = document.getElementById('dash-logout-btn');
 
       const emailInput = document.getElementById('email');
       const passwordInput = document.getElementById('password');
@@ -244,61 +322,92 @@
       const btnSignup = document.getElementById('btn-signup');
       const userStatus = document.getElementById('user-status');
 
-      // Modal Controls
-      authNavBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const session = supabaseClient.auth.getSession().then(({ data }) => {
-            if (data.session) {
-                // If logged in, clicking the button logs out
-                supabaseClient.auth.signOut().then(() => checkUser());
-            } else {
-                // If logged out, open modal
-                authModal.style.display = 'flex';
-            }
+      // Intercept Buy Buttons
+      document.querySelectorAll('.buy-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (!session) {
+            // Not logged in -> Open Modal
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'You must log in to purchase items.';
+          } else {
+            // Logged in -> Proceed to Messenger
+            const targetUrl = button.getAttribute('data-url');
+            window.open(targetUrl, '_blank');
+          }
         });
+      });
+
+      // Modal Controls
+      authNavBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+          await supabaseClient.auth.signOut();
+          checkUser();
+        } else {
+          authModal.style.display = 'flex';
+        }
+      });
+
+      dashLogoutBtn.addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        checkUser();
       });
 
       closeModal.addEventListener('click', () => authModal.style.display = 'none');
       window.addEventListener('click', (e) => { if (e.target === authModal) authModal.style.display = 'none'; });
 
-      // Sign Up
-      btnSignup.addEventListener('click', async () => {
+      // Sign Up Handler
+      btnSignup.addEventListener('click', async (e) => {
+        e.preventDefault();
         userStatus.innerText = 'Creating account...';
         const { data, error } = await supabaseClient.auth.signUp({
           email: emailInput.value,
           password: passwordInput.value,
         });
-        if (error) userStatus.innerText = error.message;
-        else {
-          userStatus.innerText = 'Check your email for confirmation!';
-          alert('Check your email for confirmation link!');
+        if (error) {
+            userStatus.innerText = error.message;
+        } else {
+            userStatus.innerText = 'Account created! Check your email to confirm.';
+            alert('Account created! Please check your email to verify.');
         }
       });
 
-      // Log In
-      btnLogin.addEventListener('click', async () => {
+      // Log In Handler
+      btnLogin.addEventListener('click', async (e) => {
+        e.preventDefault();
         userStatus.innerText = 'Logging in...';
         const { data, error } = await supabaseClient.auth.signInWithPassword({
           email: emailInput.value,
           password: passwordInput.value,
         });
-        if (error) userStatus.innerText = error.message;
-        else {
-          authModal.style.display = 'none';
-          checkUser();
+        if (error) {
+            userStatus.innerText = error.message;
+        } else {
+            authModal.style.display = 'none';
+            userStatus.innerText = '';
+            checkUser();
         }
       });
 
-      // Check user session state
+      // Check User Session State
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
           userDisplay.style.display = 'inline';
-          userDisplay.innerText = session.user.email.split('@')[0]; // Shows username before @
+          userDisplay.innerText = session.user.email.split('@')[0];
           authNavBtn.innerText = 'Logout';
+          
+          // Show Dashboard
+          dashUserEmail.innerText = session.user.email;
+          dashboardSection.style.display = 'block';
         } else {
           userDisplay.style.display = 'none';
           authNavBtn.innerText = 'Login';
+          
+          // Hide Dashboard
+          dashboardSection.style.display = 'none';
         }
       }
 
