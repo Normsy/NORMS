@@ -1627,13 +1627,7 @@
           return;
         }
 
-        const { data: profileData, error: profileError } = await supabaseClient
-          .from("profiles")
-          .select("balance")
-          .eq("id", session.user.id)
-          .single();
-
-        let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
+        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
 
         if (currentBalance < itemPrice) {
           loadingOverlay.style.display = 'none';
@@ -1641,14 +1635,11 @@
           return;
         }
 
-        let newBalance = currentBalance - itemPrice;
+        currentBalance -= itemPrice;
 
-        const { error: updateError } = await supabaseClient
-          .from("profiles")
-          .update({
-              balance: newBalance
-          })
-          .eq("id", session.user.id);
+        const { error: updateError } = await supabaseClient.auth.updateUser({
+          data: { balance: currentBalance }
+        });
 
         if (updateError) {
           loadingOverlay.style.display = 'none';
@@ -1669,7 +1660,7 @@
             }
           }
 
-          settingsUserBalance.innerText = `₱${newBalance.toFixed(2)}`;
+          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
@@ -1682,16 +1673,9 @@
       });
 
       async function saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, userEmail) {
-        const { error } = await supabaseClient
-        .from("orders")
-        .insert([
+        await supabaseClient.from('orders').insert([
           { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
-        ]);
-
-        if (error) {
-            console.error(error);
-            alert(error.message);
-        }
+        ]).catch(() => {});
       }
 
       function addOrderToList(itemName, itemPrice, itemImg, username, description) {
@@ -1703,48 +1687,18 @@
 
         const orderRow = document.createElement('div');
         orderRow.className = 'order-row';
-        
-        const imgEl = document.createElement('img');
-        imgEl.src = itemImg;
-        imgEl.className = 'order-thumbnail';
-        imgEl.alt = itemName;
-
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'order-info';
-        
-        const h4El = document.createElement('h4');
-        h4El.textContent = itemName;
-        infoDiv.appendChild(h4El);
-
-        const pBuyer = document.createElement('p');
-        pBuyer.innerHTML = `Buyer: <strong>${username}</strong>`;
-        infoDiv.appendChild(pBuyer);
-
-        if (description) {
-            const pDesc = document.createElement("p");
-            pDesc.textContent = description;
-            infoDiv.appendChild(pDesc);
-        }
-
-        const rightDiv = document.createElement('div');
-        rightDiv.className = 'order-right-side';
-
-        const priceDiv = document.createElement('div');
-        priceDiv.className = 'order-price';
-        priceDiv.textContent = `₱${itemPrice.toFixed(2)}`;
-        rightDiv.appendChild(priceDiv);
-
-        const contactBtn = document.createElement('button');
-        contactBtn.type = 'button';
-        contactBtn.className = 'order-contact-btn';
-        contactBtn.textContent = 'Contact';
-        contactBtn.onclick = () => openChatPanel(itemName, username, 'admin@norms.com');
-        rightDiv.appendChild(contactBtn);
-
-        orderRow.appendChild(imgEl);
-        orderRow.appendChild(infoDiv);
-        orderRow.appendChild(rightDiv);
-
+        orderRow.innerHTML = `
+          <img src="${itemImg}" class="order-thumbnail" alt="${itemName}">
+          <div class="order-info">
+            <h4>${itemName}</h4>
+            <p>Buyer: <strong>${username}</strong></p>
+            ${description ? `<p>Note: ${description}</p>` : ''}
+          </div>
+          <div class="order-right-side">
+            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
+            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
+          </div>
+        `;
         ordersContainer.prepend(orderRow);
       }
 
@@ -1819,24 +1773,28 @@
         if (!session) return;
 
         const userEmail = session.user.email;
+        const chattingWith = activeChatUser || (userEmail === 'admin@norms.com' ? '' : 'admin@norms.com');
 
-        const { data, error } = await supabaseClient
-        .from("messages")
-        .select("*")
-        .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
-        .order("created_at");
-
+        let query = supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
+        
+        const { data, error } = await query;
         if (error) return;
 
         chatMessagesContainer.innerHTML = '';
 
         if (data && data.length > 0) {
           data.forEach(msg => {
-            const isSentByMe = msg.sender === userEmail;
-            const chatBubble = document.createElement('div');
-            chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
-            chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
-            chatMessagesContainer.appendChild(chatBubble);
+            const isRelevant = userEmail === 'admin@norms.com' 
+              ? (msg.sender === chattingWith || msg.recipient === chattingWith || msg.sender === userEmail || msg.recipient === userEmail)
+              : (msg.sender === userEmail || msg.recipient === userEmail);
+
+            if (isRelevant) {
+              const isSentByMe = msg.sender === userEmail;
+              const chatBubble = document.createElement('div');
+              chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
+              chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
+              chatMessagesContainer.appendChild(chatBubble);
+            }
           });
         } else {
           chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
@@ -1857,21 +1815,6 @@
             fetchGlobalOrdersForAdmin();
           })
           .subscribe();
-
-        supabaseClient
-        .channel("orders")
-        .on(
-            "postgres_changes",
-            {
-                event: "INSERT",
-                schema: "public",
-                table: "orders"
-            },
-            payload => {
-                fetchGlobalOrdersForAdmin();
-            }
-        )
-        .subscribe();
       }
 
       chatSendBtn.addEventListener('click', async () => {
@@ -1892,94 +1835,34 @@
         }
       });
 
-      closeFullChat.addEventListener('click', async () => {
-          fullPageChat.style.display = 'none';
-
-          const { data: { session } } = await supabaseClient.auth.getSession();
-
-          if (session && session.user.email === 'admin@norms.com') {
-              fullPageAdmin.style.display = 'block';
+      closeFullChat.addEventListener('click', () => {
+        fullPageChat.style.display = 'none';
+        const { data: { session } } = supabaseClient.auth.getSession();
+        session.then(s => {
+          if (s && s.user.email === 'admin@norms.com') {
+            fullPageAdmin.style.display = 'block';
           } else {
-              switchView(currentActiveView);
+            switchView(currentActiveView);
           }
+        });
       });
-
-      async function loadUserOrders() {
-          const { data: { session } } = await supabaseClient.auth.getSession();
-
-          if (!session) return;
-
-          const { data, error } = await supabaseClient
-              .from("orders")
-              .select("*")
-              .eq("user_email", session.user.email)
-              .order("created_at", { ascending: false });
-
-          if (error) {
-              console.error(error);
-              return;
-          }
-
-          const ordersContainer = document.getElementById("orders-container");
-          ordersContainer.innerHTML = "";
-
-          if (data.length === 0) {
-              ordersContainer.innerHTML =
-                  '<p id="no-orders-msg">No items purchased yet.</p>';
-              return;
-          }
-
-          data.forEach(order => {
-              addOrderToList(
-                  order.item_name,
-                  Number(order.price),
-                  order.image,
-                  order.roblox_username,
-                  order.note
-              );
-          });
-      }
 
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
 
-        const { data: profileData } = await supabaseClient
-          .from("profiles")
-          .select("balance")
-          .eq("id", session.user.id)
-          .single();
+        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
+        currentBalance += 1000.00;
 
-        let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
-        let newBalance = currentBalance + 1000.00;
-
-        const { error } = await supabaseClient
-          .from("profiles")
-          .update({
-              balance: newBalance
-          })
-          .eq("id", session.user.id);
+        const { error } = await supabaseClient.auth.updateUser({
+          data: { balance: currentBalance }
+        });
 
         if (!error) {
-          settingsUserBalance.innerText = `₱${newBalance.toFixed(2)}`;
+          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
           alert('Successfully added ₱1,000.00 to your balance!');
         }
       });
-
-      async function loadProductsStock() {
-        const { data } = await supabaseClient
-        .from("products")
-        .select("*");
-
-        if (data && data.length > 0) {
-          data.forEach(prod => {
-            const stockEl = document.getElementById(`stock-${prod.name.toLowerCase().replace(/\s+/g, '-')}`);
-            if (stockEl) {
-              stockEl.innerText = `${prod.stock} Left`;
-            }
-          });
-        }
-      }
 
       function openSettingsModal() {
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
@@ -2094,17 +1977,12 @@
             const { data, error } = await supabaseClient.auth.signUp({
               email: email,
               password: password,
-              options: { data: { full_name: fullName } }
+              options: { data: { full_name: fullName, balance: 1500.00 } }
             });
 
             if (error) {
                 userStatus.innerText = error.message;
             } else {
-                if (data.user) {
-                    await supabaseClient.from("profiles").insert([
-                        { id: data.user.id, email: email, balance: 1500.00 }
-                    ]);
-                }
                 alert('Account created! Please check your email to verify.');
             }
         } else {
@@ -2136,13 +2014,7 @@
         settingsDisplayName.value = displayName;
         settingsEmail.value = user.email || '';
 
-        const { data: profileData } = await supabaseClient
-          .from("profiles")
-          .select("balance")
-          .eq("id", user.id)
-          .single();
-
-        const balance = profileData ? Number(profileData.balance) : 1500.00;
+        const balance = user.user_metadata?.balance ?? 1500.00;
         settingsUserBalance.innerText = `₱${balance.toFixed(2)}`;
         profileStatus.innerText = '';
         passwordStatus.innerText = '';
@@ -2152,9 +2024,6 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
-            await loadUserOrders();
-            await loadProductsStock();
-
             const userEmail = session.user.email;
             let navHtml = '';
 
