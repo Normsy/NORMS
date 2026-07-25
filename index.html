@@ -622,11 +622,11 @@
         </div>
         <!-- TEXT DROPDOWN BUTTON (DYNAMICALLY UPDATES) -->
         <div class="nav-dropdown-container">
-            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">What?</button>
+            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">Introduction</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">What?</button>
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why?</button>
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">Introduction</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why Norms?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How it Works?</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
             </div>
         </div>
@@ -635,8 +635,8 @@
     <!-- FULL PAGE SNAP CONTAINER -->
     <div class="slides-container" id="slides-wrapper">
 
-        <!-- SLIDE 1: WHAT? -->
-        <section class="slide" id="slide-intro" data-title="What?">
+        <!-- SLIDE 1: INTRO ONLY -->
+        <section class="slide" id="slide-intro" data-title="Introduction">
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
@@ -645,10 +645,10 @@
             </div>
         </section>
 
-        <!-- SLIDE 2: WHY? -->
-        <section class="slide" id="slide-why" data-title="Why?">
+        <!-- SLIDE 2: WHY NORMS -->
+        <section class="slide" id="slide-why" data-title="Why Norms?">
             <div class="slide-inner">
-                <h2 class="section-title">Why?</h2>
+                <h2 class="section-title">Why Norms?</h2>
                 <p class="section-subtitle">Short section explaining our value proposition.</p>
                 <div class="why-cards">
                     <div class="why-card">
@@ -667,10 +667,10 @@
             </div>
         </section>
 
-        <!-- SLIDE 3: HOW? -->
-        <section class="slide" id="slide-how" data-title="How?">
+        <!-- SLIDE 3: HOW IT WORKS -->
+        <section class="slide" id="slide-how" data-title="How it Works?">
             <div class="slide-inner">
-                <h2 class="section-title">How?</h2>
+                <h2 class="section-title">How it Works?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
                 <div class="steps-grid">
                     <div class="step-card">
@@ -917,10 +917,7 @@
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
-      let isProgrammaticScroll = false;
-
       function updateNavbarTitle() {
-        if (isProgrammaticScroll) return;
         const containerRect = slidesWrapper.getBoundingClientRect();
         let closestSlide = slides[0];
         let minDistance = Infinity;
@@ -945,18 +942,8 @@
       });
 
       function scrollToSlide(slideId) {
-        isProgrammaticScroll = true;
-        const targetSlide = document.getElementById(slideId);
-        const slideTitle = targetSlide.getAttribute('data-title');
-        if (slideTitle) {
-          navDropdownToggle.innerText = slideTitle;
-        }
-        targetSlide.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
         navDropdownMenu.classList.remove('show');
-
-        setTimeout(() => {
-          isProgrammaticScroll = false;
-        }, 600);
       }
 
       navDropdownToggle.addEventListener('click', (e) => {
