@@ -2,7 +2,7 @@
 // NORMS Premium Effects
 // =======================
 
-// Product Card Hover
+// Product Card Hover 3D Effect
 const cards = document.querySelectorAll(".card");
 
 cards.forEach(card => {
@@ -22,7 +22,7 @@ cards.forEach(card => {
     });
 });
 
-// Fade In
+// Fade In Animation Observer
 const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -37,7 +37,7 @@ document.querySelectorAll(".card, .hero, #about, #contact").forEach(el => {
     observer.observe(el);
 });
 
-// Navbar Blur
+// Navbar Blur / Shadow on Scroll
 const nav = document.querySelector("nav");
 
 window.addEventListener("scroll", () => {
@@ -46,16 +46,4 @@ window.addEventListener("scroll", () => {
     } else {
         nav.style.boxShadow = "none";
     }
-});
-
-// Buy Button
-document.querySelectorAll("button").forEach(btn => {
-    btn.addEventListener("click", () => {
-        btn.innerHTML = "Opening Messenger...";
-        
-        setTimeout(() => {
-            window.open("https://m.me/claditch", "_blank");
-            btn.innerHTML = "BUY";
-        }, 600);
-    });
 });
