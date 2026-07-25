@@ -1060,7 +1060,10 @@
                 </div>
             </div>
 
-            <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; margin-bottom: 40px;">Log Out</button>
+            <!-- FIXED LOGOUT BUTTON POSITION -->
+            <div style="margin-top: 20px; margin-bottom: 60px;">
+                <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; width: 100%;">Log Out</button>
+            </div>
         </div>
     </div>
 
@@ -1335,7 +1338,6 @@
         addOrderToList(itemName, itemPrice);
         alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
         
-        // If logged in, let them switch to Orders view to check it out
         switchView('orders');
       }
 
@@ -1383,12 +1385,19 @@
           } else {
             loadUserSettings(session);
             fullPageSettings.style.display = 'block';
+
+            // Keep the Settings button highlighted while settings are open
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const settingsBtn = document.getElementById('bottom-nav-settings-btn');
+            if (settingsBtn) settingsBtn.classList.add('active');
           }
         });
       }
 
       closeFullSettings.addEventListener('click', () => {
         fullPageSettings.style.display = 'none';
+        // Restore active state back to the current background view tab
+        switchView(currentActiveView);
       });
 
       settingsLogoutBtn.addEventListener('click', async () => {
@@ -1519,16 +1528,15 @@
                     <span>Market</span>
                 </button>
                 <button class="nav-item" data-view="orders" onclick="switchView('orders')">
-                    <span class="nav-icon">📦</span>
-                    <span>Orders</span>
+                    <span class="nav-icon">Orders</span>
                 </button>
-                <button class="nav-item" onclick="openSettingsModal()">
+                <button class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
                     <span class="nav-icon">⚙️</span>
                     <span>Settings</span>
                 </button>
             `;
         } else {
-            // User is NOT logged in: Show Home, Market, Login (No Orders)
+            // User is NOT logged in: Show Home, Market, Login
             bottomNav.innerHTML = `
                 <button class="nav-item active" data-view="home" onclick="switchView('home')">
                     <span class="nav-icon">🏠</span>
