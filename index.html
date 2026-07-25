@@ -73,11 +73,67 @@
             color: #000000;
         }
 
-        .nav-links a {
-            color: #000000;
-            text-decoration: none;
-            font-weight: 600;
+        /* DROPDOWN MENU IN NAVBAR */
+        .nav-dropdown-container {
+            position: relative;
+        }
+
+        .nav-dropdown-btn {
+            background: transparent;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 0.85rem;
+            font-weight: 800;
+            cursor: pointer;
+            color: #000000;
+            transition: all 0.2s ease;
+        }
+
+        .nav-dropdown-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .nav-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 42px;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 180px;
+            padding: 6px;
+            z-index: 200;
+        }
+
+        .nav-dropdown-menu.show {
+            display: block;
+        }
+
+        .nav-dropdown-item {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            text-align: left;
+            background: transparent;
+            border: none;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #333333;
+            cursor: pointer;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .nav-dropdown-item:hover {
+            background: #f5f5f5;
+            color: #000000;
         }
 
         /* COMMON TEXT STYLES */
@@ -322,27 +378,7 @@
             cursor: pointer;
         }
 
-        /* 5. TRUST & SECURITY SLIDE */
-        .trust-box {
-            background: #000000;
-            color: #ffffff;
-            border-radius: 16px;
-            padding: 40px 25px;
-            text-align: center;
-        }
-
-        .trust-box h2 {
-            font-size: 1.8rem;
-            margin-bottom: 12px;
-        }
-
-        .trust-box p {
-            font-size: 0.9rem;
-            color: #cccccc;
-            line-height: 1.6;
-        }
-
-        /* 6. FAQ SLIDE WITH ACCORDION DROPDOWN */
+        /* 5. FAQ SLIDE WITH ACCORDION DROPDOWN */
         .faq-list {
             width: 100%;
             display: flex;
@@ -584,8 +620,15 @@
         <div class="logo">
             NORMS
         </div>
-        <div class="nav-links">
-            <a href="https://discord.gg/kwRwuW4WUM" target="_blank">Discord</a>
+        <!-- V DROPDOWN BUTTON -->
+        <div class="nav-dropdown-container">
+            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">V</button>
+            <div class="nav-dropdown-menu" id="nav-dropdown-menu">
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">Introduction</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why Norms?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How it Works?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
+            </div>
         </div>
     </nav>
 
@@ -593,7 +636,7 @@
     <div class="slides-container" id="slides-wrapper">
 
         <!-- SLIDE 1: INTRO ONLY -->
-        <section class="slide">
+        <section class="slide" id="slide-intro">
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
@@ -603,9 +646,9 @@
         </section>
 
         <!-- SLIDE 2: WHY NORMS -->
-        <section class="slide">
+        <section class="slide" id="slide-why">
             <div class="slide-inner">
-                <h2 class="section-title">Why NORMS</h2>
+                <h2 class="section-title">Why Norms?</h2>
                 <p class="section-subtitle">Short section explaining our value proposition.</p>
                 <div class="why-cards">
                     <div class="why-card">
@@ -625,9 +668,9 @@
         </section>
 
         <!-- SLIDE 3: HOW IT WORKS -->
-        <section class="slide">
+        <section class="slide" id="slide-how">
             <div class="slide-inner">
-                <h2 class="section-title">How It Works</h2>
+                <h2 class="section-title">How it Works?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
                 <div class="steps-grid">
                     <div class="step-card">
@@ -740,18 +783,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 5: TRUST & SECURITY -->
-        <section class="slide">
-            <div class="slide-inner">
-                <div class="trust-box">
-                    <h2>Trust & Security</h2>
-                    <p><strong>Safe. Simple. Reliable.</strong><br><br>We prioritize secure transactions and a smooth experience for every customer. Your Roblox account safety is always our #1 priority.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 6: FAQ (WITH DROPDOWNS) -->
-        <section class="slide">
+        <!-- SLIDE 5: FAQ (WITH DROPDOWNS) -->
+        <section class="slide" id="faq-slide">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
                 <p class="section-subtitle">Commonly asked questions</p>
@@ -881,19 +914,29 @@
 
       function scrollToSlide(slideId) {
         document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('nav-dropdown-menu').classList.remove('show');
       }
+
+      // Top V Dropdown Toggle Logic
+      const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
+      const navDropdownMenu = document.getElementById('nav-dropdown-menu');
+
+      navDropdownToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navDropdownMenu.classList.toggle('show');
+      });
+
+      window.addEventListener('click', () => {
+        navDropdownMenu.classList.remove('show');
+      });
 
       // FAQ Accordion Dropdown Logic
       const faqItems = document.querySelectorAll('.faq-item');
       faqItems.forEach(item => {
         const questionBtn = item.querySelector('.faq-question');
         questionBtn.addEventListener('click', () => {
-          // Toggle active state for current item
           const isActive = item.classList.contains('active');
-          
-          // Optional: Close others if you want only one open at a time
           faqItems.forEach(otherItem => otherItem.classList.remove('active'));
-
           if (!isActive) {
             item.classList.add('active');
           }
