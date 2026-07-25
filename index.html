@@ -11,8 +11,8 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            padding-bottom: 80px; /* Ensures content scrolls well above bottom bar */
-            overflow-y: auto !important; /* Fixed scrolling issues */
+            padding-bottom: 80px;
+            overflow-y: auto !important;
         }
 
         /* GAME ICONS SCROLL BAR */
@@ -64,7 +64,7 @@
         /* RESPONSIVE PRODUCT GRID (2 COLS ON MOBILE, 4 COLS ON DESKTOP) */
         .products {
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important; /* Mobile Default: 2 Columns */
+            grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
             padding: 0 12px !important;
             max-width: 1200px;
@@ -73,7 +73,7 @@
 
         @media (min-width: 768px) {
             .products {
-                grid-template-columns: repeat(4, 1fr) !important; /* PC/Desktop: 4 Columns */
+                grid-template-columns: repeat(4, 1fr) !important;
                 gap: 18px !important;
                 padding: 0 20px !important;
             }
@@ -312,6 +312,16 @@
         </div>
     </nav>
 
+    <!-- HERO / INTRODUCTION SECTION -->
+    <div class="hero-intro" style="text-align: center; padding: 25px 15px 10px 15px; max-width: 600px; margin: 0 auto;">
+        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; color: #fff;">
+            Welcome to <span style="color: #ff9800;">NORMS</span>
+        </h1>
+        <p style="font-size: 0.9rem; color: #aaa; line-height: 1.4; margin: 0;">
+            Your trusted marketplace for premium Roblox items, pets, and collectibles. Fast delivery and secure transactions.
+        </p>
+    </div>
+
     <!-- GAME CATEGORY SELECTOR -->
     <div class="game-selector-container">
         <div class="game-icon-card active" data-game="all">
@@ -332,10 +342,9 @@
         </div>
     </div>
 
-    <!-- STORE ITEMS (2 COLUMNS MOBILE / 4 COLUMNS PC) -->
+    <!-- STORE ITEMS -->
     <section id="store">
         <div class="products">
-            <!-- Item 1 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="badge">BEST</div>
                 <div class="product-image">
@@ -347,7 +356,6 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 2 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
@@ -358,7 +366,6 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 3 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Star Fruit.png" alt="Star Fruit">
@@ -369,7 +376,6 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 4 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
@@ -380,7 +386,6 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 5 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
@@ -391,7 +396,6 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 6 -->
             <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
@@ -416,7 +420,7 @@
         </button>
     </div>
 
-    <!-- LOGIN / SIGNUP MODAL -->
+    <!-- MODALS & SUPABASE -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-auth-modal">&times;</span>
@@ -439,7 +443,6 @@
         </div>
     </div>
 
-    <!-- SETTINGS & USER PROFILE MODAL -->
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-settings-modal">&times;</span>
@@ -471,7 +474,6 @@
     <script src="canvas.js"></script>
     <script src="script.js"></script>
 
-    <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
@@ -501,7 +503,6 @@
 
       let currentMode = 'login'; 
 
-      // Game Category Filtering
       const gameCards = document.querySelectorAll('.game-icon-card');
       const productCards = document.querySelectorAll('.products .card');
 
@@ -523,7 +524,6 @@
         });
       });
 
-      // Tab Switchers
       tabLogin.addEventListener('click', () => {
         currentMode = 'login';
         tabLogin.classList.add('active');
@@ -542,7 +542,6 @@
         userStatus.innerText = '';
       });
 
-      // Buy Trigger
       async function handleBuy(e) {
         if (e) {
           e.preventDefault();
@@ -558,12 +557,10 @@
         }
       }
 
-      // Settings Nav Click
       settingsNavBtn.addEventListener('click', () => {
         settingsModal.style.display = 'flex';
       });
 
-      // Settings Auth Button Action
       settingsAuthBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         settingsModal.style.display = 'none';
@@ -583,7 +580,6 @@
         if (e.target === settingsModal) settingsModal.style.display = 'none'; 
       });
 
-      // Auth Action
       btnSubmit.addEventListener('click', async (e) => {
         e.preventDefault();
         const email = emailInput.value.trim();
