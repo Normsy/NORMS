@@ -116,6 +116,40 @@
             font-size: 1rem;
             font-weight: 600;
         }
+
+        /* STORE GAME CATEGORY TABS */
+        .game-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 25px 0 35px 0;
+            flex-wrap: wrap;
+        }
+        .game-tab-btn {
+            background: #181818;
+            border: 1px solid #333;
+            color: #aaa;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .game-tab-btn:hover {
+            border-color: #666;
+            color: #fff;
+        }
+        .game-tab-btn.active {
+            background: #fff;
+            color: #000;
+            border-color: #fff;
+        }
+
+        /* CARD DISPLAY CONTROL FOR FILTERING */
+        .card.hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -202,10 +236,18 @@
 
     <!-- STORE -->
     <section id="store">
-        <h2>Featured Items</h2>
+        <h2>Store Items</h2>
+
+        <!-- GAME CATEGORY SELECTION TABS -->
+        <div class="game-tabs">
+            <button type="button" class="game-tab-btn active" data-game="all">All Items</button>
+            <button type="button" class="game-tab-btn" data-game="grow-a-garden-2">Grow a Garden 2</button>
+            <button type="button" class="game-tab-btn" data-game="other-game">Other Roblox Games</button>
+        </div>
+
         <div class="products">
-            <!-- Item 1 -->
-            <div class="card">
+            <!-- Item 1 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="badge">BEST SELLER</div>
                 <div class="product-image">
                     <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
@@ -216,8 +258,8 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 2 -->
-            <div class="card">
+            <!-- Item 2 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
                 </div>
@@ -227,8 +269,8 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 3 -->
-            <div class="card">
+            <!-- Item 3 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Star Fruit.png" alt="Star Fruit">
                 </div>
@@ -238,8 +280,8 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 4 -->
-            <div class="card">
+            <!-- Item 4 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
                 </div>
@@ -249,8 +291,8 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 5 -->
-            <div class="card">
+            <!-- Item 5 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
                 </div>
@@ -260,8 +302,8 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
-            <!-- Item 6 -->
-            <div class="card">
+            <!-- Item 6 (Grow a Garden 2) -->
+            <div class="card" data-category="grow-a-garden-2">
                 <div class="product-image">
                     <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
                 </div>
@@ -335,7 +377,29 @@
 
       let currentMode = 'login'; 
 
-      // Tab Switchers
+      // GAME CATEGORY TAB FILTERING
+      const gameTabBtns = document.querySelectorAll('.game-tab-btn');
+      const productCards = document.querySelectorAll('.products .card');
+
+      gameTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          gameTabBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          const selectedGame = btn.getAttribute('data-game');
+
+          productCards.forEach(card => {
+            const cardCategory = card.getAttribute('data-category');
+            if (selectedGame === 'all' || cardCategory === selectedGame) {
+              card.classList.remove('hidden');
+            } else {
+              card.classList.add('hidden');
+            }
+          });
+        });
+      });
+
+      // Tab Switchers (Log In vs Sign Up)
       tabLogin.addEventListener('click', () => {
         currentMode = 'login';
         tabLogin.classList.add('active');
@@ -370,7 +434,7 @@
         }
       }
 
-      // Open Dashboard Modal
+      // Open Dashboard Modal from Navbar
       dashNavBtn.addEventListener('click', (e) => {
         e.preventDefault();
         dashModal.style.display = 'flex';
