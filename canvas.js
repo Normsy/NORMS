@@ -1,25 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Ninja Fighting Stickmen</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            background: #f0f0f0;
-        }
-        canvas {
-            display: block;
-        }
-    </style>
-</head>
-<body>
-
-<canvas id="bg"></canvas>
-
-<script>
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
 
@@ -32,32 +10,71 @@ window.addEventListener("resize", resize);
 
 const ground = () => canvas.height * 0.75;
 
-class NinjaPair {
-    constructor(x) {
+// Particle system for dust/dirt kick-up
+class Particle {
+    constructor(x, y) {
         this.x = x;
-        this.time = 0;
-        
-        // Two ninjas starting close enough to fight immediately
-        this.n1 = { xOffset: -30 };
-        this.n2 = { xOffset: 30 };
+        this.y = y;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = (Math.random() - 1.5) * 2;
+        this.speedY = Math.random() * -1.5 - 0.5;
+        this.life = 1; // Alpha life
+        this.decay = Math.random() * 0.03 + 0.02;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.life -= this.decay;
+    }
+    draw(ctx) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.life * 0.3);
+        ctx.fillStyle = "#000";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+let particles = [];
+
+class Runner {
+    constructor(x, speed, scale = 1) {
+        this.x = x;
+        this.speed = speed;
+        this.scale = scale; // Parallax scale
+        this.phase = Math.random() * Math.PI * 2;
     }
 
     update() {
-        this.time += 0.08;
-    }
+        this.x += this.speed;
+        this.phase += 0.18 * (this.speed / 3); // Sync stride frequency with speed
 
-    drawNinja(nx, ny, facingRight, actionType) {
-        ctx.save();
-        ctx.translate(nx, ny);
-        if (!facingRight) {
-            ctx.scale(-1, 1);
+        // Emit dust particles near foot plant (approx frame phase)
+        if (Math.sin(this.phase) > 0.8 && Math.random() < 0.4) {
+            const y = ground() + 52 * this.scale;
+            particles.push(new Particle(this.x, y));
         }
 
-        // Solid pure black, high visibility
-        ctx.globalAlpha = 1.0;
-        ctx.strokeStyle = "#000000";
-        ctx.fillStyle = "#000000";
-        ctx.lineWidth = 6;
+        if (this.x > canvas.width + 300 * this.scale) {
+            this.x = -300 * this.scale;
+        }
+    }
+
+    draw() {
+        const y = ground();
+        const arm = Math.sin(this.phase) * 22;
+        const leg = Math.sin(this.phase) * 24;
+
+        ctx.save();
+        ctx.translate(this.x, y);
+        ctx.scale(this.scale, this.scale); // Scale for depth
+        
+        // Depth-based opacity
+        ctx.globalAlpha = 0.25 + (this.scale * 0.25);
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 5;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
@@ -66,72 +83,50 @@ class NinjaPair {
         ctx.arc(0, -60, 18, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Ninja headband
+        // Body
         ctx.beginPath();
-        ctx.moveTo(-18, -65);
-        ctx.lineTo(18, -65);
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(15, -63);
-        ctx.lineTo(32, -55 + Math.sin(this.time) * 5);
-        ctx.stroke();
+        ctx.moveTo(0, -42);
+        ctx.lineTo(0, 15);
 
-        ctx.lineWidth = 6;
+        // Left Arm
+        ctx.moveTo(0, -25);
+        ctx.lineTo(-arm, -5);
 
-        // Dynamic fighting poses driven continuously by sine waves
-        ctx.beginPath();
-        if (actionType === 1) {
-            // Attacker: Punching forward
-            ctx.moveTo(0, -42);
-            ctx.lineTo(-5, 15);
-            ctx.moveTo(-5, -25);
-            ctx.lineTo(45, -28 + Math.sin(this.time * 4) * 10); // active punch thrust
-            ctx.moveTo(-5, -25);
-            ctx.lineTo(-20, -10);
-            ctx.moveTo(-5, 15);
-            ctx.lineTo(-30, 52);
-            ctx.moveTo(-5, 15);
-            ctx.lineTo(25, 52);
-        } else {
-            // Defender: Blocking / Reeling back from impact
-            const recoil = Math.max(0, Math.sin(this.time * 4) * 15);
-            ctx.moveTo(0, -42);
-            ctx.lineTo(5 + recoil, 15);
-            ctx.moveTo(5, -25);
-            ctx.lineTo(25 - recoil, -35); // blocking arms
-            ctx.moveTo(5, -25);
-            ctx.lineTo(15, -15);
-            ctx.moveTo(5, 15);
-            ctx.lineTo(-15, 52);
-            ctx.moveTo(5, 15);
-            ctx.lineTo(15 + recoil, 52);
-        }
+        // Right Arm
+        ctx.moveTo(0, -25);
+        ctx.lineTo(arm, -5);
+
+        // Left Leg
+        ctx.moveTo(0, 15);
+        ctx.lineTo(-leg, 52);
+
+        // Right Leg
+        ctx.moveTo(0, 15);
+        ctx.lineTo(leg, 52);
+
         ctx.stroke();
-
         ctx.restore();
-    }
-
-    draw() {
-        const y = ground();
-        // Switch who attacks/defends based on time cycle so they continuously exchange blows
-        const actionToggle = Math.sin(this.time * 2) > 0;
-        
-        this.drawNinja(this.x + this.n1.xOffset, y, true, actionToggle ? 1 : 2);
-        this.drawNinja(this.x + this.n2.xOffset, y, false, actionToggle ? 2 : 1);
     }
 }
 
-const pairs = [
-    new NinjaPair(window.innerWidth * 0.25),
-    new NinjaPair(window.innerWidth * 0.5),
-    new NinjaPair(window.innerWidth * 0.75)
+// Generate runners with varying scales (parallax depth effect)
+const runners = [];
+const configs = [
+    { x: 100, speed: 1.2, scale: 0.6 },
+    { x: 400, speed: 2.0, scale: 0.8 },
+    { x: 700, speed: 3.2, scale: 1.1 },
+    { x: 1000, speed: 2.5, scale: 0.9 },
+    { x: 1300, speed: 1.6, scale: 0.7 }
 ];
+
+configs.forEach(cfg => {
+    runners.push(new Runner(cfg.x, cfg.speed, cfg.scale));
+});
 
 function drawGround() {
     ctx.save();
-    ctx.globalAlpha = 0.3;
-    ctx.strokeStyle = "#000000";
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = "#000";
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, ground() + 52);
@@ -141,19 +136,28 @@ function drawGround() {
 }
 
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Semi-transparent clear creates a sleek motion trail effect
+    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     drawGround();
 
-    pairs.forEach(pair => {
-        pair.update();
-        pair.draw();
+    // Update and draw particles
+    particles.forEach((p, index) => {
+        p.update();
+        p.draw(ctx);
+        if (p.life <= 0) {
+            particles.splice(index, 1);
+        }
+    });
+
+    // Update and draw runners
+    runners.forEach(r => {
+        r.update();
+        r.draw();
     });
 
     requestAnimationFrame(animate);
 }
 
 animate();
-</script>
-
-</body>
-</html>
