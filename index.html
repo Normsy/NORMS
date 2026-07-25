@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -804,11 +806,8 @@
         </div>
         <!-- TEXT DROPDOWN BUTTON (DYNAMICALLY UPDATES) -->
         <div class="nav-dropdown-container">
-            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">Home</button>
+            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">Market</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('home-slide')">Home</button>
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('why-slide')">Why Us</button>
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('how-slide')">How It Works</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('store-slide')">Market</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('orders-slide')">Orders</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
@@ -818,62 +817,6 @@
 
     <!-- FULL PAGE SNAP CONTAINER -->
     <div class="slides-container" id="slides-wrapper">
-
-        <!-- SLIDE 0: INTRODUCTION (HOME) -->
-        <section class="slide" id="home-slide" data-title="Home">
-            <div class="slide-inner hero-intro">
-                <h1>NORMS</h1>
-                <p>Welcome to your premier destination for high-end Roblox items, assets, and secure digital trading. Built for speed, security, and absolute reliability, NORMS connects passionate gamers with the rarest items across top experiences like <em>Grow a Garden 2</em>, <em>Blox Fruits</em>, and <em>MM2</em>.</p>
-                <button type="button" class="buy-btn" style="padding: 12px 24px !important; font-size: 0.9rem !important;" onclick="scrollToSlide('store-slide')">Explore Market</button>
-            </div>
-        </section>
-
-        <!-- SLIDE 0.5: WHY NORMS -->
-        <section class="slide" id="why-slide" data-title="Why Us">
-            <div class="slide-inner">
-                <h2 class="section-title">Why Choose NORMS?</h2>
-                <p class="section-subtitle">Experience the safest and fastest digital marketplace.</p>
-                <div class="why-cards">
-                    <div class="why-card">
-                        <h3>Instant Delivery</h3>
-                        <p>Most orders are processed and fulfilled within 5 to 15 minutes of purchase confirmation.</p>
-                    </div>
-                    <div class="why-card">
-                        <h3>Guaranteed Safety</h3>
-                        <p>Every transaction is securely tracked and backed by dedicated administrator assistance.</p>
-                    </div>
-                    <div class="why-card">
-                        <h3>Competitive Pricing</h3>
-                        <p>Enjoy premium items at the best rates available in the marketplace.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 0.8: HOW IT WORKS -->
-        <section class="slide" id="how-slide" data-title="How It Works">
-            <div class="slide-inner">
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-subtitle">Get your favorite items in three simple steps.</p>
-                <div class="steps-grid">
-                    <div class="step-card">
-                        <div class="step-number">1</div>
-                        <h3>Browse & Select</h3>
-                        <p>Explore the market catalog and pick the items you want to add to your inventory.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">2</div>
-                        <h3>Checkout</h3>
-                        <p>Enter your Roblox username and notes, then authorize your purchase instantly.</p>
-                    </div>
-                    <div class="step-card">
-                        <div class="step-number">3</div>
-                        <h3>Receive</h3>
-                        <p>Coordinate with our support team to receive your items directly in-game.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- SLIDE 1: FEATURED ITEMS (STORE) -->
         <section class="slide" id="store-slide" data-title="Market">
@@ -1015,11 +958,7 @@
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="scrollToSlide('home-slide')">
-            <span class="nav-icon">🏠</span>
-            <span>Home</span>
-        </button>
-        <button class="nav-item" onclick="scrollToSlide('store-slide')">
+        <button class="nav-item active" onclick="scrollToSlide('store-slide')">
             <span class="nav-icon">🛒</span>
             <span>Market</span>
         </button>
