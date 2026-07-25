@@ -11,28 +11,28 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            padding-bottom: 70px; /* Space for sticky bottom navigation */
+            padding-bottom: 70px;
         }
 
-        /* GAME ICONS SCROLL BAR (STARPETS STYLE) */
+        /* GAME ICONS SCROLL BAR */
         .game-selector-container {
             padding: 15px 10px;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
-            gap: 15px;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE 10+ */
+            gap: 12px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .game-selector-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
         }
 
         .game-icon-card {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 65px;
+            min-width: 55px;
             cursor: pointer;
             opacity: 0.6;
             transition: all 0.2s ease;
@@ -42,9 +42,9 @@
             transform: translateY(-2px);
         }
         .game-icon-img {
-            width: 54px;
-            height: 54px;
-            border-radius: 14px;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             object-fit: cover;
             border: 2px solid transparent;
             background: #222;
@@ -53,14 +53,77 @@
             border-color: #ff9800;
         }
         .game-icon-label {
-            font-size: 0.75rem;
-            margin-top: 6px;
+            font-size: 0.7rem;
+            margin-top: 5px;
             color: #fff;
             text-align: center;
             font-weight: 500;
         }
 
-        /* STICKY BOTTOM NAVIGATION BAR */
+        /* 3-COLUMN COMPACT PRODUCT GRID FOR MOBILE */
+        .products {
+            display: grid !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 8px !important;
+            padding: 0 8px !important;
+        }
+
+        .card {
+            padding: 8px !important;
+            border-radius: 10px !important;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card .badge {
+            font-size: 0.5rem !important;
+            padding: 2px 4px !important;
+            top: 5px !important;
+            right: 5px !important;
+        }
+
+        .product-image {
+            height: 70px !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image img {
+            max-height: 100% !important;
+            max-width: 100% !important;
+            object-fit: contain;
+        }
+
+        .card h3 {
+            font-size: 0.75rem !important;
+            margin: 6px 0 2px 0 !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card .price {
+            font-size: 0.8rem !important;
+            font-weight: bold;
+            margin: 2px 0 !important;
+        }
+
+        .card .stock {
+            font-size: 0.65rem !important;
+            color: #888;
+            margin-bottom: 6px !important;
+        }
+
+        .buy-btn {
+            padding: 6px 0 !important;
+            font-size: 0.7rem !important;
+            border-radius: 6px !important;
+        }
+
+        /* STICKY BOTTOM NAVIGATION BAR (MARKET & SETTINGS ONLY) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -80,11 +143,12 @@
             align-items: center;
             color: #888;
             text-decoration: none;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             gap: 3px;
             cursor: pointer;
             border: none;
             background: transparent;
+            flex: 1;
         }
         .nav-item.active, .nav-item:hover {
             color: #fff;
@@ -93,7 +157,7 @@
             font-size: 1.2rem;
         }
 
-        /* MODAL STYLES */
+        /* MODALS COMMON STYLES */
         .modal {
             display: none;
             position: fixed;
@@ -110,10 +174,10 @@
         .modal-content {
             background: #111;
             border: 1px solid #333;
-            padding: 30px;
+            padding: 25px 20px;
             border-radius: 12px;
             width: 90%;
-            max-width: 420px;
+            max-width: 400px;
             color: #fff;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -176,26 +240,44 @@
         .dash-cards {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
+            gap: 10px;
+            margin-top: 15px;
             text-align: left;
         }
         .dash-card {
             background: #181818;
-            padding: 16px;
+            padding: 12px 14px;
             border-radius: 8px;
             border: 1px solid #282828;
         }
         .dash-card h4 {
-            margin: 0 0 6px 0;
+            margin: 0 0 4px 0;
             color: #888;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
         }
         .dash-card p {
             margin: 0;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
+        }
+
+        .contact-btns-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .contact-link-btn {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #fff;
+            background: #222;
+            border: 1px solid #333;
         }
 
         .card.hidden {
@@ -219,18 +301,10 @@
         </div>
     </nav>
 
-    <!-- HERO -->
-    <section class="hero" style="min-height: 25vh;">
-        <div class="hero-content">
-            <h1>NORMS</h1>
-            <p>Premium Roblox Marketplace</p>
-        </div>
-    </section>
-
-    <!-- STARPETS-STYLE GAME CATEGORY SELECTOR -->
+    <!-- GAME CATEGORY SELECTOR -->
     <div class="game-selector-container">
         <div class="game-icon-card active" data-game="all">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#ff9800; color:#000; font-weight:bold;">ALL</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#ff9800; color:#000; font-weight:bold; font-size:0.8rem;">ALL</div>
             <span class="game-icon-label">All Games</span>
         </div>
         <div class="game-icon-card" data-game="grow-a-garden-2">
@@ -238,27 +312,27 @@
             <span class="game-icon-label">Grow a Garden 2</span>
         </div>
         <div class="game-icon-card" data-game="bloxfruits">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888;">BF</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888; font-size:0.8rem;">BF</div>
             <span class="game-icon-label">Blox Fruits</span>
         </div>
         <div class="game-icon-card" data-game="mm2">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888;">MM2</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888; font-size:0.8rem;">MM2</div>
             <span class="game-icon-label">MM2</span>
         </div>
     </div>
 
-    <!-- STORE ITEMS -->
+    <!-- STORE ITEMS (3 COLUMNS) -->
     <section id="store">
         <div class="products">
             <!-- Item 1 -->
             <div class="card" data-category="grow-a-garden-2">
-                <div class="badge">BEST SELLER</div>
+                <div class="badge">BEST</div>
                 <div class="product-image">
                     <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
                 </div>
                 <h3>Black Dragon</h3>
                 <p class="price">₱1500</p>
-                <div class="stock">17 Available</div>
+                <div class="stock">17 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
@@ -269,7 +343,7 @@
                 </div>
                 <h3>Sun Bloom</h3>
                 <p class="price">₱10</p>
-                <div class="stock">52 Available</div>
+                <div class="stock">52 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
@@ -280,7 +354,7 @@
                 </div>
                 <h3>Star Fruit</h3>
                 <p class="price">₱20</p>
-                <div class="stock">31 Available</div>
+                <div class="stock">31 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
@@ -291,7 +365,7 @@
                 </div>
                 <h3>Dragon Breath</h3>
                 <p class="price">₱10</p>
-                <div class="stock">9 Available</div>
+                <div class="stock">9 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
@@ -302,7 +376,7 @@
                 </div>
                 <h3>Super Sprinkler</h3>
                 <p class="price">₱0.50</p>
-                <div class="stock">4 Available</div>
+                <div class="stock">4 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
@@ -311,27 +385,23 @@
                 <div class="product-image">
                     <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
                 </div>
-                <h3>Super Watering Can</h3>
+                <h3>Super Can</h3>
                 <p class="price">₱0.50</p>
-                <div class="stock">15 Available</div>
+                <div class="stock">15 Left</div>
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
         </div>
     </section>
 
-    <!-- STICKY BOTTOM NAVIGATION BAR -->
+    <!-- STICKY BOTTOM NAVIGATION BAR (MARKET & SETTINGS) -->
     <div class="bottom-nav">
         <button class="nav-item active" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
             <span class="nav-icon">🛒</span>
             <span>Market</span>
         </button>
-        <a href="https://m.me/claditch" target="_blank" class="nav-item">
-            <span class="nav-icon">⚡</span>
-            <span>Contact</span>
-        </a>
-        <button id="profile-nav-btn" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span id="profile-nav-label">Profile</span>
+        <button id="settings-nav-btn" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span id="settings-nav-label">Settings</span>
         </button>
     </div>
 
@@ -358,29 +428,32 @@
         </div>
     </div>
 
-    <!-- USER DASHBOARD MODAL -->
-    <div id="dash-modal" class="modal">
+    <!-- SETTINGS & USER PROFILE MODAL -->
+    <div id="settings-modal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" id="close-dash-modal">&times;</span>
-            <h2 style="margin-bottom: 5px;">User Profile</h2>
-            <span id="dash-user-email" style="color:#aaa; font-size:0.85em;"></span>
+            <span class="close-btn" id="close-settings-modal">&times;</span>
+            <h2 style="margin-bottom: 2px;">Settings & Account</h2>
+            <span id="dash-user-email" style="color:#aaa; font-size:0.85em;">Not logged in</span>
 
             <div class="dash-cards">
                 <div class="dash-card">
+                    <h4>User Information</h4>
+                    <p id="user-display-info">Guest User</p>
+                </div>
+                <div class="dash-card">
                     <h4>Account Status</h4>
-                    <p style="color:#4CAF50;">● Verified Member</p>
+                    <p id="user-status-text" style="color:#aaa;">● Guest Access</p>
                 </div>
                 <div class="dash-card">
-                    <h4>Purchases</h4>
-                    <p>Ready to Order</p>
-                </div>
-                <div class="dash-card">
-                    <h4>Support Link</h4>
-                    <p><a href="https://m.me/claditch" target="_blank" style="color:#fff; text-decoration:underline;">Direct Messenger</a></p>
+                    <h4>Contact Support</h4>
+                    <div class="contact-btns-group">
+                        <a href="https://m.me/claditch" target="_blank" class="contact-link-btn" style="background:#0084FF; border:none;">Messenger</a>
+                        <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn" style="background:#5865F2; border:none;">Discord</a>
+                    </div>
                 </div>
             </div>
 
-            <button id="dash-logout-btn" class="auth-btn" style="margin-top:20px; background:#d9534f; color:#fff;">Logout</button>
+            <button id="settings-auth-btn" class="auth-btn" style="margin-top:15px;">Log In</button>
         </div>
     </div>
 
@@ -396,16 +469,16 @@
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const authModal = document.getElementById('auth-modal');
-      const dashModal = document.getElementById('dash-modal');
+      const settingsModal = document.getElementById('settings-modal');
       
-      const profileNavBtn = document.getElementById('profile-nav-btn');
-      const profileNavLabel = document.getElementById('profile-nav-label');
-      
+      const settingsNavBtn = document.getElementById('settings-nav-btn');
       const closeAuthModal = document.getElementById('close-auth-modal');
-      const closeDashModal = document.getElementById('close-dash-modal');
+      const closeSettingsModal = document.getElementById('close-settings-modal');
       
       const dashUserEmail = document.getElementById('dash-user-email');
-      const dashLogoutBtn = document.getElementById('dash-logout-btn');
+      const userDisplayInfo = document.getElementById('user-display-info');
+      const userStatusText = document.getElementById('user-status-text');
+      const settingsAuthBtn = document.getElementById('settings-auth-btn');
 
       const nameInput = document.getElementById('full-name');
       const emailInput = document.getElementById('email');
@@ -417,7 +490,7 @@
 
       let currentMode = 'login'; 
 
-      // Game Selector Click Handlers
+      // Game Category Filtering
       const gameCards = document.querySelectorAll('.game-icon-card');
       const productCards = document.querySelectorAll('.products .card');
 
@@ -474,28 +547,29 @@
         }
       }
 
-      // Profile Nav Click
-      profileNavBtn.addEventListener('click', async () => {
+      // Settings Nav Click
+      settingsNavBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'flex';
+      });
+
+      // Settings Auth Button Action
+      settingsAuthBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
+        settingsModal.style.display = 'none';
         if (session) {
-          dashModal.style.display = 'flex';
+          await supabaseClient.auth.signOut();
+          checkUser();
         } else {
           authModal.style.display = 'flex';
         }
       });
 
-      dashLogoutBtn.addEventListener('click', async () => {
-        dashModal.style.display = 'none';
-        await supabaseClient.auth.signOut();
-        checkUser();
-      });
-
       closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
-      closeDashModal.addEventListener('click', () => dashModal.style.display = 'none');
+      closeSettingsModal.addEventListener('click', () => settingsModal.style.display = 'none');
       
       window.addEventListener('click', (e) => { 
         if (e.target === authModal) authModal.style.display = 'none'; 
-        if (e.target === dashModal) dashModal.style.display = 'none'; 
+        if (e.target === settingsModal) settingsModal.style.display = 'none'; 
       });
 
       // Auth Action
@@ -549,10 +623,22 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
           const displayName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
-          profileNavLabel.innerText = displayName;
-          dashUserEmail.innerText = `${displayName} (${session.user.email})`;
+          
+          dashUserEmail.innerText = session.user.email;
+          userDisplayInfo.innerText = displayName;
+          userStatusText.innerText = '● Verified Member';
+          userStatusText.style.color = '#4CAF50';
+          settingsAuthBtn.innerText = 'Log Out';
+          settingsAuthBtn.style.background = '#d9534f';
+          settingsAuthBtn.style.color = '#fff';
         } else {
-          profileNavLabel.innerText = 'Profile';
+          dashUserEmail.innerText = 'Not logged in';
+          userDisplayInfo.innerText = 'Guest User';
+          userStatusText.innerText = '● Guest Access';
+          userStatusText.style.color = '#aaa';
+          settingsAuthBtn.innerText = 'Log In';
+          settingsAuthBtn.style.background = '#fff';
+          settingsAuthBtn.style.color = '#000';
         }
       }
 
