@@ -146,7 +146,7 @@
             z-index: 2;
         }
 
-        /* EXCEPTION FOR SECTIONS TO ALIGN CONTENT TO THE TOP */
+        /* EXCEPTION FOR ORDERS SLIDE TO ALIGN CONTENT TO THE TOP */
         .slide-inner.align-top {
             margin: 0 auto;
             display: flex;
@@ -240,6 +240,22 @@
             width: 100%;
         }
 
+        @media (max-width: 650px) {
+            .steps-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .step-card {
+                padding: 10px 6px !important;
+            }
+            .step-card h3 {
+                font-size: 0.75rem !important;
+            }
+            .step-card p {
+                font-size: 0.65rem !important;
+            }
+        }
+
         .step-card {
             border: 1px solid #333333;
             background: #111111;
@@ -275,6 +291,57 @@
         }
 
         /* 4. FEATURED ITEMS SLIDE */
+        .game-selector-container {
+            padding: 0 0 10px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            scrollbar-width: none;
+        }
+
+        .game-selector-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .game-icon-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 45px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .game-icon-card.active, .game-icon-card:hover {
+            opacity: 1;
+        }
+
+        .game-icon-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+            background: #f5f5f5;
+            color: #000000;
+        }
+
+        .game-icon-card.active .game-icon-img {
+            border-color: #000000;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .game-icon-label {
+            font-size: 0.65rem;
+            margin-top: 3px;
+            color: #000000;
+            font-weight: 600;
+        }
+
         .products {
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
@@ -365,6 +432,14 @@
             color: #000000;
         }
 
+        #faq-slide .section-title {
+            color: #000000;
+        }
+
+        #faq-slide .section-subtitle {
+            color: #666666;
+        }
+
         .faq-list {
             width: 100%;
             display: flex;
@@ -401,6 +476,7 @@
             content: '+';
             font-size: 1rem;
             font-weight: 700;
+            transition: transform 0.2s ease;
         }
 
         .faq-item.active .faq-question::after {
@@ -532,7 +608,30 @@
             color: #000000;
         }
 
-        /* MODALS (CHECKOUT / AUTH) */
+        .nav-icon {
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        /* NOTIFICATION BADGE STYLING */
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: 25%;
+            background-color: #ff0000;
+            color: #ffffff;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .notif-badge.show {
+            display: inline-block;
+        }
+
+        /* FULL PAGE SETTINGS / AUTH MODALS */
         .modal {
             display: none;
             position: fixed;
@@ -616,6 +715,7 @@
             cursor: pointer;
         }
 
+        /* CHECKOUT MODAL STYLES */
         .checkout-item-preview {
             display: flex;
             align-items: center;
@@ -637,6 +737,17 @@
             border-radius: 6px;
         }
 
+        .checkout-item-preview div h4 {
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .checkout-item-preview div p {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* LOADING OVERLAY SPINNER */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -667,38 +778,82 @@
             100% { transform: rotate(360deg); }
         }
 
+        .loading-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #000000;
+        }
+
+        /* FULL PAGE SETTINGS / CHAT / ADMIN VIEW STYLES */
+        .full-page-settings {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff;
+            z-index: 1500;
+            overflow-y: auto;
+            padding: 80px 20px 40px 20px;
+        }
+
         .settings-container-inner {
-            max-width: 650px;
-            width: 100%;
+            max-width: 600px;
             margin: 0 auto;
             text-align: left;
-            max-height: 72vh;
-            overflow-y: auto;
-            padding-right: 4px;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 15px;
+        }
+
+        .settings-header h2 {
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        .settings-close-btn {
+            background: #f0f0f0;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .settings-section-card {
             background: #f9f9f9;
             border: 1px solid #eaeaea;
             border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
 
         .settings-section-card h3 {
             font-size: 0.95rem;
             font-weight: 800;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             color: #111111;
         }
 
         .setting-field {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .setting-field label {
             display: block;
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #666666;
             margin-bottom: 4px;
@@ -707,31 +862,50 @@
 
         .setting-field input {
             width: 100%;
-            padding: 9px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             border: 1px solid #dcdcdc;
             background: #ffffff;
             color: #000000;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
 
         .balance-display {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 900;
             color: #000000;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .action-save-btn {
             background: #000000;
             color: #ffffff;
             border: none;
-            padding: 9px 14px;
+            padding: 10px 16px;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             cursor: pointer;
-            margin-top: 4px;
+            margin-top: 5px;
+        }
+
+        .contact-btns-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        .contact-link-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            color: #000000;
+            background: #eeeeee;
+            border: 1px solid #dddddd;
         }
 
         /* CHAT SYSTEM INTERFACE STYLES */
@@ -739,27 +913,27 @@
             background: #f9f9f9;
             border: 1px solid #eaeaea;
             border-radius: 12px;
-            height: 48vh;
+            height: 55vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .chat-message {
             max-width: 75%;
-            padding: 9px 12px;
+            padding: 10px 14px;
             border-radius: 12px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             line-height: 1.4;
         }
 
@@ -779,7 +953,7 @@
 
         .chat-input-area {
             display: flex;
-            padding: 8px;
+            padding: 10px;
             background: #ffffff;
             border-top: 1px solid #eaeaea;
             gap: 8px;
@@ -787,10 +961,10 @@
 
         .chat-input-field {
             flex: 1;
-            padding: 9px 12px;
+            padding: 10px 12px;
             border-radius: 8px;
             border: 1px solid #dcdcdc;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             outline: none;
         }
 
@@ -798,13 +972,17 @@
             background: #000000;
             color: #ffffff;
             border: none;
-            padding: 0 14px;
+            padding: 0 16px;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
         }
 
-        .card.hidden, .slide.hidden {
+        .card.hidden {
+            display: none !important;
+        }
+
+        .slide.hidden {
             display: none !important;
         }
     </style>
@@ -814,7 +992,10 @@
 
     <!-- TOP NAVBAR -->
     <nav>
-        <div class="logo">NORMS</div>
+        <div class="logo">
+            NORMS
+        </div>
+        <!-- TEXT DROPDOWN BUTTON -->
         <div class="nav-dropdown-container">
             <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">What?</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
@@ -829,36 +1010,58 @@
     <!-- FULL PAGE SNAP CONTAINER -->
     <div class="slides-container" id="slides-wrapper">
 
-        <!-- SLIDE 1: WHAT? -->
+        <!-- SLIDE 1: WHAT? (INTRODUCTION) -->
         <section class="slide view-home" id="slide-intro" data-title="What?">
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
-                <p>Your trusted marketplace for Roblox in-game items. Fast, secure, and reliable.</p>
+                <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
+                <p style="color: #cccccc; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
+                <span style="display:block; margin-top:15px; font-size:0.75rem; color:#aaaaaa; font-weight:700;">↓ Scroll down to explore</span>
             </div>
         </section>
 
-        <!-- SLIDE 2: WHY? -->
+        <!-- SLIDE 2: WHY? (WHY SECTION) -->
         <section class="slide view-home" id="slide-why" data-title="Why?">
             <div class="slide-inner">
                 <h2 class="section-title">Why?</h2>
+                <p class="section-subtitle">Short section explaining our value proposition.</p>
                 <div class="why-cards">
                     <div class="why-card">
                         <h3>Built for Roblox</h3>
-                        <p>Tailored specifically for Roblox players.</p>
+                        <p>Tailored specifically for Roblox players looking for quick upgrades.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Fast & Secure</h3>
+                        <p>Lightning-fast delivery with 100% safe and encrypted trade processes.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Simple Market</h3>
+                        <p>Seamless browsing and smooth purchasing experience from start to finish.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SLIDE 3: HOW? -->
+        <!-- SLIDE 3: HOW? (HOW SECTION) -->
         <section class="slide view-home" id="slide-how" data-title="How?">
             <div class="slide-inner">
                 <h2 class="section-title">How?</h2>
+                <p class="section-subtitle">Show the simple buying process.</p>
                 <div class="steps-grid">
                     <div class="step-card">
                         <div class="step-number">1</div>
                         <h3>Choose an Item</h3>
                         <p>Browse available Roblox items.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Complete Your Order</h3>
+                        <p>Securely place your purchase.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Receive Your Item</h3>
+                        <p>Get your item quickly and easily.</p>
                     </div>
                 </div>
             </div>
@@ -868,6 +1071,28 @@
         <section class="slide view-market hidden" id="store-slide" data-title="Market">
             <div class="slide-inner">
                 <h2 class="section-title">Featured Items</h2>
+                <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
+
+                <!-- GAME CATEGORY SELECTOR -->
+                <div class="game-selector-container">
+                    <div class="game-icon-card active" data-game="all">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.7rem;">ALL</div>
+                        <span class="game-icon-label">All</span>
+                    </div>
+                    <div class="game-icon-card" data-game="grow-a-garden-2">
+                        <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
+                        <span class="game-icon-label">Garden 2</span>
+                    </div>
+                    <div class="game-icon-card" data-game="bloxfruits">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.7rem;">BF</div>
+                        <span class="game-icon-label">Blox Fruits</span>
+                    </div>
+                    <div class="game-icon-card" data-game="mm2">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.7rem;">MM2</div>
+                        <span class="game-icon-label">MM2</span>
+                    </div>
+                </div>
+
                 <div class="products">
                     <div class="card" data-category="grow-a-garden-2" data-price="1500" data-name="Black Dragon" data-img="assets/items/Black Dragon.PNG">
                         <div class="badge">BEST</div>
@@ -878,6 +1103,56 @@
                         <p class="price">₱1500</p>
                         <div class="stock" id="stock-black-dragon">17 Left</div>
                         <button type="button" class="buy-btn" onclick="openCheckout('Black Dragon', 1500, 'assets/items/Black Dragon.PNG', 'stock-black-dragon')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom" data-img="assets/items/Sun Bloom.png">
+                        <div class="product-image">
+                            <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
+                        </div>
+                        <h3>Sun Bloom</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock" id="stock-sun-bloom">52 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sun Bloom', 10, 'assets/items/Sun Bloom.png', 'stock-sun-bloom')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit" data-img="assets/items/Star Fruit.png">
+                        <div class="product-image">
+                            <img src="assets/items/Star Fruit.png" alt="Star Fruit">
+                        </div>
+                        <h3>Star Fruit</h3>
+                        <p class="price">₱20</p>
+                        <div class="stock" id="stock-star-fruit">31 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Star Fruit', 20, 'assets/items/Star Fruit.png', 'stock-star-fruit')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath" data-img="assets/items/Dragon Breath.png">
+                        <div class="product-image">
+                            <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
+                        </div>
+                        <h3>Dragon Breath</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock" id="stock-dragon-breath">9 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Dragon Breath', 10, 'assets/items/Dragon Breath.png', 'stock-dragon-breath')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler" data-img="assets/items/Super Sprinkler.png">
+                        <div class="product-image">
+                            <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
+                        </div>
+                        <h3>Sprinkler</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock" id="stock-sprinkler">4 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sprinkler', 0.5, 'assets/items/Super Sprinkler.png', 'stock-sprinkler')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can" data-img="assets/items/Super Watering Can.PNG">
+                        <div class="product-image">
+                            <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
+                        </div>
+                        <h3>Super Can</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock" id="stock-super-can">15 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Super Can', 0.5, 'assets/items/Super Watering Can.PNG', 'stock-super-can')">BUY</button>
                     </div>
                 </div>
             </div>
@@ -894,81 +1169,35 @@
             </div>
         </section>
 
-        <!-- SLIDE 5B: BUYERS TAB (ADMIN ONLY VIEW) -->
-        <section class="slide view-buyers hidden" id="buyers-slide" data-title="Buyers">
-            <div class="slide-inner align-top">
-                <h2 class="section-title">All Customer Orders & Buyers</h2>
-                <p class="section-subtitle">View all orders placed by customers and contact them directly.</p>
-                <div class="orders-list" id="admin-global-orders-container">
-                    <p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No customer orders recorded yet.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 6: CHAT/INBOX SECTION -->
-        <section class="slide view-inbox hidden" id="inbox-slide" data-title="Inbox">
-            <div class="slide-inner align-top">
-                <h2 class="section-title" id="chat-header-title">Chat Support</h2>
-                <p class="section-subtitle">Communicate directly with admin or customers.</p>
-                
-                <div class="settings-container-inner" style="width:100%;">
-                    <div class="settings-section-card">
-                        <div class="chat-box">
-                            <div class="chat-messages" id="chat-messages-container">
-                                <div class="chat-message received">Hello! Welcome to support.</div>
-                            </div>
-                            <div class="chat-input-area">
-                                <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message..." />
-                                <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 7: SETTINGS TAB SECTION -->
-        <section class="slide view-settings hidden" id="settings-slide" data-title="Settings">
-            <div class="slide-inner align-top">
-                <h2 class="section-title">Account Settings</h2>
-                <div class="settings-container-inner" style="width:100%;">
-                    <div class="settings-section-card">
-                        <h3>My Balance</h3>
-                        <div class="balance-display" id="settings-user-balance">₱0.00</div>
-                        <button type="button" id="add-funds-btn" class="action-save-btn">Top Up Balance (+₱1,000)</button>
-                    </div>
-
-                    <div class="settings-section-card">
-                        <h3>Profile Information</h3>
-                        <form id="profile-form" onsubmit="return false;">
-                            <div class="setting-field">
-                                <label for="settings-display-name">Display Name</label>
-                                <input type="text" id="settings-display-name" />
-                            </div>
-                            <div class="setting-field">
-                                <label for="settings-email">Email Address</label>
-                                <input type="email" id="settings-email" />
-                            </div>
-                            <button type="button" id="save-profile-btn" class="action-save-btn">Save Changes</button>
-                            <p id="profile-status" style="margin-top: 6px; font-size: 0.78rem; color: #008000;"></p>
-                        </form>
-                    </div>
-
-                    <div style="margin-top: 10px; margin-bottom: 30px;">
-                        <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; width: 100%;">Log Out</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 8: FAQ -->
+        <!-- SLIDE 6: FAQ (FAQ SECTION) -->
         <section class="slide view-home" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
+                <p class="section-subtitle">Commonly asked questions</p>
                 <div class="faq-list">
                     <div class="faq-item">
                         <button class="faq-question">How do I receive my item?</button>
-                        <div class="faq-answer"><p>Our team trades the item directly to your Roblox account in-game.</p></div>
+                        <div class="faq-answer">
+                            <p>Our team trades the item directly to your Roblox account in-game after confirmation.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">How long does delivery take?</button>
+                        <div class="faq-answer">
+                            <p>Most orders are delivered within 5 to 15 minutes.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">What payment methods are accepted?</button>
+                        <div class="faq-answer">
+                            <p>Local e-wallets like GCash, Maya, and online payment channels.</p>
+                        </div>
+                    </div>
+                    <div class="faq-item">
+                        <button class="faq-question">Do you offer refunds?</button>
+                        <div class="faq-answer">
+                            <p>Refunds are offered if we cannot fulfill your order within 24 hours.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -977,13 +1206,17 @@
     </div>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
-    <div class="bottom-nav" id="bottom-nav"></div>
+    <div class="bottom-nav" id="bottom-nav">
+        <!-- Dynamically populated based on login status -->
+    </div>
 
-    <!-- CHECKOUT MODAL -->
+    <!-- CHECKOUT / PURCHASE MODAL -->
     <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-checkout-modal">&times;</span>
             <h2>Confirm Purchase</h2>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">Please confirm your Roblox username and order notes.</p>
+            
             <div class="checkout-item-preview">
                 <img id="checkout-modal-img" src="" alt="Item">
                 <div>
@@ -991,9 +1224,12 @@
                     <p id="checkout-modal-price">₱0.00</p>
                 </div>
             </div>
+
             <form id="checkout-form" onsubmit="return false;">
                 <input type="text" id="checkout-username" class="checkout-input" placeholder="Buyer Username" required />
                 <input type="text" id="checkout-confirm-username" class="checkout-input" placeholder="Confirm Username" required />
+                <input type="text" id="checkout-description" class="checkout-input" placeholder="Description / Trade Note (Optional)" />
+                
                 <button type="button" id="btn-confirm-checkout" class="checkout-btn">Proceed to Payment</button>
             </form>
             <p id="checkout-status" style="margin-top:10px; font-size: 0.8rem; color: #ff0000;"></p>
@@ -1003,29 +1239,133 @@
     <!-- LOADING OVERLAY -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
-        <div class="loading-text">Processing...</div>
+        <div class="loading-text" id="loading-text">Processing Payment & Securing Order...</div>
+    </div>
+
+    <!-- FULL PAGE SETTINGS TAB VIEW -->
+    <div id="full-page-settings" class="full-page-settings">
+        <div class="settings-container-inner">
+            <div class="settings-header">
+                <h2>Account Settings</h2>
+                <button type="button" class="settings-close-btn" id="close-full-settings">&times;</button>
+            </div>
+
+            <!-- WALLET BALANCE SECTION -->
+            <div class="settings-section-card">
+                <h3>My Balance</h3>
+                <div class="balance-display" id="settings-user-balance">₱0.00</div>
+                <p style="font-size: 0.8rem; color: #666666; margin-bottom: 12px;">Available credits for instant item purchases.</p>
+                <button type="button" id="add-funds-btn" class="action-save-btn" style="background:#222;">Top Up Balance (+₱1,000)</button>
+            </div>
+
+            <!-- PROFILE SETTINGS SECTION -->
+            <div class="settings-section-card">
+                <h3>Profile Information</h3>
+                <form id="profile-form" onsubmit="return false;">
+                    <div class="setting-field">
+                        <label for="settings-display-name">Display Name</label>
+                        <input type="text" id="settings-display-name" placeholder="Enter display name" />
+                    </div>
+                    <div class="setting-field">
+                        <label for="settings-email">Email Address</label>
+                        <input type="email" id="settings-email" placeholder="Enter email address" />
+                    </div>
+                    <button type="button" id="save-profile-btn" class="action-save-btn">Save Changes</button>
+                    <p id="profile-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
+                </form>
+            </div>
+
+            <!-- SECURITY / PASSWORD SECTION -->
+            <div class="settings-section-card">
+                <h3>Security & Password</h3>
+                <form id="password-form" onsubmit="return false;">
+                    <div class="setting-field">
+                        <label for="settings-new-password">New Password</label>
+                        <input type="password" id="settings-new-password" placeholder="Enter new password" />
+                    </div>
+                    <button type="button" id="update-password-btn" class="action-save-btn">Update Password</button>
+                    <p id="password-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
+                </form>
+            </div>
+
+            <!-- SUPPORT SECTION -->
+            <div class="settings-section-card">
+                <h3>Contact Support</h3>
+                <div class="contact-btns-group">
+                    <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
+                    <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
+                </div>
+            </div>
+
+            <!-- FIXED LOGOUT BUTTON POSITION -->
+            <div style="margin-top: 20px; margin-bottom: 60px;">
+                <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; width: 100%;">Log Out</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL PAGE CHAT TAB VIEW -->
+    <div id="full-page-chat" class="full-page-settings">
+        <div class="settings-container-inner">
+            <div class="settings-header">
+                <h2 id="chat-header-title">Chat with Support</h2>
+                <button type="button" class="settings-close-btn" id="close-full-chat">&times;</button>
+            </div>
+            <div class="chat-box">
+                <div class="chat-messages" id="chat-messages-container">
+                    <div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message..." />
+                    <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL PAGE ADMIN INBOX VIEW (GLOBAL ORDERS) -->
+    <div id="full-page-admin" class="full-page-settings">
+        <div class="settings-container-inner">
+            <div class="settings-header">
+                <h2>Inbox — Global Orders</h2>
+                <button type="button" class="settings-close-btn" id="close-full-admin">&times;</button>
+            </div>
+            
+            <div class="settings-section-card">
+                <h3>All Global Customer Orders</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Review and contact any buyer from recent transactions.</p>
+                
+                <div class="orders-list" id="admin-global-orders-container" style="max-height: 55vh;">
+                    <p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- AUTH MODAL -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-auth-modal">&times;</span>
-            <h2>Welcome to NORMS</h2>
+            <h2 id="modal-title">Welcome to NORMS</h2>
+            
             <div class="auth-tabs">
                 <button type="button" id="tab-login" class="auth-tab active">Log In</button>
                 <button type="button" id="tab-signup" class="auth-tab">Sign Up</button>
             </div>
+
             <form id="auth-form" onsubmit="return false;">
                 <input type="text" id="full-name" class="auth-input" placeholder="Display Name" style="display: none;" />
                 <input type="email" id="email" class="auth-input" placeholder="Email" required />
                 <input type="password" id="password" class="auth-input" placeholder="Password" required />
+                
                 <button type="button" id="btn-submit" class="auth-btn">Log In</button>
             </form>
+
             <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #666666;"></p>
         </div>
     </div>
 
-    <!-- SUPABASE & APP SCRIPT -->
+    <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
@@ -1036,105 +1376,364 @@
       const authModal = document.getElementById('auth-modal');
       const checkoutModal = document.getElementById('checkout-modal');
       const loadingOverlay = document.getElementById('loading-overlay');
+      const fullPageSettings = document.getElementById('full-page-settings');
+      const fullPageChat = document.getElementById('full-page-chat');
+      const fullPageAdmin = document.getElementById('full-page-admin');
+      
+      const closeAuthModal = document.getElementById('close-auth-modal');
+      const closeCheckoutModal = document.getElementById('close-checkout-modal');
+      const closeFullSettings = document.getElementById('close-full-settings');
+      const closeFullChat = document.getElementById('close-full-chat');
+      const closeFullAdmin = document.getElementById('close-full-admin');
+      
       const settingsUserBalance = document.getElementById('settings-user-balance');
       const settingsDisplayName = document.getElementById('settings-display-name');
       const settingsEmail = document.getElementById('settings-email');
+      const settingsNewPassword = document.getElementById('settings-new-password');
+      
+      const saveProfileBtn = document.getElementById('save-profile-btn');
+      const updatePasswordBtn = document.getElementById('update-password-btn');
+      const settingsLogoutBtn = document.getElementById('settings-logout-btn');
+      const addFundsBtn = document.getElementById('add-funds-btn');
+      
+      const profileStatus = document.getElementById('profile-status');
+      const passwordStatus = document.getElementById('password-status');
+
+      const nameInput = document.getElementById('full-name');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const btnSubmit = document.getElementById('btn-submit');
+      const tabLogin = document.getElementById('tab-login');
+      const tabSignup = document.getElementById('tab-signup');
+      const userStatus = document.getElementById('user-status');
       const bottomNav = document.getElementById('bottom-nav');
+
+      // Chat elements
+      const chatMessagesContainer = document.getElementById('chat-messages-container');
+      const chatInputText = document.getElementById('chat-input-text');
+      const chatSendBtn = document.getElementById('chat-send-btn');
+      const chatHeaderTitle = document.getElementById('chat-header-title');
+
+      // Admin Inbox Global Orders elements
+      const adminGlobalOrdersContainer = document.getElementById('admin-global-orders-container');
+      const adminNoOrdersMsg = document.getElementById('admin-no-orders-msg');
+
+      // Checkout elements
+      const checkoutModalImg = document.getElementById('checkout-modal-img');
+      const checkoutModalTitle = document.getElementById('checkout-modal-title');
+      const checkoutModalPrice = document.getElementById('checkout-modal-price');
+      const checkoutUsername = document.getElementById('checkout-username');
+      const checkoutConfirmUsername = document.getElementById('checkout-confirm-username');
+      const checkoutDescription = document.getElementById('checkout-description');
+      const btnConfirmCheckout = document.getElementById('btn-confirm-checkout');
+      const checkoutStatus = document.getElementById('checkout-status');
 
       let currentMode = 'login'; 
       let activeItemData = null;
+      let realtimeSubscription = null;
       let activeChatUser = null;
-      let currentActiveView = 'home';
+
       const slidesWrapper = document.getElementById('slides-wrapper');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
-      function scrollToSlide(slideId) {
-        const slide = document.getElementById(slideId);
-        if (slide) slide.scrollIntoView({ behavior: 'smooth' });
-        navDropdownMenu.classList.remove('show');
-      }
-
-      navDropdownToggle.addEventListener('click', () => {
-        navDropdownMenu.classList.toggle('show');
-      });
+      let isProgrammaticScroll = false;
+      let currentActiveView = 'home';
 
       function switchView(viewName) {
         currentActiveView = viewName;
-        document.querySelectorAll('.slide').forEach(slide => slide.classList.add('hidden'));
-        document.querySelectorAll(`.slide.view-${viewName}`).forEach(slide => slide.classList.remove('hidden'));
+        
+        document.querySelectorAll('.slide').forEach(slide => {
+          slide.classList.add('hidden');
+        });
+
+        const targetSlides = document.querySelectorAll(`.slide.view-${viewName}`);
+        targetSlides.forEach(slide => {
+          slide.classList.remove('hidden');
+        });
+
         slidesWrapper.scrollTop = 0;
 
         document.querySelectorAll('.nav-item').forEach(btn => {
           btn.classList.remove('active');
-          if (btn.getAttribute('data-view') === viewName) btn.classList.add('active');
+          if (btn.getAttribute('data-view') === viewName) {
+            btn.classList.add('active');
+          }
         });
 
-        if (viewName === 'settings') {
-          supabaseClient.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-              settingsDisplayName.value = session.user.user_metadata?.full_name || '';
-              settingsEmail.value = session.user.email || '';
-              settingsUserBalance.innerText = `₱${(session.user.user_metadata?.balance ?? 1500.00).toFixed(2)}`;
-            }
-          });
-        } else if (viewName === 'buyers') {
-          fetchGlobalOrdersForAdmin();
+        updateNavbarDropdownOptions(viewName);
+        updateNavbarTitle();
+      }
+
+      function updateNavbarDropdownOptions(viewName) {
+        if (viewName === 'home') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">What?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        } else if (viewName === 'market') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('store-slide')">Market</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
         } else if (viewName === 'orders') {
-          fetchUserOrders();
-        } else if (viewName === 'inbox') {
-          fetchChatMessages();
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('orders-slide')">Orders</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
         }
       }
 
-      function openConversation(targetEmail) {
-        activeChatUser = targetEmail;
-        document.getElementById('chat-header-title').innerText = `Chat with ${targetEmail}`;
-        switchView('inbox');
-        fetchChatMessages();
+      function updateNavbarTitle() {
+        if (isProgrammaticScroll) return;
+        const containerRect = slidesWrapper.getBoundingClientRect();
+        const activeSlides = document.querySelectorAll(`.slide.view-${currentActiveView}:not(.hidden)`);
+        if (activeSlides.length === 0) return;
+
+        let closestSlide = activeSlides[0];
+        let minDistance = Infinity;
+
+        activeSlides.forEach(slide => {
+          const rect = slide.getBoundingClientRect();
+          const distance = Math.abs(rect.top - containerRect.top);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestSlide = slide;
+          }
+        });
+
+        const slideTitle = closestSlide?.getAttribute('data-title');
+        if (slideTitle) {
+          navDropdownToggle.innerText = slideTitle;
+        }
       }
 
-      async function fetchUserOrders() {
+      slidesWrapper.addEventListener('scroll', () => {
+        requestAnimationFrame(updateNavbarTitle);
+      });
+
+      function scrollToSlide(slideId) {
+        isProgrammaticScroll = true;
+        const targetSlide = document.getElementById(slideId);
+        const slideTitle = targetSlide.getAttribute('data-title');
+        if (slideTitle) {
+          navDropdownToggle.innerText = slideTitle;
+        }
+        targetSlide.scrollIntoView({ behavior: 'smooth' });
+        navDropdownMenu.classList.remove('show');
+
+        setTimeout(() => {
+          isProgrammaticScroll = false;
+        }, 600);
+      }
+
+      navDropdownToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        navDropdownMenu.classList.toggle('show');
+      });
+
+      window.addEventListener('click', () => {
+        navDropdownMenu.classList.remove('show');
+      });
+
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const questionBtn = item.querySelector('.faq-question');
+        questionBtn.addEventListener('click', () => {
+          const isActive = item.classList.contains('active');
+          faqItems.forEach(otherItem => otherItem.classList.remove('active'));
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
+
+      const gameCards = document.querySelectorAll('.game-icon-card');
+      const productCards = document.querySelectorAll('.products .card');
+
+      gameCards.forEach(card => {
+        card.addEventListener('click', () => {
+          gameCards.forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
+
+          const selectedGame = card.getAttribute('data-game');
+
+          productCards.forEach(product => {
+            const category = product.getAttribute('data-category');
+            if (selectedGame === 'all' || category === selectedGame) {
+              product.classList.remove('hidden');
+            } else {
+              product.classList.add('hidden');
+            }
+          });
+        });
+      });
+
+      tabLogin.addEventListener('click', () => {
+        currentMode = 'login';
+        tabLogin.classList.add('active');
+        tabSignup.classList.remove('active');
+        nameInput.style.display = 'none';
+        btnSubmit.innerText = 'Log In';
+        userStatus.innerText = '';
+      });
+
+      tabSignup.addEventListener('click', () => {
+        currentMode = 'signup';
+        tabSignup.classList.add('active');
+        tabLogin.classList.remove('active');
+        nameInput.style.display = 'block';
+        btnSubmit.innerText = 'Sign Up';
+        userStatus.innerText = '';
+      });
+
+      async function openCheckout(itemName, itemPrice, itemImg, stockElementId) {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) return;
-
-        const { data, error } = await supabaseClient.from('orders').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
-        const container = document.getElementById('orders-container');
-        container.innerHTML = '';
-
-        if (error || !data || data.length === 0) {
-          container.innerHTML = '<p id="no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No items purchased yet.</p>';
+        if (!session) {
+          authModal.style.display = 'flex';
+          userStatus.innerText = 'You must log in to purchase items.';
           return;
         }
 
-        data.forEach(order => {
-          const orderRow = document.createElement('div');
-          orderRow.className = 'order-row';
-          orderRow.innerHTML = `
-            <img src="${order.image || 'assets/items/Black Dragon.PNG'}" class="order-thumbnail" alt="${order.item_name}">
-            <div class="order-info">
-              <h4>${order.item_name}</h4>
-              <p>Roblox Username: <strong>${order.roblox_username}</strong></p>
-            </div>
-            <div class="order-right-side">
-              <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
-              <button type="button" class="order-contact-btn" onclick="openConversation('admin@norms.com')">Contact Support</button>
-            </div>
-          `;
-          container.appendChild(orderRow);
+        activeItemData = { itemName, itemPrice, itemImg, stockElementId };
+        checkoutModalImg.src = itemImg;
+        checkoutModalTitle.innerText = itemName;
+        checkoutModalPrice.innerText = `₱${itemPrice.toFixed(2)}`;
+        checkoutUsername.value = '';
+        checkoutConfirmUsername.value = '';
+        checkoutDescription.value = '';
+        checkoutStatus.innerText = '';
+
+        checkoutModal.style.display = 'flex';
+      }
+
+      closeCheckoutModal.addEventListener('click', () => {
+        checkoutModal.style.display = 'none';
+      });
+
+      window.addEventListener('click', (e) => { 
+        if (e.target === checkoutModal) checkoutModal.style.display = 'none'; 
+      });
+
+      btnConfirmCheckout.addEventListener('click', async () => {
+        const username = checkoutUsername.value.trim();
+        const confirmUsername = checkoutConfirmUsername.value.trim();
+        const description = checkoutDescription.value.trim();
+
+        if (!username || !confirmUsername) {
+          checkoutStatus.innerText = 'Please fill in both username fields.';
+          return;
+        }
+
+        if (username !== confirmUsername) {
+          checkoutStatus.innerText = 'Usernames do not match!';
+          return;
+        }
+
+        checkoutModal.style.display = 'none';
+        loadingOverlay.style.display = 'flex';
+
+        const { itemName, itemPrice, itemImg, stockElementId } = activeItemData;
+
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          loadingOverlay.style.display = 'none';
+          authModal.style.display = 'flex';
+          return;
+        }
+
+        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
+
+        if (currentBalance < itemPrice) {
+          loadingOverlay.style.display = 'none';
+          alert('Insufficient balance! Please top up your balance in Settings.');
+          return;
+        }
+
+        currentBalance -= itemPrice;
+
+        const { error: updateError } = await supabaseClient.auth.updateUser({
+          data: { balance: currentBalance }
         });
+
+        if (updateError) {
+          loadingOverlay.style.display = 'none';
+          alert('Purchase failed: ' + updateError.message);
+          return;
+        }
+
+        setTimeout(async () => {
+          loadingOverlay.style.display = 'none';
+
+          const stockEl = document.getElementById(stockElementId);
+          if (stockEl) {
+            let stockText = stockEl.innerText;
+            let stockNum = parseInt(stockText);
+            if (!isNaN(stockNum) && stockNum > 0) {
+              stockNum -= 1;
+              stockEl.innerText = `${stockNum} Left`;
+            }
+          }
+
+          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+
+          addOrderToList(itemName, itemPrice, itemImg, username, description);
+          
+          // Save order globally to database table or send message payload
+          await saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, session.user.email);
+
+          alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
+          
+          switchView('orders');
+        }, 800);
+      });
+
+      async function saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, userEmail) {
+        await supabaseClient.from('orders').insert([
+          { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
+        ]).catch(() => {});
+      }
+
+      function addOrderToList(itemName, itemPrice, itemImg, username, description) {
+        const ordersContainer = document.getElementById('orders-container');
+        const noOrdersMsg = document.getElementById('no-orders-msg');
+        if (noOrdersMsg) {
+          noOrdersMsg.remove();
+        }
+
+        const orderRow = document.createElement('div');
+        orderRow.className = 'order-row';
+        orderRow.innerHTML = `
+          <img src="${itemImg}" class="order-thumbnail" alt="${itemName}">
+          <div class="order-info">
+            <h4>${itemName}</h4>
+            <p>Buyer: <strong>${username}</strong></p>
+            ${description ? `<p>Note: ${description}</p>` : ''}
+          </div>
+          <div class="order-right-side">
+            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
+            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
+          </div>
+        `;
+        ordersContainer.prepend(orderRow);
       }
 
       async function fetchGlobalOrdersForAdmin() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session || session.user.email !== 'admin@norms.com') return;
 
-        const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
-        const container = document.getElementById('admin-global-orders-container');
-        container.innerHTML = '';
+        const { data, error } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        adminGlobalOrdersContainer.innerHTML = '';
 
         if (error || !data || data.length === 0) {
-          container.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No customer orders recorded yet.</p>';
+          adminGlobalOrdersContainer.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>';
           return;
         }
 
@@ -1145,20 +1744,41 @@
             <img src="${order.image || 'assets/items/Black Dragon.PNG'}" class="order-thumbnail" alt="${order.item_name}">
             <div class="order-info">
               <h4>${order.item_name}</h4>
-              <p>Buyer: <strong>${order.roblox_username}</strong> (${order.user_email})</p>
+              <p>Buyer: <strong>${order.roblox_username}</strong> (${order.user_email || 'Guest'})</p>
+              ${order.note ? `<p>Note: ${order.note}</p>` : ''}
             </div>
             <div class="order-right-side">
               <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
-              <button type="button" class="order-contact-btn" onclick="openConversation('${order.user_email}')">Contact</button>
+              <button type="button" class="order-contact-btn" onclick="openChatPanel('${order.item_name}', '${order.roblox_username}', '${order.user_email}')">Contact Buyer</button>
             </div>
           `;
-          container.appendChild(orderRow);
+          adminGlobalOrdersContainer.appendChild(orderRow);
+        });
+      }
+
+      function openChatPanel(itemName, username, targetEmail) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'Please log in to message.';
+            return;
+          }
+
+          activeChatUser = session.user.email === 'admin@norms.com' ? targetEmail : 'admin@norms.com';
+          chatHeaderTitle.innerText = `Chat with ${session.user.email === 'admin@norms.com' ? username + ' (' + targetEmail + ')' : 'Support'}`;
+          
+          fullPageChat.style.display = 'block';
+          fullPageAdmin.style.display = 'none';
+          fetchChatMessages();
+
+          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         });
       }
 
       async function sendChatMessage(text) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
+
         const senderEmail = session.user.email;
         const recipientEmail = senderEmail === 'admin@norms.com' ? (activeChatUser || 'customer@norms.com') : 'admin@norms.com';
 
@@ -1173,15 +1793,19 @@
 
         const userEmail = session.user.email;
         const chattingWith = activeChatUser || (userEmail === 'admin@norms.com' ? '' : 'admin@norms.com');
-        const { data } = await supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
+
+        let query = supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
         
-        const container = document.getElementById('chat-messages-container');
-        container.innerHTML = '';
+        const { data, error } = await query;
+        if (error) return;
+
+        chatMessagesContainer.innerHTML = '';
+        let unreadCount = 0;
 
         if (data && data.length > 0) {
           data.forEach(msg => {
             const isRelevant = userEmail === 'admin@norms.com' 
-              ? (msg.sender === chattingWith || msg.recipient === chattingWith || msg.sender === userEmail)
+              ? (msg.sender === chattingWith || msg.recipient === chattingWith || msg.sender === userEmail || msg.recipient === userEmail)
               : (msg.sender === userEmail || msg.recipient === userEmail);
 
             if (isRelevant) {
@@ -1189,109 +1813,305 @@
               const chatBubble = document.createElement('div');
               chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
               chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
-              container.appendChild(chatBubble);
+              chatMessagesContainer.appendChild(chatBubble);
+            }
+
+            if (userEmail === 'admin@norms.com' && msg.sender !== 'admin@norms.com') {
+              unreadCount++;
             }
           });
         } else {
-          container.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
+          chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
         }
-        container.scrollTop = container.scrollHeight;
+
+        // Update notification badge on Inbox Button
+        const adminBadge = document.getElementById('admin-notif-badge');
+        if (adminBadge) {
+          if (unreadCount > 0 && userEmail === 'admin@norms.com') {
+            adminBadge.innerText = unreadCount;
+            adminBadge.classList.add('show');
+          } else {
+            adminBadge.classList.remove('show');
+          }
+        }
+
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
       }
 
-      document.getElementById('chat-send-btn').addEventListener('click', async () => {
-        const input = document.getElementById('chat-input-text');
-        const text = input.value.trim();
+      function setupRealtimeListener() {
+        if (realtimeSubscription) {
+          supabaseClient.removeChannel(realtimeSubscription);
+        }
+
+        realtimeSubscription = supabaseClient
+          .channel('public:messages')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+            fetchChatMessages();
+            fetchGlobalOrdersForAdmin();
+          })
+          .subscribe();
+      }
+
+      chatSendBtn.addEventListener('click', async () => {
+        const text = chatInputText.value.trim();
         if (!text) return;
-        input.value = '';
+        chatInputText.value = '';
         await sendChatMessage(text);
         fetchChatMessages();
       });
 
-      async function openCheckout(itemName, itemPrice, itemImg, stockElementId) {
+      chatInputText.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+          const text = chatInputText.value.trim();
+          if (!text) return;
+          chatInputText.value = '';
+          await sendChatMessage(text);
+          fetchChatMessages();
+        }
+      });
+
+      closeFullChat.addEventListener('click', () => {
+        fullPageChat.style.display = 'none';
+        const { data: { session } } = supabaseClient.auth.getSession();
+        session.then(s => {
+          if (s && s.user.email === 'admin@norms.com') {
+            fullPageAdmin.style.display = 'block';
+          } else {
+            switchView(currentActiveView);
+          }
+        });
+      });
+
+      addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) { authModal.style.display = 'flex'; return; }
-        activeItemData = { itemName, itemPrice, itemImg, stockElementId };
-        document.getElementById('checkout-modal-img').src = itemImg;
-        document.getElementById('checkout-modal-title').innerText = itemName;
-        document.getElementById('checkout-modal-price').innerText = `₱${itemPrice.toFixed(2)}`;
-        checkoutModal.style.display = 'flex';
+        if (!session) return;
+
+        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
+        currentBalance += 1000.00;
+
+        const { error } = await supabaseClient.auth.updateUser({
+          data: { balance: currentBalance }
+        });
+
+        if (!error) {
+          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+          alert('Successfully added ₱1,000.00 to your balance!');
+        }
+      });
+
+      function openSettingsModal() {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'Please log in to access settings.';
+          } else {
+            loadUserSettings(session);
+            fullPageSettings.style.display = 'block';
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const settingsBtn = document.getElementById('bottom-nav-settings-btn');
+            if (settingsBtn) settingsBtn.classList.add('active');
+          }
+        });
       }
 
-      document.getElementById('btn-confirm-checkout').addEventListener('click', async () => {
-        const username = document.getElementById('checkout-username').value.trim();
-        const confirmUsername = document.getElementById('checkout-confirm-username').value.trim();
-        if (username !== confirmUsername) { document.getElementById('checkout-status').innerText = 'Usernames do not match!'; return; }
+      function openAdminModal() {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session || session.user.email !== 'admin@norms.com') {
+            alert('Unauthorized access.');
+            return;
+          }
+          fullPageAdmin.style.display = 'block';
+          fetchGlobalOrdersForAdmin();
 
-        checkoutModal.style.display = 'none';
-        loadingOverlay.style.display = 'flex';
+          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+          const adminBtn = document.getElementById('bottom-nav-admin-btn');
+          if (adminBtn) adminBtn.classList.add('active');
+        });
+      }
 
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        let balance = session.user.user_metadata?.balance ?? 1500.00;
-        balance -= activeItemData.itemPrice;
-
-        await supabaseClient.auth.updateUser({ data: { balance } });
-        await supabaseClient.from('orders').insert([
-          { item_name: activeItemData.itemName, price: activeItemData.itemPrice, image: activeItemData.itemImg, roblox_username: username, user_email: session.user.email, created_at: new Date() }
-        ]);
-
-        setTimeout(() => {
-          loadingOverlay.style.display = 'none';
-          alert('Successfully purchased!');
-          switchView('orders');
-        }, 800);
+      closeFullSettings.addEventListener('click', () => {
+        fullPageSettings.style.display = 'none';
+        switchView(currentActiveView);
       });
+
+      closeFullAdmin.addEventListener('click', () => {
+        fullPageAdmin.style.display = 'none';
+        switchView(currentActiveView);
+      });
+
+      settingsLogoutBtn.addEventListener('click', async () => {
+        await supabaseClient.auth.signOut();
+        fullPageSettings.style.display = 'none';
+        fullPageAdmin.style.display = 'none';
+        fullPageChat.style.display = 'none';
+        checkUser();
+      });
+
+      closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
+      
+      window.addEventListener('click', (e) => { 
+        if (e.target === authModal) authModal.style.display = 'none'; 
+      });
+
+      saveProfileBtn.addEventListener('click', async () => {
+        profileStatus.innerText = 'Saving changes...';
+        const newName = settingsDisplayName.value.trim();
+        const newEmail = settingsEmail.value.trim();
+
+        const { data, error } = await supabaseClient.auth.updateUser({
+          email: newEmail,
+          data: { full_name: newName }
+        });
+
+        if (error) {
+          profileStatus.style.color = '#ff0000';
+          profileStatus.innerText = error.message;
+        } else {
+          profileStatus.style.color = '#008000';
+          profileStatus.innerText = 'Profile updated successfully!';
+        }
+      });
+
+      updatePasswordBtn.addEventListener('click', async () => {
+        const passwordVal = settingsNewPassword.value.trim();
+        if (!passwordVal) {
+          passwordStatus.style.color = '#ff0000';
+          passwordStatus.innerText = 'Please enter a new password.';
+          return;
+        }
+
+        passwordStatus.innerText = 'Updating password...';
+        const { data, error } = await supabaseClient.auth.updateUser({
+          password: passwordVal
+        });
+
+        if (error) {
+          passwordStatus.style.color = '#ff0000';
+          passwordStatus.innerText = error.message;
+        } else {
+          passwordStatus.style.color = '#008000';
+          passwordStatus.innerText = 'Password updated successfully!';
+          settingsNewPassword.value = '';
+        }
+      });
+
+      btnSubmit.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (currentMode === 'signup') {
+            const fullName = nameInput.value.trim();
+            if (!fullName || !email || !password) {
+                userStatus.innerText = 'Please enter Display Name, Email, and Password.';
+                return;
+            }
+
+            userStatus.innerText = 'Creating account...';
+            const { data, error } = await supabaseClient.auth.signUp({
+              email: email,
+              password: password,
+              options: { data: { full_name: fullName, balance: 1500.00 } }
+            });
+
+            if (error) {
+                userStatus.innerText = error.message;
+            } else {
+                alert('Account created! Please check your email to verify.');
+            }
+        } else {
+            if (!email || !password) {
+                userStatus.innerText = 'Please enter email and password.';
+                return;
+            }
+
+            userStatus.innerText = 'Logging in...';
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email: email,
+              password: password,
+            });
+
+            if (error) {
+                userStatus.innerText = error.message;
+            } else {
+                authModal.style.display = 'none';
+                userStatus.innerText = '';
+                checkUser();
+            }
+        }
+      });
+
+      async function loadUserSettings(session) {
+        const user = session.user;
+        const displayName = user.user_metadata?.full_name || '';
+        
+        settingsDisplayName.value = displayName;
+        settingsEmail.value = user.email || '';
+
+        const balance = user.user_metadata?.balance ?? 1500.00;
+        settingsUserBalance.innerText = `₱${balance.toFixed(2)}`;
+        profileStatus.innerText = '';
+        passwordStatus.innerText = '';
+      }
 
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
             const userEmail = session.user.email;
-            
-            if (userEmail === "admin@norms.com") {
-                bottomNav.innerHTML = `
-                    <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">🏠<span>Home</span></button>
-                    <button type="button" class="nav-item" data-view="buyers" onclick="switchView('buyers')">👥<span>Buyers</span></button>
-                    <button type="button" class="nav-item" data-view="settings" onclick="switchView('settings')">⚙️<span>Settings</span></button>
-                `;
-            } else {
-                bottomNav.innerHTML = `
-                    <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">🏠<span>Home</span></button>
-                    <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">🛒<span>Market</span></button>
-                    <button type="button" class="nav-item" data-view="orders" onclick="switchView('orders')">📦<span>Orders</span></button>
-                    <button type="button" class="nav-item" data-view="inbox" onclick="openConversation('admin@norms.com')">📥<span>Inbox</span></button>
-                    <button type="button" class="nav-item" data-view="settings" onclick="switchView('settings')">⚙️<span>Settings</span></button>
+            let navHtml = `
+                <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </button>
+                <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">
+                    <span class="nav-icon">🛒</span>
+                    <span>Market</span>
+                </button>
+                <button type="button" class="nav-item" data-view="orders" onclick="switchView('orders')">
+                    <span class="nav-icon">📦</span>
+                    <span>Orders</span>
+                </button>
+            `;
+
+            if (userEmail === 'admin@norms.com') {
+                navHtml += `
+                    <button type="button" class="nav-item" id="bottom-nav-admin-btn" onclick="openAdminModal()">
+                        <span class="nav-icon">📥<span id="admin-notif-badge" class="notif-badge">0</span></span>
+                        <span>Inbox</span>
+                    </button>
                 `;
             }
+
+            navHtml += `
+                <button type="button" class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            `;
+
+            bottomNav.innerHTML = navHtml;
+            setupRealtimeListener();
+            fetchGlobalOrdersForAdmin();
         } else {
             bottomNav.innerHTML = `
-                <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">🏠<span>Home</span></button>
-                <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">🛒<span>Market</span></button>
-                <button type="button" class="nav-item" onclick="authModal.style.display='flex'">👤<span>Login</span></button>
+                <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </button>
+                <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">
+                    <span class="nav-icon">🛒</span>
+                    <span>Market</span>
+                </button>
+                <button type="button" class="nav-item" onclick="authModal.style.display='flex'">
+                    <span class="nav-icon">👤</span>
+                    <span>Login</span>
+                </button>
             `;
         }
         switchView('home');
       }
-
-      document.getElementById('btn-submit').addEventListener('click', async () => {
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const { error } = currentMode === 'signup' 
-          ? await supabaseClient.auth.signUp({ email, password, options: { data: { full_name: document.getElementById('full-name').value, balance: 1500 } } })
-          : await supabaseClient.auth.signInWithPassword({ email, password });
-
-        if (!error) {
-          authModal.style.display = 'none';
-          checkUser();
-        } else {
-          document.getElementById('user-status').innerText = error.message;
-        }
-      });
-
-      document.getElementById('tab-login').addEventListener('click', () => { currentMode='login'; document.getElementById('full-name').style.display='none'; });
-      document.getElementById('tab-signup').addEventListener('click', () => { currentMode='signup'; document.getElementById('full-name').style.display='block'; });
-      document.getElementById('settings-logout-btn').addEventListener('click', async () => { await supabaseClient.auth.signOut(); checkUser(); });
-      document.getElementById('close-auth-modal').addEventListener('click', () => authModal.style.display = 'none');
-      document.getElementById('close-checkout-modal').addEventListener('click', () => checkoutModal.style.display = 'none');
 
       checkUser();
     </script>
