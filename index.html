@@ -32,7 +32,7 @@
             scroll-behavior: smooth;
         }
 
-        /* EACH SLIDE FITS 100% OF THE SCREEN - START FROM TOP */
+        /* EACH SLIDE FITS 100% OF THE SCREEN */
         .slide {
             height: 100vh;
             width: 100%;
@@ -40,12 +40,11 @@
             scroll-snap-stop: always;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
-            padding: 85px 20px 90px 20px;
+            padding: 70px 20px 80px 20px;
             position: relative;
             background: #ffffff;
-            overflow-y: auto;
         }
 
         /* TOP NAVBAR (FIXED OVERLAY) */
@@ -142,6 +141,7 @@
             max-width: 850px;
             width: 100%;
             text-align: center;
+            margin: auto 0;
             position: relative;
             z-index: 2;
         }
@@ -160,7 +160,91 @@
             line-height: 1.4;
         }
 
-        /* 1. FEATURED ITEMS SLIDE */
+        /* 1. HERO SLIDE */
+        .hero-intro h1 {
+            font-size: 2.8rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: #000000;
+        }
+
+        .hero-intro p {
+            font-size: 0.95rem;
+            color: #333333;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        /* 2. WHY NORMS SLIDE */
+        .why-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .why-card {
+            background: #f9f9f9;
+            border: 1px solid #e5e5e5;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .why-card h3 {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .why-card p {
+            font-size: 0.82rem;
+            color: #555555;
+            line-height: 1.4;
+        }
+
+        /* 3. HOW IT WORKS SLIDE */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+        }
+
+        .step-card {
+            border: 1px solid #e5e5e5;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .step-number {
+            font-size: 1.1rem;
+            font-weight: 800;
+            background: #000000;
+            color: #ffffff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+        }
+
+        .step-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .step-card p {
+            font-size: 0.8rem;
+            color: #666666;
+        }
+
+        /* 4. FEATURED ITEMS SLIDE */
         .game-selector-container {
             padding: 0 0 15px 0;
             overflow-x: auto;
@@ -296,7 +380,7 @@
             cursor: pointer;
         }
 
-        /* FAQ LIST */
+        /* 5. FAQ SLIDE WITH ACCORDION DROPDOWN */
         .faq-list {
             width: 100%;
             display: flex;
@@ -356,7 +440,7 @@
             padding: 0 16px 14px 16px;
         }
 
-        /* ORDERS LIST DESIGN WITH PRODUCT IMAGE */
+        /* ORDERS LIST DESIGN */
         .orders-list {
             width: 100%;
             max-height: 60vh;
@@ -374,98 +458,25 @@
             background: #f9f9f9;
             border: 1px solid #eaeaea;
             padding: 12px 16px;
-            border-radius: 12px;
-        }
-
-        .order-left-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .order-thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px;
-        }
-
-        .order-thumb img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
+            border-radius: 10px;
         }
 
         .order-info h4 {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-weight: 800;
             color: #000000;
         }
 
         .order-info p {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             color: #666666;
             margin-top: 2px;
-        }
-
-        .order-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .order-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #666666;
-        }
-
-        /* SYNCHRONIZED SPINNER ANIMATION */
-        .spinner {
-            width: 14px;
-            height: 14px;
-            border: 2px solid #dcdcdc;
-            border-top: 2px solid #000000;
-            border-radius: 50%;
-            animation: spin 1s steps(8, end) infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .order-price {
             font-size: 0.95rem;
             font-weight: 900;
             color: #000000;
-        }
-
-        .message-admin-btn {
-            background: #000000;
-            color: #ffffff;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .message-admin-btn:hover {
-            opacity: 0.85;
         }
 
         /* STICKY BOTTOM NAV BAR */
@@ -506,11 +517,7 @@
             font-size: 1.1rem;
         }
 
-        .nav-item.hidden-tab {
-            display: none !important;
-        }
-
-        /* MODALS */
+        /* FULL PAGE SETTINGS / AUTH MODALS */
         .modal {
             display: none;
             position: fixed;
@@ -570,7 +577,7 @@
             border-bottom: 2px solid #000000;
         }
 
-        .auth-input, .checkout-input {
+        .auth-input {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
@@ -579,10 +586,9 @@
             background: #f9f9f9;
             color: #000000;
             box-sizing: border-box;
-            font-size: 0.9rem;
         }
 
-        .auth-btn, .checkout-btn {
+        .auth-btn {
             width: 100%;
             padding: 12px;
             margin-top: 10px;
@@ -594,22 +600,7 @@
             cursor: pointer;
         }
 
-        .checkout-loading {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 30px 0;
-        }
-
-        .checkout-loading .spinner {
-            width: 36px;
-            height: 36px;
-            border-width: 3px;
-            margin-bottom: 15px;
-        }
-
-        /* FULL PAGE SETTINGS VIEW */
+        /* FULL PAGE SETTINGS TAB VIEW STYLES */
         .full-page-settings {
             display: none;
             position: fixed;
@@ -746,20 +737,79 @@
         <div class="logo">
             NORMS
         </div>
+        <!-- TEXT DROPDOWN BUTTON (DYNAMICALLY UPDATES) -->
         <div class="nav-dropdown-container">
-            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">Market</button>
+            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">What?</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
-                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('store-slide')">Market</button>
-                <button type="button" class="nav-dropdown-item nav-order-dropdown-item" id="dropdown-orders-link" onclick="scrollToSlide('orders-slide')">Orders</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">What?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why?</button>
+                <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How?</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
             </div>
         </div>
     </nav>
 
-    <!-- FULL PAGE SNAP CONTAINER (Market & FAQ only; Orders is rendered dynamically or separately out of snap flow if guest, or fully integrated) -->
+    <!-- FULL PAGE SNAP CONTAINER -->
     <div class="slides-container" id="slides-wrapper">
 
-        <!-- SLIDE 1: FEATURED ITEMS (STORE) -->
+        <!-- SLIDE 1: WHAT? -->
+        <section class="slide" id="slide-intro" data-title="What?">
+            <div class="slide-inner hero-intro">
+                <h1>NORMS</h1>
+                <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
+                <p style="color: #666666; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
+                <span style="display:block; margin-top:20px; font-size:0.75rem; color:#888; font-weight:700;">↓ Scroll down to explore</span>
+            </div>
+        </section>
+
+        <!-- SLIDE 2: WHY? -->
+        <section class="slide" id="slide-why" data-title="Why?">
+            <div class="slide-inner">
+                <h2 class="section-title">Why?</h2>
+                <p class="section-subtitle">Short section explaining our value proposition.</p>
+                <div class="why-cards">
+                    <div class="why-card">
+                        <h3>Built for Roblox</h3>
+                        <p>Tailored specifically for Roblox players looking for quick upgrades.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Fast & Secure</h3>
+                        <p>Lightning-fast delivery with 100% safe and encrypted trade processes.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Simple Market</h3>
+                        <p>Seamless browsing and smooth purchasing experience from start to finish.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 3: HOW? -->
+        <section class="slide" id="slide-how" data-title="How?">
+            <div class="slide-inner">
+                <h2 class="section-title">How?</h2>
+                <p class="section-subtitle">Show the simple buying process.</p>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Choose an Item</h3>
+                        <p>Browse available Roblox items.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Complete Your Order</h3>
+                        <p>Securely place your purchase.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Receive Your Item</h3>
+                        <p>Get your item quickly and easily.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 4: FEATURED ITEMS (STORE) -->
         <section class="slide" id="store-slide" data-title="Market">
             <div class="slide-inner">
                 <h2 class="section-title">Featured Items</h2>
@@ -794,7 +844,7 @@
                         <h3>Black Dragon</h3>
                         <p class="price">₱1500</p>
                         <div class="stock" id="stock-black-dragon">17 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Black Dragon', 1500, 'stock-black-dragon', 'assets/items/Black Dragon.PNG')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Black Dragon', 1500, 'stock-black-dragon')">BUY</button>
                     </div>
 
                     <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom">
@@ -804,7 +854,7 @@
                         <h3>Sun Bloom</h3>
                         <p class="price">₱10</p>
                         <div class="stock" id="stock-sun-bloom">52 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Sun Bloom', 10, 'stock-sun-bloom', 'assets/items/Sun Bloom.png')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Sun Bloom', 10, 'stock-sun-bloom')">BUY</button>
                     </div>
 
                     <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit">
@@ -814,7 +864,7 @@
                         <h3>Star Fruit</h3>
                         <p class="price">₱20</p>
                         <div class="stock" id="stock-star-fruit">31 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Star Fruit', 20, 'stock-star-fruit', 'assets/items/Star Fruit.png')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Star Fruit', 20, 'stock-star-fruit')">BUY</button>
                     </div>
 
                     <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath">
@@ -824,7 +874,7 @@
                         <h3>Dragon Breath</h3>
                         <p class="price">₱10</p>
                         <div class="stock" id="stock-dragon-breath">9 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Dragon Breath', 10, 'stock-dragon-breath', 'assets/items/Dragon Breath.png')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Dragon Breath', 10, 'stock-dragon-breath')">BUY</button>
                     </div>
 
                     <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler">
@@ -834,7 +884,7 @@
                         <h3>Sprinkler</h3>
                         <p class="price">₱0.50</p>
                         <div class="stock" id="stock-sprinkler">4 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Sprinkler', 0.5, 'stock-sprinkler', 'assets/items/Super Sprinkler.png')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Sprinkler', 0.5, 'stock-sprinkler')">BUY</button>
                     </div>
 
                     <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can">
@@ -844,13 +894,13 @@
                         <h3>Super Can</h3>
                         <p class="price">₱0.50</p>
                         <div class="stock" id="stock-super-can">15 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckoutModal('Super Can', 0.5, 'stock-super-can', 'assets/items/Super Watering Can.PNG')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Super Can', 0.5, 'stock-super-can')">BUY</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SLIDE 2: ORDERS TAB (ONLY FOR LOGGED-IN USERS) -->
+        <!-- SLIDE 5: ORDERS TAB -->
         <section class="slide" id="orders-slide" data-title="Orders">
             <div class="slide-inner">
                 <h2 class="section-title">My Orders</h2>
@@ -861,7 +911,7 @@
             </div>
         </section>
 
-        <!-- SLIDE 3: FAQ -->
+        <!-- SLIDE 6: FAQ (WITH DROPDOWNS) -->
         <section class="slide" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
@@ -898,12 +948,12 @@
     </div>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
-    <div class="bottom-nav" id="bottom-nav-bar">
+    <div class="bottom-nav">
         <button class="nav-item active" onclick="scrollToSlide('store-slide')">
             <span class="nav-icon">🛒</span>
             <span>Market</span>
         </button>
-        <button class="nav-item nav-order-nav-item" id="nav-orders-btn" onclick="scrollToSlide('orders-slide')">
+        <button class="nav-item" onclick="scrollToSlide('orders-slide')">
             <span class="nav-icon">📦</span>
             <span>Orders</span>
         </button>
@@ -995,30 +1045,6 @@
         </div>
     </div>
 
-    <!-- CHECKOUT MODAL (ROBLOX USERNAME & DESCRIPTION) -->
-    <div id="checkout-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" id="close-checkout-modal">&times;</span>
-            <h2 style="font-size: 1.2rem; margin-bottom: 15px;">Complete Purchase</h2>
-            
-            <div id="checkout-form-container">
-                <p id="checkout-item-title" style="font-size: 0.85rem; font-weight: 700; color: #666666; margin-bottom: 15px;"></p>
-                <form id="checkout-form" onsubmit="return false;">
-                    <input type="text" id="roblox-username" class="checkout-input" placeholder="Roblox Username" required />
-                    <input type="text" id="roblox-description" class="checkout-input" placeholder="Note / Description (e.g. Meet in game)" />
-                    <button type="button" id="btn-proceed-purchase" class="checkout-btn">Proceed</button>
-                </form>
-            </div>
-
-            <div id="checkout-loading-container" class="checkout-loading">
-                <div class="spinner"></div>
-                <p style="font-size: 0.85rem; font-weight: 600; color: #333333;">Processing purchase...</p>
-            </div>
-
-            <p id="checkout-status" style="margin-top: 10px; font-size: 0.8rem; color: #ff0000;"></p>
-        </div>
-    </div>
-
     <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1028,12 +1054,10 @@
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const authModal = document.getElementById('auth-modal');
-      const checkoutModal = document.getElementById('checkout-modal');
       const fullPageSettings = document.getElementById('full-page-settings');
       
       const settingsNavBtn = document.getElementById('settings-nav-btn');
       const closeAuthModal = document.getElementById('close-auth-modal');
-      const closeCheckoutModal = document.getElementById('close-checkout-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
       
       const settingsUserBalance = document.getElementById('settings-user-balance');
@@ -1057,24 +1081,12 @@
       const tabSignup = document.getElementById('tab-signup');
       const userStatus = document.getElementById('user-status');
 
-      const checkoutItemTitle = document.getElementById('checkout-item-title');
-      const robloxUsernameInput = document.getElementById('roblox-username');
-      const robloxDescriptionInput = document.getElementById('roblox-description');
-      const btnProceedPurchase = document.getElementById('btn-proceed-purchase');
-      const checkoutFormContainer = document.getElementById('checkout-form-container');
-      const checkoutLoadingContainer = document.getElementById('checkout-loading-container');
-      const checkoutStatus = document.getElementById('checkout-status');
-
       let currentMode = 'login'; 
-      let activeItemData = null;
 
       const slidesWrapper = document.getElementById('slides-wrapper');
       const slides = document.querySelectorAll('.slide');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
-      const navOrdersBtn = document.getElementById('nav-orders-btn');
-      const dropdownOrdersLink = document.getElementById('dropdown-orders-link');
-      const ordersSlide = document.getElementById('orders-slide');
 
       let isProgrammaticScroll = false;
 
@@ -1085,7 +1097,6 @@
         let minDistance = Infinity;
 
         slides.forEach(slide => {
-          if (slide.style.display === 'none') return;
           const rect = slide.getBoundingClientRect();
           const distance = Math.abs(rect.top - containerRect.top);
           if (distance < minDistance) {
@@ -1107,7 +1118,6 @@
       function scrollToSlide(slideId) {
         isProgrammaticScroll = true;
         const targetSlide = document.getElementById(slideId);
-        if (targetSlide.style.display === 'none') return;
         const slideTitle = targetSlide.getAttribute('data-title');
         if (slideTitle) {
           navDropdownToggle.innerText = slideTitle;
@@ -1181,7 +1191,13 @@
         userStatus.innerText = '';
       });
 
-      async function openCheckoutModal(itemName, itemPrice, stockElementId, itemImg) {
+      // SPENDABLE BALANCE AND PURCHASE HANDLER
+      async function handleBuy(e, itemName, itemPrice, stockElementId) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
           authModal.style.display = 'flex';
@@ -1189,70 +1205,48 @@
           return;
         }
 
-        activeItemData = { itemName, itemPrice, stockElementId, itemImg };
-        checkoutItemTitle.innerText = `${itemName} — ₱${itemPrice.toFixed(2)}`;
-        robloxUsernameInput.value = '';
-        robloxDescriptionInput.value = '';
-        checkoutStatus.innerText = '';
-        checkoutFormContainer.style.display = 'block';
-        checkoutLoadingContainer.style.display = 'none';
-        checkoutModal.style.display = 'flex';
+        const user = session.user;
+        let currentBalance = user.user_metadata?.balance ?? 1500.00;
+
+        if (currentBalance < itemPrice) {
+          alert('Insufficient balance! Please top up your balance in Settings.');
+          return;
+        }
+
+        // Deduct balance
+        currentBalance -= itemPrice;
+
+        // Update user metadata balance
+        const { error: updateError } = await supabaseClient.auth.updateUser({
+          data: { balance: currentBalance }
+        });
+
+        if (updateError) {
+          alert('Purchase failed: ' + updateError.message);
+          return;
+        }
+
+        // Reduce stock text display
+        const stockEl = document.getElementById(stockElementId);
+        if (stockEl) {
+          let stockText = stockEl.innerText;
+          let stockNum = parseInt(stockText);
+          if (!isNaN(stockNum) && stockNum > 0) {
+            stockNum -= 1;
+            stockEl.innerText = `${stockNum} Left`;
+          }
+        }
+
+        // Update local UI balance display
+        settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+
+        // Add to Orders
+        addOrderToList(itemName, itemPrice);
+        alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
+        scrollToSlide('orders-slide');
       }
 
-      btnProceedPurchase.addEventListener('click', async () => {
-        const username = robloxUsernameInput.value.trim();
-        if (!username) {
-          checkoutStatus.innerText = 'Please enter your Roblox Username.';
-          return;
-        }
-
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) return;
-
-        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
-        if (currentBalance < activeItemData.itemPrice) {
-          checkoutStatus.innerText = 'Insufficient balance! Top up in Settings.';
-          return;
-        }
-
-        checkoutFormContainer.style.display = 'none';
-        checkoutLoadingContainer.style.display = 'flex';
-        checkoutStatus.innerText = '';
-
-        setTimeout(async () => {
-          currentBalance -= activeItemData.itemPrice;
-
-          const { error: updateError } = await supabaseClient.auth.updateUser({
-            data: { balance: currentBalance }
-          });
-
-          if (updateError) {
-            checkoutFormContainer.style.display = 'block';
-            checkoutLoadingContainer.style.display = 'none';
-            checkoutStatus.innerText = 'Purchase failed: ' + updateError.message;
-            return;
-          }
-
-          const stockEl = document.getElementById(activeItemData.stockElementId);
-          if (stockEl) {
-            let stockText = stockEl.innerText;
-            let stockNum = parseInt(stockText);
-            if (!isNaN(stockNum) && stockNum > 0) {
-              stockNum -= 1;
-              stockEl.innerText = `${stockNum} Left`;
-            }
-          }
-
-          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
-
-          addOrderToList(activeItemData.itemName, activeItemData.itemPrice, username, activeItemData.itemImg);
-
-          checkoutModal.style.display = 'none';
-          scrollToSlide('orders-slide');
-        }, 1500);
-      });
-
-      function addOrderToList(itemName, itemPrice, robloxUsername, itemImg) {
+      function addOrderToList(itemName, itemPrice) {
         const ordersContainer = document.getElementById('orders-container');
         const noOrdersMsg = document.getElementById('no-orders-msg');
         if (noOrdersMsg) {
@@ -1262,27 +1256,16 @@
         const orderRow = document.createElement('div');
         orderRow.className = 'order-row';
         orderRow.innerHTML = `
-          <div class="order-left-group">
-            <div class="order-thumb">
-              <img src="${itemImg}" alt="${itemName}">
-            </div>
-            <div class="order-info">
-              <h4>${itemName}</h4>
-              <p>User: <strong>${robloxUsername}</strong></p>
-            </div>
+          <div class="order-info">
+            <h4>${itemName}</h4>
+            <p>Delivered to your Roblox Account</p>
           </div>
-          <div class="order-meta">
-            <div class="order-status">
-              <div class="spinner"></div>
-              <span>Processing</span>
-            </div>
-            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <a href="https://m.me/claditch" target="_blank" class="message-admin-btn">Message Admin</a>
-          </div>
+          <div class="order-price">₱${itemPrice.toFixed(2)}</div>
         `;
         ordersContainer.prepend(orderRow);
       }
 
+      // TOP UP BUTTON FOR MOCK BALANCE TESTING
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
@@ -1300,6 +1283,7 @@
         }
       });
 
+      // SETTINGS FULL TAB OPEN/CLOSE LOGIC
       settingsNavBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -1322,13 +1306,12 @@
       });
 
       closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
-      closeCheckoutModal.addEventListener('click', () => checkoutModal.style.display = 'none');
       
       window.addEventListener('click', (e) => { 
         if (e.target === authModal) authModal.style.display = 'none'; 
-        if (e.target === checkoutModal) checkoutModal.style.display = 'none'; 
       });
 
+      // SAVE PROFILE (DISPLAY NAME & EMAIL)
       saveProfileBtn.addEventListener('click', async () => {
         profileStatus.innerText = 'Saving changes...';
         const newName = settingsDisplayName.value.trim();
@@ -1348,6 +1331,7 @@
         }
       });
 
+      // UPDATE PASSWORD
       updatePasswordBtn.addEventListener('click', async () => {
         const passwordVal = settingsNewPassword.value.trim();
         if (!passwordVal) {
@@ -1433,18 +1417,14 @@
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-          navOrdersBtn.style.display = 'flex';
-          dropdownOrdersLink.style.display = 'block';
-          ordersSlide.style.display = 'flex';
+          // User session active
         } else {
-          navOrdersBtn.style.display = 'none';
-          dropdownOrdersLink.style.display = 'none';
-          ordersSlide.style.display = 'none';
+          // Guest session active
         }
-        updateNavbarTitle();
       }
 
       checkUser();
+      updateNavbarTitle();
     </script>
 </body>
 
