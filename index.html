@@ -47,135 +47,6 @@
             background: #ffffff;
         }
 
-        /* STICK MAN STYLING & COLOR MODES */
-        .stickman {
-            position: absolute;
-            width: 40px;
-            height: 70px;
-            z-index: 5;
-            pointer-events: none;
-            opacity: 0.95;
-            /* SAFE PLACEMENT: Well away from top navbar (60px) and bottom bar (60px) */
-            top: 130px; 
-        }
-
-        .stickman.right {
-            right: 25px;
-        }
-
-        .stickman.left {
-            left: 25px;
-        }
-
-        /* White Stickman Styling (For dark backgrounds) */
-        .stickman.white .head {
-            border: 2px solid #ffffff;
-        }
-        .stickman.white .body,
-        .stickman.white .arm-left,
-        .stickman.white .arm-right,
-        .stickman.white .leg-left,
-        .stickman.white .leg-right {
-            background: #ffffff;
-        }
-
-        /* Black Stickman Styling (For white backgrounds) */
-        .stickman.black .head {
-            border: 2px solid #000000;
-        }
-        .stickman.black .body,
-        .stickman.black .arm-left,
-        .stickman.black .arm-right,
-        .stickman.black .leg-left,
-        .stickman.black .leg-right {
-            background: #000000;
-        }
-
-        .stickman .head {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            position: absolute;
-            top: 0;
-            left: 13px;
-        }
-
-        .stickman .body {
-            width: 2px;
-            height: 25px;
-            position: absolute;
-            top: 15px;
-            left: 19px;
-        }
-
-        /* Pose 1: Waving / Casual */
-        .stickman.pose-1 .arm-left {
-            width: 15px;
-            height: 2px;
-            position: absolute;
-            top: 20px;
-            left: 5px;
-            transform: rotate(-30deg);
-        }
-        .stickman.pose-1 .arm-right {
-            width: 15px;
-            height: 2px;
-            position: absolute;
-            top: 18px;
-            left: 20px;
-            transform: rotate(45deg);
-        }
-        .stickman.pose-1 .leg-left {
-            width: 2px;
-            height: 20px;
-            position: absolute;
-            top: 40px;
-            left: 14px;
-            transform: rotate(15deg);
-        }
-        .stickman.pose-1 .leg-right {
-            width: 2px;
-            height: 20px;
-            position: absolute;
-            top: 40px;
-            left: 24px;
-            transform: rotate(-15deg);
-        }
-
-        /* Pose 2: Thinking / Different Pose */
-        .stickman.pose-2 .arm-left {
-            width: 12px;
-            height: 2px;
-            position: absolute;
-            top: 22px;
-            left: 8px;
-            transform: rotate(20deg);
-        }
-        .stickman.pose-2 .arm-right {
-            width: 14px;
-            height: 2px;
-            position: absolute;
-            top: 18px;
-            left: 19px;
-            transform: rotate(-50deg);
-        }
-        .stickman.pose-2 .leg-left {
-            width: 2px;
-            height: 20px;
-            position: absolute;
-            top: 40px;
-            left: 16px;
-            transform: rotate(-10deg);
-        }
-        .stickman.pose-2 .leg-right {
-            width: 2px;
-            height: 20px;
-            position: absolute;
-            top: 40px;
-            left: 22px;
-            transform: rotate(10deg);
-        }
-
         /* TOP NAVBAR (FIXED OVERLAY) */
         nav {
             position: fixed;
@@ -913,17 +784,8 @@
     <!-- FULL PAGE SNAP CONTAINER -->
     <div class="slides-container" id="slides-wrapper">
 
-        <!-- SLIDE 1: WHAT? (INTRODUCTION - WHITE STICKMAN) -->
+        <!-- SLIDE 1: WHAT? (INTRODUCTION) -->
         <section class="slide" id="slide-intro" data-title="What?">
-            <!-- Safe Positioned White Stickman -->
-            <div class="stickman pose-1 white right">
-                <div class="head"></div>
-                <div class="body"></div>
-                <div class="arm-left"></div>
-                <div class="arm-right"></div>
-                <div class="leg-left"></div>
-                <div class="leg-right"></div>
-            </div>
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
@@ -932,17 +794,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 2: WHY? (WHY SECTION - BLACK STICKMAN) -->
+        <!-- SLIDE 2: WHY? (WHY SECTION) -->
         <section class="slide" id="slide-why" data-title="Why?">
-            <!-- Safe Positioned Black Stickman -->
-            <div class="stickman pose-2 black left">
-                <div class="head"></div>
-                <div class="body"></div>
-                <div class="arm-left"></div>
-                <div class="arm-right"></div>
-                <div class="leg-left"></div>
-                <div class="leg-right"></div>
-            </div>
             <div class="slide-inner">
                 <h2 class="section-title">Why?</h2>
                 <p class="section-subtitle">Short section explaining our value proposition.</p>
@@ -963,17 +816,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 3: HOW? (HOW SECTION - WHITE STICKMAN) -->
+        <!-- SLIDE 3: HOW? (HOW SECTION) -->
         <section class="slide" id="slide-how" data-title="How?">
-            <!-- Safe Positioned White Stickman -->
-            <div class="stickman pose-2 white left">
-                <div class="head"></div>
-                <div class="body"></div>
-                <div class="arm-left"></div>
-                <div class="arm-right"></div>
-                <div class="leg-left"></div>
-                <div class="leg-right"></div>
-            </div>
             <div class="slide-inner">
                 <h2 class="section-title">How?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
@@ -1099,17 +943,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 6: FAQ (FAQ SECTION - WHITE STICKMAN) -->
+        <!-- SLIDE 6: FAQ (FAQ SECTION) -->
         <section class="slide" id="faq-slide" data-title="FAQ">
-            <!-- Safe Positioned White Stickman -->
-            <div class="stickman pose-1 white right">
-                <div class="head"></div>
-                <div class="body"></div>
-                <div class="arm-left"></div>
-                <div class="arm-right"></div>
-                <div class="leg-left"></div>
-                <div class="leg-right"></div>
-            </div>
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
                 <p class="section-subtitle">Commonly asked questions</p>
@@ -1145,19 +980,8 @@
     </div>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
-    <div class="bottom-nav">
-        <button class="nav-item active" onclick="scrollToSlide('store-slide')">
-            <span class="nav-icon">🛒</span>
-            <span>Market</span>
-        </button>
-        <button class="nav-item" onclick="scrollToSlide('orders-slide')">
-            <span class="nav-icon">📦</span>
-            <span>Orders</span>
-        </button>
-        <button id="settings-nav-btn" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span id="settings-nav-label">Settings</span>
-        </button>
+    <div class="bottom-nav" id="bottom-nav">
+        <!-- Dynamically populated based on login status -->
     </div>
 
     <!-- FULL PAGE SETTINGS TAB VIEW -->
@@ -1253,7 +1077,6 @@
       const authModal = document.getElementById('auth-modal');
       const fullPageSettings = document.getElementById('full-page-settings');
       
-      const settingsNavBtn = document.getElementById('settings-nav-btn');
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
       
@@ -1277,6 +1100,7 @@
       const tabLogin = document.getElementById('tab-login');
       const tabSignup = document.getElementById('tab-signup');
       const userStatus = document.getElementById('user-status');
+      const bottomNav = document.getElementById('bottom-nav');
 
       let currentMode = 'login'; 
 
@@ -1474,16 +1298,17 @@
         }
       });
 
-      settingsNavBtn.addEventListener('click', async () => {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-          authModal.style.display = 'flex';
-          userStatus.innerText = 'Please log in to access settings.';
-        } else {
-          loadUserSettings(session);
-          fullPageSettings.style.display = 'block';
-        }
-      });
+      function openSettingsModal() {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'Please log in to access settings.';
+          } else {
+            loadUserSettings(session);
+            fullPageSettings.style.display = 'block';
+          }
+        });
+      }
 
       closeFullSettings.addEventListener('click', () => {
         fullPageSettings.style.display = 'none';
@@ -1604,7 +1429,36 @@
 
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {} else {}
+        
+        if (session) {
+            // User is logged in: Show Market, Orders, Settings
+            bottomNav.innerHTML = `
+                <button class="nav-item active" onclick="scrollToSlide('store-slide')">
+                    <span class="nav-icon">🛒</span>
+                    <span>Market</span>
+                </button>
+                <button class="nav-item" onclick="scrollToSlide('orders-slide')">
+                    <span class="nav-icon">📦</span>
+                    <span>Orders</span>
+                </button>
+                <button class="nav-item" onclick="openSettingsModal()">
+                    <span class="nav-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            `;
+        } else {
+            // User is NOT logged in: Show Market, Login
+            bottomNav.innerHTML = `
+                <button class="nav-item active" onclick="scrollToSlide('store-slide')">
+                    <span class="nav-icon">🛒</span>
+                    <span>Market</span>
+                </button>
+                <button class="nav-item" onclick="authModal.style.display='flex'">
+                    <span class="nav-icon">👤</span>
+                    <span>Login</span>
+                </button>
+            `;
+        }
       }
 
       checkUser();
