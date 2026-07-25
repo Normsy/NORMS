@@ -8,107 +8,118 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-const ground = () => canvas.height * 0.78;
+const ground = () => canvas.height * 0.75;
 
-class Runner{
+class Runner {
 
-    constructor(x,speed){
-
-        this.x=x;
-        this.speed=speed;
-        this.phase=Math.random()*Math.PI*2;
-
+    constructor(x, speed) {
+        this.x = x;
+        this.speed = speed;
+        this.phase = Math.random() * Math.PI * 2;
     }
 
-    update(){
+    update() {
+        this.x += this.speed;
+        this.phase += 0.18;
 
-        this.x+=this.speed;
-        this.phase+=0.18;
-
-        if(this.x>canvas.width+120){
-
-            this.x=-120;
-
+        if (this.x > canvas.width + 200) {
+            this.x = -200;
         }
-
     }
 
-    draw(){
+    draw() {
 
-        const y=ground();
+        const y = ground();
 
-        const swing=Math.sin(this.phase)*12;
-        const leg=Math.sin(this.phase)*16;
+        const arm = Math.sin(this.phase) * 22;
+        const leg = Math.sin(this.phase) * 24;
 
         ctx.save();
 
-        ctx.translate(this.x,y);
+        ctx.translate(this.x, y);
 
-        ctx.globalAlpha=.12;
+        // More visible
+        ctx.globalAlpha = 0.45;
 
-        ctx.strokeStyle="#000";
-        ctx.lineWidth=3;
-        ctx.lineCap="round";
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 5;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
 
-        // head
-
+        // Head
         ctx.beginPath();
-        ctx.arc(0,-42,12,0,Math.PI*2);
+        ctx.arc(0, -60, 18, 0, Math.PI * 2);
         ctx.stroke();
 
-        // body
-
+        // Body
         ctx.beginPath();
 
-        ctx.moveTo(0,-30);
-        ctx.lineTo(0,5);
+        ctx.moveTo(0, -42);
+        ctx.lineTo(0, 15);
 
-        // left arm
+        // Left Arm
+        ctx.moveTo(0, -25);
+        ctx.lineTo(-arm, -5);
 
-        ctx.moveTo(0,-18);
-        ctx.lineTo(-swing,-5);
+        // Right Arm
+        ctx.moveTo(0, -25);
+        ctx.lineTo(arm, -5);
 
-        // right arm
+        // Left Leg
+        ctx.moveTo(0, 15);
+        ctx.lineTo(-leg, 52);
 
-        ctx.moveTo(0,-18);
-        ctx.lineTo(swing,-5);
-
-        // left leg
-
-        ctx.moveTo(0,5);
-        ctx.lineTo(-leg,28);
-
-        // right leg
-
-        ctx.moveTo(0,5);
-        ctx.lineTo(leg,28);
+        // Right Leg
+        ctx.moveTo(0, 15);
+        ctx.lineTo(leg, 52);
 
         ctx.stroke();
 
         ctx.restore();
-
     }
-
 }
 
-const runners=[];
+const runners = [];
 
-for(let i=0;i<6;i++){
+for (let i = 0; i < 5; i++) {
 
     runners.push(
         new Runner(
-            i*250,
-            1.5+Math.random()*1.5
+            i * 350,
+            2 + Math.random() * 1.5
         )
     );
 
 }
 
-function animate(){
+function drawGround() {
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.save();
 
-    runners.forEach(r=>{
+    ctx.globalAlpha = 0.08;
+
+    ctx.strokeStyle = "#000";
+
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+
+    ctx.moveTo(0, ground() + 52);
+    ctx.lineTo(canvas.width, ground() + 52);
+
+    ctx.stroke();
+
+    ctx.restore();
+
+}
+
+function animate() {
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    drawGround();
+
+    runners.forEach(r => {
 
         r.update();
         r.draw();
