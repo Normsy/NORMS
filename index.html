@@ -342,35 +342,7 @@
             line-height: 1.6;
         }
 
-        /* 6. REVIEWS SLIDE */
-        .reviews-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-            width: 100%;
-        }
-
-        .review-card {
-            border: 1px solid #e5e5e5;
-            background: #f9f9f9;
-            padding: 16px;
-            border-radius: 12px;
-        }
-
-        .review-card p {
-            font-size: 0.82rem;
-            color: #333333;
-            font-style: italic;
-            margin-bottom: 8px;
-        }
-
-        .review-author {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: #000000;
-        }
-
-        /* 7. FAQ SLIDE */
+        /* 6. FAQ SLIDE WITH ACCORDION DROPDOWN */
         .faq-list {
             width: 100%;
             display: flex;
@@ -378,26 +350,56 @@
             gap: 10px;
             max-height: 60vh;
             overflow-y: auto;
+            text-align: left;
         }
 
         .faq-item {
             border: 1px solid #e5e5e5;
             border-radius: 10px;
-            padding: 14px;
             background: #ffffff;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 14px 16px;
+            background: #ffffff;
+            border: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #000000;
+            cursor: pointer;
             text-align: left;
         }
 
-        .faq-item h4 {
-            font-size: 0.88rem;
-            margin-bottom: 4px;
-            color: #000000;
+        .faq-question::after {
+            content: '+';
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: transform 0.2s ease;
         }
 
-        .faq-item p {
+        .faq-item.active .faq-question::after {
+            content: '-';
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding: 0 16px;
+            background: #fcfcfc;
             font-size: 0.8rem;
             color: #555555;
             line-height: 1.4;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 150px;
+            padding: 0 16px 14px 16px;
         }
 
         /* STICKY BOTTOM NAV BAR */
@@ -748,49 +750,35 @@
             </div>
         </section>
 
-        <!-- SLIDE 6: REVIEWS / TESTIMONIALS -->
-        <section class="slide">
-            <div class="slide-inner">
-                <h2 class="section-title">What Players Say</h2>
-                <p class="section-subtitle">See why Roblox players choose NORMS.</p>
-                <div class="reviews-grid">
-                    <div class="review-card">
-                        <p>"Fast delivery and smooth trade! Got my Black Dragon in minutes."</p>
-                        <div class="review-author">— @RobloxGamer99</div>
-                    </div>
-                    <div class="review-card">
-                        <p>"Super reliable seller. Transaction was safe and hassle-free."</p>
-                        <div class="review-author">— @BloxTrader_PH</div>
-                    </div>
-                    <div class="review-card">
-                        <p>"Best prices compared to other marketplaces. Will buy again!"</p>
-                        <div class="review-author">— @GardenPro</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SLIDE 7: FAQ -->
+        <!-- SLIDE 6: FAQ (WITH DROPDOWNS) -->
         <section class="slide">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
                 <p class="section-subtitle">Commonly asked questions</p>
                 <div class="faq-list">
                     <div class="faq-item">
-                        <h4>How do I receive my item?</h4>
-                        <p>Our team trades the item directly to your Roblox account in-game after confirmation.</p>
+                        <button class="faq-question">How do I receive my item?</button>
+                        <div class="faq-answer">
+                            <p>Our team trades the item directly to your Roblox account in-game after confirmation.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>How long does delivery take?</h4>
-                        <p>Most orders are delivered within 5 to 15 minutes.</p>
+                        <button class="faq-question">How long does delivery take?</button>
+                        <div class="faq-answer">
+                            <p>Most orders are delivered within 5 to 15 minutes.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>What payment methods are accepted?</h4>
-                        <p>Local e-wallets like GCash, Maya, and online payment channels.</p>
+                        <button class="faq-question">What payment methods are accepted?</button>
+                        <div class="faq-answer">
+                            <p>Local e-wallets like GCash, Maya, and online payment channels.</p>
+                        </div>
                     </div>
                     <div class="faq-item">
-                        <h4>Do you offer refunds?</h4>
-                        <p>Refunds are offered if we cannot fulfill your order within 24 hours.</p>
+                        <button class="faq-question">Do you offer refunds?</button>
+                        <div class="faq-answer">
+                            <p>Refunds are offered if we cannot fulfill your order within 24 hours.</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -894,6 +882,23 @@
       function scrollToSlide(slideId) {
         document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
       }
+
+      // FAQ Accordion Dropdown Logic
+      const faqItems = document.querySelectorAll('.faq-item');
+      faqItems.forEach(item => {
+        const questionBtn = item.querySelector('.faq-question');
+        questionBtn.addEventListener('click', () => {
+          // Toggle active state for current item
+          const isActive = item.classList.contains('active');
+          
+          // Optional: Close others if you want only one open at a time
+          faqItems.forEach(otherItem => otherItem.classList.remove('active'));
+
+          if (!isActive) {
+            item.classList.add('active');
+          }
+        });
+      });
 
       const gameCards = document.querySelectorAll('.game-icon-card');
       const productCards = document.querySelectorAll('.products .card');
