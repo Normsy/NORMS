@@ -1703,6 +1703,10 @@
           settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
+          
+          // Automatically dispatch order notification message to admin live chat backend/inbox
+          sendAutomaticOrderNotification(itemName, itemPrice, username, description);
+
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
           
           switchView('orders');
@@ -1731,6 +1735,24 @@
           </div>
         `;
         ordersContainer.prepend(orderRow);
+      }
+
+      // Automatically dispatch checkout confirmation into the live admin inbox
+      function sendAutomaticOrderNotification(itemName, itemPrice, username, description) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          const userEmail = session ? session.user.email : 'Guest User';
+          const notificationHtml = `
+            <div class="chat-message received" style="border-left: 3px solid #000;">
+              <strong>[NEW ORDER CONFIRMED]</strong><br>
+              Item: ${itemName} (₱${itemPrice.toFixed(2)})<br>
+              Roblox User: ${username}<br>
+              Account Email: ${userEmail}<br>
+              ${description ? `Note: ${description}` : ''}
+            </div>
+          `;
+          adminChatMessagesContainer.insertAdjacentHTML('beforeend', notificationHtml);
+          adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
+        });
       }
 
       // OPEN CHAT WITH ADMIN (admin@norms.com)
@@ -1768,12 +1790,15 @@
         sentMsg.innerText = text;
         chatMessagesContainer.appendChild(sentMsg);
 
-        // Deliver copy to Admin Panel chat view
-        const adminMsg = document.createElement('div');
-        adminMsg.className = 'chat-message received';
-        adminMsg.innerText = `[Customer Inquiry]: ${text}`;
-        adminChatMessagesContainer.appendChild(adminMsg);
-        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
+        // Deliver copy to Admin Panel chat view with sender metadata
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          const userEmail = session ? session.user.email : 'User';
+          const adminMsg = document.createElement('div');
+          adminMsg.className = 'chat-message received';
+          adminMsg.innerText = `[From ${userEmail}]: ${text}`;
+          adminChatMessagesContainer.appendChild(adminMsg);
+          adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
+        });
 
         chatInputText.value = '';
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
