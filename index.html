@@ -32,7 +32,7 @@
             scroll-behavior: smooth;
         }
 
-        /* EACH SLIDE FITS 100% OF THE SCREEN */
+        /* EACH SLIDE FITS 100% OF THE SCREEN WITH EXTRA PADDING FOR TOP/BOTTOM NAVS */
         .slide {
             height: 100vh;
             width: 100%;
@@ -42,12 +42,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 70px 20px 80px 20px;
+            padding: 85px 20px 95px 20px;
             position: relative;
             background: #ffffff;
         }
 
-        /* STICK MAN STYLING (FIXED VISIBILITY & SPACING FROM BOTTOM BAR) */
+        /* STICK MAN STYLING (SAFE SPACING FROM TOP NAVBAR AND BOTTOM BAR) */
         .stickman {
             position: absolute;
             width: 40px;
@@ -252,16 +252,16 @@
         }
 
         .section-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 900;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #000000;
         }
 
         .section-subtitle {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #666666;
-            margin-bottom: 25px;
+            margin-bottom: 18px;
             line-height: 1.4;
         }
 
@@ -272,44 +272,44 @@
         }
 
         .hero-intro h1 {
-            font-size: 2.8rem;
+            font-size: 2.6rem;
             font-weight: 900;
             letter-spacing: 2px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             color: #ffffff;
         }
 
         .hero-intro p {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #cccccc;
-            line-height: 1.6;
-            margin-bottom: 15px;
+            line-height: 1.5;
+            margin-bottom: 12px;
         }
 
         /* 2. WHY NORMS SLIDE */
         .why-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
+            gap: 12px;
             width: 100%;
         }
 
         .why-card {
             background: #f9f9f9;
             border: 1px solid #e5e5e5;
-            padding: 20px;
-            border-radius: 14px;
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
         }
 
         .why-card h3 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .why-card p {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #555555;
             line-height: 1.4;
         }
@@ -330,52 +330,52 @@
 
         .steps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
             width: 100%;
         }
 
         .step-card {
             border: 1px solid #333333;
             background: #111111;
-            padding: 20px;
-            border-radius: 14px;
+            padding: 16px;
+            border-radius: 12px;
             text-align: center;
         }
 
         .step-number {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 800;
             background: #ffffff;
             color: #000000;
-            width: 30px;
-            height: 30px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px auto;
+            margin: 0 auto 10px auto;
         }
 
         .step-card h3 {
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
             color: #ffffff;
         }
 
         .step-card p {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #aaaaaa;
         }
 
         /* 4. FEATURED ITEMS SLIDE */
         .game-selector-container {
-            padding: 0 0 15px 0;
+            padding: 0 0 10px 0;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             scrollbar-width: none;
         }
 
@@ -387,7 +387,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 50px;
+            min-width: 45px;
             cursor: pointer;
             opacity: 0.6;
             transition: all 0.2s ease;
@@ -398,9 +398,9 @@
         }
 
         .game-icon-img {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             object-fit: cover;
             border: 2px solid #e0e0e0;
             background: #f5f5f5;
@@ -414,8 +414,8 @@
         }
 
         .game-icon-label {
-            font-size: 0.7rem;
-            margin-top: 4px;
+            font-size: 0.65rem;
+            margin-top: 3px;
             color: #000000;
             font-weight: 600;
         }
@@ -423,10 +423,10 @@
         .products {
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
-            gap: 10px !important;
-            max-height: 55vh;
+            gap: 8px !important;
+            max-height: 48vh;
             overflow-y: auto;
-            padding: 5px;
+            padding: 4px;
         }
 
         @media (max-width: 600px) {
@@ -436,8 +436,8 @@
         }
 
         .card {
-            padding: 10px !important;
-            border-radius: 12px !important;
+            padding: 8px !important;
+            border-radius: 10px !important;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -447,19 +447,19 @@
         }
 
         .card .badge {
-            font-size: 0.55rem !important;
-            padding: 2px 6px !important;
-            top: 6px !important;
-            right: 6px !important;
+            font-size: 0.5rem !important;
+            padding: 2px 5px !important;
+            top: 5px !important;
+            right: 5px !important;
             background: #000000 !important;
             color: #ffffff !important;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 700;
             position: absolute;
         }
 
         .product-image {
-            height: 75px !important;
+            height: 65px !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -472,8 +472,8 @@
         }
 
         .card h3 {
-            font-size: 0.8rem !important;
-            margin: 6px 0 2px 0 !important;
+            font-size: 0.75rem !important;
+            margin: 4px 0 2px 0 !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -482,21 +482,21 @@
         }
 
         .card .price {
-            font-size: 0.95rem !important;
+            font-size: 0.88rem !important;
             font-weight: 800;
             color: #000000;
         }
 
         .card .stock {
-            font-size: 0.68rem !important;
+            font-size: 0.62rem !important;
             color: #666666;
-            margin-bottom: 6px !important;
+            margin-bottom: 4px !important;
         }
 
         .buy-btn {
-            padding: 8px 0 !important;
-            font-size: 0.75rem !important;
-            border-radius: 6px !important;
+            padding: 6px 0 !important;
+            font-size: 0.7rem !important;
+            border-radius: 5px !important;
             background: #000000 !important;
             color: #ffffff !important;
             border: none !important;
@@ -522,8 +522,8 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            max-height: 60vh;
+            gap: 8px;
+            max-height: 52vh;
             overflow-y: auto;
             text-align: left;
         }
@@ -537,13 +537,13 @@
 
         .faq-question {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             background: #111111;
             border: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.88rem;
+            font-size: 0.82rem;
             font-weight: 700;
             color: #ffffff;
             cursor: pointer;
@@ -552,7 +552,7 @@
 
         .faq-question::after {
             content: '+';
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             transition: transform 0.2s ease;
         }
@@ -565,26 +565,26 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
-            padding: 0 16px;
+            padding: 0 14px;
             background: #0a0a0a;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #cccccc;
             line-height: 1.4;
         }
 
         .faq-item.active .faq-answer {
             max-height: 150px;
-            padding: 0 16px 14px 16px;
+            padding: 0 14px 12px 14px;
         }
 
         /* ORDERS LIST DESIGN */
         .orders-list {
             width: 100%;
-            max-height: 60vh;
+            max-height: 52vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             text-align: left;
         }
 
@@ -594,24 +594,24 @@
             align-items: center;
             background: #f9f9f9;
             border: 1px solid #eaeaea;
-            padding: 12px 16px;
+            padding: 10px 14px;
             border-radius: 10px;
         }
 
         .order-info h4 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 800;
             color: #000000;
         }
 
         .order-info p {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #666666;
             margin-top: 2px;
         }
 
         .order-price {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 900;
             color: #000000;
         }
@@ -891,8 +891,8 @@
 
         <!-- SLIDE 1: WHAT? -->
         <section class="slide" id="slide-intro" data-title="What?">
-            <!-- Stick Man Pose 1 at a Safer Position Away from Bottom Bar -->
-            <div class="stickman pose-1" style="top: 22%; right: 10%;">
+            <!-- Stick Man Pose 1 Safely Positioned Between Top Nav and Bottom Bar -->
+            <div class="stickman pose-1" style="top: 26%; right: 10%;">
                 <div class="head"></div>
                 <div class="body"></div>
                 <div class="arm-left"></div>
@@ -904,7 +904,7 @@
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
                 <p style="color: #cccccc; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
-                <span style="display:block; margin-top:20px; font-size:0.75rem; color:#aaaaaa; font-weight:700;">↓ Scroll down to explore</span>
+                <span style="display:block; margin-top:15px; font-size:0.75rem; color:#aaaaaa; font-weight:700;">↓ Scroll down to explore</span>
             </div>
         </section>
 
@@ -932,8 +932,8 @@
 
         <!-- SLIDE 3: HOW? -->
         <section class="slide" id="slide-how" data-title="How?">
-            <!-- Stick Man Pose 2 at a Safer Position Away from Bottom Bar -->
-            <div class="stickman pose-2" style="top: 22%; left: 8%;">
+            <!-- Stick Man Pose 2 Safely Positioned Between Top Nav and Bottom Bar -->
+            <div class="stickman pose-2" style="top: 26%; left: 8%;">
                 <div class="head"></div>
                 <div class="body"></div>
                 <div class="arm-left"></div>
@@ -973,7 +973,7 @@
                 <!-- GAME CATEGORY SELECTOR -->
                 <div class="game-selector-container">
                     <div class="game-icon-card active" data-game="all">
-                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.75rem;">ALL</div>
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.7rem;">ALL</div>
                         <span class="game-icon-label">All</span>
                     </div>
                     <div class="game-icon-card" data-game="grow-a-garden-2">
@@ -981,11 +981,11 @@
                         <span class="game-icon-label">Garden 2</span>
                     </div>
                     <div class="game-icon-card" data-game="bloxfruits">
-                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.75rem;">BF</div>
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.7rem;">BF</div>
                         <span class="game-icon-label">Blox Fruits</span>
                     </div>
                     <div class="game-icon-card" data-game="mm2">
-                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.75rem;">MM2</div>
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.7rem;">MM2</div>
                         <span class="game-icon-label">MM2</span>
                     </div>
                 </div>
@@ -1368,10 +1368,8 @@
           return;
         }
 
-        // Deduct balance
         currentBalance -= itemPrice;
 
-        // Update user metadata balance
         const { error: updateError } = await supabaseClient.auth.updateUser({
           data: { balance: currentBalance }
         });
@@ -1381,7 +1379,6 @@
           return;
         }
 
-        // Reduce stock text display
         const stockEl = document.getElementById(stockElementId);
         if (stockEl) {
           let stockText = stockEl.innerText;
@@ -1392,10 +1389,8 @@
           }
         }
 
-        // Update local UI balance display
         settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
-        // Add to Orders
         addOrderToList(itemName, itemPrice);
         alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
         scrollToSlide('orders-slide');
@@ -1420,7 +1415,6 @@
         ordersContainer.prepend(orderRow);
       }
 
-      // TOP UP BUTTON FOR MOCK BALANCE TESTING
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
@@ -1438,7 +1432,6 @@
         }
       });
 
-      // SETTINGS FULL TAB OPEN/CLOSE LOGIC
       settingsNavBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -1466,7 +1459,6 @@
         if (e.target === authModal) authModal.style.display = 'none'; 
       });
 
-      // SAVE PROFILE (DISPLAY NAME & EMAIL)
       saveProfileBtn.addEventListener('click', async () => {
         profileStatus.innerText = 'Saving changes...';
         const newName = settingsDisplayName.value.trim();
@@ -1486,7 +1478,6 @@
         }
       });
 
-      // UPDATE PASSWORD
       updatePasswordBtn.addEventListener('click', async () => {
         const passwordVal = settingsNewPassword.value.trim();
         if (!passwordVal) {
@@ -1571,11 +1562,7 @@
 
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-          // User session active
-        } else {
-          // Guest session active
-        }
+        if (session) {} else {}
       }
 
       checkUser();
