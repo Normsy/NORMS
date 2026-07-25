@@ -16,27 +16,58 @@
             font-family: 'Inter', sans-serif;
         }
 
-        body {
-            padding-top: 20px; /* Space above to prevent top content cut off */
-            padding-bottom: 90px; /* Space for bottom sticky bar */
+        /* FULL-PAGE SLIDE SCROLL CONTAINER */
+        html, body {
+            height: 100%;
+            overflow: hidden;
             background-color: #ffffff;
             color: #000000;
-            min-height: 100vh;
         }
 
-        /* TOP NAVBAR */
+        .slides-container {
+            height: 100vh;
+            width: 100vw;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* EACH SLIDE FITS 100% OF THE SCREEN */
+        .slide {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 70px 20px 80px 20px;
+            position: relative;
+            background: #ffffff;
+        }
+
+        /* TOP NAVBAR (FIXED OVERLAY) */
         nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 20px;
+            padding: 0 25px;
             max-width: 1100px;
             margin: 0 auto;
-            border-bottom: 1px solid #eaeaea;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .logo {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 900;
             letter-spacing: 2px;
             color: #000000;
@@ -46,111 +77,98 @@
             color: #000000;
             text-decoration: none;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
-        /* COMMON SECTION STYLES */
-        .section-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        /* COMMON TEXT STYLES */
+        .slide-inner {
+            max-width: 850px;
+            width: 100%;
+            text-align: center;
+            margin: auto 0;
         }
 
         .section-title {
-            font-size: 1.5rem;
-            font-weight: 800;
-            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 900;
             margin-bottom: 8px;
             color: #000000;
         }
 
         .section-subtitle {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #666666;
-            text-align: center;
             margin-bottom: 25px;
+            line-height: 1.4;
         }
 
-        hr.divider {
-            border: none;
-            border-top: 1px solid #eaeaea;
-            margin: 10px auto;
-            max-width: 1000px;
-        }
-
-        /* 1. HERO / INTRO SECTION */
-        .hero-intro {
-            text-align: center;
-            padding: 40px 20px 30px 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
+        /* 1. HERO SLIDE */
         .hero-intro h1 {
-            font-size: 2.2rem;
+            font-size: 2.8rem;
             font-weight: 900;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             margin-bottom: 15px;
             color: #000000;
         }
 
         .hero-intro p {
             font-size: 0.95rem;
-            color: #444444;
+            color: #333333;
             line-height: 1.6;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
         }
 
-        /* 2. WHY NORMS */
+        /* 2. WHY NORMS SLIDE */
         .why-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
-            margin-top: 20px;
+            width: 100%;
         }
 
         .why-card {
             background: #f9f9f9;
             border: 1px solid #e5e5e5;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 14px;
             text-align: center;
         }
 
         .why-card h3 {
             font-size: 1rem;
-            font-weight: 700;
+            font-weight: 800;
             margin-bottom: 8px;
         }
 
         .why-card p {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #555555;
             line-height: 1.4;
         }
 
-        /* HOW IT WORKS */
+        /* 3. HOW IT WORKS SLIDE */
         .steps-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            width: 100%;
         }
 
         .step-card {
             border: 1px solid #e5e5e5;
             background: #ffffff;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 14px;
             text-align: center;
         }
 
         .step-number {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 800;
             background: #000000;
             color: #ffffff;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -164,18 +182,18 @@
         }
 
         .step-card p {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #666666;
         }
 
-        /* GAME SELECTOR */
+        /* 4. FEATURED ITEMS SLIDE */
         .game-selector-container {
-            padding: 10px 0 20px 0;
+            padding: 0 0 15px 0;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 10px;
             scrollbar-width: none;
         }
 
@@ -187,7 +205,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 60px;
+            min-width: 50px;
             cursor: pointer;
             opacity: 0.6;
             transition: all 0.2s ease;
@@ -198,9 +216,9 @@
         }
 
         .game-icon-img {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             object-fit: cover;
             border: 2px solid #e0e0e0;
             background: #f5f5f5;
@@ -214,30 +232,30 @@
         }
 
         .game-icon-label {
-            font-size: 0.75rem;
-            margin-top: 6px;
+            font-size: 0.7rem;
+            margin-top: 4px;
             color: #000000;
-            text-align: center;
             font-weight: 600;
         }
 
-        /* 3. FEATURED ITEMS / PRODUCT GRID */
         .products {
             display: grid !important;
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 14px !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 10px !important;
+            max-height: 55vh;
+            overflow-y: auto;
+            padding: 5px;
         }
 
-        @media (min-width: 768px) {
+        @media (max-width: 600px) {
             .products {
-                grid-template-columns: repeat(4, 1fr) !important;
-                gap: 18px !important;
+                grid-template-columns: repeat(2, 1fr) !important;
             }
         }
 
         .card {
-            padding: 14px !important;
-            border-radius: 14px !important;
+            padding: 10px !important;
+            border-radius: 12px !important;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -247,19 +265,19 @@
         }
 
         .card .badge {
-            font-size: 0.6rem !important;
-            padding: 3px 8px !important;
-            top: 10px !important;
-            right: 10px !important;
+            font-size: 0.55rem !important;
+            padding: 2px 6px !important;
+            top: 6px !important;
+            right: 6px !important;
             background: #000000 !important;
             color: #ffffff !important;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 700;
             position: absolute;
         }
 
         .product-image {
-            height: 110px !important;
+            height: 75px !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -272,8 +290,8 @@
         }
 
         .card h3 {
-            font-size: 0.9rem !important;
-            margin: 10px 0 2px 0 !important;
+            font-size: 0.8rem !important;
+            margin: 6px 0 2px 0 !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -282,106 +300,102 @@
         }
 
         .card .price {
-            font-size: 1.05rem !important;
+            font-size: 0.95rem !important;
             font-weight: 800;
-            margin: 2px 0 !important;
             color: #000000;
         }
 
         .card .stock {
-            font-size: 0.72rem !important;
+            font-size: 0.68rem !important;
             color: #666666;
-            margin-bottom: 10px !important;
+            margin-bottom: 6px !important;
         }
 
         .buy-btn {
-            padding: 10px 0 !important;
-            font-size: 0.8rem !important;
-            border-radius: 8px !important;
+            padding: 8px 0 !important;
+            font-size: 0.75rem !important;
+            border-radius: 6px !important;
             background: #000000 !important;
             color: #ffffff !important;
             border: none !important;
             font-weight: 700;
             cursor: pointer;
-            transition: background 0.2s;
         }
 
-        .buy-btn:hover {
-            background: #333333 !important;
-        }
-
-        /* 4. TRUST & SECURITY */
+        /* 5. TRUST & SECURITY SLIDE */
         .trust-box {
             background: #000000;
             color: #ffffff;
             border-radius: 16px;
-            padding: 35px 20px;
+            padding: 40px 25px;
             text-align: center;
         }
 
         .trust-box h2 {
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            font-size: 1.8rem;
+            margin-bottom: 12px;
         }
 
         .trust-box p {
             font-size: 0.9rem;
             color: #cccccc;
-            max-width: 600px;
-            margin: 0 auto;
+            line-height: 1.6;
         }
 
-        /* 5. REVIEWS */
+        /* 6. REVIEWS SLIDE */
         .reviews-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            width: 100%;
         }
 
         .review-card {
             border: 1px solid #e5e5e5;
             background: #f9f9f9;
-            padding: 18px;
+            padding: 16px;
             border-radius: 12px;
         }
 
         .review-card p {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             color: #333333;
             font-style: italic;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .review-author {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
             color: #000000;
         }
 
-        /* 6. FAQ */
+        /* 7. FAQ SLIDE */
         .faq-list {
-            max-width: 700px;
-            margin: 0 auto;
+            width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            max-height: 60vh;
+            overflow-y: auto;
         }
 
         .faq-item {
             border: 1px solid #e5e5e5;
             border-radius: 10px;
-            padding: 16px;
+            padding: 14px;
             background: #ffffff;
+            text-align: left;
         }
 
         .faq-item h4 {
-            font-size: 0.95rem;
-            margin-bottom: 6px;
+            font-size: 0.88rem;
+            margin-bottom: 4px;
             color: #000000;
         }
 
         .faq-item p {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #555555;
             line-height: 1.4;
         }
@@ -398,7 +412,7 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            z-index: 999;
+            z-index: 100;
         }
 
         .nav-item {
@@ -573,206 +587,220 @@
         </div>
     </nav>
 
-    <!-- 1. HERO / INTRO SECTION -->
-    <div class="hero-intro">
-        <h1>NORMS</h1>
-        <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
-        <p style="color: #666666; font-size: 0.88rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
-    </div>
+    <!-- FULL PAGE SNAP CONTAINER -->
+    <div class="slides-container" id="slides-wrapper">
 
-    <!-- 2. WHY NORMS -->
-    <div class="section-container">
-        <h2 class="section-title">Why NORMS</h2>
-        <p class="section-subtitle">Built for Roblox players. Fast delivery, secure transactions, and a simple marketplace experience.</p>
-        <div class="why-cards">
-            <div class="why-card">
-                <h3>⚡ Fast Delivery</h3>
-                <p>Get your Roblox items quickly right after completing your order.</p>
+        <!-- SLIDE 1: INTRO ONLY -->
+        <section class="slide">
+            <div class="slide-inner hero-intro">
+                <h1>NORMS</h1>
+                <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
+                <p style="color: #666666; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
+                <span style="display:block; margin-top:20px; font-size:0.75rem; color:#888; font-weight:700;">↓ Scroll down to explore</span>
             </div>
-            <div class="why-card">
-                <h3>🔒 100% Secure</h3>
-                <p>Safe transactions protecting your account every step of the way.</p>
-            </div>
-            <div class="why-card">
-                <h3>💎 Best Prices</h3>
-                <p>Premium collectibles and in-game resources at affordable rates.</p>
-            </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- HOW IT WORKS -->
-    <div class="section-container">
-        <h2 class="section-title">How It Works</h2>
-        <p class="section-subtitle">A simple 3-step process to get your items.</p>
-        <div class="steps-grid">
-            <div class="step-card">
-                <div class="step-number">1</div>
-                <h3>Choose an Item</h3>
-                <p>Browse available Roblox items in our marketplace.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">2</div>
-                <h3>Complete Your Order</h3>
-                <p>Securely place your purchase via our automated flow.</p>
-            </div>
-            <div class="step-card">
-                <div class="step-number">3</div>
-                <h3>Receive Your Item</h3>
-                <p>Get your item delivered quickly and easily.</p>
-            </div>
-        </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- 3. FEATURED ITEMS -->
-    <div class="section-container" id="store">
-        <h2 class="section-title">Featured Items</h2>
-        <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
-
-        <!-- GAME CATEGORY SELECTOR -->
-        <div class="game-selector-container">
-            <div class="game-icon-card active" data-game="all">
-                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem;">ALL</div>
-                <span class="game-icon-label">All Games</span>
-            </div>
-            <div class="game-icon-card" data-game="grow-a-garden-2">
-                <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
-                <span class="game-icon-label">Grow a Garden 2</span>
-            </div>
-            <div class="game-icon-card" data-game="bloxfruits">
-                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">BF</div>
-                <span class="game-icon-label">Blox Fruits</span>
-            </div>
-            <div class="game-icon-card" data-game="mm2">
-                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">MM2</div>
-                <span class="game-icon-label">MM2</span>
-            </div>
-        </div>
-
-        <div class="products">
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="badge">BEST</div>
-                <div class="product-image">
-                    <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
+        <!-- SLIDE 2: WHY NORMS -->
+        <section class="slide">
+            <div class="slide-inner">
+                <h2 class="section-title">Why NORMS</h2>
+                <p class="section-subtitle">Short section explaining our value proposition.</p>
+                <div class="why-cards">
+                    <div class="why-card">
+                        <h3>Built for Roblox</h3>
+                        <p>Tailored specifically for Roblox players looking for quick upgrades.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Fast & Secure</h3>
+                        <p>Lightning-fast delivery with 100% safe and encrypted trade processes.</p>
+                    </div>
+                    <div class="why-card">
+                        <h3>Simple Market</h3>
+                        <p>Seamless browsing and smooth purchasing experience from start to finish.</p>
+                    </div>
                 </div>
-                <h3>Black Dragon</h3>
-                <p class="price">₱1500</p>
-                <div class="stock">17 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
+        </section>
 
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
+        <!-- SLIDE 3: HOW IT WORKS -->
+        <section class="slide">
+            <div class="slide-inner">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Show the simple buying process.</p>
+                <div class="steps-grid">
+                    <div class="step-card">
+                        <div class="step-number">1</div>
+                        <h3>Choose an Item</h3>
+                        <p>Browse available Roblox items.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">2</div>
+                        <h3>Complete Your Order</h3>
+                        <p>Securely place your purchase.</p>
+                    </div>
+                    <div class="step-card">
+                        <div class="step-number">3</div>
+                        <h3>Receive Your Item</h3>
+                        <p>Get your item quickly and easily.</p>
+                    </div>
                 </div>
-                <h3>Sun Bloom</h3>
-                <p class="price">₱10</p>
-                <div class="stock">52 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
+        </section>
 
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Star Fruit.png" alt="Star Fruit">
+        <!-- SLIDE 4: FEATURED ITEMS (STORE) -->
+        <section class="slide" id="store-slide">
+            <div class="slide-inner">
+                <h2 class="section-title">Featured Items</h2>
+                <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
+
+                <!-- GAME CATEGORY SELECTOR -->
+                <div class="game-selector-container">
+                    <div class="game-icon-card active" data-game="all">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.75rem;">ALL</div>
+                        <span class="game-icon-label">All</span>
+                    </div>
+                    <div class="game-icon-card" data-game="grow-a-garden-2">
+                        <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
+                        <span class="game-icon-label">Garden 2</span>
+                    </div>
+                    <div class="game-icon-card" data-game="bloxfruits">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.75rem;">BF</div>
+                        <span class="game-icon-label">Blox Fruits</span>
+                    </div>
+                    <div class="game-icon-card" data-game="mm2">
+                        <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.75rem;">MM2</div>
+                        <span class="game-icon-label">MM2</span>
+                    </div>
                 </div>
-                <h3>Star Fruit</h3>
-                <p class="price">₱20</p>
-                <div class="stock">31 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
-            </div>
 
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
+                <div class="products">
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="badge">BEST</div>
+                        <div class="product-image">
+                            <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
+                        </div>
+                        <h3>Black Dragon</h3>
+                        <p class="price">₱1500</p>
+                        <div class="stock">17 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="product-image">
+                            <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
+                        </div>
+                        <h3>Sun Bloom</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock">52 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="product-image">
+                            <img src="assets/items/Star Fruit.png" alt="Star Fruit">
+                        </div>
+                        <h3>Star Fruit</h3>
+                        <p class="price">₱20</p>
+                        <div class="stock">31 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="product-image">
+                            <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
+                        </div>
+                        <h3>Dragon Breath</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock">9 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="product-image">
+                            <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
+                        </div>
+                        <h3>Sprinkler</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock">4 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2">
+                        <div class="product-image">
+                            <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
+                        </div>
+                        <h3>Super Can</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock">15 Left</div>
+                        <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
+                    </div>
                 </div>
-                <h3>Dragon Breath</h3>
-                <p class="price">₱10</p>
-                <div class="stock">9 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
+        </section>
 
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
+        <!-- SLIDE 5: TRUST & SECURITY -->
+        <section class="slide">
+            <div class="slide-inner">
+                <div class="trust-box">
+                    <h2>Trust & Security</h2>
+                    <p><strong>Safe. Simple. Reliable.</strong><br><br>We prioritize secure transactions and a smooth experience for every customer. Your Roblox account safety is always our #1 priority.</p>
                 </div>
-                <h3>Super Sprinkler</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">4 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
+        </section>
 
-            <div class="card" data-category="grow-a-garden-2">
-                <div class="product-image">
-                    <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
+        <!-- SLIDE 6: REVIEWS / TESTIMONIALS -->
+        <section class="slide">
+            <div class="slide-inner">
+                <h2 class="section-title">What Players Say</h2>
+                <p class="section-subtitle">See why Roblox players choose NORMS.</p>
+                <div class="reviews-grid">
+                    <div class="review-card">
+                        <p>"Fast delivery and smooth trade! Got my Black Dragon in minutes."</p>
+                        <div class="review-author">— @RobloxGamer99</div>
+                    </div>
+                    <div class="review-card">
+                        <p>"Super reliable seller. Transaction was safe and hassle-free."</p>
+                        <div class="review-author">— @BloxTrader_PH</div>
+                    </div>
+                    <div class="review-card">
+                        <p>"Best prices compared to other marketplaces. Will buy again!"</p>
+                        <div class="review-author">— @GardenPro</div>
+                    </div>
                 </div>
-                <h3>Super Can</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">15 Left</div>
-                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <hr class="divider">
+        <!-- SLIDE 7: FAQ -->
+        <section class="slide">
+            <div class="slide-inner">
+                <h2 class="section-title">FAQ</h2>
+                <p class="section-subtitle">Commonly asked questions</p>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <h4>How do I receive my item?</h4>
+                        <p>Our team trades the item directly to your Roblox account in-game after confirmation.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>How long does delivery take?</h4>
+                        <p>Most orders are delivered within 5 to 15 minutes.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>What payment methods are accepted?</h4>
+                        <p>Local e-wallets like GCash, Maya, and online payment channels.</p>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Do you offer refunds?</h4>
+                        <p>Refunds are offered if we cannot fulfill your order within 24 hours.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <!-- 4. TRUST & SECURITY -->
-    <div class="section-container">
-        <div class="trust-box">
-            <h2>Trust & Security</h2>
-            <p><strong>Safe. Simple. Reliable.</strong><br>We prioritize secure transactions and a smooth, transparent experience for every customer.</p>
-        </div>
-    </div>
-
-    <!-- 5. REVIEWS / TESTIMONIALS -->
-    <div class="section-container">
-        <h2 class="section-title">What Players Say</h2>
-        <p class="section-subtitle">See why Roblox players choose NORMS.</p>
-        <div class="reviews-grid">
-            <div class="review-card">
-                <p>"Fast delivery and smooth trade! Got my Black Dragon within 5 minutes."</p>
-                <div class="review-author">— @RobloxGamer99</div>
-            </div>
-            <div class="review-card">
-                <p>"Super reliable seller. Transaction was very safe and hassle-free."</p>
-                <div class="review-author">— @BloxTrader_PH</div>
-            </div>
-            <div class="review-card">
-                <p>"Best prices compared to other marketplaces. Will definitely order again!"</p>
-                <div class="review-author">— @GardenPro</div>
-            </div>
-        </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- 6. FAQ -->
-    <div class="section-container">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <p class="section-subtitle">Got questions? We've got answers.</p>
-        <div class="faq-list">
-            <div class="faq-item">
-                <h4>How do I receive my item?</h4>
-                <p>After placing your order, our system will connect you with a team member who will trade the item directly to your Roblox account in-game.</p>
-            </div>
-            <div class="faq-item">
-                <h4>How long does delivery take?</h4>
-                <p>Most items are delivered within 5 to 15 minutes after confirmation.</p>
-            </div>
-            <div class="faq-item">
-                <h4>What payment methods are accepted?</h4>
-                <p>We accept local e-wallets (GCash, Maya) and major online payment gateways.</p>
-            </div>
-            <div class="faq-item">
-                <h4>Do you offer refunds?</h4>
-                <p>Refunds are provided if we are unable to fulfill your order within 24 hours.</p>
-            </div>
-        </div>
     </div>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav">
-        <button class="nav-item active" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <button class="nav-item active" onclick="scrollToSlide('store-slide')">
             <span class="nav-icon">🛒</span>
             <span>Market</span>
         </button>
@@ -862,6 +890,10 @@
       const userStatus = document.getElementById('user-status');
 
       let currentMode = 'login'; 
+
+      function scrollToSlide(slideId) {
+        document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
+      }
 
       const gameCards = document.querySelectorAll('.game-icon-card');
       const productCards = document.querySelectorAll('.products .card');
