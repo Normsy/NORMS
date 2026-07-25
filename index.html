@@ -759,6 +759,10 @@
         .card.hidden {
             display: none !important;
         }
+
+        .slide.hidden {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -932,8 +936,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 5: ORDERS TAB -->
-        <section class="slide" id="orders-slide" data-title="Orders">
+        <!-- SLIDE 5: ORDERS TAB (HIDDEN WHEN LOGGED OUT) -->
+        <section class="slide hidden" id="orders-slide" data-title="Orders">
             <div class="slide-inner">
                 <h2 class="section-title">My Orders</h2>
                 <p class="section-subtitle">Review your successfully purchased items below.</p>
@@ -1076,6 +1080,7 @@
 
       const authModal = document.getElementById('auth-modal');
       const fullPageSettings = document.getElementById('full-page-settings');
+      const ordersSlide = document.getElementById('orders-slide');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
@@ -1105,7 +1110,6 @@
       let currentMode = 'login'; 
 
       const slidesWrapper = document.getElementById('slides-wrapper');
-      const slides = document.querySelectorAll('.slide');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
@@ -1114,10 +1118,11 @@
       function updateNavbarTitle() {
         if (isProgrammaticScroll) return;
         const containerRect = slidesWrapper.getBoundingClientRect();
-        let closestSlide = slides[0];
+        const activeSlides = document.querySelectorAll('.slide:not(.hidden)');
+        let closestSlide = activeSlides[0];
         let minDistance = Infinity;
 
-        slides.forEach(slide => {
+        activeSlides.forEach(slide => {
           const rect = slide.getBoundingClientRect();
           const distance = Math.abs(rect.top - containerRect.top);
           if (distance < minDistance) {
@@ -1126,7 +1131,7 @@
           }
         });
 
-        const slideTitle = closestSlide.getAttribute('data-title');
+        const slideTitle = closestSlide?.getAttribute('data-title');
         if (slideTitle) {
           navDropdownToggle.innerText = slideTitle;
         }
@@ -1431,7 +1436,8 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
-            // User is logged in: Show Market, Orders, Settings
+            // User is logged in: Show Market, Orders, Settings and enable Orders Slide
+            ordersSlide.classList.remove('hidden');
             bottomNav.innerHTML = `
                 <button class="nav-item active" onclick="scrollToSlide('store-slide')">
                     <span class="nav-icon">🛒</span>
@@ -1447,7 +1453,8 @@
                 </button>
             `;
         } else {
-            // User is NOT logged in: Show Market, Login
+            // User is NOT logged in: Show Market, Login and hide Orders Slide
+            ordersSlide.classList.add('hidden');
             bottomNav.innerHTML = `
                 <button class="nav-item active" onclick="scrollToSlide('store-slide')">
                     <span class="nav-icon">🛒</span>
@@ -1459,6 +1466,7 @@
                 </button>
             `;
         }
+        updateNavbarTitle();
       }
 
       checkUser();
