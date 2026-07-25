@@ -47,14 +47,14 @@
             background: #ffffff;
         }
 
-        /* STICK MAN STYLING */
+        /* STICK MAN STYLING (FIXED VISIBILITY & SPACING FROM BOTTOM BAR) */
         .stickman {
             position: absolute;
             width: 40px;
             height: 70px;
-            z-index: 1;
+            z-index: 5;
             pointer-events: none;
-            opacity: 0.85;
+            opacity: 0.95;
         }
 
         .stickman .head {
@@ -504,7 +504,20 @@
             cursor: pointer;
         }
 
-        /* 5. FAQ SLIDE WITH ACCORDION DROPDOWN */
+        /* 6. FAQ SLIDE (BLACK BACKGROUND & WHITE TEXT WITH ACCORDION) */
+        #faq-slide {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        #faq-slide .section-title {
+            color: #ffffff;
+        }
+
+        #faq-slide .section-subtitle {
+            color: #aaaaaa;
+        }
+
         .faq-list {
             width: 100%;
             display: flex;
@@ -516,23 +529,23 @@
         }
 
         .faq-item {
-            border: 1px solid #e5e5e5;
+            border: 1px solid #333333;
             border-radius: 10px;
-            background: #ffffff;
+            background: #111111;
             overflow: hidden;
         }
 
         .faq-question {
             width: 100%;
             padding: 14px 16px;
-            background: #ffffff;
+            background: #111111;
             border: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-size: 0.88rem;
             font-weight: 700;
-            color: #000000;
+            color: #ffffff;
             cursor: pointer;
             text-align: left;
         }
@@ -553,9 +566,9 @@
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
             padding: 0 16px;
-            background: #fcfcfc;
+            background: #0a0a0a;
             font-size: 0.8rem;
-            color: #555555;
+            color: #cccccc;
             line-height: 1.4;
         }
 
@@ -878,8 +891,8 @@
 
         <!-- SLIDE 1: WHAT? -->
         <section class="slide" id="slide-intro" data-title="What?">
-            <!-- Stick Man Pose 1 at a Random Place -->
-            <div class="stickman pose-1" style="top: 15%; right: 12%;">
+            <!-- Stick Man Pose 1 at a Safer Position Away from Bottom Bar -->
+            <div class="stickman pose-1" style="top: 22%; right: 10%;">
                 <div class="head"></div>
                 <div class="body"></div>
                 <div class="arm-left"></div>
@@ -919,8 +932,8 @@
 
         <!-- SLIDE 3: HOW? -->
         <section class="slide" id="slide-how" data-title="How?">
-            <!-- Stick Man Pose 2 at a Random Place -->
-            <div class="stickman pose-2" style="bottom: 15%; left: 10%;">
+            <!-- Stick Man Pose 2 at a Safer Position Away from Bottom Bar -->
+            <div class="stickman pose-2" style="top: 22%; left: 8%;">
                 <div class="head"></div>
                 <div class="body"></div>
                 <div class="arm-left"></div>
@@ -1053,7 +1066,7 @@
             </div>
         </section>
 
-        <!-- SLIDE 6: FAQ (WITH DROPDOWNS) -->
+        <!-- SLIDE 6: FAQ (WITH DROPDOWNS, BLACK BACKGROUND, WHITE TEXT) -->
         <section class="slide" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
