@@ -1075,8 +1075,67 @@
                     </div>
                 </div>
 
-                <div class="products" id="products-container">
-                    <!-- Dynamically populated or rendered from products table -->
+                <div class="products">
+                    <div class="card" data-category="grow-a-garden-2" data-price="1500" data-name="Black Dragon" data-img="assets/items/Black Dragon.PNG">
+                        <div class="badge">BEST</div>
+                        <div class="product-image">
+                            <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
+                        </div>
+                        <h3>Black Dragon</h3>
+                        <p class="price">₱1500</p>
+                        <div class="stock" id="stock-black-dragon">17 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Black Dragon', 1500, 'assets/items/Black Dragon.PNG', 'stock-black-dragon')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom" data-img="assets/items/Sun Bloom.png">
+                        <div class="product-image">
+                            <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
+                        </div>
+                        <h3>Sun Bloom</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock" id="stock-sun-bloom">52 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sun Bloom', 10, 'assets/items/Sun Bloom.png', 'stock-sun-bloom')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit" data-img="assets/items/Star Fruit.png">
+                        <div class="product-image">
+                            <img src="assets/items/Star Fruit.png" alt="Star Fruit">
+                        </div>
+                        <h3>Star Fruit</h3>
+                        <p class="price">₱20</p>
+                        <div class="stock" id="stock-star-fruit">31 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Star Fruit', 20, 'assets/items/Star Fruit.png', 'stock-star-fruit')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath" data-img="assets/items/Dragon Breath.png">
+                        <div class="product-image">
+                            <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
+                        </div>
+                        <h3>Dragon Breath</h3>
+                        <p class="price">₱10</p>
+                        <div class="stock" id="stock-dragon-breath">9 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Dragon Breath', 10, 'assets/items/Dragon Breath.png', 'stock-dragon-breath')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler" data-img="assets/items/Super Sprinkler.png">
+                        <div class="product-image">
+                            <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
+                        </div>
+                        <h3>Sprinkler</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock" id="stock-sprinkler">4 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sprinkler', 0.5, 'assets/items/Super Sprinkler.png', 'stock-sprinkler')">BUY</button>
+                    </div>
+
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can" data-img="assets/items/Super Watering Can.PNG">
+                        <div class="product-image">
+                            <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
+                        </div>
+                        <h3>Super Can</h3>
+                        <p class="price">₱0.50</p>
+                        <div class="stock" id="stock-super-can">15 Left</div>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Super Can', 0.5, 'assets/items/Super Watering Can.PNG', 'stock-super-can')">BUY</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1474,67 +1533,26 @@
         });
       });
 
-      async function loadProducts() {
-        const { data, error } = await supabaseClient
-          .from("products")
-          .select("*");
+      const gameCards = document.querySelectorAll('.game-icon-card');
+      const productCards = document.querySelectorAll('.products .card');
 
-        if (error) {
-          console.error(error);
-          return;
-        }
+      gameCards.forEach(card => {
+        card.addEventListener('click', () => {
+          gameCards.forEach(c => c.classList.remove('active'));
+          card.classList.add('active');
 
-        const productsContainer = document.getElementById("products-container");
-        productsContainer.innerHTML = "";
+          const selectedGame = card.getAttribute('data-game');
 
-        if (!data || data.length === 0) return;
-
-        data.forEach(product => {
-          const card = document.createElement("div");
-          card.className = "card";
-          card.setAttribute("data-category", product.category || "grow-a-garden-2");
-          card.setAttribute("data-price", product.price);
-          card.setAttribute("data-name", product.name);
-          card.setAttribute("data-img", product.image);
-
-          card.innerHTML = `
-            ${product.badge ? `<div class="badge">${product.badge}</div>` : ''}
-            <div class="product-image">
-                <img src="${product.image}" alt="${product.name}">
-            </div>
-            <h3>${product.name}</h3>
-            <p class="price">₱${Number(product.price).toFixed(2)}</p>
-            <div class="stock" id="stock-${product.id}">${product.stock} Left</div>
-            <button type="button" class="buy-btn" onclick="openCheckout('${product.name}', ${product.price}, '${product.image}', 'stock-${product.id}')">BUY</button>
-          `;
-          productsContainer.appendChild(card);
-        });
-
-        setupGameSelectors();
-      }
-
-      function setupGameSelectors() {
-        const gameCards = document.querySelectorAll('.game-icon-card');
-        const productCards = document.querySelectorAll('.products .card');
-
-        gameCards.forEach(card => {
-          card.addEventListener('click', () => {
-            gameCards.forEach(c => c.classList.remove('active'));
-            card.classList.add('active');
-
-            const selectedGame = card.getAttribute('data-game');
-
-            productCards.forEach(product => {
-              const category = product.getAttribute('data-category');
-              if (selectedGame === 'all' || category === selectedGame) {
-                product.classList.remove('hidden');
-              } else {
-                product.classList.add('hidden');
-              }
-            });
+          productCards.forEach(product => {
+            const category = product.getAttribute('data-category');
+            if (selectedGame === 'all' || category === selectedGame) {
+              product.classList.remove('hidden');
+            } else {
+              product.classList.add('hidden');
+            }
           });
         });
-      }
+      });
 
       tabLogin.addEventListener('click', () => {
         currentMode = 'login';
@@ -1610,9 +1628,9 @@
         }
 
         const { data: profileData, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('balance')
-          .eq('id', session.user.id)
+          .from("profiles")
+          .select("balance")
+          .eq("id", session.user.id)
           .single();
 
         let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
@@ -1626,11 +1644,11 @@
         let newBalance = currentBalance - itemPrice;
 
         const { error: updateError } = await supabaseClient
-          .from('profiles')
+          .from("profiles")
           .update({
               balance: newBalance
           })
-          .eq('id', session.user.id);
+          .eq("id", session.user.id);
 
         if (updateError) {
           loadingOverlay.style.display = 'none';
@@ -1665,10 +1683,10 @@
 
       async function saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, userEmail) {
         const { error } = await supabaseClient
-          .from("orders")
-          .insert([
-            { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
-          ]);
+        .from("orders")
+        .insert([
+          { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
+        ]);
 
         if (error) {
             console.error(error);
@@ -1685,55 +1703,49 @@
 
         const orderRow = document.createElement('div');
         orderRow.className = 'order-row';
-        orderRow.innerHTML = `
-          <img src="${itemImg}" class="order-thumbnail" alt="${itemName}">
-          <div class="order-info">
-            <h4>${itemName}</h4>
-            <p>Buyer: <strong>${username}</strong></p>
-            ${description ? `<p>Note: ${description}</p>` : ''}
-          </div>
-          <div class="order-right-side">
-            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
-          </div>
-        `;
+        
+        const imgEl = document.createElement('img');
+        imgEl.src = itemImg;
+        imgEl.className = 'order-thumbnail';
+        imgEl.alt = itemName;
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'order-info';
+        
+        const h4El = document.createElement('h4');
+        h4El.textContent = itemName;
+        infoDiv.appendChild(h4El);
+
+        const pBuyer = document.createElement('p');
+        pBuyer.innerHTML = `Buyer: <strong>${username}</strong>`;
+        infoDiv.appendChild(pBuyer);
+
+        if (description) {
+            const pDesc = document.createElement("p");
+            pDesc.textContent = description;
+            infoDiv.appendChild(pDesc);
+        }
+
+        const rightDiv = document.createElement('div');
+        rightDiv.className = 'order-right-side';
+
+        const priceDiv = document.createElement('div');
+        priceDiv.className = 'order-price';
+        priceDiv.textContent = `₱${itemPrice.toFixed(2)}`;
+        rightDiv.appendChild(priceDiv);
+
+        const contactBtn = document.createElement('button');
+        contactBtn.type = 'button';
+        contactBtn.className = 'order-contact-btn';
+        contactBtn.textContent = 'Contact';
+        contactBtn.onclick = () => openChatPanel(itemName, username, 'admin@norms.com');
+        rightDiv.appendChild(contactBtn);
+
+        orderRow.appendChild(imgEl);
+        orderRow.appendChild(infoDiv);
+        orderRow.appendChild(rightDiv);
+
         ordersContainer.prepend(orderRow);
-      }
-
-      async function loadUserOrders() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-
-        if (!session) return;
-
-        const { data, error } = await supabaseClient
-            .from("orders")
-            .select("*")
-            .eq("user_email", session.user.email)
-            .order("created_at", { ascending: false });
-
-        if (error) {
-            console.error(error);
-            return;
-        }
-
-        const ordersContainer = document.getElementById("orders-container");
-        ordersContainer.innerHTML = "";
-
-        if (data.length === 0) {
-            ordersContainer.innerHTML =
-                '<p id="no-orders-msg">No items purchased yet.</p>';
-            return;
-        }
-
-        data.forEach(order => {
-            addOrderToList(
-                order.item_name,
-                Number(order.price),
-                order.image,
-                order.roblox_username,
-                order.note
-            );
-        });
       }
 
       async function fetchGlobalOrdersForAdmin() {
@@ -1809,10 +1821,10 @@
         const userEmail = session.user.email;
 
         const { data, error } = await supabaseClient
-          .from("messages")
-          .select("*")
-          .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
-          .order("created_at");
+        .from("messages")
+        .select("*")
+        .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
+        .order("created_at");
 
         if (error) return;
 
@@ -1847,19 +1859,19 @@
           .subscribe();
 
         supabaseClient
-          .channel("orders")
-          .on(
-              "postgres_changes",
-              {
-                  event: "INSERT",
-                  schema: "public",
-                  table: "orders"
-              },
-              payload => {
-                  fetchGlobalOrdersForAdmin();
-              }
-          )
-          .subscribe();
+        .channel("orders")
+        .on(
+            "postgres_changes",
+            {
+                event: "INSERT",
+                schema: "public",
+                table: "orders"
+            },
+            payload => {
+                fetchGlobalOrdersForAdmin();
+            }
+        )
+        .subscribe();
       }
 
       chatSendBtn.addEventListener('click', async () => {
@@ -1892,14 +1904,50 @@
           }
       });
 
+      async function loadUserOrders() {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+
+          if (!session) return;
+
+          const { data, error } = await supabaseClient
+              .from("orders")
+              .select("*")
+              .eq("user_email", session.user.email)
+              .order("created_at", { ascending: false });
+
+          if (error) {
+              console.error(error);
+              return;
+          }
+
+          const ordersContainer = document.getElementById("orders-container");
+          ordersContainer.innerHTML = "";
+
+          if (data.length === 0) {
+              ordersContainer.innerHTML =
+                  '<p id="no-orders-msg">No items purchased yet.</p>';
+              return;
+          }
+
+          data.forEach(order => {
+              addOrderToList(
+                  order.item_name,
+                  Number(order.price),
+                  order.image,
+                  order.roblox_username,
+                  order.note
+              );
+          });
+      }
+
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
 
         const { data: profileData } = await supabaseClient
-          .from('profiles')
-          .select('balance')
-          .eq('id', session.user.id)
+          .from("profiles")
+          .select("balance")
+          .eq("id", session.user.id)
           .single();
 
         let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
@@ -1917,6 +1965,21 @@
           alert('Successfully added ₱1,000.00 to your balance!');
         }
       });
+
+      async function loadProductsStock() {
+        const { data } = await supabaseClient
+        .from("products")
+        .select("*");
+
+        if (data && data.length > 0) {
+          data.forEach(prod => {
+            const stockEl = document.getElementById(`stock-${prod.name.toLowerCase().replace(/\s+/g, '-')}`);
+            if (stockEl) {
+              stockEl.innerText = `${prod.stock} Left`;
+            }
+          });
+        }
+      }
 
       function openSettingsModal() {
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
@@ -2038,7 +2101,7 @@
                 userStatus.innerText = error.message;
             } else {
                 if (data.user) {
-                    await supabaseClient.from('profiles').insert([
+                    await supabaseClient.from("profiles").insert([
                         { id: data.user.id, email: email, balance: 1500.00 }
                     ]);
                 }
@@ -2074,9 +2137,9 @@
         settingsEmail.value = user.email || '';
 
         const { data: profileData } = await supabaseClient
-          .from('profiles')
-          .select('balance')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("balance")
+          .eq("id", user.id)
           .single();
 
         const balance = profileData ? Number(profileData.balance) : 1500.00;
@@ -2089,6 +2152,9 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
+            await loadUserOrders();
+            await loadProductsStock();
+
             const userEmail = session.user.email;
             let navHtml = '';
 
@@ -2131,7 +2197,6 @@
             bottomNav.innerHTML = navHtml;
             setupRealtimeListener();
             fetchGlobalOrdersForAdmin();
-            await loadUserOrders();
         } else {
             bottomNav.innerHTML = `
                 <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
@@ -2148,7 +2213,6 @@
                 </button>
             `;
         }
-        loadProducts();
         switchView('home');
       }
 
