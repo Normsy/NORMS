@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,7 +7,7 @@
     <title>NORMS | Premium Roblox Marketplace</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -18,8 +17,8 @@
         }
 
         body {
-            padding-top: 30px; /* Space for mobile browser top bar */
-            padding-bottom: 90px; /* Space for bottom nav */
+            padding-top: 20px; /* Space above to prevent top content cut off */
+            padding-bottom: 90px; /* Space for bottom sticky bar */
             background-color: #ffffff;
             color: #000000;
             min-height: 100vh;
@@ -30,14 +29,14 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
-            max-width: 1200px;
+            padding: 15px 20px;
+            max-width: 1100px;
             margin: 0 auto;
             border-bottom: 1px solid #eaeaea;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 900;
             letter-spacing: 2px;
             color: #000000;
@@ -50,36 +49,133 @@
             font-size: 0.9rem;
         }
 
-        /* HERO / INTRODUCTION SECTION */
+        /* COMMON SECTION STYLES */
+        .section-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #000000;
+        }
+
+        .section-subtitle {
+            font-size: 0.9rem;
+            color: #666666;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        hr.divider {
+            border: none;
+            border-top: 1px solid #eaeaea;
+            margin: 10px auto;
+            max-width: 1000px;
+        }
+
+        /* 1. HERO / INTRO SECTION */
         .hero-intro {
             text-align: center;
-            padding: 35px 20px 20px 20px;
-            max-width: 600px;
+            padding: 40px 20px 30px 20px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
         .hero-intro h1 {
-            font-size: 1.9rem;
-            font-weight: 800;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
             color: #000000;
         }
 
         .hero-intro p {
-            font-size: 0.9rem;
-            color: #555555;
-            line-height: 1.5;
+            font-size: 0.95rem;
+            color: #444444;
+            line-height: 1.6;
+            margin-bottom: 12px;
         }
 
-        /* GAME ICONS SCROLL BAR */
+        /* 2. WHY NORMS */
+        .why-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .why-card {
+            background: #f9f9f9;
+            border: 1px solid #e5e5e5;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .why-card h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .why-card p {
+            font-size: 0.85rem;
+            color: #555555;
+            line-height: 1.4;
+        }
+
+        /* HOW IT WORKS */
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .step-card {
+            border: 1px solid #e5e5e5;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .step-number {
+            font-size: 1.2rem;
+            font-weight: 800;
+            background: #000000;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+        }
+
+        .step-card h3 {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .step-card p {
+            font-size: 0.82rem;
+            color: #666666;
+        }
+
+        /* GAME SELECTOR */
         .game-selector-container {
-            padding: 15px 20px;
+            padding: 10px 0 20px 0;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
+            justify-content: center;
             gap: 12px;
-            max-width: 1200px;
-            margin: 0 auto;
             scrollbar-width: none;
         }
 
@@ -104,7 +200,7 @@
         .game-icon-img {
             width: 52px;
             height: 52px;
-            border-radius: 14px;
+            border-radius: 12px;
             object-fit: cover;
             border: 2px solid #e0e0e0;
             background: #f5f5f5;
@@ -120,39 +216,34 @@
         .game-icon-label {
             font-size: 0.75rem;
             margin-top: 6px;
-            color: #111111;
+            color: #000000;
             text-align: center;
             font-weight: 600;
         }
 
-        /* PRODUCT GRID */
+        /* 3. FEATURED ITEMS / PRODUCT GRID */
         .products {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 14px !important;
-            padding: 10px 16px !important;
-            max-width: 1200px;
-            margin: 0 auto;
         }
 
         @media (min-width: 768px) {
             .products {
                 grid-template-columns: repeat(4, 1fr) !important;
-                gap: 20px !important;
-                padding: 10px 20px !important;
+                gap: 18px !important;
             }
         }
 
         .card {
             padding: 14px !important;
-            border-radius: 16px !important;
+            border-radius: 14px !important;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             background: #ffffff !important;
             border: 1px solid #e5e5e5 !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .card .badge {
@@ -206,10 +297,10 @@
         .buy-btn {
             padding: 10px 0 !important;
             font-size: 0.8rem !important;
-            border-radius: 10px !important;
+            border-radius: 8px !important;
             background: #000000 !important;
             color: #ffffff !important;
-            border: 1px solid #000000 !important;
+            border: none !important;
             font-weight: 700;
             cursor: pointer;
             transition: background 0.2s;
@@ -219,7 +310,83 @@
             background: #333333 !important;
         }
 
-        /* STICKY BOTTOM NAVIGATION */
+        /* 4. TRUST & SECURITY */
+        .trust-box {
+            background: #000000;
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 35px 20px;
+            text-align: center;
+        }
+
+        .trust-box h2 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .trust-box p {
+            font-size: 0.9rem;
+            color: #cccccc;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 5. REVIEWS */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+        }
+
+        .review-card {
+            border: 1px solid #e5e5e5;
+            background: #f9f9f9;
+            padding: 18px;
+            border-radius: 12px;
+        }
+
+        .review-card p {
+            font-size: 0.85rem;
+            color: #333333;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .review-author {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #000000;
+        }
+
+        /* 6. FAQ */
+        .faq-list {
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .faq-item {
+            border: 1px solid #e5e5e5;
+            border-radius: 10px;
+            padding: 16px;
+            background: #ffffff;
+        }
+
+        .faq-item h4 {
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: #000000;
+        }
+
+        .faq-item p {
+            font-size: 0.85rem;
+            color: #555555;
+            line-height: 1.4;
+        }
+
+        /* STICKY BOTTOM NAV BAR */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -406,34 +573,83 @@
         </div>
     </nav>
 
-    <!-- HERO / INTRODUCTION SECTION -->
+    <!-- 1. HERO / INTRO SECTION -->
     <div class="hero-intro">
-        <h1>Welcome to NORMS</h1>
-        <p>Your trusted marketplace for premium Roblox items, pets, and collectibles. Fast delivery and secure transactions.</p>
+        <h1>NORMS</h1>
+        <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
+        <p style="color: #666666; font-size: 0.88rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
     </div>
 
-    <!-- GAME CATEGORY SELECTOR -->
-    <div class="game-selector-container">
-        <div class="game-icon-card active" data-game="all">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem;">ALL</div>
-            <span class="game-icon-label">All Games</span>
-        </div>
-        <div class="game-icon-card" data-game="grow-a-garden-2">
-            <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
-            <span class="game-icon-label">Grow a Garden 2</span>
-        </div>
-        <div class="game-icon-card" data-game="bloxfruits">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">BF</div>
-            <span class="game-icon-label">Blox Fruits</span>
-        </div>
-        <div class="game-icon-card" data-game="mm2">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">MM2</div>
-            <span class="game-icon-label">MM2</span>
+    <!-- 2. WHY NORMS -->
+    <div class="section-container">
+        <h2 class="section-title">Why NORMS</h2>
+        <p class="section-subtitle">Built for Roblox players. Fast delivery, secure transactions, and a simple marketplace experience.</p>
+        <div class="why-cards">
+            <div class="why-card">
+                <h3>⚡ Fast Delivery</h3>
+                <p>Get your Roblox items quickly right after completing your order.</p>
+            </div>
+            <div class="why-card">
+                <h3>🔒 100% Secure</h3>
+                <p>Safe transactions protecting your account every step of the way.</p>
+            </div>
+            <div class="why-card">
+                <h3>💎 Best Prices</h3>
+                <p>Premium collectibles and in-game resources at affordable rates.</p>
+            </div>
         </div>
     </div>
 
-    <!-- STORE ITEMS -->
-    <section id="store">
+    <!-- HOW IT WORKS -->
+    <div class="section-container">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">A simple 3-step process to get your items.</p>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>Choose an Item</h3>
+                <p>Browse available Roblox items in our marketplace.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>Complete Your Order</h3>
+                <p>Securely place your purchase via our automated flow.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>Receive Your Item</h3>
+                <p>Get your item delivered quickly and easily.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 3. FEATURED ITEMS -->
+    <div class="section-container" id="store">
+        <h2 class="section-title">Featured Items</h2>
+        <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
+
+        <!-- GAME CATEGORY SELECTOR -->
+        <div class="game-selector-container">
+            <div class="game-icon-card active" data-game="all">
+                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem;">ALL</div>
+                <span class="game-icon-label">All Games</span>
+            </div>
+            <div class="game-icon-card" data-game="grow-a-garden-2">
+                <img src="assets/items/Black Dragon.PNG" class="game-icon-img" alt="Grow a Garden 2">
+                <span class="game-icon-label">Grow a Garden 2</span>
+            </div>
+            <div class="game-icon-card" data-game="bloxfruits">
+                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">BF</div>
+                <span class="game-icon-label">Blox Fruits</span>
+            </div>
+            <div class="game-icon-card" data-game="mm2">
+                <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">MM2</div>
+                <span class="game-icon-label">MM2</span>
+            </div>
+        </div>
+
         <div class="products">
             <div class="card" data-category="grow-a-garden-2">
                 <div class="badge">BEST</div>
@@ -496,7 +712,63 @@
                 <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
         </div>
-    </section>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 4. TRUST & SECURITY -->
+    <div class="section-container">
+        <div class="trust-box">
+            <h2>Trust & Security</h2>
+            <p><strong>Safe. Simple. Reliable.</strong><br>We prioritize secure transactions and a smooth, transparent experience for every customer.</p>
+        </div>
+    </div>
+
+    <!-- 5. REVIEWS / TESTIMONIALS -->
+    <div class="section-container">
+        <h2 class="section-title">What Players Say</h2>
+        <p class="section-subtitle">See why Roblox players choose NORMS.</p>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <p>"Fast delivery and smooth trade! Got my Black Dragon within 5 minutes."</p>
+                <div class="review-author">— @RobloxGamer99</div>
+            </div>
+            <div class="review-card">
+                <p>"Super reliable seller. Transaction was very safe and hassle-free."</p>
+                <div class="review-author">— @BloxTrader_PH</div>
+            </div>
+            <div class="review-card">
+                <p>"Best prices compared to other marketplaces. Will definitely order again!"</p>
+                <div class="review-author">— @GardenPro</div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 6. FAQ -->
+    <div class="section-container">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <p class="section-subtitle">Got questions? We've got answers.</p>
+        <div class="faq-list">
+            <div class="faq-item">
+                <h4>How do I receive my item?</h4>
+                <p>After placing your order, our system will connect you with a team member who will trade the item directly to your Roblox account in-game.</p>
+            </div>
+            <div class="faq-item">
+                <h4>How long does delivery take?</h4>
+                <p>Most items are delivered within 5 to 15 minutes after confirmation.</p>
+            </div>
+            <div class="faq-item">
+                <h4>What payment methods are accepted?</h4>
+                <p>We accept local e-wallets (GCash, Maya) and major online payment gateways.</p>
+            </div>
+            <div class="faq-item">
+                <h4>Do you offer refunds?</h4>
+                <p>Refunds are provided if we are unable to fulfill your order within 24 hours.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav">
@@ -742,4 +1014,3 @@
 </body>
 
 </html>
-
