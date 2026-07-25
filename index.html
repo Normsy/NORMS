@@ -72,7 +72,7 @@
             border: 1px solid #444;
         }
 
-        /* COOL DASHBOARD STYLES */
+        /* DASHBOARD STYLES */
         #dashboard-section {
             display: none;
             max-width: 900px;
@@ -208,7 +208,7 @@
                 <h3>Black Dragon</h3>
                 <p class="price">₱1500</p>
                 <div class="stock">17 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
             <!-- Item 2 -->
@@ -219,7 +219,7 @@
                 <h3>Sun Bloom</h3>
                 <p class="price">₱10</p>
                 <div class="stock">52 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
             <!-- Item 3 -->
@@ -230,7 +230,7 @@
                 <h3>Star Fruit</h3>
                 <p class="price">₱20</p>
                 <div class="stock">31 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
             <!-- Item 4 -->
@@ -241,7 +241,7 @@
                 <h3>Dragon Breath</h3>
                 <p class="price">₱10</p>
                 <div class="stock">9 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
             <!-- Item 5 -->
@@ -252,7 +252,7 @@
                 <h3>Super Sprinkler</h3>
                 <p class="price">₱0.50</p>
                 <div class="stock">4 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
 
             <!-- Item 6 -->
@@ -263,7 +263,7 @@
                 <h3>Super Watering Can</h3>
                 <p class="price">₱0.50</p>
                 <div class="stock">15 Available</div>
-                <button class="buy-btn" data-url="https://m.me/claditch">BUY</button>
+                <button type="button" class="buy-btn" onclick="handleBuy(event)">BUY</button>
             </div>
         </div>
     </section>
@@ -303,7 +303,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
-      const SUPABASE_ANON_KEY = 'Sb_publishable_kcsioYjBWyD0vyR_QVm5kg_Qfc1mM-p'; 
+      const SUPABASE_ANON_KEY = 'EyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpteHRrZ3Bvb3ljbnp5eXJrcW5pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ5NzUzMzYsImV4cCI6MjEwMDU1MTMzNn0.FVNcTr2xdDv5gV3CvQbxQBDTroOj6ilbUMNXJtqZ2tU'; 
 
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -322,21 +322,21 @@
       const btnSignup = document.getElementById('btn-signup');
       const userStatus = document.getElementById('user-status');
 
-      // Intercept Buy Buttons
-      document.querySelectorAll('.buy-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-          const { data: { session } } = await supabaseClient.auth.getSession();
-          if (!session) {
-            // Not logged in -> Open Modal
-            authModal.style.display = 'flex';
-            userStatus.innerText = 'You must log in to purchase items.';
-          } else {
-            // Logged in -> Proceed to Messenger
-            const targetUrl = button.getAttribute('data-url');
-            window.open(targetUrl, '_blank');
-          }
-        });
-      });
+      // Direct Buy Button Handler
+      async function handleBuy(e) {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          authModal.style.display = 'flex';
+          userStatus.innerText = 'You must log in to purchase items.';
+        } else {
+          window.open('https://m.me/claditch', '_blank');
+        }
+      }
 
       // Modal Controls
       authNavBtn.addEventListener('click', async (e) => {
@@ -350,7 +350,8 @@
         }
       });
 
-      dashLogoutBtn.addEventListener('click', async () => {
+      dashLogoutBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
         await supabaseClient.auth.signOut();
         checkUser();
       });
@@ -361,6 +362,7 @@
       // Sign Up Handler
       btnSignup.addEventListener('click', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         userStatus.innerText = 'Creating account...';
         const { data, error } = await supabaseClient.auth.signUp({
           email: emailInput.value,
@@ -377,6 +379,7 @@
       // Log In Handler
       btnLogin.addEventListener('click', async (e) => {
         e.preventDefault();
+        e.stopPropagation();
         userStatus.innerText = 'Logging in...';
         const { data, error } = await supabaseClient.auth.signInWithPassword({
           email: emailInput.value,
