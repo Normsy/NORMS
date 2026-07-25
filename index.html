@@ -47,29 +47,68 @@
             background: #ffffff;
         }
 
-        /* INTRODUCTION SECTION WITH BACKGROUND IMAGE */
+        /* INTRODUCTION SECTION WITH STICKMAN CORNER BACKGROUND */
         #slide-intro {
-            background-image: url('assets/items/Black Dragon.PNG'); /* Replace with your desired background image path */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
         }
 
-        /* Optional: Add a dark overlay so text remains readable if background image is bright */
-        #slide-intro::before {
-            content: '';
+        /* WHY SECTION BACKGROUND */
+        #slide-why {
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* HOW SECTION BACKGROUND */
+        #slide-how {
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* STICKMAN CORNER GRAPHICS */
+        .corner-stickman {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(255, 255, 255, 0.85); /* Adjust opacity here (e.g., 0.85 for a light tint, or use dark rgba for dark overlay) */
-            z-index: 1;
+            bottom: 20px;
+            right: 20px;
+            width: 90px;
+            height: 110px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none;
         }
 
-        #slide-intro .slide-inner {
-            position: relative;
-            z-index: 2;
+        .corner-stickman.left {
+            right: auto;
+            left: 20px;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -35px;
+            right: 50px;
+            background: #ffffff;
+            border: 2px solid #000000;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .corner-stickman.left .speech-bubble {
+            right: auto;
+            left: 50px;
+        }
+
+        .stickman-svg {
+            width: 70px;
+            height: 90px;
         }
 
         /* TOP NAVBAR (FIXED OVERLAY) */
@@ -167,6 +206,8 @@
             width: 100%;
             text-align: center;
             margin: auto 0;
+            position: relative;
+            z-index: 2;
         }
 
         .section-title {
@@ -208,7 +249,7 @@
         }
 
         .why-card {
-            background: #f9f9f9;
+            background: #ffffff;
             border: 1px solid #e5e5e5;
             padding: 20px;
             border-radius: 14px;
@@ -668,6 +709,22 @@
                 <p style="color: #666666; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
                 <span style="display:block; margin-top:20px; font-size:0.75rem; color:#888; font-weight:700;">↓ Scroll down to explore</span>
             </div>
+            <!-- Stickman sitting in the corner -->
+            <div class="corner-stickman">
+                <div class="speech-bubble">What?</div>
+                <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
+                    <circle cx="35" cy="20" r="10" fill="#ffffff" />
+                    <text x="32" y="24" font-size="9" fill="#000" font-family="sans-serif">?</text>
+                    <!-- Body sitting in corner -->
+                    <path d="M35 30 L35 55" />
+                    <!-- Legs folded/sitting -->
+                    <path d="M35 55 L20 65 L10 65" />
+                    <!-- Arms scratching head / puzzled -->
+                    <path d="M35 38 L22 30" />
+                    <path d="M35 38 L48 45" />
+                </svg>
+            </div>
         </section>
 
         <!-- SLIDE 2: WHY? -->
@@ -689,6 +746,22 @@
                         <p>Seamless browsing and smooth purchasing experience from start to finish.</p>
                     </div>
                 </div>
+            </div>
+            <!-- Stickman in the corner with Why? expression -->
+            <div class="corner-stickman left">
+                <div class="speech-bubble">Why?!</div>
+                <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
+                    <circle cx="35" cy="20" r="10" fill="#ffffff" />
+                    <text x="31" y="24" font-size="9" fill="#000" font-family="sans-serif">!</text>
+                    <!-- Body -->
+                    <path d="M35 30 L35 55" />
+                    <!-- Sitting legs -->
+                    <path d="M35 55 L50 65 L60 65" />
+                    <!-- Arms thrown up in confusion -->
+                    <path d="M35 38 L20 25" />
+                    <path d="M35 38 L50 25" />
+                </svg>
             </div>
         </section>
 
@@ -714,6 +787,22 @@
                         <p>Get your item quickly and easily.</p>
                     </div>
                 </div>
+            </div>
+            <!-- Stickman with expression of How? -->
+            <div class="corner-stickman">
+                <div class="speech-bubble">How?</div>
+                <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
+                    <circle cx="35" cy="20" r="10" fill="#ffffff" />
+                    <text x="32" y="24" font-size="9" fill="#000" font-family="sans-serif">?</text>
+                    <!-- Body -->
+                    <path d="M35 30 L35 55" />
+                    <!-- Legs -->
+                    <path d="M35 55 L20 65 L10 65" />
+                    <!-- Arms pointing/thinking gesture -->
+                    <path d="M35 40 L25 50" />
+                    <path d="M35 40 L48 35" />
+                </svg>
             </div>
         </section>
 
