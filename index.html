@@ -146,6 +146,16 @@
             z-index: 2;
         }
 
+        /* EXCEPTION FOR ORDERS SLIDE TO ALIGN CONTENT TO THE TOP */
+        .slide-inner.align-top {
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            padding-top: 10px;
+        }
+
         .section-title {
             font-size: 1.6rem;
             font-weight: 900;
@@ -492,7 +502,7 @@
         /* ORDERS LIST DESIGN */
         .orders-list {
             width: 100%;
-            max-height: 52vh;
+            max-height: 64vh;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -1058,7 +1068,7 @@
 
         <!-- SLIDE 5: ORDERS TAB -->
         <section class="slide view-orders hidden" id="orders-slide" data-title="Orders">
-            <div class="slide-inner">
+            <div class="slide-inner align-top">
                 <h2 class="section-title">My Orders</h2>
                 <p class="section-subtitle">Review your successfully purchased items below.</p>
                 <div class="orders-list" id="orders-container">
