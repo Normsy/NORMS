@@ -275,57 +275,6 @@
         }
 
         /* 4. FEATURED ITEMS SLIDE */
-        .game-selector-container {
-            padding: 0 0 10px 0;
-            overflow-x: auto;
-            white-space: nowrap;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            scrollbar-width: none;
-        }
-
-        .game-selector-container::-webkit-scrollbar {
-            display: none;
-        }
-
-        .game-icon-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-width: 45px;
-            cursor: pointer;
-            opacity: 0.6;
-            transition: all 0.2s ease;
-        }
-
-        .game-icon-card.active, .game-icon-card:hover {
-            opacity: 1;
-        }
-
-        .game-icon-img {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 2px solid #e0e0e0;
-            background: #f5f5f5;
-            color: #000000;
-        }
-
-        .game-icon-card.active .game-icon-img {
-            border-color: #000000;
-            background: #000000;
-            color: #ffffff;
-        }
-
-        .game-icon-label {
-            font-size: 0.65rem;
-            margin-top: 3px;
-            color: #000000;
-            font-weight: 600;
-        }
-
         .products {
             display: grid !important;
             grid-template-columns: repeat(3, 1fr) !important;
@@ -581,11 +530,6 @@
 
         .nav-item.active, .nav-item:hover {
             color: #000000;
-        }
-
-        .nav-icon {
-            font-size: 1.1rem;
-            position: relative;
         }
 
         /* MODALS (CHECKOUT / AUTH) */
@@ -1105,6 +1049,16 @@
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
+      function scrollToSlide(slideId) {
+        const slide = document.getElementById(slideId);
+        if (slide) slide.scrollIntoView({ behavior: 'smooth' });
+        navDropdownMenu.classList.remove('show');
+      }
+
+      navDropdownToggle.addEventListener('click', () => {
+        navDropdownMenu.classList.toggle('show');
+      });
+
       function switchView(viewName) {
         currentActiveView = viewName;
         document.querySelectorAll('.slide').forEach(slide => slide.classList.add('hidden'));
@@ -1126,6 +1080,8 @@
           });
         } else if (viewName === 'buyers') {
           fetchGlobalOrdersForAdmin();
+        } else if (viewName === 'orders') {
+          fetchUserOrders();
         } else if (viewName === 'inbox') {
           fetchChatMessages();
         }
@@ -1138,6 +1094,37 @@
         fetchChatMessages();
       }
 
+      async function fetchUserOrders() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const { data, error } = await supabaseClient.from('orders').select('*').eq('user_email', session.user.email).order('created_at', { ascending: false });
+        const container = document.getElementById('orders-container');
+        container.innerHTML = '';
+
+        if (error || !data || data.length === 0) {
+          container.innerHTML = '<p id="no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No items purchased yet.</p>';
+          return;
+        }
+
+        data.forEach(order => {
+          const orderRow = document.createElement('div');
+          orderRow.className = 'order-row';
+          orderRow.innerHTML = `
+            <img src="${order.image || 'assets/items/Black Dragon.PNG'}" class="order-thumbnail" alt="${order.item_name}">
+            <div class="order-info">
+              <h4>${order.item_name}</h4>
+              <p>Roblox Username: <strong>${order.roblox_username}</strong></p>
+            </div>
+            <div class="order-right-side">
+              <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
+              <button type="button" class="order-contact-btn" onclick="openConversation('admin@norms.com')">Contact Support</button>
+            </div>
+          `;
+          container.appendChild(orderRow);
+        });
+      }
+
       async function fetchGlobalOrdersForAdmin() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session || session.user.email !== 'admin@norms.com') return;
@@ -1147,7 +1134,7 @@
         container.innerHTML = '';
 
         if (error || !data || data.length === 0) {
-          container.innerHTML = '<p style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No global orders recorded yet.</p>';
+          container.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No customer orders recorded yet.</p>';
           return;
         }
 
