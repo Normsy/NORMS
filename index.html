@@ -146,7 +146,7 @@
             z-index: 2;
         }
 
-        /* EXCEPTION FOR ORDERS SLIDE TO ALIGN CONTENT TO THE TOP */
+        /* EXCEPTION FOR SECTIONS TO ALIGN CONTENT TO THE TOP */
         .slide-inner.align-top {
             margin: 0 auto;
             display: flex;
@@ -631,7 +631,7 @@
             display: inline-block;
         }
 
-        /* FULL PAGE SETTINGS / AUTH MODALS */
+        /* MODALS (CHECKOUT / AUTH) */
         .modal {
             display: none;
             position: fixed;
@@ -784,76 +784,39 @@
             color: #000000;
         }
 
-        /* FULL PAGE SETTINGS / CHAT / ADMIN VIEW STYLES */
-        .full-page-settings {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #ffffff;
-            z-index: 1500;
-            overflow-y: auto;
-            padding: 80px 20px 40px 20px;
-        }
-
+        /* SECTION STYLES FOR SETTINGS & INBOX */
         .settings-container-inner {
-            max-width: 600px;
+            max-width: 650px;
+            width: 100%;
             margin: 0 auto;
             text-align: left;
-        }
-
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #eaeaea;
-            padding-bottom: 15px;
-        }
-
-        .settings-header h2 {
-            font-size: 1.5rem;
-            font-weight: 900;
-        }
-
-        .settings-close-btn {
-            background: #f0f0f0;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            max-height: 72vh;
+            overflow-y: auto;
+            padding-right: 4px;
         }
 
         .settings-section-card {
             background: #f9f9f9;
             border: 1px solid #eaeaea;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 16px;
+            margin-bottom: 14px;
         }
 
         .settings-section-card h3 {
             font-size: 0.95rem;
             font-weight: 800;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             color: #111111;
         }
 
         .setting-field {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .setting-field label {
             display: block;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #666666;
             margin-bottom: 4px;
@@ -862,45 +825,45 @@
 
         .setting-field input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: 8px;
             border: 1px solid #dcdcdc;
             background: #ffffff;
             color: #000000;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .balance-display {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 900;
             color: #000000;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .action-save-btn {
             background: #000000;
             color: #ffffff;
             border: none;
-            padding: 10px 16px;
+            padding: 9px 14px;
             border-radius: 8px;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
         .contact-btns-group {
             display: flex;
             gap: 8px;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
         .contact-link-btn {
             flex: 1;
-            padding: 10px;
+            padding: 9px;
             border-radius: 8px;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
             text-decoration: none;
             color: #000000;
@@ -913,27 +876,27 @@
             background: #f9f9f9;
             border: 1px solid #eaeaea;
             border-radius: 12px;
-            height: 55vh;
+            height: 48vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
 
         .chat-message {
             max-width: 75%;
-            padding: 10px 14px;
+            padding: 9px 12px;
             border-radius: 12px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             line-height: 1.4;
         }
 
@@ -953,7 +916,7 @@
 
         .chat-input-area {
             display: flex;
-            padding: 10px;
+            padding: 8px;
             background: #ffffff;
             border-top: 1px solid #eaeaea;
             gap: 8px;
@@ -961,10 +924,10 @@
 
         .chat-input-field {
             flex: 1;
-            padding: 10px 12px;
+            padding: 9px 12px;
             border-radius: 8px;
             border: 1px solid #dcdcdc;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
         }
 
@@ -972,7 +935,7 @@
             background: #000000;
             color: #ffffff;
             border: none;
-            padding: 0 16px;
+            padding: 0 14px;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
@@ -1169,7 +1132,98 @@
             </div>
         </section>
 
-        <!-- SLIDE 6: FAQ (FAQ SECTION) -->
+        <!-- SLIDE 6: INBOX TAB (ADMIN GLOBAL ORDERS & CHAT SECTION) -->
+        <section class="slide view-inbox hidden" id="inbox-slide" data-title="Inbox">
+            <div class="slide-inner align-top">
+                <h2 class="section-title">Inbox — Global Orders & Chat</h2>
+                <p class="section-subtitle">Review global orders and contact buyers directly.</p>
+                
+                <div class="settings-container-inner" style="width:100%;">
+                    <div class="settings-section-card" id="admin-global-orders-card">
+                        <h3>All Global Customer Orders</h3>
+                        <div class="orders-list" id="admin-global-orders-container" style="max-height: 25vh;">
+                            <p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No global orders recorded yet.</p>
+                        </div>
+                    </div>
+
+                    <div class="settings-section-card">
+                        <h3 id="chat-header-title">Chat Panel</h3>
+                        <div class="chat-box">
+                            <div class="chat-messages" id="chat-messages-container">
+                                <div class="chat-message received">Hello! Welcome to support. Select an order to contact buyer or chat with admin.</div>
+                            </div>
+                            <div class="chat-input-area">
+                                <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message..." />
+                                <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 7: SETTINGS TAB SECTION -->
+        <section class="slide view-settings hidden" id="settings-slide" data-title="Settings">
+            <div class="slide-inner align-top">
+                <h2 class="section-title">Account Settings</h2>
+                <p class="section-subtitle">Manage your account profile, balance, and security.</p>
+                
+                <div class="settings-container-inner" style="width:100%;">
+                    <!-- WALLET BALANCE SECTION -->
+                    <div class="settings-section-card">
+                        <h3>My Balance</h3>
+                        <div class="balance-display" id="settings-user-balance">₱0.00</div>
+                        <p style="font-size: 0.78rem; color: #666666; margin-bottom: 8px;">Available credits for instant item purchases.</p>
+                        <button type="button" id="add-funds-btn" class="action-save-btn" style="background:#222;">Top Up Balance (+₱1,000)</button>
+                    </div>
+
+                    <!-- PROFILE SETTINGS SECTION -->
+                    <div class="settings-section-card">
+                        <h3>Profile Information</h3>
+                        <form id="profile-form" onsubmit="return false;">
+                            <div class="setting-field">
+                                <label for="settings-display-name">Display Name</label>
+                                <input type="text" id="settings-display-name" placeholder="Enter display name" />
+                            </div>
+                            <div class="setting-field">
+                                <label for="settings-email">Email Address</label>
+                                <input type="email" id="settings-email" placeholder="Enter email address" />
+                            </div>
+                            <button type="button" id="save-profile-btn" class="action-save-btn">Save Changes</button>
+                            <p id="profile-status" style="margin-top: 6px; font-size: 0.78rem; color: #008000;"></p>
+                        </form>
+                    </div>
+
+                    <!-- SECURITY / PASSWORD SECTION -->
+                    <div class="settings-section-card">
+                        <h3>Security & Password</h3>
+                        <form id="password-form" onsubmit="return false;">
+                            <div class="setting-field">
+                                <label for="settings-new-password">New Password</label>
+                                <input type="password" id="settings-new-password" placeholder="Enter new password" />
+                            </div>
+                            <button type="button" id="update-password-btn" class="action-save-btn">Update Password</button>
+                            <p id="password-status" style="margin-top: 6px; font-size: 0.78rem; color: #008000;"></p>
+                        </form>
+                    </div>
+
+                    <!-- SUPPORT SECTION -->
+                    <div class="settings-section-card">
+                        <h3>Contact Support</h3>
+                        <div class="contact-btns-group">
+                            <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
+                            <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 10px; margin-bottom: 30px;">
+                        <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; width: 100%;">Log Out</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SLIDE 8: FAQ (FAQ SECTION) -->
         <section class="slide view-home" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
@@ -1242,106 +1296,6 @@
         <div class="loading-text" id="loading-text">Processing Payment & Securing Order...</div>
     </div>
 
-    <!-- FULL PAGE SETTINGS TAB VIEW -->
-    <div id="full-page-settings" class="full-page-settings">
-        <div class="settings-container-inner">
-            <div class="settings-header">
-                <h2>Account Settings</h2>
-                <button type="button" class="settings-close-btn" id="close-full-settings">&times;</button>
-            </div>
-
-            <!-- WALLET BALANCE SECTION -->
-            <div class="settings-section-card">
-                <h3>My Balance</h3>
-                <div class="balance-display" id="settings-user-balance">₱0.00</div>
-                <p style="font-size: 0.8rem; color: #666666; margin-bottom: 12px;">Available credits for instant item purchases.</p>
-                <button type="button" id="add-funds-btn" class="action-save-btn" style="background:#222;">Top Up Balance (+₱1,000)</button>
-            </div>
-
-            <!-- PROFILE SETTINGS SECTION -->
-            <div class="settings-section-card">
-                <h3>Profile Information</h3>
-                <form id="profile-form" onsubmit="return false;">
-                    <div class="setting-field">
-                        <label for="settings-display-name">Display Name</label>
-                        <input type="text" id="settings-display-name" placeholder="Enter display name" />
-                    </div>
-                    <div class="setting-field">
-                        <label for="settings-email">Email Address</label>
-                        <input type="email" id="settings-email" placeholder="Enter email address" />
-                    </div>
-                    <button type="button" id="save-profile-btn" class="action-save-btn">Save Changes</button>
-                    <p id="profile-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
-                </form>
-            </div>
-
-            <!-- SECURITY / PASSWORD SECTION -->
-            <div class="settings-section-card">
-                <h3>Security & Password</h3>
-                <form id="password-form" onsubmit="return false;">
-                    <div class="setting-field">
-                        <label for="settings-new-password">New Password</label>
-                        <input type="password" id="settings-new-password" placeholder="Enter new password" />
-                    </div>
-                    <button type="button" id="update-password-btn" class="action-save-btn">Update Password</button>
-                    <p id="password-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
-                </form>
-            </div>
-
-            <!-- SUPPORT SECTION -->
-            <div class="settings-section-card">
-                <h3>Contact Support</h3>
-                <div class="contact-btns-group">
-                    <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
-                    <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
-                </div>
-            </div>
-
-            <!-- FIXED LOGOUT BUTTON POSITION -->
-            <div style="margin-top: 20px; margin-bottom: 60px;">
-                <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; width: 100%;">Log Out</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FULL PAGE CHAT TAB VIEW -->
-    <div id="full-page-chat" class="full-page-settings">
-        <div class="settings-container-inner">
-            <div class="settings-header">
-                <h2 id="chat-header-title">Chat with Support</h2>
-                <button type="button" class="settings-close-btn" id="close-full-chat">&times;</button>
-            </div>
-            <div class="chat-box">
-                <div class="chat-messages" id="chat-messages-container">
-                    <div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>
-                </div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message..." />
-                    <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FULL PAGE ADMIN INBOX VIEW (GLOBAL ORDERS) -->
-    <div id="full-page-admin" class="full-page-settings">
-        <div class="settings-container-inner">
-            <div class="settings-header">
-                <h2>Inbox — Global Orders</h2>
-                <button type="button" class="settings-close-btn" id="close-full-admin">&times;</button>
-            </div>
-            
-            <div class="settings-section-card">
-                <h3>All Global Customer Orders</h3>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Review and contact any buyer from recent transactions.</p>
-                
-                <div class="orders-list" id="admin-global-orders-container" style="max-height: 55vh;">
-                    <p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- AUTH MODAL -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
@@ -1376,15 +1330,9 @@
       const authModal = document.getElementById('auth-modal');
       const checkoutModal = document.getElementById('checkout-modal');
       const loadingOverlay = document.getElementById('loading-overlay');
-      const fullPageSettings = document.getElementById('full-page-settings');
-      const fullPageChat = document.getElementById('full-page-chat');
-      const fullPageAdmin = document.getElementById('full-page-admin');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeCheckoutModal = document.getElementById('close-checkout-modal');
-      const closeFullSettings = document.getElementById('close-full-settings');
-      const closeFullChat = document.getElementById('close-full-chat');
-      const closeFullAdmin = document.getElementById('close-full-admin');
       
       const settingsUserBalance = document.getElementById('settings-user-balance');
       const settingsDisplayName = document.getElementById('settings-display-name');
@@ -1408,7 +1356,7 @@
       const userStatus = document.getElementById('user-status');
       const bottomNav = document.getElementById('bottom-nav');
 
-      // Chat elements
+      // Chat elements inside Inbox Section
       const chatMessagesContainer = document.getElementById('chat-messages-container');
       const chatInputText = document.getElementById('chat-input-text');
       const chatSendBtn = document.getElementById('chat-send-btn');
@@ -1416,7 +1364,7 @@
 
       // Admin Inbox Global Orders elements
       const adminGlobalOrdersContainer = document.getElementById('admin-global-orders-container');
-      const adminNoOrdersMsg = document.getElementById('admin-no-orders-msg');
+      const adminGlobalOrdersCard = document.getElementById('admin-global-orders-card');
 
       // Checkout elements
       const checkoutModalImg = document.getElementById('checkout-modal-img');
@@ -1463,6 +1411,24 @@
 
         updateNavbarDropdownOptions(viewName);
         updateNavbarTitle();
+
+        if (viewName === 'settings') {
+          supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) loadUserSettings(session);
+          });
+        } else if (viewName === 'inbox') {
+          supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+              if (session.user.email === 'admin@norms.com') {
+                adminGlobalOrdersCard.style.display = 'block';
+                fetchGlobalOrdersForAdmin();
+              } else {
+                adminGlobalOrdersCard.style.display = 'none';
+              }
+              fetchChatMessages();
+            }
+          });
+        }
       }
 
       function updateNavbarDropdownOptions(viewName) {
@@ -1482,6 +1448,16 @@
         } else if (viewName === 'orders') {
           navDropdownMenu.innerHTML = `
             <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('orders-slide')">Orders</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        } else if (viewName === 'inbox') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('inbox-slide')">Inbox</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        } else if (viewName === 'settings') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('settings-slide')">Settings</button>
           `;
           navDropdownToggle.style.display = 'flex';
         }
@@ -1681,12 +1657,9 @@
           settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
-          
-          // Save order globally to database table or send message payload
           await saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, session.user.email);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
-          
           switchView('orders');
         }, 800);
       });
@@ -1715,7 +1688,7 @@
           </div>
           <div class="order-right-side">
             <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
+            <button type="button" class="order-contact-btn" onclick="openInboxChat('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
           </div>
         `;
         ordersContainer.prepend(orderRow);
@@ -1733,7 +1706,7 @@
         adminGlobalOrdersContainer.innerHTML = '';
 
         if (error || !data || data.length === 0) {
-          adminGlobalOrdersContainer.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>';
+          adminGlobalOrdersContainer.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 10px;">No global orders recorded yet.</p>';
           return;
         }
 
@@ -1749,14 +1722,14 @@
             </div>
             <div class="order-right-side">
               <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
-              <button type="button" class="order-contact-btn" onclick="openChatPanel('${order.item_name}', '${order.roblox_username}', '${order.user_email}')">Contact Buyer</button>
+              <button type="button" class="order-contact-btn" onclick="openInboxChat('${order.item_name}', '${order.roblox_username}', '${order.user_email}')">Contact Buyer</button>
             </div>
           `;
           adminGlobalOrdersContainer.appendChild(orderRow);
         });
       }
 
-      function openChatPanel(itemName, username, targetEmail) {
+      function openInboxChat(itemName, username, targetEmail) {
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
           if (!session) {
             authModal.style.display = 'flex';
@@ -1767,11 +1740,8 @@
           activeChatUser = session.user.email === 'admin@norms.com' ? targetEmail : 'admin@norms.com';
           chatHeaderTitle.innerText = `Chat with ${session.user.email === 'admin@norms.com' ? username + ' (' + targetEmail + ')' : 'Support'}`;
           
-          fullPageChat.style.display = 'block';
-          fullPageAdmin.style.display = 'none';
+          switchView('inbox');
           fetchChatMessages();
-
-          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         });
       }
 
@@ -1824,7 +1794,6 @@
           chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
         }
 
-        // Update notification badge on Inbox Button
         const adminBadge = document.getElementById('admin-notif-badge');
         if (adminBadge) {
           if (unreadCount > 0 && userEmail === 'admin@norms.com') {
@@ -1870,18 +1839,6 @@
         }
       });
 
-      closeFullChat.addEventListener('click', () => {
-        fullPageChat.style.display = 'none';
-        const { data: { session } } = supabaseClient.auth.getSession();
-        session.then(s => {
-          if (s && s.user.email === 'admin@norms.com') {
-            fullPageAdmin.style.display = 'block';
-          } else {
-            switchView(currentActiveView);
-          }
-        });
-      });
-
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
@@ -1899,52 +1856,8 @@
         }
       });
 
-      function openSettingsModal() {
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-          if (!session) {
-            authModal.style.display = 'flex';
-            userStatus.innerText = 'Please log in to access settings.';
-          } else {
-            loadUserSettings(session);
-            fullPageSettings.style.display = 'block';
-
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            const settingsBtn = document.getElementById('bottom-nav-settings-btn');
-            if (settingsBtn) settingsBtn.classList.add('active');
-          }
-        });
-      }
-
-      function openAdminModal() {
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-          if (!session || session.user.email !== 'admin@norms.com') {
-            alert('Unauthorized access.');
-            return;
-          }
-          fullPageAdmin.style.display = 'block';
-          fetchGlobalOrdersForAdmin();
-
-          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-          const adminBtn = document.getElementById('bottom-nav-admin-btn');
-          if (adminBtn) adminBtn.classList.add('active');
-        });
-      }
-
-      closeFullSettings.addEventListener('click', () => {
-        fullPageSettings.style.display = 'none';
-        switchView(currentActiveView);
-      });
-
-      closeFullAdmin.addEventListener('click', () => {
-        fullPageAdmin.style.display = 'none';
-        switchView(currentActiveView);
-      });
-
       settingsLogoutBtn.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
-        fullPageSettings.style.display = 'none';
-        fullPageAdmin.style.display = 'none';
-        fullPageChat.style.display = 'none';
         checkUser();
       });
 
@@ -2073,19 +1986,11 @@
                     <span class="nav-icon">📦</span>
                     <span>Orders</span>
                 </button>
-            `;
-
-            if (userEmail === 'admin@norms.com') {
-                navHtml += `
-                    <button type="button" class="nav-item" id="bottom-nav-admin-btn" onclick="openAdminModal()">
-                        <span class="nav-icon">📥<span id="admin-notif-badge" class="notif-badge">0</span></span>
-                        <span>Inbox</span>
-                    </button>
-                `;
-            }
-
-            navHtml += `
-                <button type="button" class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
+                <button type="button" class="nav-item" data-view="inbox" onclick="switchView('inbox')">
+                    <span class="nav-icon">📥<span id="admin-notif-badge" class="notif-badge">0</span></span>
+                    <span>Inbox</span>
+                </button>
+                <button type="button" class="nav-item" data-view="settings" onclick="switchView('settings')">
                     <span class="nav-icon">⚙️</span>
                     <span>Settings</span>
                 </button>
@@ -2093,7 +1998,6 @@
 
             bottomNav.innerHTML = navHtml;
             setupRealtimeListener();
-            fetchGlobalOrdersForAdmin();
         } else {
             bottomNav.innerHTML = `
                 <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
