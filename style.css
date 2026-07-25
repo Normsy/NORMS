@@ -352,3 +352,24 @@ font-size:34px;
 }
 
 }
+
+.hero,
+.card,
+#about,
+#contact{
+
+opacity:0;
+
+transform:translateY(40px);
+
+transition:1s;
+
+}
+
+.show{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
