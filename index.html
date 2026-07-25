@@ -118,6 +118,7 @@
         #user-display {
             color: #aaa;
             font-size: 0.9em;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -150,6 +151,7 @@
             <p id="modal-subtitle" style="font-size:0.85em; color:#aaa; margin-bottom:15px;">Please log in or create an account to purchase items.</p>
             
             <form id="auth-form" onsubmit="return false;">
+                <input type="text" id="full-name" class="auth-input" placeholder="Full Name (e.g. Clark John)" required />
                 <input type="email" id="email" class="auth-input" placeholder="Email" required />
                 <input type="password" id="password" class="auth-input" placeholder="Password" required />
                 
@@ -316,6 +318,7 @@
       const dashUserEmail = document.getElementById('dash-user-email');
       const dashLogoutBtn = document.getElementById('dash-logout-btn');
 
+      const nameInput = document.getElementById('full-name');
       const emailInput = document.getElementById('email');
       const passwordInput = document.getElementById('password');
       const btnLogin = document.getElementById('btn-login');
@@ -363,11 +366,27 @@
       btnSignup.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        const fullName = nameInput.value.trim();
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!fullName || !email || !password) {
+            userStatus.innerText = 'Please fill out all fields (Name, Email, Password).';
+            return;
+        }
+
         userStatus.innerText = 'Creating account...';
         const { data, error } = await supabaseClient.auth.signUp({
-          email: emailInput.value,
-          password: passwordInput.value,
+          email: email,
+          password: password,
+          options: {
+            data: {
+              full_name: fullName
+            }
+          }
         });
+
         if (error) {
             userStatus.innerText = error.message;
         } else {
@@ -380,11 +399,21 @@
       btnLogin.addEventListener('click', async (e) => {
         e.preventDefault();
         e.stopPropagation();
+
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!email || !password) {
+            userStatus.innerText = 'Please enter both an email and password.';
+            return;
+        }
+
         userStatus.innerText = 'Logging in...';
         const { data, error } = await supabaseClient.auth.signInWithPassword({
-          email: emailInput.value,
-          password: passwordInput.value,
+          email: email,
+          password: password,
         });
+
         if (error) {
             userStatus.innerText = error.message;
         } else {
@@ -398,12 +427,14 @@
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
+          const displayName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+          
           userDisplay.style.display = 'inline';
-          userDisplay.innerText = session.user.email.split('@')[0];
+          userDisplay.innerText = displayName;
           authNavBtn.innerText = 'Logout';
           
           // Show Dashboard
-          dashUserEmail.innerText = session.user.email;
+          dashUserEmail.innerText = `${displayName} (${session.user.email})`;
           dashboardSection.style.display = 'block';
         } else {
           userDisplay.style.display = 'none';
