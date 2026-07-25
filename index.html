@@ -601,6 +601,7 @@
             background: transparent;
             flex: 1;
             font-weight: 600;
+            position: relative;
         }
 
         .nav-item.active, .nav-item:hover {
@@ -609,6 +610,25 @@
 
         .nav-icon {
             font-size: 1.1rem;
+            position: relative;
+        }
+
+        /* NOTIFICATION BADGE STYLING */
+        .notif-badge {
+            position: absolute;
+            top: -4px;
+            right: 25%;
+            background-color: #ff0000;
+            color: #ffffff;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .notif-badge.show {
+            display: inline-block;
         }
 
         /* FULL PAGE SETTINGS / AUTH MODALS */
@@ -958,31 +978,6 @@
             cursor: pointer;
         }
 
-        /* FLOATING CHAT WIDGET STYLES */
-        .floating-chat-btn {
-            position: fixed;
-            bottom: 75px;
-            right: 20px;
-            background: #000000;
-            color: #ffffff;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 18px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 999;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: transform 0.2s ease;
-        }
-
-        .floating-chat-btn:hover {
-            transform: scale(1.05);
-        }
-
         .card.hidden {
             display: none !important;
         }
@@ -1209,11 +1204,6 @@
         </section>
 
     </div>
-
-    <!-- FLOATING CHAT BUTTON WIDGET -->
-    <button type="button" class="floating-chat-btn" onclick="openChatWithAdmin('General Support')">
-        💬 Chat Support
-    </button>
 
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav" id="bottom-nav">
@@ -1698,7 +1688,7 @@
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
-          await sendChatMessage(`[NEW ORDER] Item: ${itemName} (₱${itemPrice.toFixed(2)}) | Roblox User: ${username} | Note: ${description || 'None'}`);
+          await sendChatMessage(`[ORDER] Item: ${itemName} | User: ${username} | Note: ${description || 'None'}`);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
           
@@ -1724,10 +1714,26 @@
           </div>
           <div class="order-right-side">
             <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <button type="button" class="order-contact-btn" onclick="openChatWithAdmin('${itemName}')">Contact</button>
+            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}')">Contact</button>
           </div>
         `;
         ordersContainer.prepend(orderRow);
+      }
+
+      function openChatPanel(itemName, username) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'Please log in to message support.';
+            return;
+          }
+
+          chatHeaderTitle.innerText = `Chat: ${itemName} (${username})`;
+          fullPageChat.style.display = 'block';
+          fetchChatMessages();
+
+          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        });
       }
 
       async function sendChatMessage(text) {
@@ -1759,6 +1765,8 @@
         chatMessagesContainer.innerHTML = '';
         adminChatMessagesContainer.innerHTML = '';
 
+        let unreadCount = 0;
+
         if (data && data.length > 0) {
           data.forEach(msg => {
             const isSentByMe = msg.sender === userEmail;
@@ -1773,11 +1781,26 @@
               adminBubble.className = `chat-message ${msg.sender === 'admin@norms.com' ? 'sent' : 'received'}`;
               adminBubble.innerText = `[${msg.sender}]: ${msg.message}`;
               adminChatMessagesContainer.appendChild(adminBubble);
+
+              if (msg.sender !== 'admin@norms.com') {
+                unreadCount++;
+              }
             }
           });
         } else {
           chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>';
           adminChatMessagesContainer.innerHTML = '<div class="chat-message received">Waiting for incoming messages...</div>';
+        }
+
+        // Update notification badge on Admin Button
+        const adminBadge = document.getElementById('admin-notif-badge');
+        if (adminBadge) {
+          if (unreadCount > 0 && userEmail === 'admin@norms.com') {
+            adminBadge.innerText = unreadCount;
+            adminBadge.classList.add('show');
+          } else {
+            adminBadge.classList.remove('show');
+          }
         }
 
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
@@ -1795,22 +1818,6 @@
             fetchChatMessages();
           })
           .subscribe();
-      }
-
-      function openChatWithAdmin(itemName) {
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-          if (!session) {
-            authModal.style.display = 'flex';
-            userStatus.innerText = 'Please log in to message support.';
-            return;
-          }
-
-          chatHeaderTitle.innerText = `Chat with admin@norms.com (${itemName})`;
-          fullPageChat.style.display = 'block';
-          fetchChatMessages();
-
-          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-        });
       }
 
       chatSendBtn.addEventListener('click', async () => {
@@ -2059,7 +2066,7 @@
             if (userEmail === 'admin@norms.com') {
                 navHtml += `
                     <button type="button" class="nav-item" id="bottom-nav-admin-btn" onclick="openAdminModal()">
-                        <span class="nav-icon">🛡️</span>
+                        <span class="nav-icon">🛡️<span id="admin-notif-badge" class="notif-badge">0</span></span>
                         <span>Admin</span>
                     </button>
                 `;
