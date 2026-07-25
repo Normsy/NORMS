@@ -1343,11 +1343,11 @@
             
             <div class="settings-section-card">
                 <h3>Live Customer Conversations (admin@norms.com)</h3>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Direct view of user chats and inquiries.</p>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Instant real-time sync with database messages.</p>
                 
                 <div class="chat-box" style="height: 45vh;">
                     <div class="chat-messages" id="admin-chat-messages-container">
-                        <div class="chat-message received">System initialized. Waiting for customer messages...</div>
+                        <div class="chat-message received">Connecting to real-time chat stream...</div>
                     </div>
                     <div class="chat-input-area">
                         <input type="text" id="admin-chat-input-text" class="chat-input-field" placeholder="Reply to customer as admin..." />
@@ -1447,32 +1447,29 @@
 
       let currentMode = 'login'; 
       let activeItemData = null;
+      let real-timeSubscription = null;
 
       const slidesWrapper = document.getElementById('slides-wrapper');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
       let isProgrammaticScroll = false;
-      let currentActiveView = 'home'; // Tracks active tab view ('home', 'market', 'orders')
+      let currentActiveView = 'home';
 
       function switchView(viewName) {
         currentActiveView = viewName;
         
-        // Hide all slides first
         document.querySelectorAll('.slide').forEach(slide => {
           slide.classList.add('hidden');
         });
 
-        // Show only the slides belonging to the active view section
         const targetSlides = document.querySelectorAll(`.slide.view-${viewName}`);
         targetSlides.forEach(slide => {
           slide.classList.remove('hidden');
         });
 
-        // Reset scroll position to top of container
         slidesWrapper.scrollTop = 0;
 
-        // Update active class on bottom nav items
         document.querySelectorAll('.nav-item').forEach(btn => {
           btn.classList.remove('active');
           if (btn.getAttribute('data-view') === viewName) {
@@ -1558,7 +1555,6 @@
         navDropdownMenu.classList.remove('show');
       });
 
-      // FAQ Accordion Dropdown Logic
       const faqItems = document.querySelectorAll('.faq-item');
       faqItems.forEach(item => {
         const questionBtn = item.querySelector('.faq-question');
@@ -1610,7 +1606,6 @@
         userStatus.innerText = '';
       });
 
-      // OPEN CHECKOUT MODAL
       async function openCheckout(itemName, itemPrice, itemImg, stockElementId) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
@@ -1639,7 +1634,6 @@
         if (e.target === checkoutModal) checkoutModal.style.display = 'none'; 
       });
 
-      // CONFIRM CHECKOUT BUTTON HANDLER
       btnConfirmCheckout.addEventListener('click', async () => {
         const username = checkoutUsername.value.trim();
         const confirmUsername = checkoutConfirmUsername.value.trim();
@@ -1687,7 +1681,7 @@
           return;
         }
 
-        setTimeout(() => {
+        setTimeout(async () => {
           loadingOverlay.style.display = 'none';
 
           const stockEl = document.getElementById(stockElementId);
@@ -1704,13 +1698,13 @@
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
-          // Automatically dispatch order notification message to admin live chat backend/inbox
-          sendAutomaticOrderNotification(itemName, itemPrice, username, description);
+          // INSTANT DATABASE DISPATCH TO ADMIN@NORMS.COM
+          await sendChatMessage(`[NEW ORDER] Item: ${itemName} (₱${itemPrice.toFixed(2)}) | Roblox User: ${username} | Note: ${description || 'None'}`);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
           
           switchView('orders');
-        }, 1200);
+        }, 800);
       });
 
       function addOrderToList(itemName, itemPrice, itemImg, username, description) {
@@ -1737,25 +1731,77 @@
         ordersContainer.prepend(orderRow);
       }
 
-      // Automatically dispatch checkout confirmation into the live admin inbox
-      function sendAutomaticOrderNotification(itemName, itemPrice, username, description) {
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-          const userEmail = session ? session.user.email : 'Guest User';
-          const notificationHtml = `
-            <div class="chat-message received" style="border-left: 3px solid #000;">
-              <strong>[NEW ORDER CONFIRMED]</strong><br>
-              Item: ${itemName} (₱${itemPrice.toFixed(2)})<br>
-              Roblox User: ${username}<br>
-              Account Email: ${userEmail}<br>
-              ${description ? `Note: ${description}` : ''}
-            </div>
-          `;
-          adminChatMessagesContainer.insertAdjacentHTML('beforeend', notificationHtml);
-          adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
-        });
+      // HIGH-SPEED REAL-TIME DATABASE CHAT ENGINE
+      async function sendChatMessage(text) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const senderEmail = session.user.email;
+        const recipientEmail = 'admin@norms.com';
+
+        // Insert message directly into database table 'messages' for lightning-fast sync
+        await supabaseClient.from('messages').insert([
+          { sender: senderEmail, recipient: recipientEmail, message: text, created_at: new Date() }
+        ]);
       }
 
-      // OPEN CHAT WITH ADMIN (admin@norms.com)
+      async function fetchChatMessages() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const userEmail = session.user.email;
+
+        const { data, error } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
+          .order('created_at', { ascending: true });
+
+        if (error) return;
+
+        chatMessagesContainer.innerHTML = '';
+        adminChatMessagesContainer.innerHTML = '';
+
+        if (data && data.length > 0) {
+          data.forEach(msg => {
+            const isSentByMe = msg.sender === userEmail;
+            
+            // Render in Customer Chat Box
+            const chatBubble = document.createElement('div');
+            chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
+            chatBubble.innerText = `${isSentByMe ? '' : msg.sender + ': '}${msg.message}`;
+            chatMessagesContainer.appendChild(chatBubble);
+
+            // Render in Admin Panel Inbox if user is admin
+            if (userEmail === 'admin@norms.com' || msg.recipient === 'admin@norms.com') {
+              const adminBubble = document.createElement('div');
+              adminBubble.className = `chat-message ${msg.sender === 'admin@norms.com' ? 'sent' : 'received'}`;
+              adminBubble.innerText = `[${msg.sender}]: ${msg.message}`;
+              adminChatMessagesContainer.appendChild(adminBubble);
+            }
+          });
+        } else {
+          chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>';
+          adminChatMessagesContainer.innerHTML = '<div class="chat-message received">Waiting for incoming messages...</div>';
+        }
+
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
+      }
+
+      function setupRealtimeListener() {
+        if (realtimeSubscription) {
+          supabaseClient.removeChannel(realtimeSubscription);
+        }
+
+        realtimeSubscription = supabaseClient
+          .channel('public:messages')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+            fetchChatMessages();
+          })
+          .subscribe();
+      }
+
       function openChatWithAdmin(itemName) {
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
           if (!session) {
@@ -1766,82 +1812,57 @@
 
           chatHeaderTitle.innerText = `Chat with admin@norms.com (${itemName})`;
           fullPageChat.style.display = 'block';
+          fetchChatMessages();
 
           document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         });
       }
 
-      chatSendBtn.addEventListener('click', () => {
-        sendMessage();
-      });
-
-      chatInputText.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          sendMessage();
-        }
-      });
-
-      function sendMessage() {
+      chatSendBtn.addEventListener('click', async () => {
         const text = chatInputText.value.trim();
         if (!text) return;
-
-        const sentMsg = document.createElement('div');
-        sentMsg.className = 'chat-message sent';
-        sentMsg.innerText = text;
-        chatMessagesContainer.appendChild(sentMsg);
-
-        // Deliver copy to Admin Panel chat view with sender metadata
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-          const userEmail = session ? session.user.email : 'User';
-          const adminMsg = document.createElement('div');
-          adminMsg.className = 'chat-message received';
-          adminMsg.innerText = `[From ${userEmail}]: ${text}`;
-          adminChatMessagesContainer.appendChild(adminMsg);
-          adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
-        });
-
         chatInputText.value = '';
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-
-        setTimeout(() => {
-          const replyMsg = document.createElement('div');
-          replyMsg.className = 'chat-message received';
-          replyMsg.innerText = 'Thanks for reaching out! admin@norms.com has received your message and will process your order shortly.';
-          chatMessagesContainer.appendChild(replyMsg);
-          chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-        }, 1000);
-      }
-
-      // Admin Chat Reply Handling
-      adminChatSendBtn.addEventListener('click', () => {
-        sendAdminMessage();
+        await sendChatMessage(text);
+        fetchChatMessages();
       });
 
-      adminChatInputText.addEventListener('keypress', (e) => {
+      chatInputText.addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
-          sendAdminMessage();
+          const text = chatInputText.value.trim();
+          if (!text) return;
+          chatInputText.value = '';
+          await sendChatMessage(text);
+          fetchChatMessages();
         }
       });
 
-      function sendAdminMessage() {
+      adminChatSendBtn.addEventListener('click', async () => {
         const text = adminChatInputText.value.trim();
         if (!text) return;
-
-        const adminSent = document.createElement('div');
-        adminSent.className = 'chat-message sent';
-        adminSent.innerText = `admin@norms.com: ${text}`;
-        adminChatMessagesContainer.appendChild(adminSent);
-
-        // Deliver admin response to customer chat box
-        const customerReply = document.createElement('div');
-        customerReply.className = 'chat-message received';
-        customerReply.innerText = `admin@norms.com: ${text}`;
-        chatMessagesContainer.appendChild(customerReply);
-        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-
         adminChatInputText.value = '';
-        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
-      }
+        
+        // Admin replies go directly to the latest active user or broadcasted
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        await supabaseClient.from('messages').insert([
+          { sender: 'admin@norms.com', recipient: 'customer', message: text, created_at: new Date() }
+        ]);
+        fetchChatMessages();
+      });
+
+      adminChatInputText.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') {
+          const text = adminChatInputText.value.trim();
+          if (!text) return;
+          adminChatInputText.value = '';
+          
+          await supabaseClient.from('messages').insert([
+            { sender: 'admin@norms.com', recipient: 'customer', message: text, created_at: new Date() }
+          ]);
+          fetchChatMessages();
+        }
+      });
 
       closeFullChat.addEventListener('click', () => {
         fullPageChat.style.display = 'none';
@@ -1888,6 +1909,7 @@
             return;
           }
           fullPageAdmin.style.display = 'block';
+          fetchChatMessages();
 
           document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
           const adminBtn = document.getElementById('bottom-nav-admin-btn');
@@ -2057,6 +2079,8 @@
             `;
 
             bottomNav.innerHTML = navHtml;
+            setupRealtimeListener();
+            fetchChatMessages();
         } else {
             bottomNav.innerHTML = `
                 <button class="nav-item active" data-view="home" onclick="switchView('home')">
