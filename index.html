@@ -613,24 +613,6 @@
             position: relative;
         }
 
-        /* NOTIFICATION BADGE STYLING */
-        .notif-badge {
-            position: absolute;
-            top: -4px;
-            right: 25%;
-            background-color: #ff0000;
-            color: #ffffff;
-            font-size: 0.6rem;
-            font-weight: 800;
-            padding: 1px 5px;
-            border-radius: 10px;
-            display: none;
-        }
-        
-        .notif-badge.show {
-            display: inline-block;
-        }
-
         /* FULL PAGE SETTINGS / AUTH MODALS */
         .modal {
             display: none;
@@ -1327,7 +1309,7 @@
     <div id="full-page-admin" class="full-page-settings">
         <div class="settings-container-inner">
             <div class="settings-header">
-                <h2>Inbox — Global Orders</h2>
+                <h2>Buyers — Global Orders</h2>
                 <button type="button" class="settings-close-btn" id="close-full-admin">&times;</button>
             </div>
             
@@ -1682,7 +1664,6 @@
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
-          // Save order globally to database table or send message payload
           await saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, session.user.email);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
@@ -1800,7 +1781,6 @@
         if (error) return;
 
         chatMessagesContainer.innerHTML = '';
-        let unreadCount = 0;
 
         if (data && data.length > 0) {
           data.forEach(msg => {
@@ -1815,24 +1795,9 @@
               chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
               chatMessagesContainer.appendChild(chatBubble);
             }
-
-            if (userEmail === 'admin@norms.com' && msg.sender !== 'admin@norms.com') {
-              unreadCount++;
-            }
           });
         } else {
           chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
-        }
-
-        // Update notification badge on Inbox Button
-        const adminBadge = document.getElementById('admin-notif-badge');
-        if (adminBadge) {
-          if (unreadCount > 0 && userEmail === 'admin@norms.com') {
-            adminBadge.innerText = unreadCount;
-            adminBadge.classList.add('show');
-          } else {
-            adminBadge.classList.remove('show');
-          }
         }
 
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
@@ -2060,36 +2025,43 @@
         
         if (session) {
             const userEmail = session.user.email;
-            let navHtml = `
-                <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
-                    <span class="nav-icon">🏠</span>
-                    <span>Home</span>
-                </button>
-                <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">
-                    <span class="nav-icon">🛒</span>
-                    <span>Market</span>
-                </button>
-                <button type="button" class="nav-item" data-view="orders" onclick="switchView('orders')">
-                    <span class="nav-icon">📦</span>
-                    <span>Orders</span>
-                </button>
-            `;
+            let navHtml = '';
 
             if (userEmail === 'admin@norms.com') {
-                navHtml += `
+                navHtml = `
+                    <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
+                        <span class="nav-icon">🏠</span>
+                        <span>Home</span>
+                    </button>
                     <button type="button" class="nav-item" id="bottom-nav-admin-btn" onclick="openAdminModal()">
-                        <span class="nav-icon">📥<span id="admin-notif-badge" class="notif-badge">0</span></span>
-                        <span>Inbox</span>
+                        <span class="nav-icon">👥</span>
+                        <span>Buyers</span>
+                    </button>
+                    <button type="button" class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Setting</span>
+                    </button>
+                `;
+            } else {
+                navHtml = `
+                    <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
+                        <span class="nav-icon">🏠</span>
+                        <span>Home</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="market" onclick="switchView('market')">
+                        <span class="nav-icon">🛒</span>
+                        <span>Market</span>
+                    </button>
+                    <button type="button" class="nav-item" data-view="orders" onclick="switchView('orders')">
+                        <span class="nav-icon">📦</span>
+                        <span>Orders</span>
+                    </button>
+                    <button type="button" class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
+                        <span class="nav-icon">⚙️</span>
+                        <span>Setting</span>
                     </button>
                 `;
             }
-
-            navHtml += `
-                <button type="button" class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
-                    <span class="nav-icon">⚙️</span>
-                    <span>Settings</span>
-                </button>
-            `;
 
             bottomNav.innerHTML = navHtml;
             setupRealtimeListener();
