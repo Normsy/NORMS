@@ -8,84 +8,115 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-const fighters = [
-    { x: -150, y: 0, speed: 3, phase: 0 },
-    { x: -450, y: 0, speed: 3.5, phase: Math.PI }
-];
+const ground = () => canvas.height * 0.78;
 
-function drawStick(x, y, phase) {
+class Runner{
 
-    const arm = Math.sin(phase) * 18;
-    const leg = Math.sin(phase) * 20;
+    constructor(x,speed){
 
-    ctx.strokeStyle = "rgba(255,255,255,.18)";
-    ctx.lineWidth = 3;
-    ctx.lineCap = "round";
+        this.x=x;
+        this.speed=speed;
+        this.phase=Math.random()*Math.PI*2;
 
-    // Head
-    ctx.beginPath();
-    ctx.arc(x, y - 42, 12, 0, Math.PI * 2);
-    ctx.stroke();
+    }
 
-    // Body
-    ctx.beginPath();
-    ctx.moveTo(x, y - 30);
-    ctx.lineTo(x, y + 8);
+    update(){
 
-    // Arms
-    ctx.moveTo(x, y - 18);
-    ctx.lineTo(x - arm, y - 5);
+        this.x+=this.speed;
+        this.phase+=0.18;
 
-    ctx.moveTo(x, y - 18);
-    ctx.lineTo(x + arm, y - 5);
+        if(this.x>canvas.width+120){
 
-    // Legs
-    ctx.moveTo(x, y + 8);
-    ctx.lineTo(x - leg, y + 34);
+            this.x=-120;
 
-    ctx.moveTo(x, y + 8);
-    ctx.lineTo(x + leg, y + 34);
+        }
 
-    ctx.stroke();
+    }
+
+    draw(){
+
+        const y=ground();
+
+        const swing=Math.sin(this.phase)*12;
+        const leg=Math.sin(this.phase)*16;
+
+        ctx.save();
+
+        ctx.translate(this.x,y);
+
+        ctx.globalAlpha=.12;
+
+        ctx.strokeStyle="#000";
+        ctx.lineWidth=3;
+        ctx.lineCap="round";
+
+        // head
+
+        ctx.beginPath();
+        ctx.arc(0,-42,12,0,Math.PI*2);
+        ctx.stroke();
+
+        // body
+
+        ctx.beginPath();
+
+        ctx.moveTo(0,-30);
+        ctx.lineTo(0,5);
+
+        // left arm
+
+        ctx.moveTo(0,-18);
+        ctx.lineTo(-swing,-5);
+
+        // right arm
+
+        ctx.moveTo(0,-18);
+        ctx.lineTo(swing,-5);
+
+        // left leg
+
+        ctx.moveTo(0,5);
+        ctx.lineTo(-leg,28);
+
+        // right leg
+
+        ctx.moveTo(0,5);
+        ctx.lineTo(leg,28);
+
+        ctx.stroke();
+
+        ctx.restore();
+
+    }
+
 }
 
-function animate() {
+const runners=[];
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+for(let i=0;i<6;i++){
 
-    // Purple glow
-    const g = ctx.createRadialGradient(
-        canvas.width / 2,
-        canvas.height / 2,
-        50,
-        canvas.width / 2,
-        canvas.height / 2,
-        700
+    runners.push(
+        new Runner(
+            i*250,
+            1.5+Math.random()*1.5
+        )
     );
 
-    g.addColorStop(0, "rgba(124,58,237,.18)");
-    g.addColorStop(1, "rgba(0,0,0,0)");
+}
 
-    ctx.fillStyle = g;
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+function animate(){
 
-    fighters.forEach(f => {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        f.phase += 0.2;
-        f.x += f.speed;
+    runners.forEach(r=>{
 
-        if (f.x > canvas.width + 150)
-            f.x = -200;
-
-        drawStick(
-            f.x,
-            canvas.height * 0.72,
-            f.phase
-        );
+        r.update();
+        r.draw();
 
     });
 
     requestAnimationFrame(animate);
+
 }
 
 animate();
