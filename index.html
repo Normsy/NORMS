@@ -82,16 +82,16 @@
             background: transparent;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            width: 34px;
-            height: 34px;
+            padding: 6px 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
-            font-weight: 800;
+            font-size: 0.8rem;
+            font-weight: 700;
             cursor: pointer;
             color: #000000;
             transition: all 0.2s ease;
+            min-width: 90px;
         }
 
         .nav-dropdown-btn:hover {
@@ -620,9 +620,9 @@
         <div class="logo">
             NORMS
         </div>
-        <!-- V DROPDOWN BUTTON -->
+        <!-- TEXT DROPDOWN BUTTON (DYNAMICALLY UPDATES) -->
         <div class="nav-dropdown-container">
-            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">V</button>
+            <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">Introduction</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">Introduction</button>
                 <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why Norms?</button>
@@ -636,7 +636,7 @@
     <div class="slides-container" id="slides-wrapper">
 
         <!-- SLIDE 1: INTRO ONLY -->
-        <section class="slide" id="slide-intro">
+        <section class="slide" id="slide-intro" data-title="Introduction">
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
@@ -646,7 +646,7 @@
         </section>
 
         <!-- SLIDE 2: WHY NORMS -->
-        <section class="slide" id="slide-why">
+        <section class="slide" id="slide-why" data-title="Why Norms?">
             <div class="slide-inner">
                 <h2 class="section-title">Why Norms?</h2>
                 <p class="section-subtitle">Short section explaining our value proposition.</p>
@@ -668,7 +668,7 @@
         </section>
 
         <!-- SLIDE 3: HOW IT WORKS -->
-        <section class="slide" id="slide-how">
+        <section class="slide" id="slide-how" data-title="How it Works?">
             <div class="slide-inner">
                 <h2 class="section-title">How it Works?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
@@ -693,7 +693,7 @@
         </section>
 
         <!-- SLIDE 4: FEATURED ITEMS (STORE) -->
-        <section class="slide" id="store-slide">
+        <section class="slide" id="store-slide" data-title="Market">
             <div class="slide-inner">
                 <h2 class="section-title">Featured Items</h2>
                 <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
@@ -784,7 +784,7 @@
         </section>
 
         <!-- SLIDE 5: FAQ (WITH DROPDOWNS) -->
-        <section class="slide" id="faq-slide">
+        <section class="slide" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
                 <p class="section-subtitle">Commonly asked questions</p>
@@ -912,14 +912,39 @@
 
       let currentMode = 'login'; 
 
-      function scrollToSlide(slideId) {
-        document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
-        document.getElementById('nav-dropdown-menu').classList.remove('show');
-      }
-
-      // Top V Dropdown Toggle Logic
+      const slidesWrapper = document.getElementById('slides-wrapper');
+      const slides = document.querySelectorAll('.slide');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
+
+      function updateNavbarTitle() {
+        const containerRect = slidesWrapper.getBoundingClientRect();
+        let closestSlide = slides[0];
+        let minDistance = Infinity;
+
+        slides.forEach(slide => {
+          const rect = slide.getBoundingClientRect();
+          const distance = Math.abs(rect.top - containerRect.top);
+          if (distance < minDistance) {
+            minDistance = distance;
+            closestSlide = slide;
+          }
+        });
+
+        const slideTitle = closestSlide.getAttribute('data-title');
+        if (slideTitle) {
+          navDropdownToggle.innerText = slideTitle;
+        }
+      }
+
+      slidesWrapper.addEventListener('scroll', () => {
+        requestAnimationFrame(updateNavbarTitle);
+      });
+
+      function scrollToSlide(slideId) {
+        document.getElementById(slideId).scrollIntoView({ behavior: 'smooth' });
+        navDropdownMenu.classList.remove('show');
+      }
 
       navDropdownToggle.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1090,6 +1115,7 @@
       }
 
       checkUser();
+      updateNavbarTitle();
     </script>
 </body>
 
