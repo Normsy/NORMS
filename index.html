@@ -789,7 +789,7 @@
     <div class="slides-container" id="slides-wrapper">
 
         <!-- SLIDE 1: WHAT? (INTRODUCTION) -->
-        <section class="slide" id="slide-intro" data-title="What?">
+        <section class="slide view-home" id="slide-intro" data-title="What?">
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
@@ -799,7 +799,7 @@
         </section>
 
         <!-- SLIDE 2: WHY? (WHY SECTION) -->
-        <section class="slide" id="slide-why" data-title="Why?">
+        <section class="slide view-home" id="slide-why" data-title="Why?">
             <div class="slide-inner">
                 <h2 class="section-title">Why?</h2>
                 <p class="section-subtitle">Short section explaining our value proposition.</p>
@@ -821,7 +821,7 @@
         </section>
 
         <!-- SLIDE 3: HOW? (HOW SECTION) -->
-        <section class="slide" id="slide-how" data-title="How?">
+        <section class="slide view-home" id="slide-how" data-title="How?">
             <div class="slide-inner">
                 <h2 class="section-title">How?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
@@ -846,7 +846,7 @@
         </section>
 
         <!-- SLIDE 4: FEATURED ITEMS (STORE) -->
-        <section class="slide" id="store-slide" data-title="Market">
+        <section class="slide view-market hidden" id="store-slide" data-title="Market">
             <div class="slide-inner">
                 <h2 class="section-title">Featured Items</h2>
                 <p class="section-subtitle">Trending Items — Explore the most wanted Roblox items available on NORMS.</p>
@@ -936,8 +936,8 @@
             </div>
         </section>
 
-        <!-- SLIDE 5: ORDERS TAB (HIDDEN WHEN LOGGED OUT) -->
-        <section class="slide hidden" id="orders-slide" data-title="Orders">
+        <!-- SLIDE 5: ORDERS TAB (HIDDEN WHEN LOGGED OUT OR NOT IN ORDERS VIEW) -->
+        <section class="slide view-orders hidden" id="orders-slide" data-title="Orders">
             <div class="slide-inner">
                 <h2 class="section-title">My Orders</h2>
                 <p class="section-subtitle">Review your successfully purchased items below.</p>
@@ -948,7 +948,7 @@
         </section>
 
         <!-- SLIDE 6: FAQ (FAQ SECTION) -->
-        <section class="slide" id="faq-slide" data-title="FAQ">
+        <section class="slide view-home" id="faq-slide" data-title="FAQ">
             <div class="slide-inner">
                 <h2 class="section-title">FAQ</h2>
                 <p class="section-subtitle">Commonly asked questions</p>
@@ -1080,7 +1080,6 @@
 
       const authModal = document.getElementById('auth-modal');
       const fullPageSettings = document.getElementById('full-page-settings');
-      const ordersSlide = document.getElementById('orders-slide');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
@@ -1114,11 +1113,65 @@
       const navDropdownMenu = document.getElementById('nav-dropdown-menu');
 
       let isProgrammaticScroll = false;
+      let currentActiveView = 'home'; // Tracks active tab view ('home', 'market', 'orders')
+
+      function switchView(viewName) {
+        currentActiveView = viewName;
+        
+        // Hide all slides first
+        document.querySelectorAll('.slide').forEach(slide => {
+          slide.classList.add('hidden');
+        });
+
+        // Show only the slides belonging to the active view section
+        const targetSlides = document.querySelectorAll(`.slide.view-${viewName}`);
+        targetSlides.forEach(slide => {
+          slide.classList.remove('hidden');
+        });
+
+        // Reset scroll position to top of container
+        slidesWrapper.scrollTop = 0;
+
+        // Update active class on bottom nav items
+        document.querySelectorAll('.nav-item').forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.getAttribute('data-view') === viewName) {
+            btn.classList.add('active');
+          }
+        });
+
+        updateNavbarDropdownOptions(viewName);
+        updateNavbarTitle();
+      }
+
+      function updateNavbarDropdownOptions(viewName) {
+        if (viewName === 'home') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-intro')">What?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-why')">Why?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('slide-how')">How?</button>
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('faq-slide')">FAQ</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        } else if (viewName === 'market') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('store-slide')">Market</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        } else if (viewName === 'orders') {
+          navDropdownMenu.innerHTML = `
+            <button type="button" class="nav-dropdown-item" onclick="scrollToSlide('orders-slide')">Orders</button>
+          `;
+          navDropdownToggle.style.display = 'flex';
+        }
+      }
 
       function updateNavbarTitle() {
         if (isProgrammaticScroll) return;
         const containerRect = slidesWrapper.getBoundingClientRect();
-        const activeSlides = document.querySelectorAll('.slide:not(.hidden)');
+        const activeSlides = document.querySelectorAll(`.slide.view-${currentActiveView}:not(.hidden)`);
+        if (activeSlides.length === 0) return;
+
         let closestSlide = activeSlides[0];
         let minDistance = Infinity;
 
@@ -1264,7 +1317,9 @@
 
         addOrderToList(itemName, itemPrice);
         alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
-        scrollToSlide('orders-slide');
+        
+        // If logged in, let them switch to Orders view to check it out
+        switchView('orders');
       }
 
       function addOrderToList(itemName, itemPrice) {
@@ -1436,14 +1491,17 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
-            // User is logged in: Show Market, Orders, Settings and enable Orders Slide
-            ordersSlide.classList.remove('hidden');
+            // User is logged in: Show Home, Market, Orders, Settings
             bottomNav.innerHTML = `
-                <button class="nav-item active" onclick="scrollToSlide('store-slide')">
+                <button class="nav-item active" data-view="home" onclick="switchView('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-view="market" onclick="switchView('market')">
                     <span class="nav-icon">🛒</span>
                     <span>Market</span>
                 </button>
-                <button class="nav-item" onclick="scrollToSlide('orders-slide')">
+                <button class="nav-item" data-view="orders" onclick="switchView('orders')">
                     <span class="nav-icon">📦</span>
                     <span>Orders</span>
                 </button>
@@ -1453,10 +1511,13 @@
                 </button>
             `;
         } else {
-            // User is NOT logged in: Show Market, Login and hide Orders Slide
-            ordersSlide.classList.add('hidden');
+            // User is NOT logged in: Show Home, Market, Login (No Orders)
             bottomNav.innerHTML = `
-                <button class="nav-item active" onclick="scrollToSlide('store-slide')">
+                <button class="nav-item active" data-view="home" onclick="switchView('home')">
+                    <span class="nav-icon">🏠</span>
+                    <span>Home</span>
+                </button>
+                <button class="nav-item" data-view="market" onclick="switchView('market')">
                     <span class="nav-icon">🛒</span>
                     <span>Market</span>
                 </button>
@@ -1466,11 +1527,10 @@
                 </button>
             `;
         }
-        updateNavbarTitle();
+        switchView('home');
       }
 
       checkUser();
-      updateNavbarTitle();
     </script>
 </body>
 
