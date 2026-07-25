@@ -569,6 +569,8 @@
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
+            cursor: pointer;
+            border: none;
         }
 
         /* STICKY BOTTOM NAV BAR */
@@ -762,7 +764,7 @@
             color: #000000;
         }
 
-        /* FULL PAGE SETTINGS / ADMIN TAB VIEW STYLES */
+        /* FULL PAGE SETTINGS / CHAT / ADMIN VIEW STYLES */
         .full-page-settings {
             display: none;
             position: fixed;
@@ -884,6 +886,76 @@
             color: #000000;
             background: #eeeeee;
             border: 1px solid #dddddd;
+        }
+
+        /* CHAT SYSTEM INTERFACE STYLES */
+        .chat-box {
+            background: #f9f9f9;
+            border: 1px solid #eaeaea;
+            border-radius: 12px;
+            height: 55vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-message {
+            max-width: 75%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .chat-message.sent {
+            background: #000000;
+            color: #ffffff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+        }
+
+        .chat-message.received {
+            background: #e5e5e5;
+            color: #000000;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 10px;
+            background: #ffffff;
+            border-top: 1px solid #eaeaea;
+            gap: 8px;
+        }
+
+        .chat-input-field {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .chat-send-btn {
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
         .card.hidden {
@@ -1212,6 +1284,25 @@
         </div>
     </div>
 
+    <!-- FULL PAGE CHAT TAB VIEW -->
+    <div id="full-page-chat" class="full-page-settings">
+        <div class="settings-container-inner">
+            <div class="settings-header">
+                <h2 id="chat-header-title">Chat with Admin</h2>
+                <button type="button" class="settings-close-btn" id="close-full-chat">&times;</button>
+            </div>
+            <div class="chat-box">
+                <div class="chat-messages" id="chat-messages-container">
+                    <div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message to admin@norms.com..." />
+                    <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FULL PAGE ADMIN PANEL VIEW -->
     <div id="full-page-admin" class="full-page-settings">
         <div class="settings-container-inner">
@@ -1262,11 +1353,13 @@
       const checkoutModal = document.getElementById('checkout-modal');
       const loadingOverlay = document.getElementById('loading-overlay');
       const fullPageSettings = document.getElementById('full-page-settings');
+      const fullPageChat = document.getElementById('full-page-chat');
       const fullPageAdmin = document.getElementById('full-page-admin');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
       const closeCheckoutModal = document.getElementById('close-checkout-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
+      const closeFullChat = document.getElementById('close-full-chat');
       const closeFullAdmin = document.getElementById('close-full-admin');
       
       const settingsUserBalance = document.getElementById('settings-user-balance');
@@ -1290,6 +1383,12 @@
       const tabSignup = document.getElementById('tab-signup');
       const userStatus = document.getElementById('user-status');
       const bottomNav = document.getElementById('bottom-nav');
+
+      // Chat elements
+      const chatMessagesContainer = document.getElementById('chat-messages-container');
+      const chatInputText = document.getElementById('chat-input-text');
+      const chatSendBtn = document.getElementById('chat-send-btn');
+      const chatHeaderTitle = document.getElementById('chat-header-title');
 
       // Checkout elements
       const checkoutModalImg = document.getElementById('checkout-modal-img');
@@ -1584,11 +1683,65 @@
           </div>
           <div class="order-right-side">
             <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <a href="https://m.me/claditch" target="_blank" class="order-contact-btn">Contact</a>
+            <button type="button" class="order-contact-btn" onclick="openChatWithAdmin('${itemName}')">Contact</button>
           </div>
         `;
         ordersContainer.prepend(orderRow);
       }
+
+      // OPEN CHAT WITH ADMIN (admin@norms.com)
+      function openChatWithAdmin(itemName) {
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+          if (!session) {
+            authModal.style.display = 'flex';
+            userStatus.innerText = 'Please log in to message support.';
+            return;
+          }
+
+          chatHeaderTitle.innerText = `Chat with admin@norms.com (${itemName})`;
+          fullPageChat.style.display = 'block';
+
+          // Reset chat view bottom nav state if needed
+          document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        });
+      }
+
+      chatSendBtn.addEventListener('click', () => {
+        sendMessage();
+      });
+
+      chatInputText.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      function sendMessage() {
+        const text = chatInputText.value.trim();
+        if (!text) return;
+
+        const sentMsg = document.createElement('div');
+        sentMsg.className = 'chat-message sent';
+        sentMsg.innerText = text;
+        chatMessagesContainer.appendChild(sentMsg);
+
+        chatInputText.value = '';
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+        // Simulated automated admin reply response
+        setTimeout(() => {
+          const replyMsg = document.createElement('div');
+          replyMsg.className = 'chat-message received';
+          replyMsg.innerText = 'Thanks for reaching out! admin@norms.com has received your message and will process your order shortly.';
+          chatMessagesContainer.appendChild(replyMsg);
+          chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        }, 1000);
+      }
+
+      closeFullChat.addEventListener('click', () => {
+        fullPageChat.style.display = 'none';
+        switchView(currentActiveView);
+      });
 
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1651,6 +1804,7 @@
         await supabaseClient.auth.signOut();
         fullPageSettings.style.display = 'none';
         fullPageAdmin.style.display = 'none';
+        fullPageChat.style.display = 'none';
         checkUser();
       });
 
