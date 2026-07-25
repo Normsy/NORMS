@@ -47,6 +47,31 @@
             background: #ffffff;
         }
 
+        /* INTRODUCTION SECTION WITH BACKGROUND IMAGE */
+        #slide-intro {
+            background-image: url('assets/items/Black Dragon.PNG'); /* Replace with your desired background image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Optional: Add a dark overlay so text remains readable if background image is bright */
+        #slide-intro::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.85); /* Adjust opacity here (e.g., 0.85 for a light tint, or use dark rgba for dark overlay) */
+            z-index: 1;
+        }
+
+        #slide-intro .slide-inner {
+            position: relative;
+            z-index: 2;
+        }
+
         /* TOP NAVBAR (FIXED OVERLAY) */
         nav {
             position: fixed;
