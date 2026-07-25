@@ -11,11 +11,39 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            padding-bottom: 80px;
+            padding-top: 10px; /* Gives breathing room at the very top */
+            padding-bottom: 90px; /* Space for fixed bottom bar */
             overflow-y: auto !important;
+            background-color: #050505;
+            color: #ffffff;
         }
 
-        /* GAME ICONS SCROLL BAR */
+        /* NAVBAR ADJUSTMENT */
+        nav {
+            margin-top: 10px;
+        }
+
+        /* HERO / INTRODUCTION SECTION */
+        .hero-intro {
+            text-align: center;
+            padding: 30px 15px 15px 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .hero-intro h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+        .hero-intro p {
+            font-size: 0.88rem;
+            color: #888888;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* GAME ICONS SCROLL BAR (PURE B&W) */
         .game-selector-container {
             padding: 15px 12px;
             overflow-x: auto;
@@ -35,7 +63,7 @@
             align-items: center;
             min-width: 58px;
             cursor: pointer;
-            opacity: 0.6;
+            opacity: 0.5;
             transition: all 0.2s ease;
         }
         .game-icon-card.active, .game-icon-card:hover {
@@ -47,21 +75,23 @@
             height: 50px;
             border-radius: 12px;
             object-fit: cover;
-            border: 2px solid transparent;
-            background: #222;
+            border: 2px solid #222;
+            background: #111;
         }
         .game-icon-card.active .game-icon-img {
-            border-color: #ff9800;
+            border-color: #ffffff;
+            background: #ffffff;
+            color: #000000;
         }
         .game-icon-label {
             font-size: 0.72rem;
             margin-top: 5px;
-            color: #fff;
+            color: #ffffff;
             text-align: center;
             font-weight: 500;
         }
 
-        /* RESPONSIVE PRODUCT GRID (2 COLS ON MOBILE, 4 COLS ON DESKTOP) */
+        /* RESPONSIVE PRODUCT GRID (2 COLS MOBILE / 4 COLS PC) */
         .products {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
@@ -86,6 +116,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            background: #111111 !important;
+            border: 1px solid #222222 !important;
         }
 
         .card .badge {
@@ -93,6 +125,9 @@
             padding: 3px 6px !important;
             top: 6px !important;
             right: 6px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-weight: bold;
         }
 
         .product-image {
@@ -114,17 +149,19 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #ffffff;
         }
 
         .card .price {
             font-size: 0.95rem !important;
             font-weight: bold;
             margin: 2px 0 !important;
+            color: #ffffff;
         }
 
         .card .stock {
             font-size: 0.7rem !important;
-            color: #888;
+            color: #777777;
             margin-bottom: 8px !important;
         }
 
@@ -132,6 +169,15 @@
             padding: 8px 0 !important;
             font-size: 0.75rem !important;
             border-radius: 8px !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            border: none !important;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .buy-btn:hover {
+            opacity: 0.85;
         }
 
         /* STICKY BOTTOM NAVIGATION BAR */
@@ -141,8 +187,8 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: #111;
-            border-top: 1px solid #222;
+            background: #0a0a0a;
+            border-top: 1px solid #222222;
             display: flex;
             justify-content: space-around;
             align-items: center;
@@ -152,7 +198,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #888;
+            color: #666666;
             text-decoration: none;
             font-size: 0.75rem;
             gap: 3px;
@@ -162,13 +208,13 @@
             flex: 1;
         }
         .nav-item.active, .nav-item:hover {
-            color: #fff;
+            color: #ffffff;
         }
         .nav-icon {
             font-size: 1.2rem;
         }
 
-        /* MODALS COMMON STYLES */
+        /* MODALS COMMON STYLES (MONOCHROME) */
         .modal {
             display: none;
             position: fixed;
@@ -183,15 +229,15 @@
             backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: #111;
-            border: 1px solid #333;
+            background: #111111;
+            border: 1px solid #333333;
             padding: 25px 20px;
             border-radius: 12px;
             width: 90%;
             max-width: 400px;
-            color: #fff;
+            color: #ffffff;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             position: relative;
         }
         .close-btn {
@@ -200,15 +246,15 @@
             right: 20px;
             font-size: 20px;
             cursor: pointer;
-            color: #888;
+            color: #888888;
         }
-        .close-btn:hover { color: #fff; }
+        .close-btn:hover { color: #ffffff; }
 
         .auth-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #333333;
             padding-bottom: 10px;
         }
         .auth-tab {
@@ -216,14 +262,14 @@
             padding: 8px;
             background: transparent;
             border: none;
-            color: #888;
+            color: #666666;
             font-weight: 600;
             cursor: pointer;
             font-size: 0.95rem;
         }
         .auth-tab.active {
-            color: #fff;
-            border-bottom: 2px solid #fff;
+            color: #ffffff;
+            border-bottom: 2px solid #ffffff;
         }
 
         .auth-input {
@@ -231,9 +277,9 @@
             padding: 12px;
             margin: 8px 0;
             border-radius: 6px;
-            border: 1px solid #333;
-            background: #222;
-            color: #fff;
+            border: 1px solid #333333;
+            background: #1a1a1a;
+            color: #ffffff;
             box-sizing: border-box;
         }
         .auth-btn {
@@ -242,8 +288,8 @@
             margin-top: 10px;
             border-radius: 6px;
             border: none;
-            background: #fff;
-            color: #000;
+            background: #ffffff;
+            color: #000000;
             font-weight: 600;
             cursor: pointer;
         }
@@ -263,7 +309,7 @@
         }
         .dash-card h4 {
             margin: 0 0 4px 0;
-            color: #888;
+            color: #888888;
             font-size: 0.75rem;
             text-transform: uppercase;
         }
@@ -286,9 +332,13 @@
             font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
-            color: #fff;
-            background: #222;
-            border: 1px solid #333;
+            color: #ffffff;
+            background: #222222;
+            border: 1px solid #333333;
+        }
+        .contact-link-btn:hover {
+            background: #ffffff;
+            color: #000000;
         }
 
         .card.hidden {
@@ -313,19 +363,15 @@
     </nav>
 
     <!-- HERO / INTRODUCTION SECTION -->
-    <div class="hero-intro" style="text-align: center; padding: 25px 15px 10px 15px; max-width: 600px; margin: 0 auto;">
-        <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 8px; color: #fff;">
-            Welcome to <span style="color: #ff9800;">NORMS</span>
-        </h1>
-        <p style="font-size: 0.9rem; color: #aaa; line-height: 1.4; margin: 0;">
-            Your trusted marketplace for premium Roblox items, pets, and collectibles. Fast delivery and secure transactions.
-        </p>
+    <div class="hero-intro">
+        <h1>Welcome to NORMS</h1>
+        <p>Your trusted marketplace for premium Roblox items, pets, and collectibles. Fast delivery and secure transactions.</p>
     </div>
 
     <!-- GAME CATEGORY SELECTOR -->
     <div class="game-selector-container">
         <div class="game-icon-card active" data-game="all">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#ff9800; color:#000; font-weight:bold; font-size:0.8rem;">ALL</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem;">ALL</div>
             <span class="game-icon-label">All Games</span>
         </div>
         <div class="game-icon-card" data-game="grow-a-garden-2">
@@ -333,11 +379,11 @@
             <span class="game-icon-label">Grow a Garden 2</span>
         </div>
         <div class="game-icon-card" data-game="bloxfruits">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888; font-size:0.8rem;">BF</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">BF</div>
             <span class="game-icon-label">Blox Fruits</span>
         </div>
         <div class="game-icon-card" data-game="mm2">
-            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; background:#222; color:#888; font-size:0.8rem;">MM2</div>
+            <div class="game-icon-img" style="display:flex; align-items:center; justify-content:center; font-size:0.8rem;">MM2</div>
             <span class="game-icon-label">MM2</span>
         </div>
     </div>
@@ -420,7 +466,7 @@
         </button>
     </div>
 
-    <!-- MODALS & SUPABASE -->
+    <!-- AUTH & SETTINGS MODALS -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-auth-modal">&times;</span>
@@ -439,7 +485,7 @@
                 <button type="button" id="btn-submit" class="auth-btn">Log In</button>
             </form>
 
-            <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #888;"></p>
+            <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #888888;"></p>
         </div>
     </div>
 
@@ -447,7 +493,7 @@
         <div class="modal-content">
             <span class="close-btn" id="close-settings-modal">&times;</span>
             <h2 style="margin-bottom: 2px;">Settings & Account</h2>
-            <span id="dash-user-email" style="color:#aaa; font-size:0.85em;">Not logged in</span>
+            <span id="dash-user-email" style="color:#aaaaaa; font-size:0.85em;">Not logged in</span>
 
             <div class="dash-cards">
                 <div class="dash-card">
@@ -456,13 +502,13 @@
                 </div>
                 <div class="dash-card">
                     <h4>Account Status</h4>
-                    <p id="user-status-text" style="color:#aaa;">● Guest Access</p>
+                    <p id="user-status-text" style="color:#aaaaaa;">● Guest Access</p>
                 </div>
                 <div class="dash-card">
                     <h4>Contact Support</h4>
                     <div class="contact-btns-group">
-                        <a href="https://m.me/claditch" target="_blank" class="contact-link-btn" style="background:#0084FF; border:none;">Messenger</a>
-                        <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn" style="background:#5865F2; border:none;">Discord</a>
+                        <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
+                        <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
                     </div>
                 </div>
             </div>
@@ -474,6 +520,7 @@
     <script src="canvas.js"></script>
     <script src="script.js"></script>
 
+    <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
       const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
@@ -634,18 +681,18 @@
           dashUserEmail.innerText = session.user.email;
           userDisplayInfo.innerText = displayName;
           userStatusText.innerText = '● Verified Member';
-          userStatusText.style.color = '#4CAF50';
+          userStatusText.style.color = '#ffffff';
           settingsAuthBtn.innerText = 'Log Out';
-          settingsAuthBtn.style.background = '#d9534f';
-          settingsAuthBtn.style.color = '#fff';
+          settingsAuthBtn.style.background = '#333333';
+          settingsAuthBtn.style.color = '#ffffff';
         } else {
           dashUserEmail.innerText = 'Not logged in';
           userDisplayInfo.innerText = 'Guest User';
           userStatusText.innerText = '● Guest Access';
-          userStatusText.style.color = '#aaa';
+          userStatusText.style.color = '#aaaaaa';
           settingsAuthBtn.innerText = 'Log In';
-          settingsAuthBtn.style.background = '#fff';
-          settingsAuthBtn.style.color = '#000';
+          settingsAuthBtn.style.background = '#ffffff';
+          settingsAuthBtn.style.color = '#000000';
         }
       }
 
