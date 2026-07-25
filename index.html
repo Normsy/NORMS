@@ -47,23 +47,109 @@
             background: #ffffff;
         }
 
-        /* INTRODUCTION SLIDE SPECIFIC BACKGROUND & BUBBLE CORNER */
-        #slide-intro {
-            background-color: #000000;
-            color: #ffffff;
+        /* STICK MAN STYLING */
+        .stickman {
+            position: absolute;
+            width: 40px;
+            height: 70px;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.85;
         }
 
-        #slide-intro .slide-inner {
-            background: #111111;
-            border: 1px solid #222222;
-            padding: 40px 30px;
-            border-radius: 32px;
+        .stickman .head {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            top: 0;
+            left: 13px;
         }
 
-        #slide-intro h1,
-        #slide-intro p,
-        #slide-intro span {
-            color: #ffffff !important;
+        .stickman .body {
+            width: 2px;
+            height: 25px;
+            background: #ffffff;
+            position: absolute;
+            top: 15px;
+            left: 19px;
+        }
+
+        /* Pose 1: Waving / Casual */
+        .stickman.pose-1 .arm-left {
+            width: 15px;
+            height: 2px;
+            background: #ffffff;
+            position: absolute;
+            top: 20px;
+            left: 5px;
+            transform: rotate(-30deg);
+        }
+        .stickman.pose-1 .arm-right {
+            width: 15px;
+            height: 2px;
+            background: #ffffff;
+            position: absolute;
+            top: 18px;
+            left: 20px;
+            transform: rotate(45deg);
+        }
+        .stickman.pose-1 .leg-left {
+            width: 2px;
+            height: 20px;
+            background: #ffffff;
+            position: absolute;
+            top: 40px;
+            left: 14px;
+            transform: rotate(15deg);
+        }
+        .stickman.pose-1 .leg-right {
+            width: 2px;
+            height: 20px;
+            background: #ffffff;
+            position: absolute;
+            top: 40px;
+            left: 24px;
+            transform: rotate(-15deg);
+        }
+
+        /* Pose 2: Thinking / Different Pose */
+        .stickman.pose-2 .arm-left {
+            width: 12px;
+            height: 2px;
+            background: #ffffff;
+            position: absolute;
+            top: 22px;
+            left: 8px;
+            transform: rotate(20deg);
+        }
+        .stickman.pose-2 .arm-right {
+            width: 14px;
+            height: 2px;
+            background: #ffffff;
+            position: absolute;
+            top: 18px;
+            left: 19px;
+            transform: rotate(-50deg);
+        }
+        .stickman.pose-2 .leg-left {
+            width: 2px;
+            height: 20px;
+            background: #ffffff;
+            position: absolute;
+            top: 40px;
+            left: 16px;
+            transform: rotate(-10deg);
+        }
+        .stickman.pose-2 .leg-right {
+            width: 2px;
+            height: 20px;
+            background: #ffffff;
+            position: absolute;
+            top: 40px;
+            left: 22px;
+            transform: rotate(10deg);
         }
 
         /* TOP NAVBAR (FIXED OVERLAY) */
@@ -180,17 +266,22 @@
         }
 
         /* 1. HERO SLIDE */
+        #slide-intro {
+            background: #000000;
+            color: #ffffff;
+        }
+
         .hero-intro h1 {
             font-size: 2.8rem;
             font-weight: 900;
             letter-spacing: 2px;
             margin-bottom: 15px;
-            color: #000000;
+            color: #ffffff;
         }
 
         .hero-intro p {
             font-size: 0.95rem;
-            color: #333333;
+            color: #cccccc;
             line-height: 1.6;
             margin-bottom: 15px;
         }
@@ -224,6 +315,19 @@
         }
 
         /* 3. HOW IT WORKS SLIDE */
+        #slide-how {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        #slide-how .section-title {
+            color: #ffffff;
+        }
+
+        #slide-how .section-subtitle {
+            color: #aaaaaa;
+        }
+
         .steps-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -232,8 +336,8 @@
         }
 
         .step-card {
-            border: 1px solid #e5e5e5;
-            background: #ffffff;
+            border: 1px solid #333333;
+            background: #111111;
             padding: 20px;
             border-radius: 14px;
             text-align: center;
@@ -242,8 +346,8 @@
         .step-number {
             font-size: 1.1rem;
             font-weight: 800;
-            background: #000000;
-            color: #ffffff;
+            background: #ffffff;
+            color: #000000;
             width: 30px;
             height: 30px;
             border-radius: 50%;
@@ -256,11 +360,12 @@
         .step-card h3 {
             font-size: 0.95rem;
             margin-bottom: 6px;
+            color: #ffffff;
         }
 
         .step-card p {
             font-size: 0.8rem;
-            color: #666666;
+            color: #aaaaaa;
         }
 
         /* 4. FEATURED ITEMS SLIDE */
@@ -773,11 +878,20 @@
 
         <!-- SLIDE 1: WHAT? -->
         <section class="slide" id="slide-intro" data-title="What?">
+            <!-- Stick Man Pose 1 at a Random Place -->
+            <div class="stickman pose-1" style="top: 15%; right: 12%;">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arm-left"></div>
+                <div class="arm-right"></div>
+                <div class="leg-left"></div>
+                <div class="leg-right"></div>
+            </div>
             <div class="slide-inner hero-intro">
                 <h1>NORMS</h1>
                 <p>Your trusted marketplace for Roblox in-game items. We provide a fast, secure, and reliable way to purchase the items you need to enhance your gaming experience. Whether you’re looking for rare collectibles, valuable resources, or exclusive gear, we’ve got you covered.</p>
-                <p style="font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
-                <span style="display:block; margin-top:20px; font-size:0.75rem; font-weight:700;">↓ Scroll down to explore</span>
+                <p style="color: #cccccc; font-size: 0.85rem;">Our goal is to make every transaction simple, safe, and hassle-free so you can spend less time searching and more time enjoying your favorite Roblox games.</p>
+                <span style="display:block; margin-top:20px; font-size:0.75rem; color:#aaaaaa; font-weight:700;">↓ Scroll down to explore</span>
             </div>
         </section>
 
@@ -805,6 +919,15 @@
 
         <!-- SLIDE 3: HOW? -->
         <section class="slide" id="slide-how" data-title="How?">
+            <!-- Stick Man Pose 2 at a Random Place -->
+            <div class="stickman pose-2" style="bottom: 15%; left: 10%;">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arm-left"></div>
+                <div class="arm-right"></div>
+                <div class="leg-left"></div>
+                <div class="leg-right"></div>
+            </div>
             <div class="slide-inner">
                 <h2 class="section-title">How?</h2>
                 <p class="section-subtitle">Show the simple buying process.</p>
