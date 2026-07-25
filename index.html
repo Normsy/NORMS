@@ -1445,6 +1445,11 @@
 
         updateNavbarDropdownOptions(viewName);
         updateNavbarTitle();
+        
+        // If switching to orders, fetch existing user orders from DB
+        if (viewName === 'orders') {
+          fetchUserOrders();
+        }
       }
 
       function updateNavbarDropdownOptions(viewName) {
@@ -1662,8 +1667,6 @@
 
           settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
-          addOrderToList(itemName, itemPrice, itemImg, username, description);
-          
           await saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, session.user.email);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
@@ -1678,28 +1681,42 @@
         ]).catch(() => {});
       }
 
-      function addOrderToList(itemName, itemPrice, itemImg, username, description) {
+      async function fetchUserOrders() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) return;
+
+        const userEmail = session.user.email;
+        const { data, error } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .eq('user_email', userEmail)
+          .order('created_at', { ascending: false });
+
         const ordersContainer = document.getElementById('orders-container');
-        const noOrdersMsg = document.getElementById('no-orders-msg');
-        if (noOrdersMsg) {
-          noOrdersMsg.remove();
+        ordersContainer.innerHTML = '';
+
+        if (error || !data || data.length === 0) {
+          ordersContainer.innerHTML = '<p id="no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No items purchased yet.</p>';
+          return;
         }
 
-        const orderRow = document.createElement('div');
-        orderRow.className = 'order-row';
-        orderRow.innerHTML = `
-          <img src="${itemImg}" class="order-thumbnail" alt="${itemName}">
-          <div class="order-info">
-            <h4>${itemName}</h4>
-            <p>Buyer: <strong>${username}</strong></p>
-            ${description ? `<p>Note: ${description}</p>` : ''}
-          </div>
-          <div class="order-right-side">
-            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
-          </div>
-        `;
-        ordersContainer.prepend(orderRow);
+        data.forEach(order => {
+          const orderRow = document.createElement('div');
+          orderRow.className = 'order-row';
+          orderRow.innerHTML = `
+            <img src="${order.image || 'assets/items/Black Dragon.PNG'}" class="order-thumbnail" alt="${order.item_name}">
+            <div class="order-info">
+              <h4>${order.item_name}</h4>
+              <p>Buyer: <strong>${order.roblox_username}</strong></p>
+              ${order.note ? `<p>Note: ${order.note}</p>` : ''}
+            </div>
+            <div class="order-right-side">
+              <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
+              <button type="button" class="order-contact-btn" onclick="openChatPanel('${order.item_name}', '${order.roblox_username}', 'admin@norms.com')">Contact</button>
+            </div>
+          `;
+          ordersContainer.appendChild(orderRow);
+        });
       }
 
       async function fetchGlobalOrdersForAdmin() {
