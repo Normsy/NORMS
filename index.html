@@ -47,6 +47,27 @@
             background: #ffffff;
         }
 
+        /* INTRODUCTION SECTION WITH STICKMAN CORNER BACKGROUND */
+        #slide-intro {
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* WHY SECTION BACKGROUND */
+        #slide-why {
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* HOW SECTION BACKGROUND */
+        #slide-how {
+            background-color: #fcfcfc;
+            background-image: radial-gradient(#e5e5e5 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
         /* STICKMAN CORNER GRAPHICS */
         .corner-stickman {
             position: absolute;
@@ -228,7 +249,7 @@
         }
 
         .why-card {
-            background: #f9f9f9;
+            background: #ffffff;
             border: 1px solid #e5e5e5;
             padding: 20px;
             border-radius: 14px;
@@ -521,7 +542,7 @@
             font-size: 1.1rem;
         }
 
-        /* FULL PAGE SETTINGS / AUTH MODALS */
+        /* MODALS */
         .modal {
             display: none;
             position: fixed;
@@ -604,109 +625,33 @@
             cursor: pointer;
         }
 
-        /* FULL PAGE SETTINGS TAB VIEW STYLES */
-        .full-page-settings {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #ffffff;
-            z-index: 1500;
-            overflow-y: auto;
-            padding: 80px 20px 40px 20px;
-        }
-
-        .settings-container-inner {
-            max-width: 600px;
-            margin: 0 auto;
+        .dash-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
             text-align: left;
         }
 
-        .settings-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            border-bottom: 1px solid #eaeaea;
-            padding-bottom: 15px;
-        }
-
-        .settings-header h2 {
-            font-size: 1.5rem;
-            font-weight: 900;
-        }
-
-        .settings-close-btn {
-            background: #f0f0f0;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .settings-section-card {
-            background: #f9f9f9;
+        .dash-card {
+            background: #f8f8f8;
+            padding: 12px 14px;
+            border-radius: 8px;
             border: 1px solid #eaeaea;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
         }
 
-        .settings-section-card h3 {
-            font-size: 0.95rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            color: #111111;
-        }
-
-        .setting-field {
-            margin-bottom: 12px;
-        }
-
-        .setting-field label {
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 700;
+        .dash-card h4 {
+            margin: 0 0 4px 0;
             color: #666666;
-            margin-bottom: 4px;
+            font-size: 0.75rem;
             text-transform: uppercase;
         }
 
-        .setting-field input {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #dcdcdc;
-            background: #ffffff;
-            color: #000000;
+        .dash-card p {
+            margin: 0;
             font-size: 0.9rem;
-        }
-
-        .balance-display {
-            font-size: 1.6rem;
-            font-weight: 900;
+            font-weight: 600;
             color: #000000;
-            margin-bottom: 10px;
-        }
-
-        .action-save-btn {
-            background: #000000;
-            color: #ffffff;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            cursor: pointer;
-            margin-top: 5px;
         }
 
         .contact-btns-group {
@@ -717,10 +662,10 @@
 
         .contact-link-btn {
             flex: 1;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 8px;
+            border-radius: 6px;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
             color: #000000;
@@ -768,10 +713,14 @@
             <div class="corner-stickman">
                 <div class="speech-bubble">What?</div>
                 <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
                     <circle cx="35" cy="20" r="10" fill="#ffffff" />
                     <text x="32" y="24" font-size="9" fill="#000" font-family="sans-serif">?</text>
+                    <!-- Body sitting in corner -->
                     <path d="M35 30 L35 55" />
+                    <!-- Legs folded/sitting -->
                     <path d="M35 55 L20 65 L10 65" />
+                    <!-- Arms scratching head / puzzled -->
                     <path d="M35 38 L22 30" />
                     <path d="M35 38 L48 45" />
                 </svg>
@@ -802,10 +751,14 @@
             <div class="corner-stickman left">
                 <div class="speech-bubble">Why?!</div>
                 <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
                     <circle cx="35" cy="20" r="10" fill="#ffffff" />
                     <text x="31" y="24" font-size="9" fill="#000" font-family="sans-serif">!</text>
+                    <!-- Body -->
                     <path d="M35 30 L35 55" />
+                    <!-- Sitting legs -->
                     <path d="M35 55 L50 65 L60 65" />
+                    <!-- Arms thrown up in confusion -->
                     <path d="M35 38 L20 25" />
                     <path d="M35 38 L50 25" />
                 </svg>
@@ -839,10 +792,14 @@
             <div class="corner-stickman">
                 <div class="speech-bubble">How?</div>
                 <svg class="stickman-svg" viewBox="0 0 70 90" fill="none" stroke="#000000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <!-- Head -->
                     <circle cx="35" cy="20" r="10" fill="#ffffff" />
                     <text x="32" y="24" font-size="9" fill="#000" font-family="sans-serif">?</text>
+                    <!-- Body -->
                     <path d="M35 30 L35 55" />
+                    <!-- Legs -->
                     <path d="M35 55 L20 65 L10 65" />
+                    <!-- Arms pointing/thinking gesture -->
                     <path d="M35 40 L25 50" />
                     <path d="M35 40 L48 35" />
                 </svg>
@@ -988,65 +945,7 @@
         </button>
     </div>
 
-    <!-- FULL PAGE SETTINGS TAB VIEW -->
-    <div id="full-page-settings" class="full-page-settings">
-        <div class="settings-container-inner">
-            <div class="settings-header">
-                <h2>Account Settings</h2>
-                <button type="button" class="settings-close-btn" id="close-full-settings">&times;</button>
-            </div>
-
-            <!-- WALLET BALANCE SECTION -->
-            <div class="settings-section-card">
-                <h3>My Balance</h3>
-                <div class="balance-display" id="settings-user-balance">₱0.00</div>
-                <p style="font-size: 0.8rem; color: #666666;">Available credits for instant item purchases.</p>
-            </div>
-
-            <!-- PROFILE SETTINGS SECTION -->
-            <div class="settings-section-card">
-                <h3>Profile Information</h3>
-                <form id="profile-form" onsubmit="return false;">
-                    <div class="setting-field">
-                        <label for="settings-display-name">Display Name</label>
-                        <input type="text" id="settings-display-name" placeholder="Enter display name" />
-                    </div>
-                    <div class="setting-field">
-                        <label for="settings-email">Email Address</label>
-                        <input type="email" id="settings-email" placeholder="Enter email address" />
-                    </div>
-                    <button type="button" id="save-profile-btn" class="action-save-btn">Save Changes</button>
-                    <p id="profile-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
-                </form>
-            </div>
-
-            <!-- SECURITY / PASSWORD SECTION -->
-            <div class="settings-section-card">
-                <h3>Security & Password</h3>
-                <form id="password-form" onsubmit="return false;">
-                    <div class="setting-field">
-                        <label for="settings-new-password">New Password</label>
-                        <input type="password" id="settings-new-password" placeholder="Enter new password" />
-                    </div>
-                    <button type="button" id="update-password-btn" class="action-save-btn">Update Password</button>
-                    <p id="password-status" style="margin-top: 8px; font-size: 0.8rem; color: #008000;"></p>
-                </form>
-            </div>
-
-            <!-- SUPPORT SECTION -->
-            <div class="settings-section-card">
-                <h3>Contact Support</h3>
-                <div class="contact-btns-group">
-                    <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
-                    <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
-                </div>
-            </div>
-
-            <button id="settings-logout-btn" class="auth-btn" style="background:#e0e0e0; color:#000000; margin-bottom: 40px;">Log Out</button>
-        </div>
-    </div>
-
-    <!-- AUTH MODAL -->
+    <!-- AUTH & SETTINGS MODALS -->
     <div id="auth-modal" class="modal">
         <div class="modal-content">
             <span class="close-btn" id="close-auth-modal">&times;</span>
@@ -1069,6 +968,34 @@
         </div>
     </div>
 
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-settings-modal">&times;</span>
+            <h2 style="margin-bottom: 2px;">Settings & Account</h2>
+            <span id="dash-user-email" style="color:#666666; font-size:0.85em;">Not logged in</span>
+
+            <div class="dash-cards">
+                <div class="dash-card">
+                    <h4>User Information</h4>
+                    <p id="user-display-info">Guest User</p>
+                </div>
+                <div class="dash-card">
+                    <h4>Account Status</h4>
+                    <p id="user-status-text" style="color:#666666;">● Guest Access</p>
+                </div>
+                <div class="dash-card">
+                    <h4>Contact Support</h4>
+                    <div class="contact-btns-group">
+                        <a href="https://m.me/claditch" target="_blank" class="contact-link-btn">Messenger</a>
+                        <a href="https://discord.gg/kwRwuW4WUM" target="_blank" class="contact-link-btn">Discord</a>
+                    </div>
+                </div>
+            </div>
+
+            <button id="settings-auth-btn" class="auth-btn" style="margin-top:15px;">Log In</button>
+        </div>
+    </div>
+
     <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1078,23 +1005,16 @@
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const authModal = document.getElementById('auth-modal');
-      const fullPageSettings = document.getElementById('full-page-settings');
+      const settingsModal = document.getElementById('settings-modal');
       
       const settingsNavBtn = document.getElementById('settings-nav-btn');
       const closeAuthModal = document.getElementById('close-auth-modal');
-      const closeFullSettings = document.getElementById('close-full-settings');
+      const closeSettingsModal = document.getElementById('close-settings-modal');
       
-      const settingsUserBalance = document.getElementById('settings-user-balance');
-      const settingsDisplayName = document.getElementById('settings-display-name');
-      const settingsEmail = document.getElementById('settings-email');
-      const settingsNewPassword = document.getElementById('settings-new-password');
-      
-      const saveProfileBtn = document.getElementById('save-profile-btn');
-      const updatePasswordBtn = document.getElementById('update-password-btn');
-      const settingsLogoutBtn = document.getElementById('settings-logout-btn');
-      
-      const profileStatus = document.getElementById('profile-status');
-      const passwordStatus = document.getElementById('password-status');
+      const dashUserEmail = document.getElementById('dash-user-email');
+      const userDisplayInfo = document.getElementById('user-display-info');
+      const userStatusText = document.getElementById('user-status-text');
+      const settingsAuthBtn = document.getElementById('settings-auth-btn');
 
       const nameInput = document.getElementById('full-name');
       const emailInput = document.getElementById('email');
@@ -1229,76 +1149,27 @@
         }
       }
 
-      // SETTINGS FULL TAB OPEN/CLOSE LOGIC
-      settingsNavBtn.addEventListener('click', async () => {
+      settingsNavBtn.addEventListener('click', () => {
+        settingsModal.style.display = 'flex';
+      });
+
+      settingsAuthBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) {
-          authModal.style.display = 'flex';
-          userStatus.innerText = 'Please log in to access settings.';
+        settingsModal.style.display = 'none';
+        if (session) {
+          await supabaseClient.auth.signOut();
+          checkUser();
         } else {
-          loadUserSettings(session);
-          fullPageSettings.style.display = 'block';
+          authModal.style.display = 'flex';
         }
-      });
-
-      closeFullSettings.addEventListener('click', () => {
-        fullPageSettings.style.display = 'none';
-      });
-
-      settingsLogoutBtn.addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
-        fullPageSettings.style.display = 'none';
-        checkUser();
       });
 
       closeAuthModal.addEventListener('click', () => authModal.style.display = 'none');
+      closeSettingsModal.addEventListener('click', () => settingsModal.style.display = 'none');
       
       window.addEventListener('click', (e) => { 
         if (e.target === authModal) authModal.style.display = 'none'; 
-      });
-
-      // SAVE PROFILE (DISPLAY NAME & EMAIL)
-      saveProfileBtn.addEventListener('click', async () => {
-        profileStatus.innerText = 'Saving changes...';
-        const newName = settingsDisplayName.value.trim();
-        const newEmail = settingsEmail.value.trim();
-
-        const { data, error } = await supabaseClient.auth.updateUser({
-          email: newEmail,
-          data: { full_name: newName }
-        });
-
-        if (error) {
-          profileStatus.style.color = '#ff0000';
-          profileStatus.innerText = error.message;
-        } else {
-          profileStatus.style.color = '#008000';
-          profileStatus.innerText = 'Profile updated successfully!';
-        }
-      });
-
-      // UPDATE PASSWORD
-      updatePasswordBtn.addEventListener('click', async () => {
-        const passwordVal = settingsNewPassword.value.trim();
-        if (!passwordVal) {
-          passwordStatus.style.color = '#ff0000';
-          passwordStatus.innerText = 'Please enter a new password.';
-          return;
-        }
-
-        passwordStatus.innerText = 'Updating password...';
-        const { data, error } = await supabaseClient.auth.updateUser({
-          password: passwordVal
-        });
-
-        if (error) {
-          passwordStatus.style.color = '#ff0000';
-          passwordStatus.innerText = error.message;
-        } else {
-          passwordStatus.style.color = '#008000';
-          passwordStatus.innerText = 'Password updated successfully!';
-          settingsNewPassword.value = '';
-        }
+        if (e.target === settingsModal) settingsModal.style.display = 'none'; 
       });
 
       btnSubmit.addEventListener('click', async (e) => {
@@ -1347,26 +1218,26 @@
         }
       });
 
-      async function loadUserSettings(session) {
-        const user = session.user;
-        const displayName = user.user_metadata?.full_name || '';
-        
-        settingsDisplayName.value = displayName;
-        settingsEmail.value = user.email || '';
-
-        // Simulating balance fetching (can be linked to a custom profiles table in Supabase later)
-        const mockBalance = user.user_metadata?.balance || 150.00;
-        settingsUserBalance.innerText = `₱${mockBalance.toFixed(2)}`;
-        profileStatus.innerText = '';
-        passwordStatus.innerText = '';
-      }
-
       async function checkUser() {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
-          // User session active
+          const displayName = session.user.user_metadata?.full_name || session.user.email.split('@')[0];
+          
+          dashUserEmail.innerText = session.user.email;
+          userDisplayInfo.innerText = displayName;
+          userStatusText.innerText = '● Verified Member';
+          userStatusText.style.color = '#000000';
+          settingsAuthBtn.innerText = 'Log Out';
+          settingsAuthBtn.style.background = '#e0e0e0';
+          settingsAuthBtn.style.color = '#000000';
         } else {
-          // Guest session active
+          dashUserEmail.innerText = 'Not logged in';
+          userDisplayInfo.innerText = 'Guest User';
+          userStatusText.innerText = '● Guest Access';
+          userStatusText.style.color = '#666666';
+          settingsAuthBtn.innerText = 'Log In';
+          settingsAuthBtn.style.background = '#000000';
+          settingsAuthBtn.style.color = '#ffffff';
         }
       }
 
