@@ -1,3 +1,6 @@
+Ah, I see! The dark background with white text made the header invisible on light mode displays.
+Here is the updated code flipped to a clean Light Theme (White background with crisp Black text and accents), with visible headings and fixed spacing at the top:
+Updated Full index.html
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,51 +11,80 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            padding-top: 10px; /* Gives breathing room at the very top */
-            padding-bottom: 90px; /* Space for fixed bottom bar */
-            overflow-y: auto !important;
-            background-color: #050505;
-            color: #ffffff;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
         }
 
-        /* NAVBAR ADJUSTMENT */
+        body {
+            padding-top: 30px; /* Space for mobile browser top bar */
+            padding-bottom: 90px; /* Space for bottom nav */
+            background-color: #ffffff;
+            color: #000000;
+            min-height: 100vh;
+        }
+
+        /* TOP NAVBAR */
         nav {
-            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #000000;
+        }
+
+        .nav-links a {
+            color: #000000;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         /* HERO / INTRODUCTION SECTION */
         .hero-intro {
             text-align: center;
-            padding: 30px 15px 15px 15px;
+            padding: 35px 20px 20px 20px;
             max-width: 600px;
             margin: 0 auto;
         }
+
         .hero-intro h1 {
-            font-size: 1.8rem;
+            font-size: 1.9rem;
             font-weight: 800;
-            margin-bottom: 8px;
-            color: #ffffff;
-        }
-        .hero-intro p {
-            font-size: 0.88rem;
-            color: #888888;
-            line-height: 1.4;
-            margin: 0;
+            margin-bottom: 10px;
+            color: #000000;
         }
 
-        /* GAME ICONS SCROLL BAR (PURE B&W) */
+        .hero-intro p {
+            font-size: 0.9rem;
+            color: #555555;
+            line-height: 1.5;
+        }
+
+        /* GAME ICONS SCROLL BAR */
         .game-selector-container {
-            padding: 15px 12px;
+            padding: 15px 20px;
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
             gap: 12px;
+            max-width: 1200px;
+            margin: 0 auto;
             scrollbar-width: none;
-            -ms-overflow-style: none;
         }
+
         .game-selector-container::-webkit-scrollbar {
             display: none;
         }
@@ -61,42 +93,46 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-width: 58px;
+            min-width: 60px;
             cursor: pointer;
-            opacity: 0.5;
+            opacity: 0.6;
             transition: all 0.2s ease;
         }
+
         .game-icon-card.active, .game-icon-card:hover {
             opacity: 1;
-            transform: translateY(-2px);
-        }
-        .game-icon-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 2px solid #222;
-            background: #111;
-        }
-        .game-icon-card.active .game-icon-img {
-            border-color: #ffffff;
-            background: #ffffff;
-            color: #000000;
-        }
-        .game-icon-label {
-            font-size: 0.72rem;
-            margin-top: 5px;
-            color: #ffffff;
-            text-align: center;
-            font-weight: 500;
         }
 
-        /* RESPONSIVE PRODUCT GRID (2 COLS MOBILE / 4 COLS PC) */
+        .game-icon-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+            background: #f5f5f5;
+            color: #000000;
+        }
+
+        .game-icon-card.active .game-icon-img {
+            border-color: #000000;
+            background: #000000;
+            color: #ffffff;
+        }
+
+        .game-icon-label {
+            font-size: 0.75rem;
+            margin-top: 6px;
+            color: #111111;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* PRODUCT GRID */
         .products {
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
-            gap: 12px !important;
-            padding: 0 12px !important;
+            gap: 14px !important;
+            padding: 10px 16px !important;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -104,34 +140,37 @@
         @media (min-width: 768px) {
             .products {
                 grid-template-columns: repeat(4, 1fr) !important;
-                gap: 18px !important;
-                padding: 0 20px !important;
+                gap: 20px !important;
+                padding: 10px 20px !important;
             }
         }
 
         .card {
-            padding: 12px !important;
-            border-radius: 12px !important;
+            padding: 14px !important;
+            border-radius: 16px !important;
             position: relative;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            background: #111111 !important;
-            border: 1px solid #222222 !important;
+            background: #ffffff !important;
+            border: 1px solid #e5e5e5 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
         }
 
         .card .badge {
-            font-size: 0.55rem !important;
-            padding: 3px 6px !important;
-            top: 6px !important;
-            right: 6px !important;
-            background: #ffffff !important;
-            color: #000000 !important;
-            font-weight: bold;
+            font-size: 0.6rem !important;
+            padding: 3px 8px !important;
+            top: 10px !important;
+            right: 10px !important;
+            background: #000000 !important;
+            color: #ffffff !important;
+            border-radius: 12px;
+            font-weight: 700;
+            position: absolute;
         }
 
         .product-image {
-            height: 100px !important;
+            height: 110px !important;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -144,77 +183,83 @@
         }
 
         .card h3 {
-            font-size: 0.85rem !important;
-            margin: 8px 0 2px 0 !important;
+            font-size: 0.9rem !important;
+            margin: 10px 0 2px 0 !important;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: #ffffff;
+            color: #000000;
+            font-weight: 700;
         }
 
         .card .price {
-            font-size: 0.95rem !important;
-            font-weight: bold;
+            font-size: 1.05rem !important;
+            font-weight: 800;
             margin: 2px 0 !important;
-            color: #ffffff;
+            color: #000000;
         }
 
         .card .stock {
-            font-size: 0.7rem !important;
-            color: #777777;
-            margin-bottom: 8px !important;
+            font-size: 0.72rem !important;
+            color: #666666;
+            margin-bottom: 10px !important;
         }
 
         .buy-btn {
-            padding: 8px 0 !important;
-            font-size: 0.75rem !important;
-            border-radius: 8px !important;
-            background: #ffffff !important;
-            color: #000000 !important;
-            border: none !important;
+            padding: 10px 0 !important;
+            font-size: 0.8rem !important;
+            border-radius: 10px !important;
+            background: #000000 !important;
+            color: #ffffff !important;
+            border: 1px solid #000000 !important;
             font-weight: 700;
             cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .buy-btn:hover {
-            opacity: 0.85;
+            transition: background 0.2s;
         }
 
-        /* STICKY BOTTOM NAVIGATION BAR */
+        .buy-btn:hover {
+            background: #333333 !important;
+        }
+
+        /* STICKY BOTTOM NAVIGATION */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             height: 60px;
-            background: #0a0a0a;
-            border-top: 1px solid #222222;
+            background: #ffffff;
+            border-top: 1px solid #eaeaea;
             display: flex;
             justify-content: space-around;
             align-items: center;
             z-index: 999;
         }
+
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #666666;
+            color: #888888;
             text-decoration: none;
             font-size: 0.75rem;
-            gap: 3px;
+            gap: 2px;
             cursor: pointer;
             border: none;
             background: transparent;
             flex: 1;
-        }
-        .nav-item.active, .nav-item:hover {
-            color: #ffffff;
-        }
-        .nav-icon {
-            font-size: 1.2rem;
+            font-weight: 600;
         }
 
-        /* MODALS COMMON STYLES (MONOCHROME) */
+        .nav-item.active, .nav-item:hover {
+            color: #000000;
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+        }
+
+        /* MODALS */
         .modal {
             display: none;
             position: fixed;
@@ -222,75 +267,78 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(4px);
         }
+
         .modal-content {
-            background: #111111;
-            border: 1px solid #333333;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
             padding: 25px 20px;
-            border-radius: 12px;
+            border-radius: 16px;
             width: 90%;
             max-width: 400px;
-            color: #ffffff;
+            color: #000000;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
             position: relative;
         }
+
         .close-btn {
             position: absolute;
             top: 15px;
             right: 20px;
-            font-size: 20px;
+            font-size: 22px;
             cursor: pointer;
             color: #888888;
         }
-        .close-btn:hover { color: #ffffff; }
 
         .auth-tabs {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
-            border-bottom: 1px solid #333333;
+            border-bottom: 1px solid #e0e0e0;
             padding-bottom: 10px;
         }
+
         .auth-tab {
             flex: 1;
             padding: 8px;
             background: transparent;
             border: none;
-            color: #666666;
+            color: #888888;
             font-weight: 600;
             cursor: pointer;
-            font-size: 0.95rem;
         }
+
         .auth-tab.active {
-            color: #ffffff;
-            border-bottom: 2px solid #ffffff;
+            color: #000000;
+            border-bottom: 2px solid #000000;
         }
 
         .auth-input {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
-            border-radius: 6px;
-            border: 1px solid #333333;
-            background: #1a1a1a;
-            color: #ffffff;
+            border-radius: 8px;
+            border: 1px solid #dcdcdc;
+            background: #f9f9f9;
+            color: #000000;
             box-sizing: border-box;
         }
+
         .auth-btn {
             width: 100%;
             padding: 12px;
             margin-top: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
             border: none;
-            background: #ffffff;
-            color: #000000;
-            font-weight: 600;
+            background: #000000;
+            color: #ffffff;
+            font-weight: 700;
             cursor: pointer;
         }
 
@@ -301,22 +349,26 @@
             margin-top: 15px;
             text-align: left;
         }
+
         .dash-card {
-            background: #181818;
+            background: #f8f8f8;
             padding: 12px 14px;
             border-radius: 8px;
-            border: 1px solid #282828;
+            border: 1px solid #eaeaea;
         }
+
         .dash-card h4 {
             margin: 0 0 4px 0;
-            color: #888888;
+            color: #666666;
             font-size: 0.75rem;
             text-transform: uppercase;
         }
+
         .dash-card p {
             margin: 0;
             font-size: 0.9rem;
             font-weight: 600;
+            color: #000000;
         }
 
         .contact-btns-group {
@@ -324,6 +376,7 @@
             gap: 8px;
             margin-top: 5px;
         }
+
         .contact-link-btn {
             flex: 1;
             padding: 8px;
@@ -332,13 +385,9 @@
             font-size: 0.8rem;
             font-weight: 600;
             text-decoration: none;
-            color: #ffffff;
-            background: #222222;
-            border: 1px solid #333333;
-        }
-        .contact-link-btn:hover {
-            background: #ffffff;
             color: #000000;
+            background: #eeeeee;
+            border: 1px solid #dddddd;
         }
 
         .card.hidden {
@@ -348,9 +397,6 @@
 </head>
 
 <body>
-
-    <canvas id="bg"></canvas>
-    <div class="overlay"></div>
 
     <!-- TOP NAVBAR -->
     <nav>
@@ -485,7 +531,7 @@
                 <button type="button" id="btn-submit" class="auth-btn">Log In</button>
             </form>
 
-            <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #888888;"></p>
+            <p id="user-status" style="margin-top:15px; font-size: 0.85em; color: #666666;"></p>
         </div>
     </div>
 
@@ -493,7 +539,7 @@
         <div class="modal-content">
             <span class="close-btn" id="close-settings-modal">&times;</span>
             <h2 style="margin-bottom: 2px;">Settings & Account</h2>
-            <span id="dash-user-email" style="color:#aaaaaa; font-size:0.85em;">Not logged in</span>
+            <span id="dash-user-email" style="color:#666666; font-size:0.85em;">Not logged in</span>
 
             <div class="dash-cards">
                 <div class="dash-card">
@@ -502,7 +548,7 @@
                 </div>
                 <div class="dash-card">
                     <h4>Account Status</h4>
-                    <p id="user-status-text" style="color:#aaaaaa;">● Guest Access</p>
+                    <p id="user-status-text" style="color:#666666;">● Guest Access</p>
                 </div>
                 <div class="dash-card">
                     <h4>Contact Support</h4>
@@ -516,9 +562,6 @@
             <button id="settings-auth-btn" class="auth-btn" style="margin-top:15px;">Log In</button>
         </div>
     </div>
-
-    <script src="canvas.js"></script>
-    <script src="script.js"></script>
 
     <!-- SUPABASE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -681,18 +724,18 @@
           dashUserEmail.innerText = session.user.email;
           userDisplayInfo.innerText = displayName;
           userStatusText.innerText = '● Verified Member';
-          userStatusText.style.color = '#ffffff';
+          userStatusText.style.color = '#000000';
           settingsAuthBtn.innerText = 'Log Out';
-          settingsAuthBtn.style.background = '#333333';
-          settingsAuthBtn.style.color = '#ffffff';
+          settingsAuthBtn.style.background = '#e0e0e0';
+          settingsAuthBtn.style.color = '#000000';
         } else {
           dashUserEmail.innerText = 'Not logged in';
           userDisplayInfo.innerText = 'Guest User';
           userStatusText.innerText = '● Guest Access';
-          userStatusText.style.color = '#aaaaaa';
+          userStatusText.style.color = '#666666';
           settingsAuthBtn.innerText = 'Log In';
-          settingsAuthBtn.style.background = '#ffffff';
-          settingsAuthBtn.style.color = '#000000';
+          settingsAuthBtn.style.background = '#000000';
+          settingsAuthBtn.style.color = '#ffffff';
         }
       }
 
@@ -701,3 +744,4 @@
 </body>
 
 </html>
+
