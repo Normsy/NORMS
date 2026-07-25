@@ -416,7 +416,7 @@
             cursor: pointer;
         }
 
-        /* 6. FAQ SLIDE (WHITE BACKGROUND & BLACK TEXT WITH ACCORDION) */
+        /* 6. FAQ SLIDE */
         #faq-slide {
             background: #ffffff;
             color: #000000;
@@ -508,24 +508,57 @@
             border: 1px solid #eaeaea;
             padding: 10px 14px;
             border-radius: 10px;
+            gap: 10px;
+        }
+
+        .order-thumbnail {
+            width: 45px;
+            height: 45px;
+            object-fit: contain;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            flex-shrink: 0;
+        }
+
+        .order-info {
+            flex: 1;
         }
 
         .order-info h4 {
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 800;
             color: #000000;
         }
 
         .order-info p {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: #666666;
-            margin-top: 2px;
+            margin-top: 1px;
+        }
+
+        .order-right-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
         }
 
         .order-price {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 900;
             color: #000000;
+        }
+
+        .order-contact-btn {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            background: #000000;
+            color: #ffffff;
+            border-radius: 5px;
+            text-decoration: none;
+            display: inline-block;
         }
 
         /* STICKY BOTTOM NAV BAR */
@@ -626,7 +659,7 @@
             border-bottom: 2px solid #000000;
         }
 
-        .auth-input {
+        .auth-input, .checkout-input {
             width: 100%;
             padding: 12px;
             margin: 8px 0;
@@ -635,9 +668,10 @@
             background: #f9f9f9;
             color: #000000;
             box-sizing: border-box;
+            font-size: 0.9rem;
         }
 
-        .auth-btn {
+        .auth-btn, .checkout-btn {
             width: 100%;
             padding: 12px;
             margin-top: 10px;
@@ -647,6 +681,75 @@
             color: #ffffff;
             font-weight: 700;
             cursor: pointer;
+        }
+
+        /* CHECKOUT MODAL STYLES */
+        .checkout-item-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #eaeaea;
+            text-align: left;
+        }
+
+        .checkout-item-preview img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .checkout-item-preview div h4 {
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        .checkout-item-preview div p {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        /* LOADING OVERLAY SPINNER */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+            backdrop-filter: blur(4px);
+        }
+
+        .spinner {
+            width: 45px;
+            height: 45px;
+            border: 4px solid #e0e0e0;
+            border-top: 4px solid #000000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #000000;
         }
 
         /* FULL PAGE SETTINGS TAB VIEW STYLES */
@@ -790,7 +893,7 @@
         <div class="logo">
             NORMS
         </div>
-        <!-- TEXT DROPDOWN BUTTON (DYNAMICALLY UPDATES) -->
+        <!-- TEXT DROPDOWN BUTTON -->
         <div class="nav-dropdown-container">
             <button type="button" class="nav-dropdown-btn" id="nav-dropdown-toggle">What?</button>
             <div class="nav-dropdown-menu" id="nav-dropdown-menu">
@@ -889,7 +992,7 @@
                 </div>
 
                 <div class="products">
-                    <div class="card" data-category="grow-a-garden-2" data-price="1500" data-name="Black Dragon">
+                    <div class="card" data-category="grow-a-garden-2" data-price="1500" data-name="Black Dragon" data-img="assets/items/Black Dragon.PNG">
                         <div class="badge">BEST</div>
                         <div class="product-image">
                             <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
@@ -897,63 +1000,63 @@
                         <h3>Black Dragon</h3>
                         <p class="price">₱1500</p>
                         <div class="stock" id="stock-black-dragon">17 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Black Dragon', 1500, 'stock-black-dragon')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Black Dragon', 1500, 'assets/items/Black Dragon.PNG', 'stock-black-dragon')">BUY</button>
                     </div>
 
-                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom">
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom" data-img="assets/items/Sun Bloom.png">
                         <div class="product-image">
                             <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
                         </div>
                         <h3>Sun Bloom</h3>
                         <p class="price">₱10</p>
                         <div class="stock" id="stock-sun-bloom">52 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Sun Bloom', 10, 'stock-sun-bloom')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sun Bloom', 10, 'assets/items/Sun Bloom.png', 'stock-sun-bloom')">BUY</button>
                     </div>
 
-                    <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit">
+                    <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit" data-img="assets/items/Star Fruit.png">
                         <div class="product-image">
                             <img src="assets/items/Star Fruit.png" alt="Star Fruit">
                         </div>
                         <h3>Star Fruit</h3>
                         <p class="price">₱20</p>
                         <div class="stock" id="stock-star-fruit">31 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Star Fruit', 20, 'stock-star-fruit')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Star Fruit', 20, 'assets/items/Star Fruit.png', 'stock-star-fruit')">BUY</button>
                     </div>
 
-                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath">
+                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath" data-img="assets/items/Dragon Breath.png">
                         <div class="product-image">
                             <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
                         </div>
                         <h3>Dragon Breath</h3>
                         <p class="price">₱10</p>
                         <div class="stock" id="stock-dragon-breath">9 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Dragon Breath', 10, 'stock-dragon-breath')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Dragon Breath', 10, 'assets/items/Dragon Breath.png', 'stock-dragon-breath')">BUY</button>
                     </div>
 
-                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler">
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler" data-img="assets/items/Super Sprinkler.png">
                         <div class="product-image">
                             <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
                         </div>
                         <h3>Sprinkler</h3>
                         <p class="price">₱0.50</p>
                         <div class="stock" id="stock-sprinkler">4 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Sprinkler', 0.5, 'stock-sprinkler')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Sprinkler', 0.5, 'assets/items/Super Sprinkler.png', 'stock-sprinkler')">BUY</button>
                     </div>
 
-                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can">
+                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can" data-img="assets/items/Super Watering Can.PNG">
                         <div class="product-image">
                             <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
                         </div>
                         <h3>Super Can</h3>
                         <p class="price">₱0.50</p>
                         <div class="stock" id="stock-super-can">15 Left</div>
-                        <button type="button" class="buy-btn" onclick="handleBuy(event, 'Super Can', 0.5, 'stock-super-can')">BUY</button>
+                        <button type="button" class="buy-btn" onclick="openCheckout('Super Can', 0.5, 'assets/items/Super Watering Can.PNG', 'stock-super-can')">BUY</button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- SLIDE 5: ORDERS TAB (HIDDEN WHEN LOGGED OUT OR NOT IN ORDERS VIEW) -->
+        <!-- SLIDE 5: ORDERS TAB -->
         <section class="slide view-orders hidden" id="orders-slide" data-title="Orders">
             <div class="slide-inner">
                 <h2 class="section-title">My Orders</h2>
@@ -1003,6 +1106,38 @@
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav" id="bottom-nav">
         <!-- Dynamically populated based on login status -->
+    </div>
+
+    <!-- CHECKOUT / PURCHASE MODAL -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" id="close-checkout-modal">&times;</span>
+            <h2>Confirm Purchase</h2>
+            <p style="font-size: 0.8rem; color: #666; margin-bottom: 15px;">Please confirm your Roblox username and order notes.</p>
+            
+            <div class="checkout-item-preview">
+                <img id="checkout-modal-img" src="" alt="Item">
+                <div>
+                    <h4 id="checkout-modal-title">Item Name</h4>
+                    <p id="checkout-modal-price">₱0.00</p>
+                </div>
+            </div>
+
+            <form id="checkout-form" onsubmit="return false;">
+                <input type="text" id="checkout-username" class="checkout-input" placeholder="Buyer Username" required />
+                <input type="text" id="checkout-confirm-username" class="checkout-input" placeholder="Confirm Username" required />
+                <input type="text" id="checkout-description" class="checkout-input" placeholder="Description / Trade Note (Optional)" />
+                
+                <button type="button" id="btn-confirm-checkout" class="checkout-btn">Proceed to Payment</button>
+            </form>
+            <p id="checkout-status" style="margin-top:10px; font-size: 0.8rem; color: #ff0000;"></p>
+        </div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loading-text">Processing Payment & Securing Order...</div>
     </div>
 
     <!-- FULL PAGE SETTINGS TAB VIEW -->
@@ -1099,9 +1234,12 @@
       const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
       const authModal = document.getElementById('auth-modal');
+      const checkoutModal = document.getElementById('checkout-modal');
+      const loadingOverlay = document.getElementById('loading-overlay');
       const fullPageSettings = document.getElementById('full-page-settings');
       
       const closeAuthModal = document.getElementById('close-auth-modal');
+      const closeCheckoutModal = document.getElementById('close-checkout-modal');
       const closeFullSettings = document.getElementById('close-full-settings');
       
       const settingsUserBalance = document.getElementById('settings-user-balance');
@@ -1126,7 +1264,18 @@
       const userStatus = document.getElementById('user-status');
       const bottomNav = document.getElementById('bottom-nav');
 
+      // Checkout elements
+      const checkoutModalImg = document.getElementById('checkout-modal-img');
+      const checkoutModalTitle = document.getElementById('checkout-modal-title');
+      const checkoutModalPrice = document.getElementById('checkout-modal-price');
+      const checkoutUsername = document.getElementById('checkout-username');
+      const checkoutConfirmUsername = document.getElementById('checkout-confirm-username');
+      const checkoutDescription = document.getElementById('checkout-description');
+      const btnConfirmCheckout = document.getElementById('btn-confirm-checkout');
+      const checkoutStatus = document.getElementById('checkout-status');
+
       let currentMode = 'login'; 
+      let activeItemData = null;
 
       const slidesWrapper = document.getElementById('slides-wrapper');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
@@ -1290,13 +1439,8 @@
         userStatus.innerText = '';
       });
 
-      // SPENDABLE BALANCE AND PURCHASE HANDLER
-      async function handleBuy(e, itemName, itemPrice, stockElementId) {
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        
+      // OPEN CHECKOUT MODAL
+      async function openCheckout(itemName, itemPrice, itemImg, stockElementId) {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
           authModal.style.display = 'flex';
@@ -1304,10 +1448,58 @@
           return;
         }
 
-        const user = session.user;
-        let currentBalance = user.user_metadata?.balance ?? 1500.00;
+        activeItemData = { itemName, itemPrice, itemImg, stockElementId };
+        checkoutModalImg.src = itemImg;
+        checkoutModalTitle.innerText = itemName;
+        checkoutModalPrice.innerText = `₱${itemPrice.toFixed(2)}`;
+        checkoutUsername.value = '';
+        checkoutConfirmUsername.value = '';
+        checkoutDescription.value = '';
+        checkoutStatus.innerText = '';
+
+        checkoutModal.style.display = 'flex';
+      }
+
+      closeCheckoutModal.addEventListener('click', () => {
+        checkoutModal.style.display = 'none';
+      });
+
+      window.addEventListener('click', (e) => { 
+        if (e.target === checkoutModal) checkoutModal.style.display = 'none'; 
+      });
+
+      // CONFIRM CHECKOUT BUTTON HANDLER
+      btnConfirmCheckout.addEventListener('click', async () => {
+        const username = checkoutUsername.value.trim();
+        const confirmUsername = checkoutConfirmUsername.value.trim();
+        const description = checkoutDescription.value.trim();
+
+        if (!username || !confirmUsername) {
+          checkoutStatus.innerText = 'Please fill in both username fields.';
+          return;
+        }
+
+        if (username !== confirmUsername) {
+          checkoutStatus.innerText = 'Usernames do not match!';
+          return;
+        }
+
+        checkoutModal.style.display = 'none';
+        loadingOverlay.style.display = 'flex';
+
+        const { itemName, itemPrice, itemImg, stockElementId } = activeItemData;
+
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          loadingOverlay.style.display = 'none';
+          authModal.style.display = 'flex';
+          return;
+        }
+
+        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
 
         if (currentBalance < itemPrice) {
+          loadingOverlay.style.display = 'none';
           alert('Insufficient balance! Please top up your balance in Settings.');
           return;
         }
@@ -1319,29 +1511,35 @@
         });
 
         if (updateError) {
+          loadingOverlay.style.display = 'none';
           alert('Purchase failed: ' + updateError.message);
           return;
         }
 
-        const stockEl = document.getElementById(stockElementId);
-        if (stockEl) {
-          let stockText = stockEl.innerText;
-          let stockNum = parseInt(stockText);
-          if (!isNaN(stockNum) && stockNum > 0) {
-            stockNum -= 1;
-            stockEl.innerText = `${stockNum} Left`;
+        // Simulate short network confirmation delay for loading animation experience
+        setTimeout(() => {
+          loadingOverlay.style.display = 'none';
+
+          const stockEl = document.getElementById(stockElementId);
+          if (stockEl) {
+            let stockText = stockEl.innerText;
+            let stockNum = parseInt(stockText);
+            if (!isNaN(stockNum) && stockNum > 0) {
+              stockNum -= 1;
+              stockEl.innerText = `${stockNum} Left`;
+            }
           }
-        }
 
-        settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
 
-        addOrderToList(itemName, itemPrice);
-        alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
-        
-        switchView('orders');
-      }
+          addOrderToList(itemName, itemPrice, itemImg, username, description);
+          alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
+          
+          switchView('orders');
+        }, 1200);
+      });
 
-      function addOrderToList(itemName, itemPrice) {
+      function addOrderToList(itemName, itemPrice, itemImg, username, description) {
         const ordersContainer = document.getElementById('orders-container');
         const noOrdersMsg = document.getElementById('no-orders-msg');
         if (noOrdersMsg) {
@@ -1351,11 +1549,16 @@
         const orderRow = document.createElement('div');
         orderRow.className = 'order-row';
         orderRow.innerHTML = `
+          <img src="${itemImg}" class="order-thumbnail" alt="${itemName}">
           <div class="order-info">
             <h4>${itemName}</h4>
-            <p>Delivered to your Roblox Account</p>
+            <p>Buyer: <strong>${username}</strong></p>
+            ${description ? `<p>Note: ${description}</p>` : ''}
           </div>
-          <div class="order-price">₱${itemPrice.toFixed(2)}</div>
+          <div class="order-right-side">
+            <div class="order-price">₱${itemPrice.toFixed(2)}</div>
+            <a href="https://m.me/claditch" target="_blank" class="order-contact-btn">Contact</a>
+          </div>
         `;
         ordersContainer.prepend(orderRow);
       }
@@ -1386,7 +1589,6 @@
             loadUserSettings(session);
             fullPageSettings.style.display = 'block';
 
-            // Keep the Settings button highlighted while settings are open
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             const settingsBtn = document.getElementById('bottom-nav-settings-btn');
             if (settingsBtn) settingsBtn.classList.add('active');
@@ -1396,7 +1598,6 @@
 
       closeFullSettings.addEventListener('click', () => {
         fullPageSettings.style.display = 'none';
-        // Restore active state back to the current background view tab
         switchView(currentActiveView);
       });
 
@@ -1517,7 +1718,7 @@
         const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (session) {
-            // User is logged in: Show Home, Market, Orders, Settings
+            // User is logged in: Show Home, Market, Orders, Settings with correct emoji
             bottomNav.innerHTML = `
                 <button class="nav-item active" data-view="home" onclick="switchView('home')">
                     <span class="nav-icon">🏠</span>
@@ -1528,7 +1729,8 @@
                     <span>Market</span>
                 </button>
                 <button class="nav-item" data-view="orders" onclick="switchView('orders')">
-                    <span class="nav-icon">Orders</span>
+                    <span class="nav-icon">📦</span>
+                    <span>Orders</span>
                 </button>
                 <button class="nav-item" id="bottom-nav-settings-btn" onclick="openSettingsModal()">
                     <span class="nav-icon">⚙️</span>
