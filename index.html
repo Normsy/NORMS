@@ -1308,7 +1308,7 @@
     <div id="full-page-chat" class="full-page-settings">
         <div class="settings-container-inner">
             <div class="settings-header">
-                <h2 id="chat-header-title">Chat with admin@norms.com</h2>
+                <h2 id="chat-header-title">Chat with Support</h2>
                 <button type="button" class="settings-close-btn" id="close-full-chat">&times;</button>
             </div>
             <div class="chat-box">
@@ -1316,33 +1316,27 @@
                     <div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>
                 </div>
                 <div class="chat-input-area">
-                    <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message to admin@norms.com..." />
+                    <input type="text" id="chat-input-text" class="chat-input-field" placeholder="Type your message..." />
                     <button type="button" id="chat-send-btn" class="chat-send-btn">Send</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- FULL PAGE ADMIN PANEL VIEW -->
+    <!-- FULL PAGE ADMIN INBOX VIEW (GLOBAL ORDERS) -->
     <div id="full-page-admin" class="full-page-settings">
         <div class="settings-container-inner">
             <div class="settings-header">
-                <h2>Admin Panel — Chat Inbox</h2>
+                <h2>Inbox — Global Orders</h2>
                 <button type="button" class="settings-close-btn" id="close-full-admin">&times;</button>
             </div>
             
             <div class="settings-section-card">
-                <h3>Live Customer Conversations (admin@norms.com)</h3>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Instant real-time sync with database messages.</p>
+                <h3>All Global Customer Orders</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Review and contact any buyer from recent transactions.</p>
                 
-                <div class="chat-box" style="height: 45vh;">
-                    <div class="chat-messages" id="admin-chat-messages-container">
-                        <div class="chat-message received">Connecting to real-time chat stream...</div>
-                    </div>
-                    <div class="chat-input-area">
-                        <input type="text" id="admin-chat-input-text" class="chat-input-field" placeholder="Reply to customer as admin..." />
-                        <button type="button" id="admin-chat-send-btn" class="chat-send-btn">Send</button>
-                    </div>
+                <div class="orders-list" id="admin-global-orders-container" style="max-height: 55vh;">
+                    <p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>
                 </div>
             </div>
         </div>
@@ -1420,10 +1414,9 @@
       const chatSendBtn = document.getElementById('chat-send-btn');
       const chatHeaderTitle = document.getElementById('chat-header-title');
 
-      // Admin Chat elements
-      const adminChatMessagesContainer = document.getElementById('admin-chat-messages-container');
-      const adminChatInputText = document.getElementById('admin-chat-input-text');
-      const adminChatSendBtn = document.getElementById('admin-chat-send-btn');
+      // Admin Inbox Global Orders elements
+      const adminGlobalOrdersContainer = document.getElementById('admin-global-orders-container');
+      const adminNoOrdersMsg = document.getElementById('admin-no-orders-msg');
 
       // Checkout elements
       const checkoutModalImg = document.getElementById('checkout-modal-img');
@@ -1438,6 +1431,7 @@
       let currentMode = 'login'; 
       let activeItemData = null;
       let realtimeSubscription = null;
+      let activeChatUser = null;
 
       const slidesWrapper = document.getElementById('slides-wrapper');
       const navDropdownToggle = document.getElementById('nav-dropdown-toggle');
@@ -1688,13 +1682,20 @@
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
-          await sendChatMessage(`[ORDER] Item: ${itemName} | User: ${username} | Note: ${description || 'None'}`);
+          // Save order globally to database table or send message payload
+          await saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, session.user.email);
 
           alert(`Successfully purchased ${itemName} for ₱${itemPrice}!`);
           
           switchView('orders');
         }, 800);
       });
+
+      async function saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, userEmail) {
+        await supabaseClient.from('orders').insert([
+          { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
+        ]).catch(() => {});
+      }
 
       function addOrderToList(itemName, itemPrice, itemImg, username, description) {
         const ordersContainer = document.getElementById('orders-container');
@@ -1714,22 +1715,60 @@
           </div>
           <div class="order-right-side">
             <div class="order-price">₱${itemPrice.toFixed(2)}</div>
-            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}')">Contact</button>
+            <button type="button" class="order-contact-btn" onclick="openChatPanel('${itemName}', '${username}', 'admin@norms.com')">Contact</button>
           </div>
         `;
         ordersContainer.prepend(orderRow);
       }
 
-      function openChatPanel(itemName, username) {
+      async function fetchGlobalOrdersForAdmin() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session || session.user.email !== 'admin@norms.com') return;
+
+        const { data, error } = await supabaseClient
+          .from('orders')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        adminGlobalOrdersContainer.innerHTML = '';
+
+        if (error || !data || data.length === 0) {
+          adminGlobalOrdersContainer.innerHTML = '<p id="admin-no-orders-msg" style="font-size: 0.85rem; color: #888888; text-align: center; padding: 20px;">No global orders recorded yet.</p>';
+          return;
+        }
+
+        data.forEach(order => {
+          const orderRow = document.createElement('div');
+          orderRow.className = 'order-row';
+          orderRow.innerHTML = `
+            <img src="${order.image || 'assets/items/Black Dragon.PNG'}" class="order-thumbnail" alt="${order.item_name}">
+            <div class="order-info">
+              <h4>${order.item_name}</h4>
+              <p>Buyer: <strong>${order.roblox_username}</strong> (${order.user_email || 'Guest'})</p>
+              ${order.note ? `<p>Note: ${order.note}</p>` : ''}
+            </div>
+            <div class="order-right-side">
+              <div class="order-price">₱${Number(order.price).toFixed(2)}</div>
+              <button type="button" class="order-contact-btn" onclick="openChatPanel('${order.item_name}', '${order.roblox_username}', '${order.user_email}')">Contact Buyer</button>
+            </div>
+          `;
+          adminGlobalOrdersContainer.appendChild(orderRow);
+        });
+      }
+
+      function openChatPanel(itemName, username, targetEmail) {
         supabaseClient.auth.getSession().then(({ data: { session } }) => {
           if (!session) {
             authModal.style.display = 'flex';
-            userStatus.innerText = 'Please log in to message support.';
+            userStatus.innerText = 'Please log in to message.';
             return;
           }
 
-          chatHeaderTitle.innerText = `Chat: ${itemName} (${username})`;
+          activeChatUser = session.user.email === 'admin@norms.com' ? targetEmail : 'admin@norms.com';
+          chatHeaderTitle.innerText = `Chat with ${session.user.email === 'admin@norms.com' ? username + ' (' + targetEmail + ')' : 'Support'}`;
+          
           fullPageChat.style.display = 'block';
+          fullPageAdmin.style.display = 'none';
           fetchChatMessages();
 
           document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
@@ -1741,7 +1780,7 @@
         if (!session) return;
 
         const senderEmail = session.user.email;
-        const recipientEmail = 'admin@norms.com';
+        const recipientEmail = senderEmail === 'admin@norms.com' ? (activeChatUser || 'customer@norms.com') : 'admin@norms.com';
 
         await supabaseClient.from('messages').insert([
           { sender: senderEmail, recipient: recipientEmail, message: text, created_at: new Date() }
@@ -1753,46 +1792,39 @@
         if (!session) return;
 
         const userEmail = session.user.email;
+        const chattingWith = activeChatUser || (userEmail === 'admin@norms.com' ? '' : 'admin@norms.com');
 
-        const { data, error } = await supabaseClient
-          .from('messages')
-          .select('*')
-          .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
-          .order('created_at', { ascending: true });
-
+        let query = supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
+        
+        const { data, error } = await query;
         if (error) return;
 
         chatMessagesContainer.innerHTML = '';
-        adminChatMessagesContainer.innerHTML = '';
-
         let unreadCount = 0;
 
         if (data && data.length > 0) {
           data.forEach(msg => {
-            const isSentByMe = msg.sender === userEmail;
-            
-            const chatBubble = document.createElement('div');
-            chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
-            chatBubble.innerText = `${isSentByMe ? '' : msg.sender + ': '}${msg.message}`;
-            chatMessagesContainer.appendChild(chatBubble);
+            const isRelevant = userEmail === 'admin@norms.com' 
+              ? (msg.sender === chattingWith || msg.recipient === chattingWith || msg.sender === userEmail || msg.recipient === userEmail)
+              : (msg.sender === userEmail || msg.recipient === userEmail);
 
-            if (userEmail === 'admin@norms.com' || msg.recipient === 'admin@norms.com') {
-              const adminBubble = document.createElement('div');
-              adminBubble.className = `chat-message ${msg.sender === 'admin@norms.com' ? 'sent' : 'received'}`;
-              adminBubble.innerText = `[${msg.sender}]: ${msg.message}`;
-              adminChatMessagesContainer.appendChild(adminBubble);
+            if (isRelevant) {
+              const isSentByMe = msg.sender === userEmail;
+              const chatBubble = document.createElement('div');
+              chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
+              chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
+              chatMessagesContainer.appendChild(chatBubble);
+            }
 
-              if (msg.sender !== 'admin@norms.com') {
-                unreadCount++;
-              }
+            if (userEmail === 'admin@norms.com' && msg.sender !== 'admin@norms.com') {
+              unreadCount++;
             }
           });
         } else {
-          chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Welcome to NORMS support. How can we help you with your order?</div>';
-          adminChatMessagesContainer.innerHTML = '<div class="chat-message received">Waiting for incoming messages...</div>';
+          chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
         }
 
-        // Update notification badge on Admin Button
+        // Update notification badge on Inbox Button
         const adminBadge = document.getElementById('admin-notif-badge');
         if (adminBadge) {
           if (unreadCount > 0 && userEmail === 'admin@norms.com') {
@@ -1804,7 +1836,6 @@
         }
 
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
       }
 
       function setupRealtimeListener() {
@@ -1816,6 +1847,7 @@
           .channel('public:messages')
           .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
             fetchChatMessages();
+            fetchGlobalOrdersForAdmin();
           })
           .subscribe();
       }
@@ -1838,36 +1870,16 @@
         }
       });
 
-      adminChatSendBtn.addEventListener('click', async () => {
-        const text = adminChatInputText.value.trim();
-        if (!text) return;
-        adminChatInputText.value = '';
-        
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (!session) return;
-
-        await supabaseClient.from('messages').insert([
-          { sender: 'admin@norms.com', recipient: 'customer', message: text, created_at: new Date() }
-        ]);
-        fetchChatMessages();
-      });
-
-      adminChatInputText.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-          const text = adminChatInputText.value.trim();
-          if (!text) return;
-          adminChatInputText.value = '';
-          
-          await supabaseClient.from('messages').insert([
-            { sender: 'admin@norms.com', recipient: 'customer', message: text, created_at: new Date() }
-          ]);
-          fetchChatMessages();
-        }
-      });
-
       closeFullChat.addEventListener('click', () => {
         fullPageChat.style.display = 'none';
-        switchView(currentActiveView);
+        const { data: { session } } = supabaseClient.auth.getSession();
+        session.then(s => {
+          if (s && s.user.email === 'admin@norms.com') {
+            fullPageAdmin.style.display = 'block';
+          } else {
+            switchView(currentActiveView);
+          }
+        });
       });
 
       addFundsBtn.addEventListener('click', async () => {
@@ -1910,7 +1922,7 @@
             return;
           }
           fullPageAdmin.style.display = 'block';
-          fetchChatMessages();
+          fetchGlobalOrdersForAdmin();
 
           document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
           const adminBtn = document.getElementById('bottom-nav-admin-btn');
@@ -2066,8 +2078,8 @@
             if (userEmail === 'admin@norms.com') {
                 navHtml += `
                     <button type="button" class="nav-item" id="bottom-nav-admin-btn" onclick="openAdminModal()">
-                        <span class="nav-icon">🛡️<span id="admin-notif-badge" class="notif-badge">0</span></span>
-                        <span>Admin</span>
+                        <span class="nav-icon">📥<span id="admin-notif-badge" class="notif-badge">0</span></span>
+                        <span>Inbox</span>
                     </button>
                 `;
             }
@@ -2081,7 +2093,7 @@
 
             bottomNav.innerHTML = navHtml;
             setupRealtimeListener();
-            fetchChatMessages();
+            fetchGlobalOrdersForAdmin();
         } else {
             bottomNav.innerHTML = `
                 <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
