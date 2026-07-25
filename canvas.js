@@ -1,3 +1,7 @@
+// =======================
+// NORMS Stickman Fighter Background
+// =======================
+
 const canvas = document.getElementById("bg");
 const ctx = canvas.getContext("2d");
 
@@ -8,126 +12,127 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-const ground = () => canvas.height * 0.75;
+const ground = () => canvas.height * 0.78;
 
-class Runner {
-
-    constructor(x, speed) {
+class Fighter {
+    constructor(x, speed, scale, type) {
         this.x = x;
+        this.y = ground() + (Math.random() * 80 - 40);
         this.speed = speed;
+        this.scale = scale;
         this.phase = Math.random() * Math.PI * 2;
+        this.type = type; // 0: Punch/Combat, 1: High Kick, 2: Epic Jump Kick
+        this.opacity = 0.12 + Math.random() * 0.12;
     }
 
     update() {
         this.x += this.speed;
-        this.phase += 0.18;
+        this.phase += 0.09;
 
-        if (this.x > canvas.width + 200) {
-            this.x = -200;
+        // Loop screen edges seamlessly
+        if (this.x > canvas.width + 300) {
+            this.x = -300;
+            this.y = ground() + (Math.random() * 80 - 40);
+        } else if (this.x < -300) {
+            this.x = canvas.width + 300;
+            this.y = ground() + (Math.random() * 80 - 40);
         }
     }
 
     draw() {
-
-        const y = ground();
-
-        const arm = Math.sin(this.phase) * 22;
-        const leg = Math.sin(this.phase) * 24;
-
         ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(this.scale, this.scale);
 
-        ctx.translate(this.x, y);
+        // Face direction based on movement speed
+        if (this.speed < 0) {
+            ctx.scale(-1, 1);
+        }
 
-        // More visible
-        ctx.globalAlpha = 0.45;
-
-        ctx.strokeStyle = "#000";
-        ctx.lineWidth = 5;
+        ctx.globalAlpha = this.opacity;
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 3.5 / this.scale;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
+        const action = Math.sin(this.phase);
+
         // Head
         ctx.beginPath();
-        ctx.arc(0, -60, 18, 0, Math.PI * 2);
+        ctx.arc(0, -48, 13, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Body
+        // Spine / Body
         ctx.beginPath();
+        ctx.moveTo(0, -35);
+        ctx.lineTo(0, 8);
+        ctx.stroke();
 
-        ctx.moveTo(0, -42);
-        ctx.lineTo(0, 15);
+        // Limbs based on fighting style
+        ctx.beginPath();
+        if (this.type === 0) {
+            // Dynamic Punching Stance
+            ctx.moveTo(0, -22);
+            ctx.lineTo(-25 + action * 12, -28); // Rear guard arm
+            ctx.moveTo(0, -22);
+            ctx.lineTo(32 + action * 22, -18); // Punching jab
 
-        // Left Arm
-        ctx.moveTo(0, -25);
-        ctx.lineTo(-arm, -5);
+            ctx.moveTo(0, 8);
+            ctx.lineTo(-22, 42); // Back leg
+            ctx.moveTo(0, 8);
+            ctx.lineTo(24, 42); // Front leg
+        } else if (this.type === 1) {
+            // High Kick Form
+            ctx.moveTo(0, -22);
+            ctx.lineTo(-22, -10);
+            ctx.moveTo(0, -22);
+            ctx.lineTo(22, -10);
 
-        // Right Arm
-        ctx.moveTo(0, -25);
-        ctx.lineTo(arm, -5);
+            ctx.moveTo(0, 8);
+            ctx.lineTo(-18, 42); // Standing leg
+            ctx.moveTo(0, 8);
+            ctx.lineTo(42 + action * 18, -12); // Extended high kick
+        } else {
+            // Aggressive Combat Action
+            ctx.moveTo(0, -22);
+            ctx.lineTo(-30, -5);
+            ctx.moveTo(0, -22);
+            ctx.lineTo(28, -5);
 
-        // Left Leg
-        ctx.moveTo(0, 15);
-        ctx.lineTo(-leg, 52);
-
-        // Right Leg
-        ctx.moveTo(0, 15);
-        ctx.lineTo(leg, 52);
-
+            ctx.moveTo(0, 8);
+            ctx.lineTo(-25, 42);
+            ctx.moveTo(0, 8);
+            ctx.lineTo(25, 42);
+        }
         ctx.stroke();
 
         ctx.restore();
     }
 }
 
-const runners = [];
+const fighters = [];
 
-for (let i = 0; i < 5; i++) {
-
-    runners.push(
-        new Runner(
-            i * 350,
-            2 + Math.random() * 1.5
+// Generate balanced stickman fighters across the screen
+for (let i = 0; i < 9; i++) {
+    fighters.push(
+        new Fighter(
+            i * 250 - 100,
+            (i % 2 === 0 ? 1 : -1) * (1.0 + Math.random() * 0.8),
+            0.5 + Math.random() * 0.7,
+            Math.floor(Math.random() * 3)
         )
     );
-
-}
-
-function drawGround() {
-
-    ctx.save();
-
-    ctx.globalAlpha = 0.08;
-
-    ctx.strokeStyle = "#000";
-
-    ctx.lineWidth = 2;
-
-    ctx.beginPath();
-
-    ctx.moveTo(0, ground() + 52);
-    ctx.lineTo(canvas.width, ground() + 52);
-
-    ctx.stroke();
-
-    ctx.restore();
-
 }
 
 function animate() {
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawGround();
-
-    runners.forEach(r => {
-
-        r.update();
-        r.draw();
-
+    fighters.forEach(f => {
+        f.update();
+        f.draw();
     });
 
     requestAnimationFrame(animate);
-
 }
 
 animate();
