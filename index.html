@@ -1,146 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NORMS | Premium Roblox Marketplace</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-</head>
+<script>
+  // Your Supabase Credentials
+  const SUPABASE_URL = 'https://jmxtkgpooycnzyyrkqni.supabase.co';
+  const SUPABASE_ANON_KEY = 'Sb_publishable_kcsioYjBWyD0vyR_QVm5kg_Qfc1mM-p'; 
 
-<body>
+  // Initialize Supabase Client
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <canvas id="bg"></canvas>
-    <div class="overlay"></div>
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const btnLogin = document.getElementById('btn-login');
+  const btnSignup = document.getElementById('btn-signup');
+  const btnLogout = document.getElementById('btn-logout');
+  const userStatus = document.getElementById('user-status');
 
-    <!-- NAVBAR -->
-    <nav>
-        <div class="logo">
-            NORMS
-        </div>
-        <div class="nav-links">
-            <a href="#store">Store</a>
-            <a href="#about">About</a>
-            <a href="#contact">Contact</a>
-            <a href="https://discord.gg/kwRwuW4WUM" target="_blank">Discord</a>
-        </div>
-    </nav>
+  // Sign Up Function
+  btnSignup.addEventListener('click', async () => {
+    const { data, error } = await supabase.auth.signUp({
+      email: emailInput.value,
+      password: passwordInput.value,
+    });
+    if (error) alert(error.message);
+    else alert('Check your email for the confirmation link!');
+  });
 
-    <!-- HERO -->
-    <section class="hero">
-        <div class="hero-content">
-            <h1>NORMS</h1>
-            <p>Premium Roblox Digital Marketplace</p>
-            <a href="#store" class="hero-btn">Browse Store</a>
-        </div>
-    </section>
+  // Log In Function
+  btnLogin.addEventListener('click', async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailInput.value,
+      password: passwordInput.value,
+    });
+    if (error) alert(error.message);
+    else checkUser();
+  });
 
-    <!-- STORE -->
-    <section id="store">
-        <h2>Featured Items</h2>
-        <div class="products">
-            <!-- Item 1 -->
-            <div class="card">
-                <div class="badge">BEST SELLER</div>
-                <div class="product-image">
-                    <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
-                </div>
-                <h3>Black Dragon</h3>
-                <p class="price">₱1500</p>
-                <div class="stock">17 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
+  // Log Out Function
+  btnLogout.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    checkUser();
+  });
 
-            <!-- Item 2 -->
-            <div class="card">
-                <div class="product-image">
-                    <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
-                </div>
-                <h3>Sun Bloom</h3>
-                <p class="price">₱10</p>
-                <div class="stock">52 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
+  // Check login state on load
+  async function checkUser() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      userStatus.innerText = `Logged in as: ${session.user.email}`;
+      btnLogout.style.display = 'inline-block';
+      btnLogin.style.display = 'none';
+      btnSignup.style.display = 'none';
+    } else {
+      userStatus.innerText = 'Not logged in';
+      btnLogout.style.display = 'none';
+      btnLogin.style.display = 'inline-block';
+      btnSignup.style.display = 'inline-block';
+    }
+  }
 
-            <!-- Item 3 -->
-            <div class="card">
-                <div class="product-image">
-                    <img src="assets/items/Star Fruit.png" alt="Star Fruit">
-                </div>
-                <h3>Star Fruit</h3>
-                <p class="price">₱20</p>
-                <div class="stock">31 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
-
-            <!-- Item 4 -->
-            <div class="card">
-                <div class="product-image">
-                    <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
-                </div>
-                <h3>Dragon Breath</h3>
-                <p class="price">₱10</p>
-                <div class="stock">9 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
-
-            <!-- Item 5 -->
-            <div class="card">
-                <div class="product-image">
-                    <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
-                </div>
-                <h3>Super Sprinkler</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">4 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
-
-            <!-- Item 6 -->
-            <div class="card">
-                <div class="product-image">
-                    <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
-                </div>
-                <h3>Super Watering Can</h3>
-                <p class="price">₱0.50</p>
-                <div class="stock">15 Available</div>
-                <button onclick="window.open('https://m.me/claditch','_blank')">BUY</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ABOUT -->
-    <section id="about">
-        <h2>Why NORMS?</h2>
-        <p>
-            Fast Delivery.<br>
-            Trusted Service.<br>
-            Premium Roblox Items.
-        </p>
-    </section>
-
-    <!-- CONTACT -->
-    <section id="contact">
-        <h2>Contact</h2>
-        <p>Need help or want to buy? Connect with us below!</p>
-        <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
-            <a class="hero-btn" href="https://m.me/claditch" target="_blank" style="margin-top: 0;">
-                Message on Facebook
-            </a>
-            <a class="hero-btn" href="https://discord.gg/kwRwuW4WUM" target="_blank" style="margin-top: 0; background: #5865F2;">
-                Join Discord Server
-            </a>
-        </div>
-    </section>
-
-    <footer>
-        © 2026 NORMS
-    </footer>
-
-    <script src="canvas.js"></script>
-    <script src="script.js"></script>
-</body>
-
-</html>
+  checkUser();
+</script>
