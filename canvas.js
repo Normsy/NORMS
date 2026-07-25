@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Stationary Ninja Fighting Stickmen</title>
+    <title>Ninja Fighting Stickmen</title>
     <style>
         body, html {
             margin: 0;
@@ -34,67 +34,26 @@ const ground = () => canvas.height * 0.75;
 
 class NinjaPair {
     constructor(x) {
-        this.x = x; // Fixed center position on the screen
-        this.phase = Math.random() * Math.PI * 2;
+        this.x = x;
+        this.time = 0;
         
-        // Actions: "APPROACH", "FIGHT", "BACKOFF"
-        this.state = "APPROACH";
-        this.stateTimer = 0;
-        
-        // Two ninjas facing each other
-        this.n1 = { xOffset: -60, action: "stance" };
-        this.n2 = { xOffset: 60, action: "stance" };
+        // Two ninjas starting close enough to fight immediately
+        this.n1 = { xOffset: -30 };
+        this.n2 = { xOffset: 30 };
     }
 
     update() {
-        this.phase += 0.1;
-
-        if (this.state === "APPROACH") {
-            // Move toward center to engage
-            this.n1.xOffset += 1.5;
-            this.n2.xOffset -= 1.5;
-
-            if (this.n1.xOffset >= -25) {
-                this.state = "FIGHT";
-                this.stateTimer = 180; // Fight duration (~3 seconds)
-            }
-        } else if (this.state === "FIGHT") {
-            this.stateTimer--;
-            
-            // Alternate attack animations based on phase
-            if (Math.sin(this.phase * 2) > 0) {
-                this.n1.action = "punch";
-                this.n2.action = "block";
-            } else {
-                this.n1.action = "kick";
-                this.n2.action = "dodge";
-            }
-
-            if (this.stateTimer <= 0) {
-                this.state = "BACKOFF";
-            }
-        } else if (this.state === "BACKOFF") {
-            // Separate after fighting
-            this.n1.xOffset -= 1.5;
-            this.n2.xOffset += 1.5;
-            this.n1.action = "stance";
-            this.n2.action = "stance";
-
-            if (this.n1.xOffset <= -60) {
-                this.state = "APPROACH";
-            }
-        }
-        // (Removed the horizontal drift so they stay strictly in their spots!)
+        this.time += 0.08;
     }
 
-    drawNinja(nx, ny, facingRight, action) {
+    drawNinja(nx, ny, facingRight, actionType) {
         ctx.save();
         ctx.translate(nx, ny);
         if (!facingRight) {
             ctx.scale(-1, 1);
         }
 
-        // High visibility solid pure black ink
+        // Solid pure black, high visibility
         ctx.globalAlpha = 1.0;
         ctx.strokeStyle = "#000000";
         ctx.fillStyle = "#000000";
@@ -115,69 +74,38 @@ class NinjaPair {
         ctx.stroke();
         ctx.beginPath();
         ctx.moveTo(15, -63);
-        ctx.lineTo(32, -55 + Math.sin(this.phase) * 5);
+        ctx.lineTo(32, -55 + Math.sin(this.time) * 5);
         ctx.stroke();
 
         ctx.lineWidth = 6;
 
-        // Body postures based on action
+        // Dynamic fighting poses driven continuously by sine waves
         ctx.beginPath();
-        if (action === "punch") {
+        if (actionType === 1) {
+            // Attacker: Punching forward
             ctx.moveTo(0, -42);
             ctx.lineTo(-5, 15);
             ctx.moveTo(-5, -25);
-            ctx.lineTo(45, -28);
+            ctx.lineTo(45, -28 + Math.sin(this.time * 4) * 10); // active punch thrust
             ctx.moveTo(-5, -25);
             ctx.lineTo(-20, -10);
             ctx.moveTo(-5, 15);
             ctx.lineTo(-30, 52);
             ctx.moveTo(-5, 15);
             ctx.lineTo(25, 52);
-        } else if (action === "kick") {
-            ctx.moveTo(0, -42);
-            ctx.lineTo(5, 15);
-            ctx.moveTo(5, -25);
-            ctx.lineTo(-20, -15);
-            ctx.moveTo(5, -25);
-            ctx.lineTo(30, -15);
-            ctx.moveTo(5, 15);
-            ctx.lineTo(-5, 52);
-            ctx.moveTo(5, 15);
-            ctx.lineTo(45, -5);
-        } else if (action === "block") {
-            ctx.moveTo(0, -42);
-            ctx.lineTo(0, 15);
-            ctx.moveTo(0, -25);
-            ctx.lineTo(25, -35);
-            ctx.moveTo(0, -25);
-            ctx.lineTo(15, -15);
-            ctx.moveTo(0, 15);
-            ctx.lineTo(-15, 52);
-            ctx.moveTo(0, 15);
-            ctx.lineTo(15, 52);
-        } else if (action === "dodge") {
-            ctx.moveTo(0, -42);
-            ctx.lineTo(-15, 15);
-            ctx.moveTo(-10, -25);
-            ctx.lineTo(-30, -30);
-            ctx.moveTo(-10, -25);
-            ctx.lineTo(10, -10);
-            ctx.moveTo(-15, 15);
-            ctx.lineTo(-35, 52);
-            ctx.moveTo(-15, 15);
-            ctx.lineTo(5, 52);
         } else {
-            const bob = Math.sin(this.phase) * 3;
-            ctx.moveTo(0, -42 + bob);
-            ctx.lineTo(0, 15 + bob);
-            ctx.moveTo(0, -25 + bob);
-            ctx.lineTo(-22, -10 + bob);
-            ctx.moveTo(0, -25 + bob);
-            ctx.lineTo(22, -10 + bob);
-            ctx.moveTo(0, 15 + bob);
-            ctx.lineTo(-18, 52);
-            ctx.moveTo(0, 15 + bob);
-            ctx.lineTo(18, 52);
+            // Defender: Blocking / Reeling back from impact
+            const recoil = Math.max(0, Math.sin(this.time * 4) * 15);
+            ctx.moveTo(0, -42);
+            ctx.lineTo(5 + recoil, 15);
+            ctx.moveTo(5, -25);
+            ctx.lineTo(25 - recoil, -35); // blocking arms
+            ctx.moveTo(5, -25);
+            ctx.lineTo(15, -15);
+            ctx.moveTo(5, 15);
+            ctx.lineTo(-15, 52);
+            ctx.moveTo(5, 15);
+            ctx.lineTo(15 + recoil, 52);
         }
         ctx.stroke();
 
@@ -186,12 +114,14 @@ class NinjaPair {
 
     draw() {
         const y = ground();
-        this.drawNinja(this.x + this.n1.xOffset, y, true, this.n1.action);
-        this.drawNinja(this.x + this.n2.xOffset, y, false, this.n2.action);
+        // Switch who attacks/defends based on time cycle so they continuously exchange blows
+        const actionToggle = Math.sin(this.time * 2) > 0;
+        
+        this.drawNinja(this.x + this.n1.xOffset, y, true, actionToggle ? 1 : 2);
+        this.drawNinja(this.x + this.n2.xOffset, y, false, actionToggle ? 2 : 1);
     }
 }
 
-// Spread out stationary pairs across the screen width
 const pairs = [
     new NinjaPair(window.innerWidth * 0.25),
     new NinjaPair(window.innerWidth * 0.5),
