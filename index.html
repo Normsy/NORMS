@@ -958,6 +958,31 @@
             cursor: pointer;
         }
 
+        /* FLOATING CHAT WIDGET STYLES */
+        .floating-chat-btn {
+            position: fixed;
+            bottom: 75px;
+            right: 20px;
+            background: #000000;
+            color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s ease;
+        }
+
+        .floating-chat-btn:hover {
+            transform: scale(1.05);
+        }
+
         .card.hidden {
             display: none !important;
         }
@@ -1185,6 +1210,11 @@
 
     </div>
 
+    <!-- FLOATING CHAT BUTTON WIDGET -->
+    <button type="button" class="floating-chat-btn" onclick="openChatWithAdmin('General Support')">
+        💬 Chat Support
+    </button>
+
     <!-- STICKY BOTTOM NAVIGATION BAR -->
     <div class="bottom-nav" id="bottom-nav">
         <!-- Dynamically populated based on login status -->
@@ -1288,7 +1318,7 @@
     <div id="full-page-chat" class="full-page-settings">
         <div class="settings-container-inner">
             <div class="settings-header">
-                <h2 id="chat-header-title">Chat with Admin</h2>
+                <h2 id="chat-header-title">Chat with admin@norms.com</h2>
                 <button type="button" class="settings-close-btn" id="close-full-chat">&times;</button>
             </div>
             <div class="chat-box">
@@ -1307,13 +1337,23 @@
     <div id="full-page-admin" class="full-page-settings">
         <div class="settings-container-inner">
             <div class="settings-header">
-                <h2>Admin Panel</h2>
+                <h2>Admin Panel — Chat Inbox</h2>
                 <button type="button" class="settings-close-btn" id="close-full-admin">&times;</button>
             </div>
+            
             <div class="settings-section-card">
-                <h3>Admin Controls</h3>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Manage system controls and platform data as admin@norms.com.</p>
-                <button type="button" class="action-save-btn" onclick="alert('Admin action triggered successfully!')">Run System Diagnostics</button>
+                <h3>Live Customer Conversations (admin@norms.com)</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Direct view of user chats and inquiries.</p>
+                
+                <div class="chat-box" style="height: 45vh;">
+                    <div class="chat-messages" id="admin-chat-messages-container">
+                        <div class="chat-message received">System initialized. Waiting for customer messages...</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="admin-chat-input-text" class="chat-input-field" placeholder="Reply to customer as admin..." />
+                        <button type="button" id="admin-chat-send-btn" class="chat-send-btn">Send</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1389,6 +1429,11 @@
       const chatInputText = document.getElementById('chat-input-text');
       const chatSendBtn = document.getElementById('chat-send-btn');
       const chatHeaderTitle = document.getElementById('chat-header-title');
+
+      // Admin Chat elements
+      const adminChatMessagesContainer = document.getElementById('admin-chat-messages-container');
+      const adminChatInputText = document.getElementById('admin-chat-input-text');
+      const adminChatSendBtn = document.getElementById('admin-chat-send-btn');
 
       // Checkout elements
       const checkoutModalImg = document.getElementById('checkout-modal-img');
@@ -1642,7 +1687,6 @@
           return;
         }
 
-        // Simulate short network confirmation delay for loading animation experience
         setTimeout(() => {
           loadingOverlay.style.display = 'none';
 
@@ -1701,7 +1745,6 @@
           chatHeaderTitle.innerText = `Chat with admin@norms.com (${itemName})`;
           fullPageChat.style.display = 'block';
 
-          // Reset chat view bottom nav state if needed
           document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
         });
       }
@@ -1725,10 +1768,16 @@
         sentMsg.innerText = text;
         chatMessagesContainer.appendChild(sentMsg);
 
+        // Deliver copy to Admin Panel chat view
+        const adminMsg = document.createElement('div');
+        adminMsg.className = 'chat-message received';
+        adminMsg.innerText = `[Customer Inquiry]: ${text}`;
+        adminChatMessagesContainer.appendChild(adminMsg);
+        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
+
         chatInputText.value = '';
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 
-        // Simulated automated admin reply response
         setTimeout(() => {
           const replyMsg = document.createElement('div');
           replyMsg.className = 'chat-message received';
@@ -1736,6 +1785,37 @@
           chatMessagesContainer.appendChild(replyMsg);
           chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
         }, 1000);
+      }
+
+      // Admin Chat Reply Handling
+      adminChatSendBtn.addEventListener('click', () => {
+        sendAdminMessage();
+      });
+
+      adminChatInputText.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendAdminMessage();
+        }
+      });
+
+      function sendAdminMessage() {
+        const text = adminChatInputText.value.trim();
+        if (!text) return;
+
+        const adminSent = document.createElement('div');
+        adminSent.className = 'chat-message sent';
+        adminSent.innerText = `admin@norms.com: ${text}`;
+        adminChatMessagesContainer.appendChild(adminSent);
+
+        // Deliver admin response to customer chat box
+        const customerReply = document.createElement('div');
+        customerReply.className = 'chat-message received';
+        customerReply.innerText = `admin@norms.com: ${text}`;
+        chatMessagesContainer.appendChild(customerReply);
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+        adminChatInputText.value = '';
+        adminChatMessagesContainer.scrollTop = adminChatMessagesContainer.scrollHeight;
       }
 
       closeFullChat.addEventListener('click', () => {
@@ -1953,7 +2033,6 @@
 
             bottomNav.innerHTML = navHtml;
         } else {
-            // User is NOT logged in: Show Home, Market, Login
             bottomNav.innerHTML = `
                 <button class="nav-item active" data-view="home" onclick="switchView('home')">
                     <span class="nav-icon">🏠</span>
