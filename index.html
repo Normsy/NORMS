@@ -1075,67 +1075,8 @@
                     </div>
                 </div>
 
-                <div class="products">
-                    <div class="card" data-category="grow-a-garden-2" data-price="1500" data-name="Black Dragon" data-img="assets/items/Black Dragon.PNG">
-                        <div class="badge">BEST</div>
-                        <div class="product-image">
-                            <img src="assets/items/Black Dragon.PNG" alt="Black Dragon">
-                        </div>
-                        <h3>Black Dragon</h3>
-                        <p class="price">₱1500</p>
-                        <div class="stock" id="stock-black-dragon">17 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Black Dragon', 1500, 'assets/items/Black Dragon.PNG', 'stock-black-dragon')">BUY</button>
-                    </div>
-
-                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Sun Bloom" data-img="assets/items/Sun Bloom.png">
-                        <div class="product-image">
-                            <img src="assets/items/Sun Bloom.png" alt="Sun Bloom">
-                        </div>
-                        <h3>Sun Bloom</h3>
-                        <p class="price">₱10</p>
-                        <div class="stock" id="stock-sun-bloom">52 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Sun Bloom', 10, 'assets/items/Sun Bloom.png', 'stock-sun-bloom')">BUY</button>
-                    </div>
-
-                    <div class="card" data-category="grow-a-garden-2" data-price="20" data-name="Star Fruit" data-img="assets/items/Star Fruit.png">
-                        <div class="product-image">
-                            <img src="assets/items/Star Fruit.png" alt="Star Fruit">
-                        </div>
-                        <h3>Star Fruit</h3>
-                        <p class="price">₱20</p>
-                        <div class="stock" id="stock-star-fruit">31 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Star Fruit', 20, 'assets/items/Star Fruit.png', 'stock-star-fruit')">BUY</button>
-                    </div>
-
-                    <div class="card" data-category="grow-a-garden-2" data-price="10" data-name="Dragon Breath" data-img="assets/items/Dragon Breath.png">
-                        <div class="product-image">
-                            <img src="assets/items/Dragon Breath.png" alt="Dragon Breath">
-                        </div>
-                        <h3>Dragon Breath</h3>
-                        <p class="price">₱10</p>
-                        <div class="stock" id="stock-dragon-breath">9 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Dragon Breath', 10, 'assets/items/Dragon Breath.png', 'stock-dragon-breath')">BUY</button>
-                    </div>
-
-                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Sprinkler" data-img="assets/items/Super Sprinkler.png">
-                        <div class="product-image">
-                            <img src="assets/items/Super Sprinkler.png" alt="Super Sprinkler">
-                        </div>
-                        <h3>Sprinkler</h3>
-                        <p class="price">₱0.50</p>
-                        <div class="stock" id="stock-sprinkler">4 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Sprinkler', 0.5, 'assets/items/Super Sprinkler.png', 'stock-sprinkler')">BUY</button>
-                    </div>
-
-                    <div class="card" data-category="grow-a-garden-2" data-price="0.5" data-name="Super Can" data-img="assets/items/Super Watering Can.PNG">
-                        <div class="product-image">
-                            <img src="assets/items/Super Watering Can.PNG" alt="Super Watering Can">
-                        </div>
-                        <h3>Super Can</h3>
-                        <p class="price">₱0.50</p>
-                        <div class="stock" id="stock-super-can">15 Left</div>
-                        <button type="button" class="buy-btn" onclick="openCheckout('Super Can', 0.5, 'assets/items/Super Watering Can.PNG', 'stock-super-can')">BUY</button>
-                    </div>
+                <div class="products" id="products-container">
+                    <!-- Dynamically populated or rendered from products table -->
                 </div>
             </div>
         </section>
@@ -1533,26 +1474,67 @@
         });
       });
 
-      const gameCards = document.querySelectorAll('.game-icon-card');
-      const productCards = document.querySelectorAll('.products .card');
+      async function loadProducts() {
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select("*");
 
-      gameCards.forEach(card => {
-        card.addEventListener('click', () => {
-          gameCards.forEach(c => c.classList.remove('active'));
-          card.classList.add('active');
+        if (error) {
+          console.error(error);
+          return;
+        }
 
-          const selectedGame = card.getAttribute('data-game');
+        const productsContainer = document.getElementById("products-container");
+        productsContainer.innerHTML = "";
 
-          productCards.forEach(product => {
-            const category = product.getAttribute('data-category');
-            if (selectedGame === 'all' || category === selectedGame) {
-              product.classList.remove('hidden');
-            } else {
-              product.classList.add('hidden');
-            }
+        if (!data || data.length === 0) return;
+
+        data.forEach(product => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.setAttribute("data-category", product.category || "grow-a-garden-2");
+          card.setAttribute("data-price", product.price);
+          card.setAttribute("data-name", product.name);
+          card.setAttribute("data-img", product.image);
+
+          card.innerHTML = `
+            ${product.badge ? `<div class="badge">${product.badge}</div>` : ''}
+            <div class="product-image">
+                <img src="${product.image}" alt="${product.name}">
+            </div>
+            <h3>${product.name}</h3>
+            <p class="price">₱${Number(product.price).toFixed(2)}</p>
+            <div class="stock" id="stock-${product.id}">${product.stock} Left</div>
+            <button type="button" class="buy-btn" onclick="openCheckout('${product.name}', ${product.price}, '${product.image}', 'stock-${product.id}')">BUY</button>
+          `;
+          productsContainer.appendChild(card);
+        });
+
+        setupGameSelectors();
+      }
+
+      function setupGameSelectors() {
+        const gameCards = document.querySelectorAll('.game-icon-card');
+        const productCards = document.querySelectorAll('.products .card');
+
+        gameCards.forEach(card => {
+          card.addEventListener('click', () => {
+            gameCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+
+            const selectedGame = card.getAttribute('data-game');
+
+            productCards.forEach(product => {
+              const category = product.getAttribute('data-category');
+              if (selectedGame === 'all' || category === selectedGame) {
+                product.classList.remove('hidden');
+              } else {
+                product.classList.add('hidden');
+              }
+            });
           });
         });
-      });
+      }
 
       tabLogin.addEventListener('click', () => {
         currentMode = 'login';
@@ -1627,7 +1609,13 @@
           return;
         }
 
-        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
+        const { data: profileData, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('balance')
+          .eq('id', session.user.id)
+          .single();
+
+        let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
 
         if (currentBalance < itemPrice) {
           loadingOverlay.style.display = 'none';
@@ -1635,11 +1623,14 @@
           return;
         }
 
-        currentBalance -= itemPrice;
+        let newBalance = currentBalance - itemPrice;
 
-        const { error: updateError } = await supabaseClient.auth.updateUser({
-          data: { balance: currentBalance }
-        });
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({
+              balance: newBalance
+          })
+          .eq('id', session.user.id);
 
         if (updateError) {
           loadingOverlay.style.display = 'none';
@@ -1660,7 +1651,7 @@
             }
           }
 
-          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+          settingsUserBalance.innerText = `₱${newBalance.toFixed(2)}`;
 
           addOrderToList(itemName, itemPrice, itemImg, username, description);
           
@@ -1673,9 +1664,16 @@
       });
 
       async function saveOrderToDatabase(itemName, itemPrice, itemImg, username, description, userEmail) {
-        await supabaseClient.from('orders').insert([
-          { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
-        ]).catch(() => {});
+        const { error } = await supabaseClient
+          .from("orders")
+          .insert([
+            { item_name: itemName, price: itemPrice, image: itemImg, roblox_username: username, note: description, user_email: userEmail, created_at: new Date() }
+          ]);
+
+        if (error) {
+            console.error(error);
+            alert(error.message);
+        }
       }
 
       function addOrderToList(itemName, itemPrice, itemImg, username, description) {
@@ -1700,6 +1698,42 @@
           </div>
         `;
         ordersContainer.prepend(orderRow);
+      }
+
+      async function loadUserOrders() {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+
+        if (!session) return;
+
+        const { data, error } = await supabaseClient
+            .from("orders")
+            .select("*")
+            .eq("user_email", session.user.email)
+            .order("created_at", { ascending: false });
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        const ordersContainer = document.getElementById("orders-container");
+        ordersContainer.innerHTML = "";
+
+        if (data.length === 0) {
+            ordersContainer.innerHTML =
+                '<p id="no-orders-msg">No items purchased yet.</p>';
+            return;
+        }
+
+        data.forEach(order => {
+            addOrderToList(
+                order.item_name,
+                Number(order.price),
+                order.image,
+                order.roblox_username,
+                order.note
+            );
+        });
       }
 
       async function fetchGlobalOrdersForAdmin() {
@@ -1773,28 +1807,24 @@
         if (!session) return;
 
         const userEmail = session.user.email;
-        const chattingWith = activeChatUser || (userEmail === 'admin@norms.com' ? '' : 'admin@norms.com');
 
-        let query = supabaseClient.from('messages').select('*').order('created_at', { ascending: true });
-        
-        const { data, error } = await query;
+        const { data, error } = await supabaseClient
+          .from("messages")
+          .select("*")
+          .or(`sender.eq.${userEmail},recipient.eq.${userEmail}`)
+          .order("created_at");
+
         if (error) return;
 
         chatMessagesContainer.innerHTML = '';
 
         if (data && data.length > 0) {
           data.forEach(msg => {
-            const isRelevant = userEmail === 'admin@norms.com' 
-              ? (msg.sender === chattingWith || msg.recipient === chattingWith || msg.sender === userEmail || msg.recipient === userEmail)
-              : (msg.sender === userEmail || msg.recipient === userEmail);
-
-            if (isRelevant) {
-              const isSentByMe = msg.sender === userEmail;
-              const chatBubble = document.createElement('div');
-              chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
-              chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
-              chatMessagesContainer.appendChild(chatBubble);
-            }
+            const isSentByMe = msg.sender === userEmail;
+            const chatBubble = document.createElement('div');
+            chatBubble.className = `chat-message ${isSentByMe ? 'sent' : 'received'}`;
+            chatBubble.innerText = `${isSentByMe ? '' : '[' + msg.sender + ']: '}${msg.message}`;
+            chatMessagesContainer.appendChild(chatBubble);
           });
         } else {
           chatMessagesContainer.innerHTML = '<div class="chat-message received">Hello! Start your conversation here.</div>';
@@ -1814,6 +1844,21 @@
             fetchChatMessages();
             fetchGlobalOrdersForAdmin();
           })
+          .subscribe();
+
+        supabaseClient
+          .channel("orders")
+          .on(
+              "postgres_changes",
+              {
+                  event: "INSERT",
+                  schema: "public",
+                  table: "orders"
+              },
+              payload => {
+                  fetchGlobalOrdersForAdmin();
+              }
+          )
           .subscribe();
       }
 
@@ -1835,31 +1880,40 @@
         }
       });
 
-      closeFullChat.addEventListener('click', () => {
-        fullPageChat.style.display = 'none';
-        const { data: { session } } = supabaseClient.auth.getSession();
-        session.then(s => {
-          if (s && s.user.email === 'admin@norms.com') {
-            fullPageAdmin.style.display = 'block';
+      closeFullChat.addEventListener('click', async () => {
+          fullPageChat.style.display = 'none';
+
+          const { data: { session } } = await supabaseClient.auth.getSession();
+
+          if (session && session.user.email === 'admin@norms.com') {
+              fullPageAdmin.style.display = 'block';
           } else {
-            switchView(currentActiveView);
+              switchView(currentActiveView);
           }
-        });
       });
 
       addFundsBtn.addEventListener('click', async () => {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) return;
 
-        let currentBalance = session.user.user_metadata?.balance ?? 1500.00;
-        currentBalance += 1000.00;
+        const { data: profileData } = await supabaseClient
+          .from('profiles')
+          .select('balance')
+          .eq('id', session.user.id)
+          .single();
 
-        const { error } = await supabaseClient.auth.updateUser({
-          data: { balance: currentBalance }
-        });
+        let currentBalance = profileData ? Number(profileData.balance) : 1500.00;
+        let newBalance = currentBalance + 1000.00;
+
+        const { error } = await supabaseClient
+          .from("profiles")
+          .update({
+              balance: newBalance
+          })
+          .eq("id", session.user.id);
 
         if (!error) {
-          settingsUserBalance.innerText = `₱${currentBalance.toFixed(2)}`;
+          settingsUserBalance.innerText = `₱${newBalance.toFixed(2)}`;
           alert('Successfully added ₱1,000.00 to your balance!');
         }
       });
@@ -1977,12 +2031,17 @@
             const { data, error } = await supabaseClient.auth.signUp({
               email: email,
               password: password,
-              options: { data: { full_name: fullName, balance: 1500.00 } }
+              options: { data: { full_name: fullName } }
             });
 
             if (error) {
                 userStatus.innerText = error.message;
             } else {
+                if (data.user) {
+                    await supabaseClient.from('profiles').insert([
+                        { id: data.user.id, email: email, balance: 1500.00 }
+                    ]);
+                }
                 alert('Account created! Please check your email to verify.');
             }
         } else {
@@ -2014,7 +2073,13 @@
         settingsDisplayName.value = displayName;
         settingsEmail.value = user.email || '';
 
-        const balance = user.user_metadata?.balance ?? 1500.00;
+        const { data: profileData } = await supabaseClient
+          .from('profiles')
+          .select('balance')
+          .eq('id', user.id)
+          .single();
+
+        const balance = profileData ? Number(profileData.balance) : 1500.00;
         settingsUserBalance.innerText = `₱${balance.toFixed(2)}`;
         profileStatus.innerText = '';
         passwordStatus.innerText = '';
@@ -2066,6 +2131,7 @@
             bottomNav.innerHTML = navHtml;
             setupRealtimeListener();
             fetchGlobalOrdersForAdmin();
+            await loadUserOrders();
         } else {
             bottomNav.innerHTML = `
                 <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
@@ -2082,6 +2148,7 @@
                 </button>
             `;
         }
+        loadProducts();
         switchView('home');
       }
 
