@@ -25,9 +25,8 @@ background:#f5f5f7;
 
 color:#111827;
 
-overflow-x:hidden;
-
 }
+
 
 
 .container{
@@ -40,7 +39,7 @@ margin:auto;
 
 
 
-/* ACCOUNT LIST */
+/* ACCOUNT */
 
 .account-box{
 
@@ -52,10 +51,9 @@ border-radius:16px;
 
 padding:15px;
 
-margin-bottom:12px;
+margin-bottom:15px;
 
-box-shadow:
-0 5px 15px rgba(0,0,0,.05);
+box-shadow:0 5px 15px rgba(0,0,0,.05);
 
 cursor:pointer;
 
@@ -77,6 +75,22 @@ font-size:18px;
 
 font-weight:800;
 
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+}
+
+
+
+.toggle-icon{
+
+font-size:14px;
+
+color:#6b7280;
+
 }
 
 
@@ -85,9 +99,23 @@ font-weight:800;
 
 font-size:12px;
 
+margin-top:3px;
+
+}
+
+
+
+.online{
+
 color:#16a34a;
 
-margin-top:5px;
+}
+
+
+
+.offline{
+
+color:#6b7280;
 
 }
 
@@ -111,9 +139,7 @@ display:block;
 
 
 
-
 /* SLIDER */
-
 
 .slider-container{
 
@@ -123,7 +149,7 @@ overflow-x:auto;
 
 overflow-y:hidden;
 
-padding-bottom:8px;
+padding-bottom:5px;
 
 scrollbar-width:none;
 
@@ -173,8 +199,15 @@ padding:15px;
 
 cursor:pointer;
 
-box-shadow:
-0 5px 15px rgba(0,0,0,.05);
+box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+}
+
+
+
+.card:hover{
+
+background:#fafafa;
 
 }
 
@@ -216,7 +249,6 @@ color:#ef4444;
 
 /* DROPDOWN */
 
-
 .global-dropdown{
 
 width:100%;
@@ -235,8 +267,7 @@ padding:10px;
 
 display:none;
 
-box-shadow:
-0 10px 25px rgba(0,0,0,.12);
+box-shadow:0 10px 25px rgba(0,0,0,.12);
 
 margin-top:8px;
 
@@ -289,11 +320,14 @@ font-weight:800;
 }
 
 
+
 .empty{
 
-padding:10px;
+font-size:13px;
 
 color:#6b7280;
+
+padding:10px;
 
 }
 
@@ -301,13 +335,13 @@ color:#6b7280;
 
 .back{
 
-margin-bottom:12px;
+margin-bottom:10px;
+
+border:none;
 
 background:#111827;
 
 color:white;
-
-border:none;
 
 padding:10px 15px;
 
@@ -317,11 +351,9 @@ cursor:pointer;
 
 }
 
-
 </style>
 
 </head>
-
 
 
 <body>
@@ -329,16 +361,13 @@ cursor:pointer;
 
 <div class="container">
 
-
 <div id="dashboard">
 
 Loading NORMS...
 
 </div>
 
-
 </div>
-
 
 
 
@@ -352,6 +381,8 @@ const API =
 let inventoryData={};
 
 let activeType=null;
+
+let isDashboardOpen=false;
 
 
 
@@ -367,9 +398,9 @@ await res.json();
 
 
 
-if(!data.success || data.accounts.length===0){
+if(!data.success){
 
-document.getElementById("dashboard").innerHTML =
+document.getElementById("dashboard").innerHTML=
 "No accounts found";
 
 return;
@@ -385,8 +416,11 @@ let html="";
 data.accounts.forEach(account=>{
 
 
-html += `
+let status=getStatus(account.updated_at);
 
+
+
+html+=`
 
 <div class="account-box"
 onclick="openAccount('${account.roblox_username}')">
@@ -394,14 +428,28 @@ onclick="openAccount('${account.roblox_username}')">
 
 <div class="user">
 
-🟢 ${account.roblox_username}
+<span>
+
+${status.icon}
+
+${account.roblox_username}
+
+</span>
+
+
+<span class="toggle-icon">
+
+Open
+
+</span>
+
 
 </div>
 
 
-<div class="status">
+<div class="status ${status.class}">
 
-💰 ${Number(account.sheckles).toLocaleString()} Sheckles
+${status.text}
 
 </div>
 
@@ -417,6 +465,63 @@ onclick="openAccount('${account.roblox_username}')">
 
 
 document.getElementById("dashboard").innerHTML=html;
+
+
+}
+
+
+
+
+
+function getStatus(time){
+
+
+let last =
+new Date(time).getTime();
+
+
+let now =
+Date.now();
+
+
+
+let minutes =
+(now-last)/1000/60;
+
+
+
+if(minutes <= 10){
+
+
+return {
+
+icon:"🟢",
+
+text:"Roblox • Online",
+
+class:"online"
+
+};
+
+
+}
+
+
+
+return {
+
+
+icon:"⚫",
+
+text:
+"Roblox • Offline • "+
+Math.floor(minutes)+
+" min ago",
+
+class:"offline"
+
+
+};
 
 
 }
@@ -445,10 +550,10 @@ return;
 
 
 
-const account=data.account;
+let account=data.account;
 
 
-inventoryData =
+inventoryData=
 account.inventory || {};
 
 
@@ -461,11 +566,16 @@ renderDashboard(account);
 
 
 
-
 function renderDashboard(account){
 
 
+
+let status=getStatus(account.updated_at);
+
+
+
 document.getElementById("dashboard").innerHTML=`
+
 
 <button class="back"
 onclick="loadAccounts()">
@@ -476,29 +586,52 @@ onclick="loadAccounts()">
 
 
 
-<div class="account-box">
+<div class="account-box"
+onclick="toggleDashboard()">
+
 
 
 <div class="user">
 
-🟢 ${account.roblox_username}
+<span>
+
+${status.icon}
+
+${account.roblox_username}
+
+</span>
+
+
+<span class="toggle-icon"
+id="toggleIcon">
+
+${isDashboardOpen ? "▲ Hide":"▼ Show"}
+
+</span>
+
 
 </div>
 
 
-<div class="status">
 
-Roblox • Live
+<div class="status ${status.class}">
+
+${status.text}
+
+</div>
+
+
 
 </div>
 
 
-</div>
 
+
+<div class="dashboard-content ${isDashboardOpen ? "open":""}"
+id="dashboardContent">
 
 
 <div class="slider-container">
-
 
 <div class="slider">
 
@@ -549,7 +682,6 @@ total(inventoryData.Pets)+"x",
 
 </div>
 
-
 </div>
 
 
@@ -560,7 +692,49 @@ id="globalDropdown">
 </div>
 
 
+</div>
+
+
 `;
+
+}
+
+
+
+
+
+function toggleDashboard(){
+
+
+isDashboardOpen=!isDashboardOpen;
+
+
+let box=document.getElementById("dashboardContent");
+
+
+let icon=document.getElementById("toggleIcon");
+
+
+
+if(isDashboardOpen){
+
+box.classList.add("open");
+
+icon.innerText="▲ Hide";
+
+
+}else{
+
+
+box.classList.remove("open");
+
+icon.innerText="▼ Show";
+
+closeDropdown();
+
+
+}
+
 
 }
 
@@ -578,7 +752,7 @@ return `
 
 
 <div class="card"
-onclick="${type ? `toggleItems('${type}')` : ''}">
+onclick="event.stopPropagation(); ${type ? `toggleItems('${type}')`:'closeDropdown()'}">
 
 
 <div class="label">
@@ -603,9 +777,7 @@ ${value}
 
 `;
 
-
 }
-
 
 
 
@@ -623,9 +795,10 @@ return 0;
 
 for(let i in items){
 
-count += Number(items[i]) || 0;
+count+=Number(items[i])||0;
 
 }
+
 
 
 return count;
@@ -635,10 +808,11 @@ return count;
 
 
 
+
 function toggleItems(type){
 
 
-let box =
+let box=
 document.getElementById("globalDropdown");
 
 
@@ -653,7 +827,6 @@ activeType=null;
 
 return;
 
-
 }
 
 
@@ -661,8 +834,7 @@ return;
 activeType=type;
 
 
-
-let items =
+let items=
 inventoryData[type] || {};
 
 
@@ -694,8 +866,7 @@ let html="";
 for(let name in merged){
 
 
-html += `
-
+html+=`
 
 <div class="item">
 
@@ -724,9 +895,8 @@ x${merged[name].toLocaleString()}
 
 
 
-box.innerHTML =
+box.innerHTML=
 html || "<div class='empty'>No items</div>";
-
 
 
 box.classList.add("open");
@@ -734,6 +904,26 @@ box.classList.add("open");
 
 }
 
+
+
+
+
+function closeDropdown(){
+
+let box=
+document.getElementById("globalDropdown");
+
+
+if(box){
+
+box.classList.remove("open");
+
+}
+
+
+activeType=null;
+
+}
 
 
 
