@@ -472,7 +472,7 @@ function renderMain(){
 
 
 let online = 0;
-let totalMoney = 0;
+let totalSheckles = 0;
 let totalItemsCount = 0;
 let totalPetsCount = 0;
 
@@ -482,7 +482,7 @@ accounts.forEach(acc=>{
     if(getStatus(acc.updated_at).class=="online"){
         online++;
     }
-    totalMoney += Number(acc.sheckles || 0);
+    totalSheckles += Number(acc.sheckles || 0);
 
     if(acc.inventory){
         if(acc.inventory.Seeds){
@@ -495,7 +495,11 @@ accounts.forEach(acc=>{
             for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
         }
         if(acc.inventory.Pets){
-            for(let k in acc.inventory.Pets) totalPetsCount += Number(acc.inventory.Pets[k])||0;
+            for(let k in acc.inventory.Pets){
+                let count = Number(acc.inventory.Pets[k])||0;
+                totalItemsCount += count;
+                totalPetsCount += count;
+            }
         }
     }
 
@@ -536,11 +540,11 @@ ${online}/${accounts.length}
 <div class="stat-card">
 
 <div class="stat-label">
-Total Money
+Total Sheckles
 </div>
 
 <div class="stat-value money">
-${totalMoney.toLocaleString()}
+${totalSheckles.toLocaleString()}
 </div>
 
 </div>
