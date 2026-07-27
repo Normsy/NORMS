@@ -2,303 +2,747 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>NORMS Dashboard</title>
+
 <style>
+
 *{
 box-sizing:border-box;
 }
 
 body{
+
 margin:0;
 padding:15px;
+
 font-family:Segoe UI,Arial,sans-serif;
+
 background:#f5f5f7;
+
 color:#111827;
+
+overflow-x:hidden;
+
 }
+
 
 .container{
+
 max-width:1200px;
+
 margin:auto;
+
 }
 
-/* USER */
+
+
+/* ACCOUNT LIST */
+
 .account-box{
+
 background:white;
+
 border:1px solid #e5e7eb;
+
 border-radius:16px;
+
 padding:15px;
-margin-bottom:15px;
-box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+margin-bottom:12px;
+
+box-shadow:
+0 5px 15px rgba(0,0,0,.05);
+
 cursor:pointer;
-user-select:none;
+
 }
+
+
 
 .account-box:hover{
+
 background:#fafafa;
+
 }
+
+
 
 .user{
+
 font-size:18px;
+
 font-weight:800;
-display:flex;
-justify-content:space-between;
-align-items:center;
+
 }
 
-.toggle-icon{
-font-size:14px;
-color:#6b7280;
-font-weight:600;
-}
+
 
 .status{
+
 font-size:12px;
+
 color:#16a34a;
-margin-top:3px;
+
+margin-top:5px;
+
 }
 
-/* COLLAPSIBLE DASHBOARD SECTION */
+
+
+/* DASHBOARD */
+
 .dashboard-content{
+
 display:none;
+
 }
+
+
 
 .dashboard-content.open{
+
 display:block;
+
 }
 
-/* SLIDER CONTAINER */
-.slider-container {
-width: 100%;
-overflow-x: auto;
-padding-bottom: 5px;
-scrollbar-width: none;
-margin-bottom: 10px;
+
+
+
+/* SLIDER */
+
+
+.slider-container{
+
+width:100%;
+
+overflow-x:auto;
+
+overflow-y:hidden;
+
+padding-bottom:8px;
+
+scrollbar-width:none;
+
 }
 
-.slider-container::-webkit-scrollbar {
-display: none;
+
+
+.slider-container::-webkit-scrollbar{
+
+display:none;
+
 }
+
+
 
 .slider{
+
 display:flex;
+
 gap:12px;
-width: max-content;
+
+width:max-content;
+
 }
+
+
 
 .card-wrapper{
+
 flex-shrink:0;
+
 }
+
+
 
 .card{
+
 min-width:140px;
+
 background:white;
+
 border:1px solid #e5e7eb;
+
 border-radius:15px;
+
 padding:15px;
+
 cursor:pointer;
-box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+box-shadow:
+0 5px 15px rgba(0,0,0,.05);
+
 }
 
-.card:hover{
-background:#fafafa;
-}
+
 
 .label{
+
 font-size:12px;
+
 font-weight:700;
+
 color:#6b7280;
+
 }
+
+
 
 .value{
+
 margin-top:8px;
+
 font-size:22px;
+
 font-weight:800;
+
 color:#16a34a;
+
 }
+
+
 
 .money{
+
 color:#ef4444;
+
 }
 
-/* GLOBAL FLOATING DROPDOWN */
+
+
+/* DROPDOWN */
+
+
 .global-dropdown{
+
 width:100%;
+
 max-height:250px;
+
 overflow-y:auto;
+
 background:white;
+
 border:1px solid #e5e7eb;
+
 border-radius:12px;
+
 padding:10px;
+
 display:none;
-box-shadow:0 10px 25px rgba(0,0,0,.12);
-margin-top:5px;
+
+box-shadow:
+0 10px 25px rgba(0,0,0,.12);
+
+margin-top:8px;
+
 }
+
+
 
 .global-dropdown.open{
+
 display:block;
+
 }
+
+
 
 .item{
+
 display:flex;
+
 justify-content:space-between;
-align-items:center;
+
 background:#f9fafb;
+
 padding:9px;
+
 border-radius:8px;
+
 margin-bottom:6px;
+
 font-size:13px;
+
 }
+
+
 
 .item-name{
+
 font-weight:600;
+
 }
+
+
 
 .item-count{
+
 color:#16a34a;
+
 font-weight:800;
+
 }
 
+
 .empty{
-font-size:13px;
-color:#6b7280;
+
 padding:10px;
+
+color:#6b7280;
+
 }
+
+
+
+.back{
+
+margin-bottom:12px;
+
+background:#111827;
+
+color:white;
+
+border:none;
+
+padding:10px 15px;
+
+border-radius:10px;
+
+cursor:pointer;
+
+}
+
+
 </style>
+
 </head>
+
+
 
 <body>
 
+
 <div class="container">
+
+
 <div id="dashboard">
+
 Loading NORMS...
+
 </div>
+
+
 </div>
+
+
+
 
 <script>
-const API = "https://norms.bazarte-clarkjohn06.workers.dev";
-const username = "Gyazuv";
+
+
+const API =
+"https://norms.bazarte-clarkjohn06.workers.dev";
+
+
 let inventoryData={};
-let activeType = null;
-let isDashboardOpen = false;
 
-async function loadData(){
-const res = await fetch(API+"/account?username="+username);
-const data = await res.json();
+let activeType=null;
 
-if(!data.success){
-document.getElementById("dashboard").innerHTML="Account not found";
+
+
+async function loadAccounts(){
+
+
+const res =
+await fetch(API+"/accounts");
+
+
+const data =
+await res.json();
+
+
+
+if(!data.success || data.accounts.length===0){
+
+document.getElementById("dashboard").innerHTML =
+"No accounts found";
+
 return;
+
 }
+
+
+
+let html="";
+
+
+
+data.accounts.forEach(account=>{
+
+
+html += `
+
+
+<div class="account-box"
+onclick="openAccount('${account.roblox_username}')">
+
+
+<div class="user">
+
+🟢 ${account.roblox_username}
+
+</div>
+
+
+<div class="status">
+
+💰 ${Number(account.sheckles).toLocaleString()} Sheckles
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+document.getElementById("dashboard").innerHTML=html;
+
+
+}
+
+
+
+
+
+async function openAccount(username){
+
+
+const res =
+await fetch(
+API+"/account?username="+username
+);
+
+
+
+const data =
+await res.json();
+
+
+
+if(!data.success)
+return;
+
+
 
 const account=data.account;
-inventoryData=account.inventory || {};
+
+
+inventoryData =
+account.inventory || {};
+
+
 
 renderDashboard(account);
+
+
 }
+
+
+
+
 
 function renderDashboard(account){
+
+
 document.getElementById("dashboard").innerHTML=`
-<div class="account-box" onclick="toggleDashboard()">
+
+<button class="back"
+onclick="loadAccounts()">
+
+← Accounts
+
+</button>
+
+
+
+<div class="account-box">
+
+
 <div class="user">
-<span>🟢 ${account.roblox_username}</span>
-<span class="toggle-icon" id="toggleIcon">${isDashboardOpen ? '▲ Hide' : '▼ Show'}</span>
-</div>
-<div class="status">Roblox • Live</div>
+
+🟢 ${account.roblox_username}
+
 </div>
 
-<div class="dashboard-content ${isDashboardOpen ? 'open' : ''}" id="dashboardContent">
+
+<div class="status">
+
+Roblox • Live
+
+</div>
+
+
+</div>
+
+
+
 <div class="slider-container">
+
+
 <div class="slider">
-${createButton("💰 Sheckles", Number(account.sheckles).toLocaleString(), "money", null)}
-${createButton("🌱 Seeds", total(inventoryData.Seeds)+"x", "", "Seeds")}
-${createButton("⚙️ Gear", total(inventoryData.Gear)+"x", "", "Gear")}
-${createButton("📦 Crates", total(inventoryData.Crates)+"x", "", "Crates")}
-${createButton("🐾 Pets", total(inventoryData.Pets)+"x", "", "Pets")}
-</div>
+
+
+${createButton(
+"💰 Sheckles",
+Number(account.sheckles).toLocaleString(),
+"money",
+null
+)}
+
+
+
+${createButton(
+"🌱 Seeds",
+total(inventoryData.Seeds)+"x",
+"",
+"Seeds"
+)}
+
+
+
+${createButton(
+"⚙️ Gear",
+total(inventoryData.Gear)+"x",
+"",
+"Gear"
+)}
+
+
+
+${createButton(
+"📦 Crates",
+total(inventoryData.Crates)+"x",
+"",
+"Crates"
+)}
+
+
+
+${createButton(
+"🐾 Pets",
+total(inventoryData.Pets)+"x",
+"",
+"Pets"
+)}
+
+
 </div>
 
-<div class="global-dropdown" id="globalDropdown"></div>
+
 </div>
+
+
+
+<div class="global-dropdown"
+id="globalDropdown">
+
+</div>
+
+
 `;
+
 }
 
-function toggleDashboard(){
-isDashboardOpen = !isDashboardOpen;
-let content = document.getElementById("dashboardContent");
-let icon = document.getElementById("toggleIcon");
 
-if(isDashboardOpen){
-content.classList.add("open");
-icon.innerText = "▲ Hide";
-} else {
-content.classList.remove("open");
-icon.innerText = "▼ Show";
-closeDropdown();
-}
-}
+
+
 
 function createButton(label,value,color,type){
+
+
 return `
+
+
 <div class="card-wrapper">
-<div class="card" onclick="event.stopPropagation(); ${type ? `toggleItems('${type}')` : 'closeDropdown()'}">
-<div class="label">${label}</div>
-<div class="value ${color}">${value}</div>
+
+
+<div class="card"
+onclick="${type ? `toggleItems('${type}')` : ''}">
+
+
+<div class="label">
+
+${label}
+
 </div>
+
+
+<div class="value ${color}">
+
+${value}
+
 </div>
+
+
+</div>
+
+
+</div>
+
+
 `;
+
+
 }
+
+
+
+
 
 function total(items){
+
+
 let count=0;
-if(!items) return 0;
+
+
+if(!items)
+return 0;
+
+
+
 for(let i in items){
+
 count += Number(items[i]) || 0;
+
 }
+
+
 return count;
+
 }
+
+
+
 
 function toggleItems(type){
-let box = document.getElementById("globalDropdown");
 
-if(activeType === type && box.classList.contains("open")){
+
+let box =
+document.getElementById("globalDropdown");
+
+
+
+if(activeType===type &&
+box.classList.contains("open")){
+
+
 box.classList.remove("open");
-activeType = null;
+
+activeType=null;
+
 return;
+
+
 }
 
-activeType = type;
-let items = inventoryData[type] || {};
-let merged = {};
+
+
+activeType=type;
+
+
+
+let items =
+inventoryData[type] || {};
+
+
+
+let merged={};
+
+
 
 for(let name in items){
-let clean = name.trim();
-merged[clean] = (merged[clean]||0) + (Number(items[name])||0);
+
+
+let clean=name.trim();
+
+
+merged[clean]=
+(merged[clean]||0)
++
+Number(items[name]||0);
+
+
 }
 
-let html = "";
+
+
+let html="";
+
+
+
 for(let name in merged){
+
+
 html += `
+
+
 <div class="item">
-<div class="item-name">${name}</div>
-<div class="item-count">x${merged[name].toLocaleString()}</div>
+
+
+<div class="item-name">
+
+${name}
+
 </div>
+
+
+<div class="item-count">
+
+x${merged[name].toLocaleString()}
+
+</div>
+
+
+</div>
+
+
 `;
+
+
 }
 
-box.innerHTML = html || `<div class="empty">No items</div>`;
+
+
+box.innerHTML =
+html || "<div class='empty'>No items</div>";
+
+
+
 box.classList.add("open");
+
+
 }
 
-function closeDropdown(){
-let box = document.getElementById("globalDropdown");
-if(box) box.classList.remove("open");
-activeType = null;
-}
 
-loadData();
+
+
+loadAccounts();
+
+
 </script>
 
+
 </body>
+
 </html>
