@@ -48,9 +48,9 @@ margin-top:3px;
 .slider-container {
 width: 100%;
 overflow-x: auto;
-overflow-y: visible;
-padding-bottom: 15px;
+padding-bottom: 5px;
 scrollbar-width: none;
+margin-bottom: 10px;
 }
 
 .slider-container::-webkit-scrollbar {
@@ -61,13 +61,10 @@ display: none;
 display:flex;
 gap:12px;
 width: max-content;
-overflow: visible;
 }
 
 .card-wrapper{
-position:relative;
 flex-shrink:0;
-overflow: visible;
 }
 
 .card{
@@ -101,12 +98,9 @@ color:#16a34a;
 color:#ef4444;
 }
 
-/* FLOATING DROPDOWN */
-.dropdown{
-position:absolute;
-top:calc(100% + 8px);
-left:0;
-width:230px;
+/* GLOBAL FLOATING DROPDOWN */
+.global-dropdown{
+width:100%;
 max-height:250px;
 overflow-y:auto;
 background:white;
@@ -114,11 +108,11 @@ border:1px solid #e5e7eb;
 border-radius:12px;
 padding:10px;
 display:none;
-z-index:9999;
-box-shadow:0 10px 25px rgba(0,0,0,.15);
+box-shadow:0 10px 25px rgba(0,0,0,.12);
+margin-top: 5px;
 }
 
-.dropdown.open{
+.global-dropdown.open{
 display:block;
 }
 
@@ -162,6 +156,7 @@ Loading NORMS...
 const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 const username = "Gyazuv";
 let inventoryData={};
+let activeType = null;
 
 async function loadData(){
 const res = await fetch(API+"/account?username="+username);
@@ -190,17 +185,18 @@ ${createButton("📦 Crates", total(inventoryData.Crates)+"x", "", "Crates")}
 ${createButton("🐾 Pets", total(inventoryData.Pets)+"x", "", "Pets")}
 </div>
 </div>
+
+<div class="global-dropdown" id="globalDropdown"></div>
 `;
 }
 
 function createButton(label,value,color,type){
 return `
 <div class="card-wrapper">
-<div class="card" onclick="${type ? `toggleItems('${type}')` : ''}">
+<div class="card" onclick="${type ? `toggleItems('${type}')` : 'closeDropdown()'}">
 <div class="label">${label}</div>
 <div class="value ${color}">${value}</div>
 </div>
-<div class="dropdown" id="${type}"></div>
 </div>
 `;
 }
@@ -215,28 +211,26 @@ return count;
 }
 
 function toggleItems(type){
-let box=document.getElementById(type);
+let box = document.getElementById("globalDropdown");
 
-if(box.classList.contains("open")){
+if(activeType === type && box.classList.contains("open")){
 box.classList.remove("open");
+activeType = null;
 return;
 }
 
-document.querySelectorAll(".dropdown").forEach(x=>{
-x.classList.remove("open");
-});
-
-let items=inventoryData[type] || {};
-let merged={};
+activeType = type;
+let items = inventoryData[type] || {};
+let merged = {};
 
 for(let name in items){
-let clean=name.trim();
-merged[clean]=(merged[clean]||0)+(Number(items[name])||0);
+let clean = name.trim();
+merged[clean] = (merged[clean]||0) + (Number(items[name])||0);
 }
 
-let html="";
+let html = "";
 for(let name in merged){
-html+=`
+html += `
 <div class="item">
 <div class="item-name">${name}</div>
 <div class="item-count">x${merged[name].toLocaleString()}</div>
@@ -244,8 +238,14 @@ html+=`
 `;
 }
 
-box.innerHTML=html || `<div class="empty">No items</div>`;
+box.innerHTML = html || `<div class="empty">No items</div>`;
 box.classList.add("open");
+}
+
+function closeDropdown(){
+let box = document.getElementById("globalDropdown");
+box.classList.remove("open");
+activeType = null;
 }
 
 loadData();
