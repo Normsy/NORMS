@@ -22,194 +22,214 @@ background:#f5f5f7;
 color:#111827;
 }
 
+
 .container{
 max-width:1200px;
 margin:auto;
 }
 
-/* HEADER HERO BOX */
+
+/* HERO */
+
 .hero-box{
+
 background:white;
 border:1px solid #e5e7eb;
 border-radius:16px;
 padding:20px;
 margin-bottom:15px;
 box-shadow:0 5px 15px rgba(0,0,0,.05);
-display:flex;
-align-items:center;
-gap:15px;
+
 }
 
-.hero-icon{
-width:55px;
-height:55px;
-border-radius:12px;
-background:#e5e7eb;
-object-fit:cover;
-}
 
 .hero-title{
+
 font-size:22px;
 font-weight:800;
-color:#111827;
+
 }
+
 
 .hero-subtitle{
+
 font-size:13px;
 color:#6b7280;
-margin-top:3px;
+
 }
 
-/* STATS GRID */
+
+
+/* STATS */
+
 .stats-grid{
+
 display:grid;
-grid-template-columns:repeat(2, 1fr);
+grid-template-columns:repeat(2,1fr);
 gap:12px;
 margin-bottom:15px;
+
 }
 
+
 .stat-card{
+
 background:white;
 border:1px solid #e5e7eb;
 border-radius:16px;
 padding:15px;
-box-shadow:0 5px 15px rgba(0,0,0,.05);
+
 }
 
+
 .stat-label{
+
 font-size:11px;
 font-weight:700;
 color:#6b7280;
-margin-top:8px;
-text-transform:uppercase;
-letter-spacing:0.5px;
+
 }
+
 
 .stat-value{
-font-size:20px;
+
+font-size:22px;
 font-weight:800;
 color:#16a34a;
-margin-top:4px;
+margin-top:5px;
+
 }
 
-.stat-value.money{
-color:#111827;
-}
 
-/* ACCOUNTS SECTION TOGGLE CARD */
+
+/* BUTTON */
+
 .accounts-toggle-card{
+
 background:white;
 border:1px solid #e5e7eb;
 border-radius:16px;
 padding:15px;
-margin-bottom:15px;
-box-shadow:0 5px 15px rgba(0,0,0,.05);
-cursor:pointer;
 display:flex;
 justify-content:space-between;
 align-items:center;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,.05);
+
 }
 
-.accounts-toggle-card:hover{
-background:#fafafa;
-}
 
 .accounts-toggle-title{
+
 font-size:18px;
 font-weight:800;
-color:#111827;
+
 }
 
-.accounts-toggle-icon{
-font-size:14px;
-color:#6b7280;
-font-weight:600;
-}
 
-/* ACCOUNTS LIST COLLAPSIBLE CONTAINER */
-.accounts-list-content{
-display:none;
-}
 
-.accounts-list-content.open{
-display:block;
-}
+/* ACCOUNT CARD */
 
-/* ACCOUNT */
 .account-box{
+
 background:white;
 border:1px solid #e5e7eb;
 border-radius:16px;
 padding:15px;
-margin-bottom:15px;
+margin-top:15px;
 box-shadow:0 5px 15px rgba(0,0,0,.05);
-cursor:pointer;
+
 }
 
-.account-box:hover{
-background:#fafafa;
-}
 
 .user{
-font-size:18px;
-font-weight:800;
+
 display:flex;
 justify-content:space-between;
 align-items:center;
+font-size:18px;
+font-weight:800;
+
 }
 
-.toggle-icon{
-font-size:14px;
-color:#6b7280;
-font-weight:600;
-}
 
 .status{
+
 font-size:12px;
-margin-top:3px;
+margin-top:5px;
+
 }
+
 
 .online{
+
 color:#16a34a;
+
 }
+
 
 .offline{
+
 color:#6b7280;
+
 }
 
-/* DASHBOARD */
-.dashboard-content{
-display:none;
+
+
+.open-btn{
+
+border:none;
+background:#111827;
+color:white;
+padding:8px 15px;
+border-radius:10px;
+cursor:pointer;
+
 }
 
-.dashboard-content.open{
-display:block;
+
+
+/* ACCOUNT INVENTORY AREA */
+
+
+.account-dashboard-slot{
+
+margin-top:15px;
+
 }
+
+
+
 
 /* SLIDER */
+
 .slider-container{
-width:100%;
+
 overflow-x:auto;
 overflow-y:hidden;
-padding-bottom:5px;
 scrollbar-width:none;
+
 }
+
 
 .slider-container::-webkit-scrollbar{
+
 display:none;
+
 }
 
+
 .slider{
+
 display:flex;
 gap:12px;
 width:max-content;
+
 }
 
-.card-wrapper{
-flex-shrink:0;
-}
 
 .card{
+
 min-width:140px;
 background:white;
 border:1px solid #e5e7eb;
@@ -217,356 +237,700 @@ border-radius:15px;
 padding:15px;
 cursor:pointer;
 box-shadow:0 5px 15px rgba(0,0,0,.05);
+
 }
 
-.card:hover{
-background:#fafafa;
-}
 
 .label{
+
 font-size:12px;
 font-weight:700;
 color:#6b7280;
+
 }
 
+
 .value{
+
 margin-top:8px;
 font-size:22px;
 font-weight:800;
 color:#16a34a;
+
 }
+
 
 .money{
+
 color:#ef4444;
+
 }
 
+
+
 /* DROPDOWN */
+
+
 .global-dropdown{
-width:100%;
-max-height:250px;
-overflow-y:auto;
+
+display:none;
 background:white;
 border:1px solid #e5e7eb;
 border-radius:12px;
 padding:10px;
-display:none;
-box-shadow:0 10px 25px rgba(0,0,0,.12);
-margin-top:8px;
+margin-top:10px;
+max-height:250px;
+overflow-y:auto;
+
 }
+
 
 .global-dropdown.open{
+
 display:block;
+
 }
 
+
+
 .item{
+
 display:flex;
 justify-content:space-between;
 background:#f9fafb;
 padding:9px;
 border-radius:8px;
 margin-bottom:6px;
-font-size:13px;
+
 }
+
 
 .item-name{
+
 font-weight:600;
+
 }
+
 
 .item-count{
+
 color:#16a34a;
 font-weight:800;
+
 }
+
 
 .empty{
-font-size:13px;
+
 color:#6b7280;
 padding:10px;
+
 }
 
+
+
 .back{
-margin-bottom:10px;
+
 border:none;
 background:#111827;
 color:white;
 padding:10px 15px;
 border-radius:10px;
+margin-bottom:10px;
 cursor:pointer;
+
 }
+
 
 </style>
 
 </head>
 
+
 <body>
 
+
 <div class="container">
+
 <div id="dashboard">
+
 Loading NORMS...
+
 </div>
+
 </div>
 
 <script>
 
 const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 
-let inventoryData={};
-let activeType=null;
-let isDashboardOpen=false;
-let isAccountsListOpen=false;
-let globalAccountsData = [];
-let currentView = 'main'; // 'main' or 'accounts_tab'
-let selectedAccountForTab = null;
+
+let accounts = [];
+let inventoryData = {};
+let activeType = null;
+let activeDropdown = null;
+
+
 
 async function loadAccounts(){
-const res = await fetch(API+"/accounts");
-const data = await res.json();
 
-if(!data.success){
-document.getElementById("dashboard").innerHTML="No accounts found";
-return;
+    const res = await fetch(API + "/accounts");
+    const data = await res.json();
+
+
+    if(!data.success){
+
+        document.getElementById("dashboard").innerHTML =
+        "No accounts found";
+
+        return;
+
+    }
+
+
+    accounts = data.accounts;
+
+    renderMain();
+
 }
 
-globalAccountsData = data.accounts;
-renderMainDashboard();
-}
+
+
 
 function getStatus(time){
-let last = new Date(time).getTime();
-let now = Date.now();
-let minutes = (now-last)/1000/60;
 
-if(minutes <= 10){
-return {
-icon:"🟢",
-text:"Roblox • Online",
-class:"online"
-};
+    let minutes =
+    (Date.now() - new Date(time).getTime()) / 1000 / 60;
+
+
+    if(minutes <= 10){
+
+        return {
+            icon:"🟢",
+            text:"Roblox • Online",
+            class:"online"
+        };
+
+    }
+
+
+    return {
+
+        icon:"⚫",
+        text:"Roblox • Offline ("+
+        Math.floor(minutes)+" min ago)",
+        class:"offline"
+
+    };
+
 }
 
-return {
-icon:"⚫",
-text: "Roblox • Offline • "+ Math.floor(minutes)+" min ago",
-class:"offline"
-};
-}
 
-function renderMainDashboard(){
-currentView = 'main';
-let totalOnline = 0;
-let totalMoney = 0;
-let totalItemsCount = 0;
-let totalPetsCount = 0;
 
-globalAccountsData.forEach(acc => {
-let st = getStatus(acc.updated_at);
-if(st.class === "online") totalOnline++;
-totalMoney += Number(acc.sheckles || 0);
 
-if(acc.inventory){
-if(acc.inventory.Seeds){
-for(let k in acc.inventory.Seeds) totalItemsCount += Number(acc.inventory.Seeds[k])||0;
-}
-if(acc.inventory.Gear){
-for(let k in acc.inventory.Gear) totalItemsCount += Number(acc.inventory.Gear[k])||0;
-}
-if(acc.inventory.Crates){
-for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
-}
-if(acc.inventory.Pets){
-for(let k in acc.inventory.Pets) totalPetsCount += Number(acc.inventory.Pets[k])||0;
-}
-}
+function renderMain(){
+
+
+let online = 0;
+
+
+accounts.forEach(acc=>{
+
+    if(getStatus(acc.updated_at).class=="online"){
+        online++;
+    }
+
 });
 
-let html = `
+
+
+document.getElementById("dashboard").innerHTML = `
+
+
 <div class="hero-box">
-<img class="hero-icon" src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png" alt="Icon">
-<div>
-<div class="hero-title">Grow A Garden 2</div>
-<div class="hero-subtitle">Overview of your tracked accounts</div>
+
+<div class="hero-title">
+🌱 Grow A Garden 2
 </div>
+
+<div class="hero-subtitle">
+NORMS Roblox Account Monitoring
 </div>
+
+
+</div>
+
+
 
 <div class="stats-grid">
+
+
 <div class="stat-card">
-<div class="stat-label">Online / Total</div>
-<div class="stat-value">${totalOnline}/${globalAccountsData.length}</div>
-</div>
-<div class="stat-card">
-<div class="stat-label">Total Money</div>
-<div class="stat-value money">${totalMoney.toLocaleString()}</div>
-</div>
-<div class="stat-card">
-<div class="stat-label">Total Items</div>
-<div class="stat-value">${totalItemsCount.toLocaleString()}</div>
-</div>
-<div class="stat-card">
-<div class="stat-label">Total Pets</div>
-<div class="stat-value">${totalPetsCount.toLocaleString()}</div>
-</div>
+
+<div class="stat-label">
+Accounts
 </div>
 
-<div class="accounts-toggle-card" onclick="toggleAccountsList()">
-<div class="accounts-toggle-title">Accounts</div>
-<div class="accounts-toggle-icon" id="accountsToggleIcon">${isAccountsListOpen ? 'Close' : 'Open'}</div>
+<div class="stat-value">
+${accounts.length}
 </div>
 
-<div class="accounts-list-content ${isAccountsListOpen ? 'open' : ''}" id="accountsListContent">
+</div>
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+Online
+</div>
+
+<div class="stat-value">
+${online}
+</div>
+
+</div>
+
+
+
+</div>
+
+
+
+
+<div class="accounts-toggle-card"
+onclick="openAccountsTab()">
+
+
+<div class="accounts-toggle-title">
+
+Accounts Dashboard
+
+</div>
+
+
+<div>
+Open →
+</div>
+
+
+</div>
+
+
 `;
 
-globalAccountsData.forEach(account=>{
-let status=getStatus(account.updated_at);
-html+=`
-<div class="account-box" onclick="openAccountTab('${account.roblox_username}')">
+}
+
+
+
+
+function openAccountsTab(){
+
+
+
+let html = `
+
+
+<button class="back"
+onclick="renderMain()">
+
+← Back
+
+</button>
+
+
+<div class="hero-box">
+
+<div class="hero-title">
+Accounts
+</div>
+
+<div class="hero-subtitle">
+Your tracked Roblox accounts
+</div>
+
+</div>
+
+
+`;
+
+
+
+accounts.forEach(acc=>{
+
+
+let status = getStatus(acc.updated_at);
+
+
+
+html += `
+
+
+<div class="account-box">
+
+
 <div class="user">
-<span>${status.icon} ${account.roblox_username}</span>
-<span class="toggle-icon">Open</span>
+
+
+<span>
+
+${status.icon}
+${acc.roblox_username}
+
+</span>
+
+
+<button class="open-btn"
+
+onclick="openAccount('${acc.roblox_username}')">
+
+Open
+
+</button>
+
+
 </div>
-<div class="status ${status.class}">${status.text}</div>
+
+
+<div class="status ${status.class}">
+
+${status.text}
+
 </div>
+
+
+
+<div id="slot-${acc.roblox_username}"
+
+class="account-dashboard-slot">
+
+</div>
+
+
+</div>
+
+
 `;
+
 });
 
-html += `</div>`;
 
-document.getElementById("dashboard").innerHTML=html;
+
+document.getElementById("dashboard").innerHTML = html;
+
+
 }
 
-function toggleAccountsList(){
-isAccountsListOpen = !isAccountsListOpen;
-let content = document.getElementById("accountsListContent");
-let icon = document.getElementById("accountsToggleIcon");
 
-if(isAccountsListOpen){
-content.classList.add("open");
-icon.innerText = "Close";
-} else {
-content.classList.remove("open");
-icon.innerText = "Open";
-}
-}
 
-async function openAccountTab(username){
-const res = await fetch(API+"/account?username="+username);
+
+
+async function openAccount(username){
+
+
+const res = await fetch(
+API+"/account?username="+username
+);
+
+
 const data = await res.json();
 
-if(!data.success) return;
 
-selectedAccountForTab = data.account;
-inventoryData = selectedAccountForTab.inventory || {};
-currentView = 'accounts_tab';
-isDashboardOpen = false;
-renderSpecificAccountTab(selectedAccountForTab);
+
+if(!data.success)
+return;
+
+
+
+let account = data.account;
+
+
+
+inventoryData = account.inventory || {};
+
+
+
+showAccountDashboard(account);
+
+
 }
 
-function renderSpecificAccountTab(account){
-let status=getStatus(account.updated_at);
 
-document.getElementById("dashboard").innerHTML=`
-<button class="back" onclick="renderMainDashboard()">← Back</button>
 
-<div class="account-box" onclick="toggleDashboard()">
-<div class="user">
-<span>${status.icon} ${account.roblox_username}</span>
-<span class="toggle-icon" id="toggleIcon">${isDashboardOpen ? "Close":"Open"}</span>
-</div>
-<div class="status ${status.class}">${status.text}</div>
-</div>
 
-<div class="dashboard-content ${isDashboardOpen ? "open":""}" id="dashboardContent">
+function showAccountDashboard(account){
+
+
+
+let slot =
+document.getElementById(
+"slot-"+account.roblox_username
+);
+
+
+
+if(slot.innerHTML!=""){
+
+    slot.innerHTML="";
+    return;
+
+}
+
+
+
+slot.innerHTML = `
+
+
 <div class="slider-container">
+
+
 <div class="slider">
-${createButton("💰 Sheckles", Number(account.sheckles).toLocaleString(), "money", null)}
-${createButton("🌱 Seeds", total(inventoryData.Seeds)+"x", "", "Seeds")}
-${createButton("⚙️ Gear", total(inventoryData.Gear)+"x", "", "Gear")}
-${createButton("📦 Crates", total(inventoryData.Crates)+"x", "", "Crates")}
-${createButton("🐾 Pets", total(inventoryData.Pets)+"x", "", "Pets")}
-</div>
+
+
+${createButton(
+"💰 Sheckles",
+Number(account.sheckles).toLocaleString(),
+"money",
+null,
+account.roblox_username
+)}
+
+
+
+${createButton(
+"🌱 Seeds",
+total(inventoryData.Seeds)+"x",
+"",
+"Seeds",
+account.roblox_username
+)}
+
+
+
+${createButton(
+"⚙️ Gear",
+total(inventoryData.Gear)+"x",
+"",
+"Gear",
+account.roblox_username
+)}
+
+
+
+${createButton(
+"📦 Crates",
+total(inventoryData.Crates)+"x",
+"",
+"Crates",
+account.roblox_username
+)}
+
+
+
+${createButton(
+"🐾 Pets",
+total(inventoryData.Pets)+"x",
+"",
+"Pets",
+account.roblox_username
+)}
+
+
+
 </div>
 
-<div class="global-dropdown" id="globalDropdown"></div>
+
 </div>
+
+
+
+<div class="global-dropdown"
+
+id="drop-${account.roblox_username}">
+
+</div>
+
+
 `;
+
+
+
 }
 
-function toggleDashboard(){
-isDashboardOpen=!isDashboardOpen;
-let box=document.getElementById("dashboardContent");
-let icon=document.getElementById("toggleIcon");
 
-if(isDashboardOpen){
-box.classList.add("open");
-icon.innerText="Close";
-}else{
-box.classList.remove("open");
-icon.innerText="Open";
-closeDropdown();
-}
-}
 
-function createButton(label,value,color,type){
+
+
+function createButton(label,value,color,type,user){
+
+
 return `
-<div class="card-wrapper">
-<div class="card" onclick="event.stopPropagation(); ${type ? `toggleItems('${type}')`:'closeDropdown()'}">
-<div class="label">${label}</div>
-<div class="value ${color}">${value}</div>
+
+
+<div class="card"
+
+onclick="${type ?
+`toggleItems('${type}','${user}')`
+:
+''}">
+
+
+<div class="label">
+
+${label}
+
 </div>
+
+
+<div class="value ${color}">
+
+${value}
+
 </div>
+
+
+</div>
+
+
 `;
+
 }
+
+
+
 
 function total(items){
+
+
 let count=0;
-if(!items) return 0;
+
+
+if(!items)
+return 0;
+
+
+
 for(let i in items){
-count+=Number(items[i])||0;
+
+count += Number(items[i]) || 0;
+
 }
+
+
 return count;
+
+
 }
 
-function toggleItems(type){
-let box=document.getElementById("globalDropdown");
 
-if(activeType===type && box.classList.contains("open")){
+
+
+
+function toggleItems(type,user){
+
+
+
+let box =
+document.getElementById(
+"drop-"+user
+);
+
+
+
+if(activeDropdown==box && box.classList.contains("open")){
+
 box.classList.remove("open");
-activeType=null;
+activeDropdown=null;
+
 return;
+
 }
 
-activeType=type;
-let items=inventoryData[type] || {};
+
+
+activeDropdown=box;
+
+
+
+let items =
+inventoryData[type] || {};
+
+
+
 let merged={};
 
+
+
 for(let name in items){
+
+
 let clean=name.trim();
-merged[clean]=(merged[clean]||0)+Number(items[name]||0);
+
+
+merged[clean] =
+(merged[clean]||0)
++
+Number(items[name]);
+
+
 }
+
+
+
 
 let html="";
+
+
+
 for(let name in merged){
-html+=`
+
+
+html += `
+
+
 <div class="item">
-<div class="item-name">${name}</div>
-<div class="item-count">x${merged[name].toLocaleString()}</div>
+
+
+<div class="item-name">
+
+${name}
+
 </div>
+
+
+<div class="item-count">
+
+x${merged[name].toLocaleString()}
+
+</div>
+
+
+</div>
+
+
 `;
+
 }
 
-box.innerHTML=html || "<div class='empty'>No items</div>";
+
+
+box.innerHTML =
+html ||
+"<div class='empty'>No items</div>";
+
+
+
 box.classList.add("open");
+
 }
 
-function closeDropdown(){
-let box=document.getElementById("globalDropdown");
-if(box){
-box.classList.remove("open");
-}
-activeType=null;
-}
+
 
 loadAccounts();
 
+
 </script>
+
 
 </body>
 
