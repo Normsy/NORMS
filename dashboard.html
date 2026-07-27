@@ -312,7 +312,7 @@ const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 let inventoryData={};
 let activeType=null;
 let isDashboardOpen=false;
-let isAccountsListOpen=true;
+let isAccountsListOpen=false;
 let globalAccountsData = [];
 
 async function loadAccounts(){
@@ -325,30 +325,8 @@ return;
 }
 
 globalAccountsData = data.accounts;
-
-// Calculate total items across all accounts correctly
-globalAccountsData.forEach(acc => {
-if(acc.inventory){
-if(acc.inventory.Seeds){
-for(let k in acc.inventory.Seeds) totalItemsCount += Number(acc.inventory.Seeds[k])||0;
-}
-if(acc.inventory.Gear){
-for(let k in acc.inventory.Gear) totalItemsCount += Number(acc.inventory.Gear[k])||0;
-}
-if(acc.inventory.Crates){
-for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
-}
-if(acc.inventory.Pets){
-for(let k in acc.inventory.Pets) totalPetsCount += Number(acc.inventory.Pets[k])||0;
-}
-}
-});
-
 renderHeroAndAccounts();
 }
-
-let totalItemsCount = 0;
-let totalPetsCount = 0;
 
 function getStatus(time){
 let last = new Date(time).getTime();
@@ -373,8 +351,8 @@ class:"offline"
 function renderHeroAndAccounts(){
 let totalOnline = 0;
 let totalMoney = 0;
-totalItemsCount = 0;
-totalPetsCount = 0;
+let totalItemsCount = 0;
+let totalPetsCount = 0;
 
 globalAccountsData.forEach(acc => {
 let st = getStatus(acc.updated_at);
