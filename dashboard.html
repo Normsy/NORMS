@@ -159,14 +159,20 @@ box-shadow:0 5px 15px rgba(0,0,0,.05);
 
 
 .account-header-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding-top:8px;
+
 }
 
+
 .account-info-col {
-display: flex;
-flex-direction: column;
+
+display:flex;
+flex-direction:column;
+
 }
 
 
@@ -176,7 +182,7 @@ display:flex;
 align-items:center;
 font-size:18px;
 font-weight:800;
-line-height: 1.2;
+line-height:1.2;
 
 }
 
@@ -185,7 +191,7 @@ line-height: 1.2;
 
 font-size:12px;
 margin-top:4px;
-line-height: 1.2;
+line-height:1.2;
 
 }
 
@@ -214,6 +220,7 @@ padding:8px 15px;
 border-radius:10px;
 cursor:pointer;
 white-space:nowrap;
+margin-top:8px;
 
 }
 
@@ -321,14 +328,17 @@ display:block;
 
 }
 
+
 .dropdown-header {
-font-size: 14px;
-font-weight: 800;
-color: #111827;
-margin-bottom: 8px;
-display: flex;
-align-items: center;
-gap: 6px;
+
+font-size:14px;
+font-weight:800;
+color:#111827;
+margin-bottom:8px;
+display:flex;
+align-items:center;
+gap:6px;
+
 }
 
 
@@ -400,71 +410,73 @@ Loading NORMS...
 
 </div>
 
+
 <script>
+
 
 const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 
 
 let accounts = [];
 let inventoryData = {};
-let activeType = null;
 let activeDropdown = null;
 
 
 
 async function loadAccounts(){
 
-    const res = await fetch(API + "/accounts");
-    const data = await res.json();
+const res = await fetch(API + "/accounts");
+
+const data = await res.json();
 
 
-    if(!data.success){
+if(!data.success){
 
-        document.getElementById("dashboard").innerHTML =
-        "No accounts found";
+document.getElementById("dashboard").innerHTML =
+"No accounts found";
 
-        return;
-
-    }
-
-
-    accounts = data.accounts;
-
-    renderMain();
+return;
 
 }
 
+
+accounts = data.accounts;
+
+renderMain();
+
+}
 
 
 
 function getStatus(time){
 
-    let minutes =
-    (Date.now() - new Date(time).getTime()) / 1000 / 60;
+let minutes =
+(Date.now() - new Date(time).getTime()) / 1000 / 60;
 
 
-    if(minutes <= 10){
+if(minutes <= 10){
 
-        return {
-            icon:"🟢",
-            text:"Roblox • Online",
-            class:"online"
-        };
+return {
 
-    }
+icon:"🟢",
+text:"Roblox • Online",
+class:"online"
 
-
-    return {
-
-        icon:"⚫",
-        text:"Roblox • Offline ("+
-        Math.floor(minutes)+" min ago)",
-        class:"offline"
-
-    };
+};
 
 }
 
+
+return {
+
+icon:"⚫",
+text:"Roblox • Offline ("+
+Math.floor(minutes)+" min ago)",
+class:"offline"
+
+};
+
+}
 
 
 
@@ -477,31 +489,71 @@ let totalItemsCount = 0;
 let totalPetsCount = 0;
 
 
+
 accounts.forEach(acc=>{
 
-    if(getStatus(acc.updated_at).class=="online"){
-        online++;
-    }
-    totalSheckles += Number(acc.sheckles || 0);
+if(getStatus(acc.updated_at).class=="online"){
+online++;
+}
 
-    if(acc.inventory){
-        if(acc.inventory.Seeds){
-            for(let k in acc.inventory.Seeds) totalItemsCount += Number(acc.inventory.Seeds[k])||0;
-        }
-        if(acc.inventory.Gear){
-            for(let k in acc.inventory.Gear) totalItemsCount += Number(acc.inventory.Gear[k])||0;
-        }
-        if(acc.inventory.Crates){
-            for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
-        }
-        if(acc.inventory.Pets){
-            for(let k in acc.inventory.Pets){
-                let count = Number(acc.inventory.Pets[k])||0;
-                totalItemsCount += count;
-                totalPetsCount += count;
-            }
-        }
-    }
+
+totalSheckles += Number(acc.sheckles || 0);
+
+
+let inv = acc.inventory || {};
+
+
+
+if(inv.Seeds){
+
+for(let item in inv.Seeds){
+
+totalItemsCount += Number(inv.Seeds[item]) || 0;
+
+}
+
+}
+
+
+
+if(inv.Gear){
+
+for(let item in inv.Gear){
+
+totalItemsCount += Number(inv.Gear[item]) || 0;
+
+}
+
+}
+
+
+
+if(inv.Crates){
+
+for(let item in inv.Crates){
+
+totalItemsCount += Number(inv.Crates[item]) || 0;
+
+}
+
+}
+
+
+
+if(inv.Pets){
+
+for(let item in inv.Pets){
+
+let petAmount = Number(inv.Pets[item]) || 1;
+
+totalPetsCount += petAmount;
+
+totalItemsCount += petAmount;
+
+}
+
+}
+
 
 });
 
@@ -509,13 +561,23 @@ accounts.forEach(acc=>{
 
 document.getElementById("dashboard").innerHTML = `
 
-
 <div class="hero-box">
-<img class="hero-icon" src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png" alt="Icon">
+
+<img class="hero-icon"
+src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png">
+
 <div>
-<div class="hero-title">Grow A Garden 2</div>
-<div class="hero-subtitle">Overview of your tracked accounts</div>
+
+<div class="hero-title">
+Grow A Garden 2
 </div>
+
+<div class="hero-subtitle">
+Overview of your tracked accounts
+</div>
+
+</div>
+
 </div>
 
 
@@ -534,7 +596,6 @@ ${online}/${accounts.length}
 </div>
 
 </div>
-
 
 
 <div class="stat-card">
@@ -576,40 +637,27 @@ ${totalPetsCount.toLocaleString()}
 </div>
 
 
-
 </div>
-
-
 
 
 <div class="accounts-toggle-card"
 onclick="openAccountsTab()">
 
-
 <div class="accounts-toggle-title">
-
 Accounts Dashboard
-
 </div>
-
 
 <div>
 Open →
 </div>
 
-
 </div>
-
 
 `;
 
 }
 
-
-
-
 function openAccountsTab(){
-
 
 
 let html = `
@@ -625,13 +673,21 @@ onclick="renderMain()">
 
 <div class="hero-box">
 
+
+<div>
+
 <div class="hero-title">
 Accounts
 </div>
 
+
 <div class="hero-subtitle">
 Your tracked Roblox accounts
 </div>
+
+
+</div>
+
 
 </div>
 
@@ -652,31 +708,46 @@ html += `
 
 <div class="account-box">
 
+
 <div class="account-header-row">
 
+
 <div class="account-info-col">
+
+
 <div class="user">
-<span>
+
 ${status.icon}
 ${acc.roblox_username}
-</span>
+
 </div>
 
+
 <div class="status ${status.class}">
+
 ${status.text}
+
 </div>
+
+
 </div>
+
 
 
 <button class="open-btn"
+
 id="btn-${acc.roblox_username}"
+
 onclick="openAccount('${acc.roblox_username}')">
 
 Inventory
 
 </button>
 
+
+
 </div>
+
 
 
 
@@ -687,10 +758,14 @@ class="account-dashboard-slot">
 </div>
 
 
+
 </div>
 
 
+
 `;
+
+
 
 });
 
@@ -716,7 +791,6 @@ API+"/account?username="+username
 const data = await res.json();
 
 
-
 if(!data.success)
 return;
 
@@ -725,9 +799,7 @@ return;
 let account = data.account;
 
 
-
 inventoryData = account.inventory || {};
-
 
 
 showAccountDashboard(account);
@@ -738,14 +810,16 @@ showAccountDashboard(account);
 
 
 
-function showAccountDashboard(account){
 
+function showAccountDashboard(account){
 
 
 let slot =
 document.getElementById(
 "slot-"+account.roblox_username
 );
+
+
 
 let btn =
 document.getElementById(
@@ -756,11 +830,16 @@ document.getElementById(
 
 if(slot.innerHTML!=""){
 
-    slot.innerHTML="";
-    btn.innerText="Inventory";
-    return;
+
+slot.innerHTML="";
+
+btn.innerText="Inventory";
+
+return;
+
 
 }
+
 
 
 
@@ -775,7 +854,7 @@ slot.innerHTML = `
 
 ${createButton(
 "💰 Sheckles",
-Number(account.sheckles).toLocaleString(),
+Number(account.sheckles || 0).toLocaleString(),
 "money",
 null,
 account.roblox_username
@@ -830,6 +909,7 @@ account.roblox_username
 
 
 
+
 <div class="global-dropdown"
 
 id="drop-${account.roblox_username}">
@@ -839,15 +919,18 @@ id="drop-${account.roblox_username}">
 
 `;
 
-btn.innerText = "Inventory";
+
+
+btn.innerText="Inventory";
+
 
 }
 
 
 
 
-
 function createButton(label,value,color,type,user){
+
 
 
 return `
@@ -880,7 +963,9 @@ ${value}
 
 `;
 
+
 }
+
 
 
 
@@ -888,7 +973,7 @@ ${value}
 function total(items){
 
 
-let count=0;
+let count = 0;
 
 
 if(!items)
@@ -896,9 +981,9 @@ return 0;
 
 
 
-for(let i in items){
+for(let item in items){
 
-count += Number(items[i]) || 0;
+count += Number(items[item]) || 0;
 
 }
 
@@ -923,18 +1008,21 @@ document.getElementById(
 
 
 
-if(activeDropdown==box && box.classList.contains("open")){
+if(activeDropdown == box && box.classList.contains("open")){
+
 
 box.classList.remove("open");
+
 activeDropdown=null;
 
 return;
+
 
 }
 
 
 
-activeDropdown=box;
+activeDropdown = box;
 
 
 
@@ -943,39 +1031,55 @@ inventoryData[type] || {};
 
 
 
-let merged={};
+let merged = {};
 
 
 
 for(let name in items){
 
 
-let clean=name.trim();
+let clean = name.trim();
+
 
 
 merged[clean] =
-(merged[clean]||0)
+(merged[clean] || 0)
 +
-Number(items[name]);
+(Number(items[name]) || 0);
+
 
 
 }
 
 
 
-
 let iconMap = {
-"Seeds": "🌱",
-"Gear": "⚙️",
-"Crates": "📦",
-"Pets": "🐾"
+
+Seeds:"🌱",
+Gear:"⚙️",
+Crates:"📦",
+Pets:"🐾"
+
 };
 
-let html=`<div class="dropdown-header">${iconMap[type] || ""} ${type} Inventory</div>`;
+
+
+let html = `
+
+<div class="dropdown-header">
+
+${iconMap[type] || ""}
+
+${type} Inventory
+
+</div>
+
+`;
 
 
 
 for(let name in merged){
+
 
 
 html += `
@@ -991,6 +1095,7 @@ ${name}
 </div>
 
 
+
 <div class="item-count">
 
 x${merged[name].toLocaleString()}
@@ -1003,6 +1108,8 @@ x${merged[name].toLocaleString()}
 
 `;
 
+
+
 }
 
 
@@ -1014,6 +1121,7 @@ html ||
 
 
 box.classList.add("open");
+
 
 }
 
