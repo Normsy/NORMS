@@ -11,268 +11,159 @@
 <style>
 
 *{
-    box-sizing:border-box;
+box-sizing:border-box;
 }
 
 body{
-
-    margin:0;
-    padding:15px;
-
-    font-family:Segoe UI, Arial, sans-serif;
-
-    background:#f7f7f9;
-    color:#111827;
-
+margin:0;
+padding:15px;
+font-family:Segoe UI,Arial,sans-serif;
+background:#f5f5f7;
+color:#111827;
 }
 
 
 .container{
+max-width:1200px;
+margin:auto;
+}
 
-    max-width:1400px;
-    margin:auto;
+
+/* USER */
+
+.account-box{
+
+background:white;
+border:1px solid #e5e7eb;
+border-radius:16px;
+padding:16px;
+margin-bottom:15px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.05);
 
 }
 
 
-/* FIXED USER */
+.user{
 
-.account-fixed{
-
-    background:white;
-
-    border:1px solid #e5e7eb;
-
-    border-radius:16px;
-
-    padding:16px;
-
-    margin-bottom:15px;
-
-    box-shadow:0 4px 15px rgba(0,0,0,.06);
+font-size:18px;
+font-weight:800;
 
 }
 
 
+.status{
 
-.account-info-card{
-
-    display:flex;
-
-    align-items:center;
-
-    gap:10px;
-
-}
-
-
-
-.status-dot{
-
-    width:10px;
-    height:10px;
-
-    background:#22c55e;
-
-    border-radius:50%;
+font-size:12px;
+color:#16a34a;
 
 }
 
 
 
-.username{
+/* SLIDER */
 
-    font-size:16px;
+.slider{
 
-    font-weight:800;
+display:flex;
+gap:12px;
+overflow-x:auto;
+padding-bottom:10px;
 
-}
-
-
-.platform-time{
-
-    font-size:12px;
-
-    color:#6b7280;
+scrollbar-width:none;
 
 }
 
 
-
-
-/* SLIDING STATS */
-
-
-.scrollable-row{
-
-    display:flex;
-
-    gap:12px;
-
-    overflow-x:auto;
-
-    padding-bottom:8px;
-
-    scrollbar-width:none;
-
-}
-
-
-.scrollable-row::-webkit-scrollbar{
-
-    display:none;
-
+.slider::-webkit-scrollbar{
+display:none;
 }
 
 
 
-.info-card{
+.card{
 
-    min-width:140px;
+min-width:140px;
 
-    background:white;
+background:white;
 
-    border:1px solid #e5e7eb;
+border:1px solid #e5e7eb;
 
-    border-radius:15px;
+border-radius:15px;
 
-    padding:15px;
+padding:15px;
 
-    flex-shrink:0;
+cursor:pointer;
 
-    box-shadow:0 4px 15px rgba(0,0,0,.05);
+box-shadow:
+0 5px 15px rgba(0,0,0,.05);
+
+flex-shrink:0;
 
 }
 
 
 
-.info-card-label{
+.card:hover{
 
-    font-size:12px;
-
-    color:#6b7280;
-
-    font-weight:700;
+background:#fafafa;
 
 }
 
 
 
-.info-card-value{
+.label{
 
-    margin-top:8px;
-
-    font-size:20px;
-
-    font-weight:800;
-
-}
-
-
-.money-value{
-
-    color:#ef4444;
-
-}
-
-
-.stat-value{
-
-    color:#16a34a;
+font-size:12px;
+color:#6b7280;
+font-weight:700;
 
 }
 
 
 
+.value{
+
+margin-top:8px;
+font-size:22px;
+font-weight:800;
+color:#16a34a;
+
+}
 
 
-/* INVENTORY */
+.money{
 
-.category-container{
-
-    margin-top:20px;
-
-    display:grid;
-
-    grid-template-columns:repeat(4,1fr);
-
-    gap:15px;
+color:#ef4444;
 
 }
 
 
 
-.category-box{
-
-    background:white;
-
-    border:1px solid #e5e7eb;
-
-    border-radius:16px;
-
-    overflow:hidden;
-
-}
+/* INVENTORY DISPLAY */
 
 
+.inventory{
 
-.category-header{
+margin-top:20px;
 
-    padding:18px;
+background:white;
 
-    cursor:pointer;
+border:1px solid #e5e7eb;
+
+border-radius:16px;
+
+padding:15px;
 
 }
 
 
 
-.category-header:hover{
+.title{
 
-    background:#f9fafb;
-
-}
-
-
-
-.category-name{
-
-    font-size:16px;
-
-    font-weight:700;
-
-}
-
-
-
-.category-count{
-
-    margin-top:6px;
-
-    font-size:22px;
-
-    color:#16a34a;
-
-    font-weight:800;
-
-}
-
-
-
-.category-content{
-
-    display:none;
-
-    padding:12px;
-
-    border-top:1px solid #e5e7eb;
-
-}
-
-
-
-.category-content.open{
-
-    display:block;
+font-size:18px;
+font-weight:800;
+margin-bottom:15px;
 
 }
 
@@ -280,17 +171,16 @@ body{
 
 .item{
 
-    display:flex;
+display:flex;
+justify-content:space-between;
 
-    justify-content:space-between;
+background:#f9fafb;
 
-    background:#f9fafb;
+padding:12px;
 
-    padding:10px;
+border-radius:10px;
 
-    border-radius:10px;
-
-    margin-bottom:6px;
+margin-bottom:8px;
 
 }
 
@@ -298,45 +188,25 @@ body{
 
 .item-name{
 
-    font-size:13px;
-
-    font-weight:600;
+font-weight:600;
 
 }
-
 
 
 .item-count{
 
-    color:#16a34a;
-
-    font-weight:700;
-
-}
-
-
-
-@media(max-width:900px){
-
-.category-container{
-
-    grid-template-columns:repeat(2,1fr);
-
-}
+color:#16a34a;
+font-weight:800;
 
 }
 
 
+.empty{
 
-@media(max-width:500px){
-
-.category-container{
-
-    grid-template-columns:1fr;
+color:#6b7280;
 
 }
 
-}
 
 
 </style>
@@ -372,12 +242,18 @@ const username =
 "Gyazuv";
 
 
+let inventoryData={};
+
+
+
 
 async function loadData(){
 
 
 const res =
-await fetch(API+"/account?username="+username);
+await fetch(
+API+"/account?username="+username
+);
 
 
 const data =
@@ -396,110 +272,79 @@ return;
 
 
 
-const account =
-data.account;
+const account=data.account;
 
 
-const inv =
-account.inventory || {};
+const inv=account.inventory || {};
 
-
-
-const seedTotal =
-sumCategory(inv.Seeds);
-
-const gearTotal =
-sumCategory(inv.Gear);
-
-const crateTotal =
-sumCategory(inv.Crates);
-
-const petTotal =
-sumCategory(inv.Pets);
+inventoryData=inv;
 
 
 
-document.getElementById("dashboard").innerHTML = `
+document.getElementById("dashboard").innerHTML=`
 
+<div class="account-box">
 
+<div class="user">
 
-<!-- FIXED USER -->
-
-<div class="account-fixed">
-
-
-<div class="account-info-card">
-
-
-<div class="status-dot"></div>
-
-
-<div>
-
-<div class="username">
-
-${account.roblox_username}
+🟢 ${account.roblox_username}
 
 </div>
 
-
-<div class="platform-time">
+<div class="status">
 
 Roblox • Live
 
 </div>
 
-
-</div>
-
-
-</div>
-
-
 </div>
 
 
 
 
-
-<!-- SLIDING DATA -->
-
-
-<div class="scrollable-row">
+<div class="slider">
 
 
-${statCard(
-"Sheckles",
+${createButton(
+"💰 Sheckles",
 Number(account.sheckles).toLocaleString(),
-"money-value"
+"money",
+null
 )}
 
 
-${statCard(
+${createButton(
 "🌱 Seeds",
-seedTotal.toLocaleString()+"x",
-"stat-value"
+total(inv.Seeds)+"x",
+"",
+"Seeds"
 )}
 
 
-${statCard(
+
+${createButton(
 "⚙️ Gear",
-gearTotal.toLocaleString()+"x",
-"stat-value"
+total(inv.Gear)+"x",
+"",
+"Gear"
 )}
 
 
-${statCard(
+
+${createButton(
 "📦 Crates",
-crateTotal.toLocaleString()+"x",
-"stat-value"
+total(inv.Crates)+"x",
+"",
+"Crates"
 )}
 
 
-${statCard(
+
+${createButton(
 "🐾 Pets",
-petTotal.toLocaleString()+"x",
-"stat-value"
+total(inv.Pets)+"x",
+"",
+"Pets"
 )}
 
 
@@ -507,47 +352,42 @@ petTotal.toLocaleString()+"x",
 
 
 
+<div id="inventory" class="inventory">
 
-<div class="category-container">
+<div class="empty">
 
+Click Seeds, Gear, Crates or Pets
 
-${createCard("🌱 Seeds",inv.Seeds)}
-
-${createCard("⚙️ Gear",inv.Gear)}
-
-${createCard("📦 Crates",inv.Crates)}
-
-${createCard("🐾 Pets",inv.Pets)}
-
+</div>
 
 </div>
 
 
 `;
 
-
-
 }
 
 
 
 
-
-function statCard(label,value,color){
+function createButton(label,value,color,type){
 
 
 return `
 
-<div class="info-card">
 
-<div class="info-card-label">
+<div class="card"
+onclick="${type ? `showItems('${type}')` : ''}">
+
+
+<div class="label">
 
 ${label}
 
 </div>
 
 
-<div class="info-card-value ${color}">
+<div class="value ${color}">
 
 ${value}
 
@@ -556,6 +396,7 @@ ${value}
 
 </div>
 
+
 `;
 
 }
@@ -563,34 +404,36 @@ ${value}
 
 
 
-function sumCategory(items){
+
+function total(items){
 
 
-let total=0;
+let count=0;
 
 
-if(!items)return 0;
+if(!items)
+return 0;
+
 
 
 for(let i in items){
 
-total+=Number(items[i])||0;
+count += Number(items[i]) || 0;
 
 }
 
 
-return total;
+return count;
 
 }
 
 
 
 
+function showItems(type){
 
-function createCard(title,items){
 
-
-if(!items)return "";
+let items=inventoryData[type];
 
 
 let merged={};
@@ -603,39 +446,37 @@ for(let name in items){
 let clean=name.trim();
 
 
-merged[clean]=(merged[clean]||0)+Number(items[name]);
+merged[clean]=(merged[clean]||0)
++
+(Number(items[name])||0);
+
 
 }
 
 
 
-let total=0;
 
-let content="";
-
+let html="";
 
 
 for(let name in merged){
 
 
-let amount=merged[name];
-
-
-total+=amount;
-
-
-
-content+=`
+html+=`
 
 <div class="item">
 
 <div class="item-name">
+
 ${name}
+
 </div>
 
 
 <div class="item-count">
-x${amount.toLocaleString()}
+
+x${merged[name].toLocaleString()}
+
 </div>
 
 
@@ -647,57 +488,21 @@ x${amount.toLocaleString()}
 
 
 
-let id=title.replace(/\W/g,"");
 
+document.getElementById("inventory")
+.innerHTML=
 
+`
 
-return `
+<div class="title">
 
-
-<div class="category-box">
-
-
-<div class="category-header"
-onclick="toggle('${id}')">
-
-
-<div class="category-name">
-${title}
-</div>
-
-
-<div class="category-count">
-${total.toLocaleString()}x
-</div>
-
+${type}
 
 </div>
 
-
-
-<div class="category-content" id="${id}">
-
-${content}
-
-</div>
-
-
-
-</div>
-
+${html || "<div class='empty'>No items</div>"}
 
 `;
-
-}
-
-
-
-
-function toggle(id){
-
-document
-.getElementById(id)
-.classList.toggle("open");
 
 }
 
