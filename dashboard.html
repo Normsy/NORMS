@@ -39,7 +39,18 @@ border-radius:16px;
 padding:20px;
 margin-bottom:15px;
 box-shadow:0 5px 15px rgba(0,0,0,.05);
+display:flex;
+align-items:center;
+gap:15px;
 
+}
+
+.hero-icon{
+width:55px;
+height:55px;
+border-radius:12px;
+background:#e5e7eb;
+object-fit:cover;
 }
 
 
@@ -55,6 +66,7 @@ font-weight:800;
 
 font-size:13px;
 color:#6b7280;
+margin-top:3px;
 
 }
 
@@ -98,6 +110,10 @@ font-weight:800;
 color:#16a34a;
 margin-top:5px;
 
+}
+
+.stat-value.money{
+color:#111827;
 }
 
 
@@ -291,6 +307,16 @@ display:block;
 
 }
 
+.dropdown-header {
+font-size: 14px;
+font-weight: 800;
+color: #111827;
+margin-bottom: 8px;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
 
 
 .item{
@@ -432,12 +458,31 @@ function renderMain(){
 
 
 let online = 0;
+let totalMoney = 0;
+let totalItemsCount = 0;
+let totalPetsCount = 0;
 
 
 accounts.forEach(acc=>{
 
     if(getStatus(acc.updated_at).class=="online"){
         online++;
+    }
+    totalMoney += Number(acc.sheckles || 0);
+
+    if(acc.inventory){
+        if(acc.inventory.Seeds){
+            for(let k in acc.inventory.Seeds) totalItemsCount += Number(acc.inventory.Seeds[k])||0;
+        }
+        if(acc.inventory.Gear){
+            for(let k in acc.inventory.Gear) totalItemsCount += Number(acc.inventory.Gear[k])||0;
+        }
+        if(acc.inventory.Crates){
+            for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
+        }
+        if(acc.inventory.Pets){
+            for(let k in acc.inventory.Pets) totalPetsCount += Number(acc.inventory.Pets[k])||0;
+        }
     }
 
 });
@@ -448,16 +493,11 @@ document.getElementById("dashboard").innerHTML = `
 
 
 <div class="hero-box">
-
-<div class="hero-title">
-🌱 Grow A Garden 2
+<img class="hero-icon" src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png" alt="Icon">
+<div>
+<div class="hero-title">Grow A Garden 2</div>
+<div class="hero-subtitle">Overview of your tracked accounts</div>
 </div>
-
-<div class="hero-subtitle">
-NORMS Roblox Account Monitoring
-</div>
-
-
 </div>
 
 
@@ -468,11 +508,11 @@ NORMS Roblox Account Monitoring
 <div class="stat-card">
 
 <div class="stat-label">
-Accounts
+Online / Total
 </div>
 
 <div class="stat-value">
-${accounts.length}
+${online}/${accounts.length}
 </div>
 
 </div>
@@ -482,11 +522,37 @@ ${accounts.length}
 <div class="stat-card">
 
 <div class="stat-label">
-Online
+Total Money
+</div>
+
+<div class="stat-value money">
+${totalMoney.toLocaleString()}
+</div>
+
+</div>
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+Total Items
 </div>
 
 <div class="stat-value">
-${online}
+${totalItemsCount.toLocaleString()}
+</div>
+
+</div>
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+Total Pets
+</div>
+
+<div class="stat-value">
+${totalPetsCount.toLocaleString()}
 </div>
 
 </div>
@@ -878,7 +944,14 @@ Number(items[name]);
 
 
 
-let html="";
+let iconMap = {
+"Seeds": "🌱",
+"Gear": "⚙️",
+"Crates": "📦",
+"Pets": "🐾"
+};
+
+let html=`<div class="dropdown-header">${iconMap[type] || ""} ${type} Inventory</div>`;
 
 
 
