@@ -44,12 +44,12 @@ color:#16a34a;
 margin-top:3px;
 }
 
-/* SLIDER CONTAINER SCROLL FIX */
+/* SLIDER CONTAINER */
 .slider-container {
 width: 100%;
 overflow-x: auto;
 overflow-y: visible;
-padding-bottom: 10px;
+padding-bottom: 15px;
 scrollbar-width: none;
 }
 
@@ -61,11 +61,13 @@ display: none;
 display:flex;
 gap:12px;
 width: max-content;
+overflow: visible;
 }
 
 .card-wrapper{
 position:relative;
 flex-shrink:0;
+overflow: visible;
 }
 
 .card{
@@ -99,7 +101,7 @@ color:#16a34a;
 color:#ef4444;
 }
 
-/* DROPDOWN */
+/* FLOATING DROPDOWN */
 .dropdown{
 position:absolute;
 top:calc(100% + 8px);
@@ -112,8 +114,8 @@ border:1px solid #e5e7eb;
 border-radius:12px;
 padding:10px;
 display:none;
-z-index:999;
-box-shadow:0 10px 25px rgba(0,0,0,.12);
+z-index:9999;
+box-shadow:0 10px 25px rgba(0,0,0,.15);
 }
 
 .dropdown.open{
