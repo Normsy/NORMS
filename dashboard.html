@@ -45,6 +45,11 @@ body {
     border-bottom: 1px solid #2d2d3a;
     padding-bottom: 10px;
     overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+
+.account-tabs::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
 }
 
 .account-tabs span {
@@ -56,25 +61,74 @@ body {
     color: #ffffff;
 }
 
-.account-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.account-left {
+/* Scrollable container for Account, Sheckles, Seeds, Gears, Crates, Pets */
+.scrollable-row {
     display: flex;
     align-items: center;
     gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #2d2d3a transparent;
+}
+
+.scrollable-row::-webkit-scrollbar {
+    height: 4px;
+}
+
+.scrollable-row::-webkit-scrollbar-thumb {
+    background: #2d2d3a;
+    border-radius: 4px;
+}
+
+/* Individual card styling inside the scrollable row to keep them neat */
+.info-card {
+    background: #121217;
+    border: 1px solid #2d2d3a;
+    border-radius: 12px;
+    padding: 10px 14px;
+    min-width: 130px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-card-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #9ca3af;
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+.info-card-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* Specific styling for Account card to keep user details intact */
+.account-info-card {
+    min-width: 200px;
+    background: #121217;
+    border: 1px solid #2d2d3a;
+    border-radius: 12px;
+    padding: 8px 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .status-dot {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
     background: #22c55e;
     border-radius: 50%;
-    box-shadow: 0 0 8px rgba(34,197,94,0.6);
+    box-shadow: 0 0 6px rgba(34,197,94,0.6);
+    flex-shrink: 0;
 }
 
 .username-area {
@@ -83,57 +137,26 @@ body {
 }
 
 .username {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: 700;
     color: #ffffff;
 }
 
 .platform-time {
-    font-size: 12px;
+    font-size: 11px;
     color: #9ca3af;
 }
 
-.account-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.money-badge {
-    background: #5b2126;
+/* Badges styling */
+.money-value {
     color: #f87171;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 20px;
 }
 
-.stat-badge {
-    background: #14532d;
+.stat-value {
     color: #4ade80;
-    font-size: 14px;
-    font-weight: 700;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
 }
 
-.action-btn {
-    background: #1e1e2d;
-    border: 1px solid #37374d;
-    color: #60a5fa;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
+/* Category Grid below */
 .category-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -247,28 +270,55 @@ async function loadData() {
     const account = data.account;
     const inv = account.inventory || {};
 
+    // Calculate totals for quick stats display if needed, or fallback to inventory items count
+    const seedTotal = sumCategory(inv.Seeds);
+    const gearTotal = sumCategory(inv.Gear);
+    const cratesTotal = sumCategory(inv.Crates);
+    const petsTotal = sumCategory(inv.Pets);
+
     document.getElementById("dashboard").innerHTML = `
         <div class="account-header">
             <div class="account-tabs">
                 <span class="active">Account</span>
-                <span>Money</span>
-                <span>Backpack Lvl</span>
-                <span>Ba...</span>
+                <span>Sheckles</span>
+                <span>Seeds</span>
+                <span>Gears</span>
+                <span>Crates</span>
+                <span>Pets</span>
             </div>
-            <div class="account-row">
-                <div class="account-left">
+            
+            <div class="scrollable-row">
+                <div class="account-info-card">
                     <div class="status-dot"></div>
                     <div class="username-area">
                         <div class="username">${account.roblox_username}</div>
                         <div class="platform-time">Roblox &bull; Just now</div>
                     </div>
                 </div>
-                <div class="account-right">
-                    <div class="money-badge">41.31B</div>
-                    <div class="stat-badge">2</div>
-                    <div class="action-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
-                    </div>
+
+                <div class="info-card">
+                    <div class="info-card-label">Sheckles</div>
+                    <div class="info-card-value money-value">41.31B</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-label">Seeds</div>
+                    <div class="info-card-value stat-value">${seedTotal.toLocaleString()}x</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-label">Gears</div>
+                    <div class="info-card-value stat-value">${gearTotal.toLocaleString()}x</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-label">Crates</div>
+                    <div class="info-card-value stat-value">${cratesTotal.toLocaleString()}x</div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-label">Pets</div>
+                    <div class="info-card-value stat-value">${petsTotal.toLocaleString()}x</div>
                 </div>
             </div>
         </div>
@@ -280,6 +330,15 @@ async function loadData() {
             ${createCard("🐾 Pets", inv.Pets)}
         </div>
     `;
+}
+
+function sumCategory(items) {
+    if (!items) return 0;
+    let total = 0;
+    for (let name in items) {
+        total += Number(items[name]) || 0;
+    }
+    return total;
 }
 
 function createCard(title, items) {
