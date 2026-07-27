@@ -96,6 +96,45 @@ margin-top:4px;
 color:#111827;
 }
 
+/* ACCOUNTS SECTION TOGGLE CARD */
+.accounts-toggle-card{
+background:white;
+border:1px solid #e5e7eb;
+border-radius:16px;
+padding:15px;
+margin-bottom:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.05);
+cursor:pointer;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.accounts-toggle-card:hover{
+background:#fafafa;
+}
+
+.accounts-toggle-title{
+font-size:18px;
+font-weight:800;
+color:#111827;
+}
+
+.accounts-toggle-icon{
+font-size:14px;
+color:#6b7280;
+font-weight:600;
+}
+
+/* ACCOUNTS LIST COLLAPSIBLE CONTAINER */
+.accounts-list-content{
+display:none;
+}
+
+.accounts-list-content.open{
+display:block;
+}
+
 /* ACCOUNT */
 .account-box{
 background:white;
@@ -273,6 +312,7 @@ const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 let inventoryData={};
 let activeType=null;
 let isDashboardOpen=false;
+let isAccountsListOpen=true;
 let globalAccountsData = [];
 
 async function loadAccounts(){
@@ -285,8 +325,30 @@ return;
 }
 
 globalAccountsData = data.accounts;
+
+// Calculate total items across all accounts correctly
+globalAccountsData.forEach(acc => {
+if(acc.inventory){
+if(acc.inventory.Seeds){
+for(let k in acc.inventory.Seeds) totalItemsCount += Number(acc.inventory.Seeds[k])||0;
+}
+if(acc.inventory.Gear){
+for(let k in acc.inventory.Gear) totalItemsCount += Number(acc.inventory.Gear[k])||0;
+}
+if(acc.inventory.Crates){
+for(let k in acc.inventory.Crates) totalItemsCount += Number(acc.inventory.Crates[k])||0;
+}
+if(acc.inventory.Pets){
+for(let k in acc.inventory.Pets) totalPetsCount += Number(acc.inventory.Pets[k])||0;
+}
+}
+});
+
 renderHeroAndAccounts();
 }
+
+let totalItemsCount = 0;
+let totalPetsCount = 0;
 
 function getStatus(time){
 let last = new Date(time).getTime();
@@ -311,8 +373,8 @@ class:"offline"
 function renderHeroAndAccounts(){
 let totalOnline = 0;
 let totalMoney = 0;
-let totalItemsCount = 0;
-let totalPetsCount = 0;
+totalItemsCount = 0;
+totalPetsCount = 0;
 
 globalAccountsData.forEach(acc => {
 let st = getStatus(acc.updated_at);
@@ -362,6 +424,13 @@ let html = `
 <div class="stat-value">${totalPetsCount.toLocaleString()}</div>
 </div>
 </div>
+
+<div class="accounts-toggle-card" onclick="toggleAccountsList()">
+<div class="accounts-toggle-title">Accounts</div>
+<div class="accounts-toggle-icon" id="accountsToggleIcon">${isAccountsListOpen ? '▲ Hide' : '▼ Show'}</div>
+</div>
+
+<div class="accounts-list-content ${isAccountsListOpen ? 'open' : ''}" id="accountsListContent">
 `;
 
 globalAccountsData.forEach(account=>{
@@ -377,7 +446,23 @@ html+=`
 `;
 });
 
+html += `</div>`;
+
 document.getElementById("dashboard").innerHTML=html;
+}
+
+function toggleAccountsList(){
+isAccountsListOpen = !isAccountsListOpen;
+let content = document.getElementById("accountsListContent");
+let icon = document.getElementById("accountsToggleIcon");
+
+if(isAccountsListOpen){
+content.classList.add("open");
+icon.innerText = "▲ Hide";
+} else {
+content.classList.remove("open");
+icon.innerText = "▼ Show";
+}
 }
 
 async function openAccount(username){
