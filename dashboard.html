@@ -504,56 +504,22 @@ let inv = acc.inventory || {};
 
 
 
-if(inv.Seeds){
-
-for(let item in inv.Seeds){
-
-totalItemsCount += Number(inv.Seeds[item]) || 0;
-
+function sumCategory(category){
+    if(!category) return 0;
+    let sum = 0;
+    for(let item in category){
+        sum += Number(category[item]) || 0;
+    }
+    return sum;
 }
 
-}
+let seedsCount = sumCategory(inv.Seeds);
+let gearCount = sumCategory(inv.Gear);
+let cratesCount = sumCategory(inv.Crates);
+let petsCount = sumCategory(inv.Pets);
 
-
-
-if(inv.Gear){
-
-for(let item in inv.Gear){
-
-totalItemsCount += Number(inv.Gear[item]) || 0;
-
-}
-
-}
-
-
-
-if(inv.Crates){
-
-for(let item in inv.Crates){
-
-totalItemsCount += Number(inv.Crates[item]) || 0;
-
-}
-
-}
-
-
-
-if(inv.Pets){
-
-for(let item in inv.Pets){
-
-let petAmount = Number(inv.Pets[item]) || 1;
-
-totalPetsCount += petAmount;
-
-totalItemsCount += petAmount;
-
-}
-
-}
-
+totalItemsCount += (seedsCount + gearCount + cratesCount + petsCount);
+totalPetsCount += petsCount;
 
 });
 
@@ -853,7 +819,7 @@ slot.innerHTML = `
 
 
 ${createButton(
-"💰 Sheckles",
+"💰 Total Sheckles",
 Number(account.sheckles || 0).toLocaleString(),
 "money",
 null,
@@ -864,7 +830,7 @@ account.roblox_username
 
 ${createButton(
 "🌱 Seeds",
-total(inventoryData.Seeds)+"x",
+total(inventoryData.Seeds).toLocaleString(),
 "",
 "Seeds",
 account.roblox_username
@@ -874,7 +840,7 @@ account.roblox_username
 
 ${createButton(
 "⚙️ Gear",
-total(inventoryData.Gear)+"x",
+total(inventoryData.Gear).toLocaleString(),
 "",
 "Gear",
 account.roblox_username
@@ -884,7 +850,7 @@ account.roblox_username
 
 ${createButton(
 "📦 Crates",
-total(inventoryData.Crates)+"x",
+total(inventoryData.Crates).toLocaleString(),
 "",
 "Crates",
 account.roblox_username
@@ -894,7 +860,7 @@ account.roblox_username
 
 ${createButton(
 "🐾 Pets",
-total(inventoryData.Pets)+"x",
+total(inventoryData.Pets).toLocaleString(),
 "",
 "Pets",
 account.roblox_username
