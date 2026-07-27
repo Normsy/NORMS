@@ -8,37 +8,30 @@
 
 <title>NORMS Dashboard</title>
 
-
 <style>
 
 :root {
-
-    --bg-color:#f7f7f9;
-    --card-bg:#ffffff;
-    --card-border:#e5e7eb;
-    --text-main:#111827;
-    --text-muted:#6b7280;
-    --accent:#7928ca;
-
-}
-
-
-* {
-    box-sizing:border-box;
+    --bg:#f5f5f7;
+    --card:#ffffff;
+    --border:#e5e7eb;
+    --text:#111827;
+    --muted:#6b7280;
+    --green:#16a34a;
 }
 
 
 body {
 
-    font-family:'Segoe UI', Arial, sans-serif;
-
-    background:var(--bg-color);
-
-    color:var(--text-main);
-
     margin:0;
+    padding:25px;
 
-    padding:20px;
+    font-family:
+    'Segoe UI',
+    Arial,
+    sans-serif;
+
+    background:var(--bg);
+    color:var(--text);
 
 }
 
@@ -46,147 +39,52 @@ body {
 
 .container {
 
-    max-width:1500px;
-
+    max-width:1200px;
     margin:auto;
 
 }
 
 
 
-/* HEADER */
+.username {
 
-
-.header-card {
-
-    background:white;
-
-    border:1px solid var(--card-border);
-
-    border-radius:20px;
-
-    padding:25px;
-
-    display:flex;
-
-    align-items:center;
-
-    gap:20px;
-
-    box-shadow:0 8px 25px rgba(0,0,0,.06);
+    font-size:32px;
+    font-weight:800;
 
     margin-bottom:25px;
 
 }
 
 
-.header-icon {
 
-    width:65px;
-
-    height:65px;
-
-    border-radius:18px;
-
-    background:#7928ca;
-
-    display:flex;
-
-    align-items:center;
-
-    justify-content:center;
-
-    font-size:32px;
-
-}
+/* CATEGORY CARDS */
 
 
-
-.header-title h1 {
-
-    margin:0;
-
-}
-
-
-
-.header-title p {
-
-    margin:5px 0 0;
-
-    color:var(--text-muted);
-
-}
-
-
-
-/* STATS */
-
-
-.stats-grid {
+.category-container {
 
     display:grid;
 
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:
+    repeat(4,1fr);
 
-    gap:15px;
-
-    margin-bottom:25px;
-
-}
-
-
-
-.stat-card {
-
-    background:white;
-
-    border:1px solid var(--card-border);
-
-    border-radius:16px;
-
-    padding:20px;
+    gap:20px;
 
 }
 
-
-
-.stat-label {
-
-    color:var(--text-muted);
-
-    font-size:12px;
-
-}
-
-
-
-.stat-value {
-
-    font-size:22px;
-
-    font-weight:700;
-
-    margin-top:8px;
-
-}
-
-
-
-/* CATEGORY */
 
 
 .category-box {
 
-    background:white;
+    background:var(--card);
 
-    border:1px solid var(--card-border);
+    border:1px solid var(--border);
 
-    border-radius:18px;
-
-    margin-bottom:15px;
+    border-radius:20px;
 
     overflow:hidden;
+
+    box-shadow:
+    0 5px 20px rgba(0,0,0,.05);
 
 }
 
@@ -194,19 +92,15 @@ body {
 
 .category-header {
 
-
-    padding:18px;
+    padding:25px;
 
     display:flex;
 
     justify-content:space-between;
 
+    align-items:center;
+
     cursor:pointer;
-
-    font-size:18px;
-
-    font-weight:700;
-
 
 }
 
@@ -214,9 +108,29 @@ body {
 
 .category-header:hover {
 
-    background:#f3f4f6;
+    background:#fafafa;
 
 }
+
+
+
+.category-name {
+
+    font-size:20px;
+    font-weight:700;
+
+}
+
+
+
+.category-count {
+
+    font-size:22px;
+    font-weight:800;
+    color:var(--green);
+
+}
+
 
 
 
@@ -226,7 +140,8 @@ body {
 
     padding:15px;
 
-    border-top:1px solid var(--card-border);
+    border-top:
+    1px solid var(--border);
 
 }
 
@@ -240,30 +155,20 @@ body {
 
 
 
-/* ITEMS */
 
+.item {
 
-.inventory-grid {
+    display:flex;
 
-    display:grid;
+    justify-content:space-between;
 
-    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-
-    gap:12px;
-
-}
-
-
-
-.item-card {
+    padding:12px;
 
     background:#f9fafb;
 
-    border:1px solid var(--card-border);
+    border-radius:10px;
 
-    border-radius:12px;
-
-    padding:15px;
+    margin-bottom:8px;
 
 }
 
@@ -277,61 +182,56 @@ body {
 
 
 
-.item-qty {
+.item-count {
 
-    color:#16a34a;
+    color:var(--green);
 
     font-weight:700;
 
-    margin-top:5px;
-
 }
 
 
 
-.loading,
-.error {
 
-    background:white;
 
-    padding:40px;
-
-    border-radius:15px;
+.loading {
 
     text-align:center;
 
+    padding:50px;
+
 }
+
 
 
 
 @media(max-width:900px){
 
-    .stats-grid {
+.category-container {
 
-        grid-template-columns:repeat(2,1fr);
+    grid-template-columns:
+    repeat(2,1fr);
 
-    }
+}
 
 }
 
 
 
-@media(max-width:600px){
+@media(max-width:500px){
 
-    .stats-grid {
+.category-container {
 
-        grid-template-columns:1fr;
+    grid-template-columns:1fr;
 
-    }
+}
 
 }
 
 
 </style>
 
-
 </head>
-
 
 
 <body>
@@ -340,37 +240,14 @@ body {
 <div class="container">
 
 
-
-<div class="header-card">
-
-
-<div class="header-icon">
-🌿
-</div>
-
-
-<div class="header-title">
-
-<h1>Grow A Garden 2</h1>
-
-<p>NORMS Live Account Dashboard</p>
-
-</div>
-
-
-</div>
-
-
-
-
-<div id="profile">
+<div id="dashboard">
 
 <div class="loading">
-Loading data...
+Loading NORMS...
 </div>
 
-</div>
 
+</div>
 
 
 </div>
@@ -390,18 +267,15 @@ const username =
 
 
 
-
 async function loadData(){
-
-
-try{
 
 
 const response =
 await fetch(
-API + "/account?username=" + username
+API +
+"/account?username=" +
+username
 );
-
 
 
 const data =
@@ -411,7 +285,7 @@ await response.json();
 
 if(!data.success){
 
-document.getElementById("profile").innerHTML =
+document.getElementById("dashboard").innerHTML =
 "Account not found";
 
 return;
@@ -429,104 +303,48 @@ account.inventory || {};
 
 
 
-let total = 0;
+document.getElementById("dashboard").innerHTML = `
 
 
-Object.values(inv).forEach(category=>{
+<div class="username">
 
-if(category){
-
-Object.values(category).forEach(amount=>{
-
-total += Number(amount) || 0;
-
-});
-
-}
-
-});
-
-
-
-
-
-document.getElementById("profile").innerHTML = `
-
-
-
-<div class="stats-grid">
-
-
-<div class="stat-card">
-
-<div class="stat-label">
-ACCOUNT
-</div>
-
-<div class="stat-value">
-🟢 Online
-</div>
+${account.roblox_username}
 
 </div>
 
 
 
+<div class="category-container">
 
-<div class="stat-card">
 
-<div class="stat-label">
-SHECKLES
-</div>
-
-<div class="stat-value">
-💰 ${Number(account.sheckles).toLocaleString()}
-</div>
-
-</div>
+${createCategory(
+"🌱 Seeds",
+inv.Seeds
+)}
 
 
 
-
-<div class="stat-card">
-
-<div class="stat-label">
-ITEMS
-</div>
-
-<div class="stat-value">
-📦 ${total.toLocaleString()}
-</div>
-
-</div>
+${createCategory(
+"⚙️ Gear",
+inv.Gear
+)}
 
 
 
+${createCategory(
+"📦 Crates",
+inv.Crates
+)}
 
-<div class="stat-card">
 
-<div class="stat-label">
-ROBLOX ID
-</div>
 
-<div class="stat-value">
-${account.roblox_userid}
-</div>
-
-</div>
+${createCategory(
+"🐾 Pets",
+inv.Pets
+)}
 
 
 </div>
-
-
-
-${renderCategory("🌱 Seeds", inv.Seeds)}
-
-${renderCategory("⚙️ Gear", inv.Gear)}
-
-${renderCategory("📦 Crates", inv.Crates)}
-
-${renderCategory("🐾 Pets", inv.Pets)}
-
 
 
 `;
@@ -535,51 +353,30 @@ ${renderCategory("🐾 Pets", inv.Pets)}
 
 }
 
-catch(e){
-
-console.log(e);
-
-
-document.getElementById("profile").innerHTML =
-`
-<div class="error">
-Failed connecting to API
-</div>
-`;
-
-}
-
-
-}
 
 
 
+function createCategory(title,items){
 
 
-function renderCategory(title,items){
-
-
-
-if(!items || Object.keys(items).length===0){
+if(!items){
 
 return "";
 
 }
 
 
-
 let total = 0;
-
 
 let html = "";
 
 
 
-for(let item in items){
+for(let name in items){
 
 
 let amount =
-Number(items[item]) || 0;
+Number(items[name]) || 0;
 
 
 total += amount;
@@ -589,15 +386,14 @@ total += amount;
 html += `
 
 
-<div class="item-card">
-
+<div class="item">
 
 <div class="item-name">
-${item}
+${name}
 </div>
 
 
-<div class="item-qty">
+<div class="item-count">
 x${amount.toLocaleString()}
 </div>
 
@@ -606,6 +402,7 @@ x${amount.toLocaleString()}
 
 
 `;
+
 
 }
 
@@ -626,14 +423,18 @@ return `
 onclick="toggle('${id}')">
 
 
-<span>
+<div class="category-name">
+
 ${title}
-</span>
+
+</div>
 
 
-<span>
-${total.toLocaleString()}x ▼
-</span>
+<div class="category-count">
+
+${total.toLocaleString()}x
+
+</div>
 
 
 </div>
@@ -645,11 +446,7 @@ ${total.toLocaleString()}x ▼
 id="${id}">
 
 
-<div class="inventory-grid">
-
 ${html}
-
-</div>
 
 
 </div>
@@ -665,7 +462,6 @@ ${html}
 
 
 
-
 function toggle(id){
 
 document
@@ -676,13 +472,10 @@ document
 
 
 
-
-
 loadData();
 
 
 </script>
-
 
 
 </body>
