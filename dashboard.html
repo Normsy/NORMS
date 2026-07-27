@@ -647,10 +647,10 @@ ${acc.roblox_username}
 
 
 <button class="open-btn"
-
+id="btn-${acc.roblox_username}"
 onclick="openAccount('${acc.roblox_username}')">
 
-Open
+Inventory
 
 </button>
 
@@ -733,11 +733,17 @@ document.getElementById(
 "slot-"+account.roblox_username
 );
 
+let btn =
+document.getElementById(
+"btn-"+account.roblox_username
+);
+
 
 
 if(slot.innerHTML!=""){
 
     slot.innerHTML="";
+    btn.innerText="Inventory";
     return;
 
 }
@@ -819,7 +825,7 @@ id="drop-${account.roblox_username}">
 
 `;
 
-
+btn.innerText = "Close";
 
 }
 
