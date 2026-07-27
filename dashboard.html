@@ -314,6 +314,8 @@ let activeType=null;
 let isDashboardOpen=false;
 let isAccountsListOpen=false;
 let globalAccountsData = [];
+let currentView = 'main'; // 'main' or 'accounts_tab'
+let selectedAccountForTab = null;
 
 async function loadAccounts(){
 const res = await fetch(API+"/accounts");
@@ -325,7 +327,7 @@ return;
 }
 
 globalAccountsData = data.accounts;
-renderHeroAndAccounts();
+renderMainDashboard();
 }
 
 function getStatus(time){
@@ -348,7 +350,8 @@ class:"offline"
 };
 }
 
-function renderHeroAndAccounts(){
+function renderMainDashboard(){
+currentView = 'main';
 let totalOnline = 0;
 let totalMoney = 0;
 let totalItemsCount = 0;
@@ -405,7 +408,7 @@ let html = `
 
 <div class="accounts-toggle-card" onclick="toggleAccountsList()">
 <div class="accounts-toggle-title">Accounts</div>
-<div class="accounts-toggle-icon" id="accountsToggleIcon">${isAccountsListOpen ? '▲ Hide' : '▼ Show'}</div>
+<div class="accounts-toggle-icon" id="accountsToggleIcon">${isAccountsListOpen ? 'Close' : 'Open'}</div>
 </div>
 
 <div class="accounts-list-content ${isAccountsListOpen ? 'open' : ''}" id="accountsListContent">
@@ -414,7 +417,7 @@ let html = `
 globalAccountsData.forEach(account=>{
 let status=getStatus(account.updated_at);
 html+=`
-<div class="account-box" onclick="openAccount('${account.roblox_username}')">
+<div class="account-box" onclick="openAccountTab('${account.roblox_username}')">
 <div class="user">
 <span>${status.icon} ${account.roblox_username}</span>
 <span class="toggle-icon">Open</span>
@@ -436,34 +439,36 @@ let icon = document.getElementById("accountsToggleIcon");
 
 if(isAccountsListOpen){
 content.classList.add("open");
-icon.innerText = "▲ Hide";
+icon.innerText = "Close";
 } else {
 content.classList.remove("open");
-icon.innerText = "▼ Show";
+icon.innerText = "Open";
 }
 }
 
-async function openAccount(username){
+async function openAccountTab(username){
 const res = await fetch(API+"/account?username="+username);
 const data = await res.json();
 
 if(!data.success) return;
 
-let account=data.account;
-inventoryData=account.inventory || {};
-renderDashboard(account);
+selectedAccountForTab = data.account;
+inventoryData = selectedAccountForTab.inventory || {};
+currentView = 'accounts_tab';
+isDashboardOpen = false;
+renderSpecificAccountTab(selectedAccountForTab);
 }
 
-function renderDashboard(account){
+function renderSpecificAccountTab(account){
 let status=getStatus(account.updated_at);
 
 document.getElementById("dashboard").innerHTML=`
-<button class="back" onclick="loadAccounts()">← Accounts</button>
+<button class="back" onclick="renderMainDashboard()">← Back</button>
 
 <div class="account-box" onclick="toggleDashboard()">
 <div class="user">
 <span>${status.icon} ${account.roblox_username}</span>
-<span class="toggle-icon" id="toggleIcon">${isDashboardOpen ? "▲ Hide":"▼ Show"}</span>
+<span class="toggle-icon" id="toggleIcon">${isDashboardOpen ? "Close":"Open"}</span>
 </div>
 <div class="status ${status.class}">${status.text}</div>
 </div>
@@ -491,10 +496,10 @@ let icon=document.getElementById("toggleIcon");
 
 if(isDashboardOpen){
 box.classList.add("open");
-icon.innerText="▲ Hide";
+icon.innerText="Close";
 }else{
 box.classList.remove("open");
-icon.innerText="▼ Show";
+icon.innerText="Open";
 closeDropdown();
 }
 }
