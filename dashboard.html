@@ -2,385 +2,689 @@
 <html lang="en">
 
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>NORMS Dashboard</title>
 
+
 <style>
+
 :root {
-    --bg-color: #0b0b12;
-    --card-bg: #13131f;
-    --card-border: #1f1f33;
-    --text-main: #ffffff;
-    --text-muted: #8b8ba7;
-    --accent-purple: #7928ca;
-    --accent-glow: rgba(121, 40, 202, 0.4);
-    --badge-bg: #1c1c2e;
+
+    --bg-color:#f7f7f9;
+    --card-bg:#ffffff;
+    --card-border:#e5e7eb;
+    --text-main:#111827;
+    --text-muted:#6b7280;
+    --accent:#7928ca;
+
 }
+
+
+* {
+    box-sizing:border-box;
+}
+
 
 body {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-color);
-    color: var(--text-main);
-    margin: 0;
-    padding: 20px;
+
+    font-family:'Segoe UI', Arial, sans-serif;
+
+    background:var(--bg-color);
+
+    color:var(--text-main);
+
+    margin:0;
+
+    padding:20px;
+
 }
+
+
 
 .container {
-    max-width: 1100px;
-    margin: auto;
+
+    max-width:1500px;
+
+    margin:auto;
+
 }
 
-/* Header Styling */
+
+
+/* HEADER */
+
+
 .header-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+
+    background:white;
+
+    border:1px solid var(--card-border);
+
+    border-radius:20px;
+
+    padding:25px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+    box-shadow:0 8px 25px rgba(0,0,0,.06);
+
+    margin-bottom:25px;
+
 }
+
 
 .header-icon {
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #ff416c, #ff4b2b);
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
+
+    width:65px;
+
+    height:65px;
+
+    border-radius:18px;
+
+    background:#7928ca;
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    font-size:32px;
+
 }
+
+
 
 .header-title h1 {
-    margin: 0 0 5px 0;
-    font-size: 24px;
-    letter-spacing: 0.5px;
+
+    margin:0;
+
 }
+
+
 
 .header-title p {
-    margin: 0;
-    color: var(--text-muted);
-    font-size: 14px;
+
+    margin:5px 0 0;
+
+    color:var(--text-muted);
+
 }
 
-/* Stats Overview Grid */
+
+
+/* STATS */
+
+
 .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    gap:15px;
+
+    margin-bottom:25px;
+
 }
+
+
 
 .stat-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 20px;
-    position: relative;
+
+    background:white;
+
+    border:1px solid var(--card-border);
+
+    border-radius:16px;
+
+    padding:20px;
+
 }
 
-.stat-card .icon-box {
-    width: 36px;
-    height: 36px;
-    background: var(--badge-bg);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 12px;
-    font-size: 16px;
+
+
+.stat-label {
+
+    color:var(--text-muted);
+
+    font-size:12px;
+
 }
 
-.stat-card .label {
-    color: var(--text-muted);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
+
+
+.stat-value {
+
+    font-size:22px;
+
+    font-weight:700;
+
+    margin-top:8px;
+
 }
 
-.stat-card .value {
-    font-size: 22px;
-    font-weight: 700;
+
+
+/* CATEGORY */
+
+
+.category-box {
+
+    background:white;
+
+    border:1px solid var(--card-border);
+
+    border-radius:18px;
+
+    margin-bottom:15px;
+
+    overflow:hidden;
+
 }
 
-/* Search and Filters Bar */
-.filter-bar {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 24px;
+
+
+.category-header {
+
+
+    padding:18px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    font-weight:700;
+
+
 }
 
-.search-input {
-    width: 100%;
-    background: var(--bg-color);
-    border: 1px solid var(--card-border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    color: var(--text-main);
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-    margin-bottom: 12px;
+
+
+.category-header:hover {
+
+    background:#f3f4f6;
+
 }
 
-.search-input:focus {
-    border-color: var(--accent-purple);
+
+
+.category-content {
+
+    display:none;
+
+    padding:15px;
+
+    border-top:1px solid var(--card-border);
+
 }
 
-.chips {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 4px;
+
+
+.category-content.open {
+
+    display:block;
+
 }
 
-.chip {
-    background: var(--badge-bg);
-    border: 1px solid var(--card-border);
-    color: var(--text-muted);
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: 0.2s;
-}
 
-.chip.active, .chip:hover {
-    background: var(--text-main);
-    color: var(--bg-color);
-    font-weight: 600;
-}
 
-/* Inventory Section Cards */
-.section-title {
-    font-size: 18px;
-    margin: 24px 0 12px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+/* ITEMS */
+
 
 .inventory-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+
+    display:grid;
+
+    grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+
+    gap:12px;
+
 }
+
+
 
 .item-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    transition: transform 0.2s, border-color 0.2s;
+
+    background:#f9fafb;
+
+    border:1px solid var(--card-border);
+
+    border-radius:12px;
+
+    padding:15px;
+
 }
 
-.item-card:hover {
-    border-color: var(--accent-purple);
-    transform: translateY(-2px);
-}
 
-.item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
-
-.item-icon-placeholder {
-    width: 32px;
-    height: 32px;
-    background: var(--badge-bg);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--text-muted);
-}
 
 .item-name {
-    font-weight: 600;
-    font-size: 14px;
-    margin-bottom: 4px;
+
+    font-weight:600;
+
 }
+
+
 
 .item-qty {
-    color: #4ade80; /* bright green for quantities */
-    font-weight: 700;
-    font-size: 15px;
+
+    color:#16a34a;
+
+    font-weight:700;
+
+    margin-top:5px;
+
 }
 
-.loading-state, .error-state {
-    text-align: center;
-    padding: 40px;
-    color: var(--text-muted);
-    background: var(--card-bg);
-    border-radius: 16px;
-    border: 1px solid var(--card-border);
+
+
+.loading,
+.error {
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:15px;
+
+    text-align:center;
+
 }
+
+
+
+@media(max-width:900px){
+
+    .stats-grid {
+
+        grid-template-columns:repeat(2,1fr);
+
+    }
+
+}
+
+
+
+@media(max-width:600px){
+
+    .stats-grid {
+
+        grid-template-columns:1fr;
+
+    }
+
+}
+
+
 </style>
+
+
 </head>
+
+
 
 <body>
 
-<div class="container">
-    <!-- Top Brand Header -->
-    <div class="header-card">
-        <div class="header-icon">🌿</div>
-        <div class="header-title">
-            <h1 id="dashboard-title">Grow A Garden 2</h1>
-            <p>Live Account Monitoring & Inventory Dashboard</p>
-        </div>
-    </div>
 
-    <div id="profile">
-        <div class="loading-state">Connecting to API and loading user telemetry...</div>
-    </div>
+<div class="container">
+
+
+
+<div class="header-card">
+
+
+<div class="header-icon">
+🌿
 </div>
 
+
+<div class="header-title">
+
+<h1>Grow A Garden 2</h1>
+
+<p>NORMS Live Account Dashboard</p>
+
+</div>
+
+
+</div>
+
+
+
+
+<div id="profile">
+
+<div class="loading">
+Loading data...
+</div>
+
+</div>
+
+
+
+</div>
+
+
+
 <script>
-// YOUR CLOUDFLARE API
-const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 
-// Roblox username to display
-const username = "Gyazuv";
 
-async function loadData() {
-    try {
-        const response = await fetch(API + "/account?username=" + username);
-        const data = await response.json();
+const API =
+"https://norms.bazarte-clarkjohn06.workers.dev";
 
-        if (!data.success) {
-            document.getElementById("profile").innerHTML = `
-                <div class="error-state">Account tracking record not found for user: <strong>${username}</strong></div>
-            `;
-            return;
-        }
 
-        const account = data.account;
-        const inv = account.inventory || {};
+const username =
+"Gyazuv";
 
-        // Calculate total items across categories
-        let totalItemsCount = 0;
-        Object.values(inv).forEach(category => {
-            if (category && typeof category === 'object') {
-                Object.values(category).forEach(qty => totalItemsCount += Number(qty) || 0);
-            }
-        });
 
-        document.getElementById("profile").innerHTML = `
-            <!-- Stats Grid Overview -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="icon-box">👤</div>
-                    <div class="label">Account Status</div>
-                    <div class="value" style="color: #4ade80; font-size: 18px;">● Online</div>
-                </div>
-                <div class="stat-card">
-                    <div class="icon-box">💰</div>
-                    <div class="label">Sheckles</div>
-                    <div class="value">${Number(account.sheckles).toLocaleString()}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="icon-box">📦</div>
-                    <div class="label">Total Inventory Items</div>
-                    <div class="value">${totalItemsCount.toLocaleString()}</div>
-                </div>
-                <div class="stat-card">
-                    <div class="icon-box">🆔</div>
-                    <div class="label">Roblox ID</div>
-                    <div class="value" style="font-size: 16px; margin-top: 4px;">${account.roblox_userid}</div>
-                </div>
-            </div>
 
-            <!-- Search and Filter Bar -->
-            <div class="filter-bar">
-                <input type="text" class="search-input" placeholder="Search inventory items..." id="searchInput" onkeyup="filterItems()">
-                <div class="chips">
-                    <div class="chip active">All Categories</div>
-                    <div class="chip">Seeds</div>
-                    <div class="chip">Gear</div>
-                    <div class="chip">Crates</div>
-                    <div class="chip">Pets</div>
-                </div>
-            </div>
 
-            <!-- Inventory Categories -->
-            <div class="category-container">
-                ${renderCategorySection("🌱 Seeds", inv.Seeds)}
-                ${renderCategorySection("⚙️ Gear", inv.Gear)}
-                ${renderCategorySection("📦 Crates", inv.Crates)}
-                ${renderCategorySection("🐾 Pets", inv.Pets)}
-            </div>
-        `;
 
-    } catch (error) {
-        console.error(error);
-        document.getElementById("profile").innerHTML = `
-            <div class="error-state">Failed connecting to cloudflare backend worker. Please try again later.</div>
-        `;
-    }
+async function loadData(){
+
+
+try{
+
+
+const response =
+await fetch(
+API + "/account?username=" + username
+);
+
+
+
+const data =
+await response.json();
+
+
+
+if(!data.success){
+
+document.getElementById("profile").innerHTML =
+"Account not found";
+
+return;
+
 }
 
-function renderCategorySection(title, items) {
-    if (!items || Object.keys(items).length === 0) {
-        return ""; // Skip empty categories cleanly
-    }
 
-    let cardsHtml = "";
-    for (let item in items) {
-        const shortInitials = item.substring(0, 2).toUpperCase();
-        cardsHtml += `
-            <div class="item-card searchable-item" data-name="${item.toLowerCase()}">
-                <div class="item-header">
-                    <div class="item-icon-placeholder">${shortInitials}</div>
-                </div>
-                <div>
-                    <div class="item-name">${item}</div>
-                    <div class="item-qty">x${Number(items[item]).toLocaleString()}</div>
-                </div>
-            </div>
-        `;
-    }
 
-    return `
-        <div class="section-title">${title}</div>
-        <div class="inventory-grid">
-            ${cardsHtml}
-        </div>
-    `;
+const account =
+data.account;
+
+
+const inv =
+account.inventory || {};
+
+
+
+let total = 0;
+
+
+Object.values(inv).forEach(category=>{
+
+if(category){
+
+Object.values(category).forEach(amount=>{
+
+total += Number(amount) || 0;
+
+});
+
 }
 
-// Simple filter function for the search bar
-function filterItems() {
-    let input = document.getElementById('searchInput').value.toLowerCase();
-    let cards = document.getElementsByClassName('searchable-item');
-    
-    for (let i = 0; i < cards.length; i++) {
-        let name = cards[i].getAttribute('data-name');
-        if (name.includes(input)) {
-            cards[i].style.display = "";
-        } else {
-            cards[i].style.display = "none";
-        }
-    }
+});
+
+
+
+
+
+document.getElementById("profile").innerHTML = `
+
+
+
+<div class="stats-grid">
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+ACCOUNT
+</div>
+
+<div class="stat-value">
+🟢 Online
+</div>
+
+</div>
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+SHECKLES
+</div>
+
+<div class="stat-value">
+💰 ${Number(account.sheckles).toLocaleString()}
+</div>
+
+</div>
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+ITEMS
+</div>
+
+<div class="stat-value">
+📦 ${total.toLocaleString()}
+</div>
+
+</div>
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+ROBLOX ID
+</div>
+
+<div class="stat-value">
+${account.roblox_userid}
+</div>
+
+</div>
+
+
+</div>
+
+
+
+${renderCategory("🌱 Seeds", inv.Seeds)}
+
+${renderCategory("⚙️ Gear", inv.Gear)}
+
+${renderCategory("📦 Crates", inv.Crates)}
+
+${renderCategory("🐾 Pets", inv.Pets)}
+
+
+
+`;
+
+
+
 }
+
+catch(e){
+
+console.log(e);
+
+
+document.getElementById("profile").innerHTML =
+`
+<div class="error">
+Failed connecting to API
+</div>
+`;
+
+}
+
+
+}
+
+
+
+
+
+function renderCategory(title,items){
+
+
+
+if(!items || Object.keys(items).length===0){
+
+return "";
+
+}
+
+
+
+let total = 0;
+
+
+let html = "";
+
+
+
+for(let item in items){
+
+
+let amount =
+Number(items[item]) || 0;
+
+
+total += amount;
+
+
+
+html += `
+
+
+<div class="item-card">
+
+
+<div class="item-name">
+${item}
+</div>
+
+
+<div class="item-qty">
+x${amount.toLocaleString()}
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+
+
+let id =
+title.replace(/\W/g,"");
+
+
+
+return `
+
+
+<div class="category-box">
+
+
+<div class="category-header"
+onclick="toggle('${id}')">
+
+
+<span>
+${title}
+</span>
+
+
+<span>
+${total.toLocaleString()}x ▼
+</span>
+
+
+</div>
+
+
+
+
+<div class="category-content"
+id="${id}">
+
+
+<div class="inventory-grid">
+
+${html}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+
+
+
+
+function toggle(id){
+
+document
+.getElementById(id)
+.classList.toggle("open");
+
+}
+
+
+
+
 
 loadData();
+
+
 </script>
 
+
+
 </body>
+
 </html>
