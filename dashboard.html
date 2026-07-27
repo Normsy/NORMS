@@ -2,601 +2,252 @@
 <html lang="en">
 
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NORMS Dashboard</title>
-
 <style>
-
 *{
 box-sizing:border-box;
 }
 
-
 body{
-
 margin:0;
 padding:15px;
-
 font-family:Segoe UI,Arial,sans-serif;
-
 background:#f5f5f7;
-
 color:#111827;
-
 }
-
-
 
 .container{
-
 max-width:1200px;
-
 margin:auto;
-
 }
-
-
 
 /* USER */
-
 .account-box{
-
 background:white;
-
 border:1px solid #e5e7eb;
-
 border-radius:16px;
-
 padding:15px;
-
 margin-bottom:15px;
-
 box-shadow:0 5px 15px rgba(0,0,0,.05);
-
 }
-
-
 
 .user{
-
 font-size:18px;
-
 font-weight:800;
-
 }
-
-
 
 .status{
-
 font-size:12px;
-
 color:#16a34a;
-
 margin-top:3px;
-
 }
 
+/* SLIDER CONTAINER SCROLL FIX */
+.slider-container {
+width: 100%;
+overflow-x: auto;
+overflow-y: visible;
+padding-bottom: 10px;
+scrollbar-width: none;
+}
 
-
-/* SLIDER */
-
+.slider-container::-webkit-scrollbar {
+display: none;
+}
 
 .slider{
-
 display:flex;
-
 gap:12px;
-
-overflow-x:auto;
-
-padding-bottom:10px;
-
-scrollbar-width:none;
-
+width: max-content;
 }
-
-
-
-.slider::-webkit-scrollbar{
-
-display:none;
-
-}
-
-
 
 .card-wrapper{
-
 position:relative;
-
 flex-shrink:0;
-
 }
-
-
 
 .card{
-
 min-width:140px;
-
 background:white;
-
 border:1px solid #e5e7eb;
-
 border-radius:15px;
-
 padding:15px;
-
 cursor:pointer;
-
 box-shadow:0 5px 15px rgba(0,0,0,.05);
-
 }
-
-
 
 .card:hover{
-
 background:#fafafa;
-
 }
-
-
 
 .label{
-
 font-size:12px;
-
 font-weight:700;
-
 color:#6b7280;
-
 }
-
-
 
 .value{
-
 margin-top:8px;
-
 font-size:22px;
-
 font-weight:800;
-
 color:#16a34a;
-
 }
-
 
 .money{
-
 color:#ef4444;
-
 }
-
-
 
 /* DROPDOWN */
-
-
 .dropdown{
-
 position:absolute;
-
-top:105%;
-
+top:calc(100% + 8px);
 left:0;
-
 width:230px;
-
 max-height:250px;
-
 overflow-y:auto;
-
 background:white;
-
 border:1px solid #e5e7eb;
-
 border-radius:12px;
-
 padding:10px;
-
 display:none;
-
 z-index:999;
-
 box-shadow:0 10px 25px rgba(0,0,0,.12);
-
 }
-
-
 
 .dropdown.open{
-
 display:block;
-
 }
-
-
 
 .item{
-
 display:flex;
-
 justify-content:space-between;
-
 align-items:center;
-
 background:#f9fafb;
-
 padding:9px;
-
 border-radius:8px;
-
 margin-bottom:6px;
-
 font-size:13px;
-
 }
-
-
 
 .item-name{
-
 font-weight:600;
-
 }
-
-
 
 .item-count{
-
 color:#16a34a;
-
 font-weight:800;
-
 }
-
-
 
 .empty{
-
 font-size:13px;
-
 color:#6b7280;
-
 padding:10px;
-
 }
-
-
-
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="container">
-
-
 <div id="dashboard">
-
 Loading NORMS...
-
 </div>
-
-
 </div>
-
-
 
 <script>
-
-
-const API =
-"https://norms.bazarte-clarkjohn06.workers.dev";
-
-
-const username =
-"Gyazuv";
-
-
+const API = "https://norms.bazarte-clarkjohn06.workers.dev";
+const username = "Gyazuv";
 let inventoryData={};
 
-
-
 async function loadData(){
-
-
-const res =
-await fetch(
-API+"/account?username="+username
-);
-
-
-const data =
-await res.json();
-
-
+const res = await fetch(API+"/account?username="+username);
+const data = await res.json();
 
 if(!data.success){
-
-document.getElementById("dashboard").innerHTML=
-"Account not found";
-
+document.getElementById("dashboard").innerHTML="Account not found";
 return;
-
 }
-
-
 
 const account=data.account;
-
-
-inventoryData=
-account.inventory || {};
-
-
+inventoryData=account.inventory || {};
 
 document.getElementById("dashboard").innerHTML=`
-
 <div class="account-box">
-
-<div class="user">
-
-🟢 ${account.roblox_username}
-
+<div class="user">🟢 ${account.roblox_username}</div>
+<div class="status">Roblox • Live</div>
 </div>
 
-
-<div class="status">
-
-Roblox • Live
-
-</div>
-
-
-</div>
-
-
-
+<div class="slider-container">
 <div class="slider">
-
-
-${createButton(
-"💰 Sheckles",
-Number(account.sheckles).toLocaleString(),
-"money",
-null
-)}
-
-
-
-${createButton(
-"🌱 Seeds",
-total(inventoryData.Seeds)+"x",
-"",
-"Seeds"
-)}
-
-
-
-${createButton(
-"⚙️ Gear",
-total(inventoryData.Gear)+"x",
-"",
-"Gear"
-)}
-
-
-
-${createButton(
-"📦 Crates",
-total(inventoryData.Crates)+"x",
-"",
-"Crates"
-)}
-
-
-
-${createButton(
-"🐾 Pets",
-total(inventoryData.Pets)+"x",
-"",
-"Pets"
-)}
-
-
-
+${createButton("💰 Sheckles", Number(account.sheckles).toLocaleString(), "money", null)}
+${createButton("🌱 Seeds", total(inventoryData.Seeds)+"x", "", "Seeds")}
+${createButton("⚙️ Gear", total(inventoryData.Gear)+"x", "", "Gear")}
+${createButton("📦 Crates", total(inventoryData.Crates)+"x", "", "Crates")}
+${createButton("🐾 Pets", total(inventoryData.Pets)+"x", "", "Pets")}
 </div>
-
-
+</div>
 `;
-
 }
-
-
-
 
 function createButton(label,value,color,type){
-
-
 return `
-
-
 <div class="card-wrapper">
-
-
-<div class="card"
-onclick="${type ? `toggleItems('${type}')` : ''}">
-
-
-<div class="label">
-
-${label}
-
+<div class="card" onclick="${type ? `toggleItems('${type}')` : ''}">
+<div class="label">${label}</div>
+<div class="value ${color}">${value}</div>
 </div>
-
-
-<div class="value ${color}">
-
-${value}
-
+<div class="dropdown" id="${type}"></div>
 </div>
-
-
-</div>
-
-
-
-<div class="dropdown" id="${type}">
-
-
-</div>
-
-
-</div>
-
-
 `;
-
 }
-
-
-
 
 function total(items){
-
-
 let count=0;
-
-
-if(!items)
-return 0;
-
-
-
+if(!items) return 0;
 for(let i in items){
-
 count += Number(items[i]) || 0;
-
 }
-
-
 return count;
-
 }
-
-
-
-
 
 function toggleItems(type){
-
-
-let box=
-document.getElementById(type);
-
-
+let box=document.getElementById(type);
 
 if(box.classList.contains("open")){
-
 box.classList.remove("open");
-
 return;
-
 }
 
-
-
-document
-.querySelectorAll(".dropdown")
-.forEach(x=>{
-
+document.querySelectorAll(".dropdown").forEach(x=>{
 x.classList.remove("open");
-
 });
 
-
-
-let items=
-inventoryData[type] || {};
-
-
-
+let items=inventoryData[type] || {};
 let merged={};
 
-
-
 for(let name in items){
-
 let clean=name.trim();
-
-merged[clean]=
-(merged[clean]||0)
-+
-(Number(items[name])||0);
-
+merged[clean]=(merged[clean]||0)+(Number(items[name])||0);
 }
-
-
 
 let html="";
-
-
-
 for(let name in merged){
-
 html+=`
-
 <div class="item">
-
-<div class="item-name">
-
-${name}
-
+<div class="item-name">${name}</div>
+<div class="item-count">x${merged[name].toLocaleString()}</div>
 </div>
-
-
-<div class="item-count">
-
-x${merged[name].toLocaleString()}
-
-</div>
-
-
-</div>
-
 `;
-
 }
 
-
-
-box.innerHTML=
-html || `<div class="empty">No items</div>`;
-
-
+box.innerHTML=html || `<div class="empty">No items</div>`;
 box.classList.add("open");
-
 }
-
-
-
 
 loadData();
-
-
 </script>
 
-
 </body>
-
 </html>
