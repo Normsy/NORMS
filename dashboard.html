@@ -4,240 +4,383 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NORMS Dashboard</title>
 
 <style>
+:root {
+    --bg-color: #0b0b12;
+    --card-bg: #13131f;
+    --card-border: #1f1f33;
+    --text-main: #ffffff;
+    --text-muted: #8b8ba7;
+    --accent-purple: #7928ca;
+    --accent-glow: rgba(121, 40, 202, 0.4);
+    --badge-bg: #1c1c2e;
+}
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg-color);
+    color: var(--text-main);
+    margin: 0;
     padding: 20px;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 1100px;
     margin: auto;
 }
 
-.card {
-    background: white;
-    border-radius: 15px;
+/* Header Styling */
+.header-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.header-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.header-title h1 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    letter-spacing: 0.5px;
+}
+
+.header-title p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* Stats Overview Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
     padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    position: relative;
 }
 
-.item {
-    display:flex;
-    justify-content:space-between;
-    background:#f2f2f2;
-    padding:10px;
-    margin:5px 0;
-    border-radius:8px;
+.stat-card .icon-box {
+    width: 36px;
+    height: 36px;
+    background: var(--badge-bg);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    font-size: 16px;
 }
 
-h1 {
-    text-align:center;
+.stat-card .label {
+    color: var(--text-muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
 }
 
-button {
-    padding:10px 15px;
-    border:none;
-    border-radius:10px;
-    cursor:pointer;
+.stat-card .value {
+    font-size: 22px;
+    font-weight: 700;
 }
 
+/* Search and Filters Bar */
+.filter-bar {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.search-input {
+    width: 100%;
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    color: var(--text-main);
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+    margin-bottom: 12px;
+}
+
+.search-input:focus {
+    border-color: var(--accent-purple);
+}
+
+.chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.chip {
+    background: var(--badge-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-muted);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.chip.active, .chip:hover {
+    background: var(--text-main);
+    color: var(--bg-color);
+    font-weight: 600;
+}
+
+/* Inventory Section Cards */
+.section-title {
+    font-size: 18px;
+    margin: 24px 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.item-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.item-card:hover {
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+}
+
+.item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.item-icon-placeholder {
+    width: 32px;
+    height: 32px;
+    background: var(--badge-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--text-muted);
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+.item-qty {
+    color: #4ade80; /* bright green for quantities */
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.loading-state, .error-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--card-border);
+}
 </style>
-
 </head>
-
 
 <body>
 
-
 <div class="container">
+    <!-- Top Brand Header -->
+    <div class="header-card">
+        <div class="header-icon">🌿</div>
+        <div class="header-title">
+            <h1 id="dashboard-title">Grow A Garden 2</h1>
+            <p>Live Account Monitoring & Inventory Dashboard</p>
+        </div>
+    </div>
 
-<h1>NORMS Roblox Dashboard</h1>
-
-
-<div id="profile">
-Loading...
+    <div id="profile">
+        <div class="loading-state">Connecting to API and loading user telemetry...</div>
+    </div>
 </div>
-
-
-</div>
-
-
 
 <script>
-
-
 // YOUR CLOUDFLARE API
-
-const API =
-"https://norms.bazarte-clarkjohn06.workers.dev";
-
+const API = "https://norms.bazarte-clarkjohn06.workers.dev";
 
 // Roblox username to display
-// Later we can connect this to your login system
-
 const username = "Gyazuv";
 
-
-
-async function loadData(){
-
-
+async function loadData() {
     try {
-
-
-        const response = await fetch(
-            API + "/account?username=" + username
-        );
-
-
+        const response = await fetch(API + "/account?username=" + username);
         const data = await response.json();
 
-
-
-        if(!data.success){
-
-            document.getElementById("profile").innerHTML =
-            "Account not found";
-
+        if (!data.success) {
+            document.getElementById("profile").innerHTML = `
+                <div class="error-state">Account tracking record not found for user: <strong>${username}</strong></div>
+            `;
             return;
-
         }
 
-
-
         const account = data.account;
+        const inv = account.inventory || {};
 
-        const inv = account.inventory;
-
-
+        // Calculate total items across categories
+        let totalItemsCount = 0;
+        Object.values(inv).forEach(category => {
+            if (category && typeof category === 'object') {
+                Object.values(category).forEach(qty => totalItemsCount += Number(qty) || 0);
+            }
+        });
 
         document.getElementById("profile").innerHTML = `
+            <!-- Stats Grid Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-box">👤</div>
+                    <div class="label">Account Status</div>
+                    <div class="value" style="color: #4ade80; font-size: 18px;">● Online</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box">💰</div>
+                    <div class="label">Sheckles</div>
+                    <div class="value">${Number(account.sheckles).toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box">📦</div>
+                    <div class="label">Total Inventory Items</div>
+                    <div class="value">${totalItemsCount.toLocaleString()}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-box">🆔</div>
+                    <div class="label">Roblox ID</div>
+                    <div class="value" style="font-size: 16px; margin-top: 4px;">${account.roblox_userid}</div>
+                </div>
+            </div>
 
+            <!-- Search and Filter Bar -->
+            <div class="filter-bar">
+                <input type="text" class="search-input" placeholder="Search inventory items..." id="searchInput" onkeyup="filterItems()">
+                <div class="chips">
+                    <div class="chip active">All Categories</div>
+                    <div class="chip">Seeds</div>
+                    <div class="chip">Gear</div>
+                    <div class="chip">Crates</div>
+                    <div class="chip">Pets</div>
+                </div>
+            </div>
 
-        <div class="card">
-
-
-        <h2>${account.roblox_username}</h2>
-
-
-        <p>
-        🆔 User ID:
-        ${account.roblox_userid}
-        </p>
-
-
-        <h2>
-        💰 Sheckles:
-        ${Number(account.sheckles).toLocaleString()}
-        </h2>
-
-
-        <p>
-        Updated:
-        ${account.updated_at}
-        </p>
-
-
-        </div>
-
-
-
-        <div class="card">
-
-        <h2>🌱 Seeds</h2>
-
-        ${showItems(inv.Seeds)}
-
-
-        <h2>⚙️ Gear</h2>
-
-        ${showItems(inv.Gear)}
-
-
-        <h2>📦 Crates</h2>
-
-        ${showItems(inv.Crates)}
-
-
-        <h2>🐾 Pets</h2>
-
-        ${showItems(inv.Pets)}
-
-
-        </div>
-
-
+            <!-- Inventory Categories -->
+            <div class="category-container">
+                ${renderCategorySection("🌱 Seeds", inv.Seeds)}
+                ${renderCategorySection("⚙️ Gear", inv.Gear)}
+                ${renderCategorySection("📦 Crates", inv.Crates)}
+                ${renderCategorySection("🐾 Pets", inv.Pets)}
+            </div>
         `;
 
-
-    }
-
-
-    catch(error){
-
-        console.log(error);
-
-        document.getElementById("profile").innerHTML =
-        "Failed loading data";
-
-    }
-
-
-}
-
-
-
-function showItems(items){
-
-
-    if(!items || Object.keys(items).length === 0){
-
-        return "<p>No items</p>";
-
-    }
-
-
-    let html="";
-
-
-    for(let item in items){
-
-
-        html += `
-
-        <div class="item">
-
-        <span>${item}</span>
-
-        <b>x${items[item]}</b>
-
-        </div>
-
+    } catch (error) {
+        console.error(error);
+        document.getElementById("profile").innerHTML = `
+            <div class="error-state">Failed connecting to cloudflare backend worker. Please try again later.</div>
         `;
-
     }
-
-
-    return html;
-
-
 }
 
+function renderCategorySection(title, items) {
+    if (!items || Object.keys(items).length === 0) {
+        return ""; // Skip empty categories cleanly
+    }
 
+    let cardsHtml = "";
+    for (let item in items) {
+        const shortInitials = item.substring(0, 2).toUpperCase();
+        cardsHtml += `
+            <div class="item-card searchable-item" data-name="${item.toLowerCase()}">
+                <div class="item-header">
+                    <div class="item-icon-placeholder">${shortInitials}</div>
+                </div>
+                <div>
+                    <div class="item-name">${item}</div>
+                    <div class="item-qty">x${Number(items[item]).toLocaleString()}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="section-title">${title}</div>
+        <div class="inventory-grid">
+            ${cardsHtml}
+        </div>
+    `;
+}
+
+// Simple filter function for the search bar
+function filterItems() {
+    let input = document.getElementById('searchInput').value.toLowerCase();
+    let cards = document.getElementsByClassName('searchable-item');
+    
+    for (let i = 0; i < cards.length; i++) {
+        let name = cards[i].getAttribute('data-name');
+        if (name.includes(input)) {
+            cards[i].style.display = "";
+        } else {
+            cards[i].style.display = "none";
+        }
+    }
+}
 
 loadData();
-
-
 </script>
 
-
 </body>
-
 </html>
