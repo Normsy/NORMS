@@ -10,13 +10,8 @@
 
 <style>
 
-:root {
-    --bg:#f5f5f7;
-    --card:#ffffff;
-    --border:#e5e7eb;
-    --text:#111827;
-    --muted:#6b7280;
-    --green:#16a34a;
+* {
+    box-sizing:border-box;
 }
 
 
@@ -25,21 +20,19 @@ body {
     margin:0;
     padding:25px;
 
-    font-family:
-    'Segoe UI',
-    Arial,
-    sans-serif;
+    font-family:Segoe UI, Arial, sans-serif;
 
-    background:var(--bg);
-    color:var(--text);
+    background:#f5f5f7;
+
+    color:#111827;
 
 }
 
 
-
 .container {
 
-    max-width:1200px;
+    max-width:1400px;
+
     margin:auto;
 
 }
@@ -49,6 +42,7 @@ body {
 .username {
 
     font-size:32px;
+
     font-weight:800;
 
     margin-bottom:25px;
@@ -57,15 +51,12 @@ body {
 
 
 
-/* CATEGORY CARDS */
-
 
 .category-container {
 
     display:grid;
 
-    grid-template-columns:
-    repeat(4,1fr);
+    grid-template-columns:repeat(4, 1fr);
 
     gap:20px;
 
@@ -75,16 +66,15 @@ body {
 
 .category-box {
 
-    background:var(--card);
+    background:white;
 
-    border:1px solid var(--border);
+    border:1px solid #e5e7eb;
 
     border-radius:20px;
 
     overflow:hidden;
 
-    box-shadow:
-    0 5px 20px rgba(0,0,0,.05);
+    box-shadow:0 5px 20px rgba(0,0,0,.06);
 
 }
 
@@ -93,12 +83,6 @@ body {
 .category-header {
 
     padding:25px;
-
-    display:flex;
-
-    justify-content:space-between;
-
-    align-items:center;
 
     cursor:pointer;
 
@@ -117,6 +101,7 @@ body {
 .category-name {
 
     font-size:20px;
+
     font-weight:700;
 
 }
@@ -125,9 +110,13 @@ body {
 
 .category-count {
 
-    font-size:22px;
+    margin-top:10px;
+
+    font-size:26px;
+
     font-weight:800;
-    color:var(--green);
+
+    color:#16a34a;
 
 }
 
@@ -140,8 +129,7 @@ body {
 
     padding:15px;
 
-    border-top:
-    1px solid var(--border);
+    border-top:1px solid #e5e7eb;
 
 }
 
@@ -155,16 +143,15 @@ body {
 
 
 
-
 .item {
 
     display:flex;
 
     justify-content:space-between;
 
-    padding:12px;
-
     background:#f9fafb;
+
+    padding:12px;
 
     border-radius:10px;
 
@@ -184,7 +171,7 @@ body {
 
 .item-count {
 
-    color:var(--green);
+    color:#16a34a;
 
     font-weight:700;
 
@@ -192,16 +179,11 @@ body {
 
 
 
-
-
 .loading {
 
     text-align:center;
 
-    padding:50px;
-
 }
-
 
 
 
@@ -209,8 +191,7 @@ body {
 
 .category-container {
 
-    grid-template-columns:
-    repeat(2,1fr);
+    grid-template-columns:repeat(2,1fr);
 
 }
 
@@ -266,20 +247,18 @@ const username =
 
 
 
-
 async function loadData(){
 
 
-const response =
+const res =
 await fetch(
-API +
-"/account?username=" +
-username
+API + "/account?username=" + username
 );
 
 
+
 const data =
-await response.json();
+await res.json();
 
 
 
@@ -313,35 +292,16 @@ ${account.roblox_username}
 </div>
 
 
-
 <div class="category-container">
 
 
-${createCategory(
-"🌱 Seeds",
-inv.Seeds
-)}
+${createCard("🌱 Seeds", inv.Seeds)}
 
+${createCard("⚙️ Gear", inv.Gear)}
 
+${createCard("📦 Crates", inv.Crates)}
 
-${createCategory(
-"⚙️ Gear",
-inv.Gear
-)}
-
-
-
-${createCategory(
-"📦 Crates",
-inv.Crates
-)}
-
-
-
-${createCategory(
-"🐾 Pets",
-inv.Pets
-)}
+${createCard("🐾 Pets", inv.Pets)}
 
 
 </div>
@@ -356,7 +316,8 @@ inv.Pets
 
 
 
-function createCategory(title,items){
+
+function createCard(title, items){
 
 
 if(!items){
@@ -366,9 +327,10 @@ return "";
 }
 
 
+
 let total = 0;
 
-let html = "";
+let content = "";
 
 
 
@@ -383,8 +345,7 @@ total += amount;
 
 
 
-html += `
-
+content += `
 
 <div class="item">
 
@@ -392,23 +353,19 @@ html += `
 ${name}
 </div>
 
-
 <div class="item-count">
 x${amount.toLocaleString()}
 </div>
 
-
 </div>
 
-
 `;
-
 
 }
 
 
 
-let id =
+const id =
 title.replace(/\W/g,"");
 
 
@@ -441,15 +398,12 @@ ${total.toLocaleString()}x
 
 
 
+<div class="category-content" id="${id}">
 
-<div class="category-content"
-id="${id}">
-
-
-${html}
-
+${content}
 
 </div>
+
 
 
 </div>
@@ -462,6 +416,7 @@ ${html}
 
 
 
+
 function toggle(id){
 
 document
@@ -469,6 +424,7 @@ document
 .classList.toggle("open");
 
 }
+
 
 
 
