@@ -14,19 +14,30 @@
 box-sizing:border-box;
 }
 
+
 body{
+
 margin:0;
 padding:15px;
+
 font-family:Segoe UI,Arial,sans-serif;
+
 background:#f5f5f7;
+
 color:#111827;
+
 }
+
 
 
 .container{
+
 max-width:1200px;
+
 margin:auto;
+
 }
+
 
 
 /* USER */
@@ -34,9 +45,13 @@ margin:auto;
 .account-box{
 
 background:white;
+
 border:1px solid #e5e7eb;
+
 border-radius:16px;
-padding:16px;
+
+padding:15px;
+
 margin-bottom:15px;
 
 box-shadow:0 5px 15px rgba(0,0,0,.05);
@@ -44,18 +59,24 @@ box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
 
+
 .user{
 
 font-size:18px;
+
 font-weight:800;
 
 }
 
 
+
 .status{
 
 font-size:12px;
+
 color:#16a34a;
+
+margin-top:3px;
 
 }
 
@@ -63,11 +84,15 @@ color:#16a34a;
 
 /* SLIDER */
 
+
 .slider{
 
 display:flex;
+
 gap:12px;
+
 overflow-x:auto;
+
 padding-bottom:10px;
 
 scrollbar-width:none;
@@ -75,8 +100,21 @@ scrollbar-width:none;
 }
 
 
+
 .slider::-webkit-scrollbar{
+
 display:none;
+
+}
+
+
+
+.card-wrapper{
+
+position:relative;
+
+flex-shrink:0;
+
 }
 
 
@@ -95,10 +133,7 @@ padding:15px;
 
 cursor:pointer;
 
-box-shadow:
-0 5px 15px rgba(0,0,0,.05);
-
-flex-shrink:0;
+box-shadow:0 5px 15px rgba(0,0,0,.05);
 
 }
 
@@ -115,8 +150,10 @@ background:#fafafa;
 .label{
 
 font-size:12px;
-color:#6b7280;
+
 font-weight:700;
+
+color:#6b7280;
 
 }
 
@@ -125,8 +162,11 @@ font-weight:700;
 .value{
 
 margin-top:8px;
+
 font-size:22px;
+
 font-weight:800;
+
 color:#16a34a;
 
 }
@@ -140,30 +180,44 @@ color:#ef4444;
 
 
 
-/* INVENTORY DISPLAY */
+/* DROPDOWN */
 
 
-.inventory{
+.dropdown{
 
-margin-top:20px;
+position:absolute;
+
+top:105%;
+
+left:0;
+
+width:230px;
+
+max-height:250px;
+
+overflow-y:auto;
 
 background:white;
 
 border:1px solid #e5e7eb;
 
-border-radius:16px;
+border-radius:12px;
 
-padding:15px;
+padding:10px;
+
+display:none;
+
+z-index:999;
+
+box-shadow:0 10px 25px rgba(0,0,0,.12);
 
 }
 
 
 
-.title{
+.dropdown.open{
 
-font-size:18px;
-font-weight:800;
-margin-bottom:15px;
+display:block;
 
 }
 
@@ -172,15 +226,20 @@ margin-bottom:15px;
 .item{
 
 display:flex;
+
 justify-content:space-between;
+
+align-items:center;
 
 background:#f9fafb;
 
-padding:12px;
+padding:9px;
 
-border-radius:10px;
+border-radius:8px;
 
-margin-bottom:8px;
+margin-bottom:6px;
+
+font-size:13px;
 
 }
 
@@ -193,17 +252,24 @@ font-weight:600;
 }
 
 
+
 .item-count{
 
 color:#16a34a;
+
 font-weight:800;
 
 }
 
 
+
 .empty{
 
+font-size:13px;
+
 color:#6b7280;
+
+padding:10px;
 
 }
 
@@ -246,7 +312,6 @@ let inventoryData={};
 
 
 
-
 async function loadData(){
 
 
@@ -263,7 +328,7 @@ await res.json();
 
 if(!data.success){
 
-document.getElementById("dashboard").innerHTML =
+document.getElementById("dashboard").innerHTML=
 "Account not found";
 
 return;
@@ -275,9 +340,8 @@ return;
 const account=data.account;
 
 
-const inv=account.inventory || {};
-
-inventoryData=inv;
+inventoryData=
+account.inventory || {};
 
 
 
@@ -291,14 +355,15 @@ document.getElementById("dashboard").innerHTML=`
 
 </div>
 
+
 <div class="status">
 
 Roblox • Live
 
 </div>
 
-</div>
 
+</div>
 
 
 
@@ -313,9 +378,10 @@ null
 )}
 
 
+
 ${createButton(
 "🌱 Seeds",
-total(inv.Seeds)+"x",
+total(inventoryData.Seeds)+"x",
 "",
 "Seeds"
 )}
@@ -324,7 +390,7 @@ total(inv.Seeds)+"x",
 
 ${createButton(
 "⚙️ Gear",
-total(inv.Gear)+"x",
+total(inventoryData.Gear)+"x",
 "",
 "Gear"
 )}
@@ -333,7 +399,7 @@ total(inv.Gear)+"x",
 
 ${createButton(
 "📦 Crates",
-total(inv.Crates)+"x",
+total(inventoryData.Crates)+"x",
 "",
 "Crates"
 )}
@@ -342,23 +408,12 @@ total(inv.Crates)+"x",
 
 ${createButton(
 "🐾 Pets",
-total(inv.Pets)+"x",
+total(inventoryData.Pets)+"x",
 "",
 "Pets"
 )}
 
 
-</div>
-
-
-
-<div id="inventory" class="inventory">
-
-<div class="empty">
-
-Click Seeds, Gear, Crates or Pets
-
-</div>
 
 </div>
 
@@ -376,8 +431,11 @@ function createButton(label,value,color,type){
 return `
 
 
+<div class="card-wrapper">
+
+
 <div class="card"
-onclick="${type ? `showItems('${type}')` : ''}">
+onclick="${type ? `toggleItems('${type}')` : ''}">
 
 
 <div class="label">
@@ -397,10 +455,19 @@ ${value}
 </div>
 
 
+
+<div class="dropdown" id="${type}">
+
+
+</div>
+
+
+</div>
+
+
 `;
 
 }
-
 
 
 
@@ -430,10 +497,38 @@ return count;
 
 
 
-function showItems(type){
+
+function toggleItems(type){
 
 
-let items=inventoryData[type];
+let box=
+document.getElementById(type);
+
+
+
+if(box.classList.contains("open")){
+
+box.classList.remove("open");
+
+return;
+
+}
+
+
+
+document
+.querySelectorAll(".dropdown")
+.forEach(x=>{
+
+x.classList.remove("open");
+
+});
+
+
+
+let items=
+inventoryData[type] || {};
+
 
 
 let merged={};
@@ -442,25 +537,22 @@ let merged={};
 
 for(let name in items){
 
-
 let clean=name.trim();
 
-
-merged[clean]=(merged[clean]||0)
+merged[clean]=
+(merged[clean]||0)
 +
 (Number(items[name])||0);
 
-
 }
-
 
 
 
 let html="";
 
 
-for(let name in merged){
 
+for(let name in merged){
 
 html+=`
 
@@ -488,23 +580,14 @@ x${merged[name].toLocaleString()}
 
 
 
+box.innerHTML=
+html || `<div class="empty">No items</div>`;
 
-document.getElementById("inventory")
-.innerHTML=
 
-`
-
-<div class="title">
-
-${type}
-
-</div>
-
-${html || "<div class='empty'>No items</div>"}
-
-`;
+box.classList.add("open");
 
 }
+
 
 
 
