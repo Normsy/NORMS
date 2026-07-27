@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -158,10 +159,21 @@ box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
 
+.account-header-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.account-info-col {
+display: flex;
+flex-direction: column;
+}
+
+
 .user{
 
 display:flex;
-justify-content:space-between;
 align-items:center;
 font-size:18px;
 font-weight:800;
@@ -200,6 +212,7 @@ color:white;
 padding:8px 15px;
 border-radius:10px;
 cursor:pointer;
+white-space:nowrap;
 
 }
 
@@ -634,16 +647,20 @@ html += `
 
 <div class="account-box">
 
+<div class="account-header-row">
 
+<div class="account-info-col">
 <div class="user">
-
-
 <span>
-
 ${status.icon}
 ${acc.roblox_username}
-
 </span>
+</div>
+
+<div class="status ${status.class}">
+${status.text}
+</div>
+</div>
 
 
 <button class="open-btn"
@@ -653,14 +670,6 @@ onclick="openAccount('${acc.roblox_username}')">
 Inventory
 
 </button>
-
-
-</div>
-
-
-<div class="status ${status.class}">
-
-${status.text}
 
 </div>
 
