@@ -29,6 +29,101 @@ margin:auto;
 }
 
 
+/* LOGIN */
+
+.auth-box{
+
+max-width:400px;
+margin:60px auto;
+background:white;
+border:1px solid #e5e7eb;
+border-radius:18px;
+padding:25px;
+box-shadow:0 5px 20px rgba(0,0,0,.08);
+
+}
+
+
+.auth-title{
+
+font-size:25px;
+font-weight:900;
+margin-bottom:5px;
+
+}
+
+
+.auth-subtitle{
+
+font-size:13px;
+color:#6b7280;
+margin-bottom:20px;
+
+}
+
+
+input{
+
+width:100%;
+padding:12px;
+border:1px solid #d1d5db;
+border-radius:10px;
+margin-bottom:12px;
+font-size:15px;
+
+}
+
+
+button{
+
+border:none;
+background:#111827;
+color:white;
+padding:12px 18px;
+border-radius:10px;
+cursor:pointer;
+font-weight:700;
+
+}
+
+
+.auth-btn{
+
+width:100%;
+
+}
+
+
+.switch{
+
+margin-top:15px;
+text-align:center;
+font-size:13px;
+color:#6b7280;
+cursor:pointer;
+
+}
+
+
+.error{
+
+color:#ef4444;
+font-size:13px;
+margin-bottom:10px;
+
+}
+
+
+.success{
+
+color:#16a34a;
+font-size:13px;
+margin-bottom:10px;
+
+}
+
+
+
 /* HERO */
 
 .hero-box{
@@ -45,12 +140,14 @@ gap:15px;
 
 }
 
+
 .hero-icon{
+
 width:55px;
 height:55px;
 border-radius:12px;
-background:#e5e7eb;
 object-fit:cover;
+
 }
 
 
@@ -66,10 +163,8 @@ font-weight:800;
 
 font-size:13px;
 color:#6b7280;
-margin-top:3px;
 
 }
-
 
 
 /* STATS */
@@ -112,13 +207,15 @@ margin-top:5px;
 
 }
 
+
 .stat-value.money{
+
 color:#111827;
+
 }
 
 
-
-/* BUTTON */
+/* ACCOUNT BUTTON */
 
 .accounts-toggle-card{
 
@@ -143,6 +240,12 @@ font-weight:800;
 }
 
 
+.logout{
+
+margin-top:15px;
+background:#ef4444;
+
+}
 
 /* ACCOUNT CARD */
 
@@ -158,17 +261,16 @@ box-shadow:0 5px 15px rgba(0,0,0,.05);
 }
 
 
-.account-header-row {
+.account-header-row{
 
 display:flex;
 justify-content:space-between;
 align-items:center;
-padding-top:8px;
 
 }
 
 
-.account-info-col {
+.account-info-col{
 
 display:flex;
 flex-direction:column;
@@ -178,11 +280,8 @@ flex-direction:column;
 
 .user{
 
-display:flex;
-align-items:center;
 font-size:18px;
 font-weight:800;
-line-height:1.2;
 
 }
 
@@ -190,8 +289,7 @@ line-height:1.2;
 .status{
 
 font-size:12px;
-margin-top:4px;
-line-height:1.2;
+margin-top:5px;
 
 }
 
@@ -210,24 +308,15 @@ color:#6b7280;
 }
 
 
-
 .open-btn{
 
-border:none;
 background:#111827;
-color:white;
 padding:8px 15px;
-border-radius:10px;
-cursor:pointer;
-white-space:nowrap;
-margin-top:8px;
 
 }
 
 
-
-/* ACCOUNT INVENTORY AREA */
-
+/* INVENTORY */
 
 .account-dashboard-slot{
 
@@ -236,14 +325,9 @@ margin-top:15px;
 }
 
 
-
-
-/* SLIDER */
-
 .slider-container{
 
 overflow-x:auto;
-overflow-y:hidden;
 scrollbar-width:none;
 
 }
@@ -304,7 +388,6 @@ color:#ef4444;
 }
 
 
-
 /* DROPDOWN */
 
 
@@ -329,18 +412,13 @@ display:block;
 }
 
 
-.dropdown-header {
+.dropdown-header{
 
 font-size:14px;
 font-weight:800;
-color:#111827;
 margin-bottom:8px;
-display:flex;
-align-items:center;
-gap:6px;
 
 }
-
 
 
 .item{
@@ -364,8 +442,8 @@ font-weight:600;
 
 .item-count{
 
-color:#16a34a;
 font-weight:800;
+color:#16a34a;
 
 }
 
@@ -378,16 +456,10 @@ padding:10px;
 }
 
 
-
 .back{
 
-border:none;
 background:#111827;
-color:white;
-padding:10px 15px;
-border-radius:10px;
 margin-bottom:10px;
-cursor:pointer;
 
 }
 
@@ -402,11 +474,13 @@ cursor:pointer;
 
 <div class="container">
 
-<div id="dashboard">
+
+<div id="app">
 
 Loading NORMS...
 
 </div>
+
 
 </div>
 
@@ -414,35 +488,306 @@ Loading NORMS...
 <script>
 
 
-const API = "https://norms.bazarte-clarkjohn06.workers.dev";
+const API = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev";
 
 
+let secretKey = localStorage.getItem("norms_secret");
 let accounts = [];
 let inventoryData = {};
 let activeDropdown = null;
 
 
 
-async function loadAccounts(){
+function saveSecret(key){
 
-const res = await fetch(API + "/accounts");
+secretKey = key;
+
+localStorage.setItem(
+"norms_secret",
+key
+);
+
+}
+
+
+
+function logout(){
+
+localStorage.removeItem("norms_secret");
+
+secretKey = null;
+
+showLogin();
+
+}
+
+
+
+function showLogin(){
+
+document.getElementById("app").innerHTML = `
+
+
+<div class="auth-box">
+
+
+<div class="auth-title">
+
+NORMS
+
+</div>
+
+
+<div class="auth-subtitle">
+
+Login to your dashboard
+
+</div>
+
+
+<div id="message"></div>
+
+
+<input id="loginUser" placeholder="Username">
+
+
+<input id="loginPass" type="password" placeholder="Password">
+
+
+<button class="auth-btn" onclick="login()">
+
+Login
+
+</button>
+
+
+<div class="switch" onclick="showRegister()">
+
+Create account
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+
+
+function showRegister(){
+
+document.getElementById("app").innerHTML = `
+
+
+<div class="auth-box">
+
+
+<div class="auth-title">
+
+NORMS
+
+</div>
+
+
+<div class="auth-subtitle">
+
+Create your account
+
+</div>
+
+
+<div id="message"></div>
+
+
+<input id="regUser" placeholder="Username">
+
+
+<input id="regPass" type="password" placeholder="Password">
+
+
+<button class="auth-btn" onclick="register()">
+
+Register
+
+</button>
+
+
+<div class="switch" onclick="showLogin()">
+
+Already have account
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+async function login(){
+
+const username =
+document.getElementById("loginUser").value.trim();
+
+const password =
+document.getElementById("loginPass").value;
+
+
+const res = await fetch(API + "/login",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username,
+password
+
+})
+
+});
+
 
 const data = await res.json();
 
 
 if(!data.success){
 
-document.getElementById("dashboard").innerHTML =
-"No accounts found";
+document.getElementById("message").innerHTML =
+
+`<div class="error">${data.message}</div>`;
 
 return;
 
 }
 
 
+saveSecret(data.secret_key);
+
+
+loadAccounts();
+
+
+}
+
+
+
+async function register(){
+
+const username =
+document.getElementById("regUser").value.trim();
+
+const password =
+document.getElementById("regPass").value;
+
+
+
+const res = await fetch(API + "/register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username,
+password
+
+})
+
+});
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
+document.getElementById("message").innerHTML =
+
+`<div class="error">${data.message}</div>`;
+
+return;
+
+}
+
+
+
+saveSecret(data.secret_key);
+
+
+
+document.getElementById("message").innerHTML =
+
+`<div class="success">
+Account created. Logging in...
+</div>`;
+
+
+
+setTimeout(()=>{
+
+loadAccounts();
+
+},1000);
+
+
+
+}
+
+
+
+async function loadAccounts(){
+
+
+if(!secretKey){
+
+showLogin();
+
+return;
+
+}
+
+
+
+const res = await fetch(
+
+API + "/accounts?secret_key=" + secretKey
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
+logout();
+
+return;
+
+}
+
+
+
 accounts = data.accounts;
 
+
 renderMain();
+
 
 }
 
@@ -450,8 +795,13 @@ renderMain();
 
 function getStatus(time){
 
+
 let minutes =
-(Date.now() - new Date(time).getTime()) / 1000 / 60;
+
+(Date.now() -
+new Date(time).getTime())
+/1000/60;
+
 
 
 if(minutes <= 10){
@@ -459,7 +809,9 @@ if(minutes <= 10){
 return {
 
 icon:"🟢",
+
 text:"Roblox • Online",
+
 class:"online"
 
 };
@@ -467,16 +819,22 @@ class:"online"
 }
 
 
+
 return {
 
 icon:"⚫",
+
 text:"Roblox • Offline ("+
-Math.floor(minutes)+" min ago)",
+Math.floor(minutes)+
+" min ago)",
+
 class:"offline"
 
 };
 
+
 }
+
 
 
 
@@ -484,67 +842,98 @@ function renderMain(){
 
 
 let online = 0;
+
 let totalSheckles = 0;
-let totalItemsCount = 0;
-let totalPetsCount = 0;
+
+let totalItems = 0;
+
+let totalPets = 0;
 
 
 
 accounts.forEach(acc=>{
 
+
 if(getStatus(acc.updated_at).class=="online"){
+
 online++;
+
 }
 
 
-totalSheckles += Number(acc.sheckles || 0);
+
+totalSheckles += Number(
+acc.sheckles || 0
+);
+
 
 
 let inv = acc.inventory || {};
 
 
 
-function sumCategory(category){
-    if(!category) return 0;
-    let sum = 0;
-    for(let item in category){
-        sum += Number(category[item]) || 0;
-    }
-    return sum;
-}
+totalItems +=
 
-let seedsCount = sumCategory(inv.Seeds);
-let gearCount = sumCategory(inv.Gear);
-let cratesCount = sumCategory(inv.Crates);
-let petsCount = sumCategory(inv.Pets);
+total(inv.Seeds)
 
-totalItemsCount += (seedsCount + gearCount + cratesCount + petsCount);
-totalPetsCount += petsCount;
++
+
+total(inv.Gear)
+
++
+
+total(inv.Crates)
+
++
+
+total(inv.Pets);
+
+
+
+totalPets +=
+
+total(inv.Pets);
+
 
 });
 
 
 
-document.getElementById("dashboard").innerHTML = `
+
+
+document.getElementById("app").innerHTML = `
+
 
 <div class="hero-box">
 
+
 <img class="hero-icon"
+
 src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png">
+
 
 <div>
 
 <div class="hero-title">
+
 Grow A Garden 2
+
 </div>
+
 
 <div class="hero-subtitle">
-Overview of your tracked accounts
-</div>
+
+NORMS Account Dashboard
 
 </div>
 
+
 </div>
+
+
+</div>
+
+
 
 
 
@@ -554,74 +943,134 @@ Overview of your tracked accounts
 <div class="stat-card">
 
 <div class="stat-label">
-Online / Total
+
+ONLINE / TOTAL
+
 </div>
+
 
 <div class="stat-value">
+
 ${online}/${accounts.length}
-</div>
 
 </div>
+
+
+</div>
+
+
+
 
 
 <div class="stat-card">
 
 <div class="stat-label">
-Total Sheckles
+
+TOTAL SHECKLES
+
 </div>
+
 
 <div class="stat-value money">
+
 ${totalSheckles.toLocaleString()}
-</div>
 
 </div>
+
+
+</div>
+
+
+
 
 
 <div class="stat-card">
 
 <div class="stat-label">
-Total Items
+
+TOTAL ITEMS
+
 </div>
+
 
 <div class="stat-value">
-${totalItemsCount.toLocaleString()}
-</div>
+
+${totalItems.toLocaleString()}
 
 </div>
+
+
+</div>
+
+
+
 
 
 <div class="stat-card">
 
 <div class="stat-label">
-Total Pets
+
+TOTAL PETS
+
 </div>
+
 
 <div class="stat-value">
-${totalPetsCount.toLocaleString()}
-</div>
+
+${totalPets.toLocaleString()}
 
 </div>
 
 
 </div>
+
+
+</div>
+
+
 
 
 <div class="accounts-toggle-card"
+
 onclick="openAccountsTab()">
 
+
 <div class="accounts-toggle-title">
+
 Accounts Dashboard
+
 </div>
+
 
 <div>
+
 Open →
-</div>
 
 </div>
+
+
+</div>
+
+
+
+
+<button class="logout"
+
+onclick="logout()">
+
+Logout
+
+</button>
+
+
 
 `;
 
+
+
 }
+
+
 
 function openAccountsTab(){
 
@@ -630,6 +1079,7 @@ let html = `
 
 
 <button class="back"
+
 onclick="renderMain()">
 
 ← Back
@@ -642,13 +1092,18 @@ onclick="renderMain()">
 
 <div>
 
+
 <div class="hero-title">
+
 Accounts
+
 </div>
 
 
 <div class="hero-subtitle">
-Your tracked Roblox accounts
+
+Your Roblox accounts
+
 </div>
 
 
@@ -665,7 +1120,8 @@ Your tracked Roblox accounts
 accounts.forEach(acc=>{
 
 
-let status = getStatus(acc.updated_at);
+let status =
+getStatus(acc.updated_at);
 
 
 
@@ -684,9 +1140,11 @@ html += `
 <div class="user">
 
 ${status.icon}
+
 ${acc.roblox_username}
 
 </div>
+
 
 
 <div class="status ${status.class}">
@@ -696,13 +1154,12 @@ ${status.text}
 </div>
 
 
+
 </div>
 
 
 
 <button class="open-btn"
-
-id="btn-${acc.roblox_username}"
 
 onclick="openAccount('${acc.roblox_username}')">
 
@@ -711,9 +1168,7 @@ Inventory
 </button>
 
 
-
 </div>
-
 
 
 
@@ -724,48 +1179,55 @@ class="account-dashboard-slot">
 </div>
 
 
-
 </div>
 
 
-
 `;
-
 
 
 });
 
 
 
-document.getElementById("dashboard").innerHTML = html;
+document.getElementById("app").innerHTML = html;
 
 
 }
-
-
-
-
 
 async function openAccount(username){
 
 
 const res = await fetch(
-API+"/account?username="+username
+
+API +
+"/account?secret_key=" +
+secretKey +
+"&username=" +
+encodeURIComponent(username)
+
 );
+
 
 
 const data = await res.json();
 
 
-if(!data.success)
+
+if(!data.success){
+
 return;
+
+}
 
 
 
 let account = data.account;
 
 
-inventoryData = account.inventory || {};
+
+inventoryData =
+account.inventory || {};
+
 
 
 showAccountDashboard(account);
@@ -776,36 +1238,30 @@ showAccountDashboard(account);
 
 
 
-
 function showAccountDashboard(account){
 
 
-let slot =
-document.getElementById(
-"slot-"+account.roblox_username
+let slot = document.getElementById(
+
+"slot-" + account.roblox_username
+
 );
 
 
 
-let btn =
-document.getElementById(
-"btn-"+account.roblox_username
-);
+if(!slot) return;
 
 
 
-if(slot.innerHTML!=""){
+if(slot.innerHTML !== ""){
 
 
-slot.innerHTML="";
-
-btn.innerText="Inventory";
+slot.innerHTML = "";
 
 return;
 
 
 }
-
 
 
 
@@ -818,52 +1274,88 @@ slot.innerHTML = `
 <div class="slider">
 
 
+
 ${createButton(
-"💰 Total Sheckles",
-Number(account.sheckles || 0).toLocaleString(),
+
+"💰 Sheckles",
+
+Number(account.sheckles || 0)
+.toLocaleString(),
+
 "money",
+
 null,
+
 account.roblox_username
+
 )}
 
 
 
 ${createButton(
+
 "🌱 Seeds",
-total(inventoryData.Seeds).toLocaleString(),
+
+total(inventoryData.Seeds)
+.toLocaleString(),
+
 "",
+
 "Seeds",
+
 account.roblox_username
+
 )}
 
 
 
 ${createButton(
+
 "⚙️ Gear",
-total(inventoryData.Gear).toLocaleString(),
+
+total(inventoryData.Gear)
+.toLocaleString(),
+
 "",
+
 "Gear",
+
 account.roblox_username
+
 )}
 
 
 
 ${createButton(
+
 "📦 Crates",
-total(inventoryData.Crates).toLocaleString(),
+
+total(inventoryData.Crates)
+.toLocaleString(),
+
 "",
+
 "Crates",
+
 account.roblox_username
+
 )}
 
 
 
 ${createButton(
+
 "🐾 Pets",
-total(inventoryData.Pets).toLocaleString(),
+
+total(inventoryData.Pets)
+.toLocaleString(),
+
 "",
+
 "Pets",
+
 account.roblox_username
+
 )}
 
 
@@ -872,7 +1364,6 @@ account.roblox_username
 
 
 </div>
-
 
 
 
@@ -887,9 +1378,6 @@ id="drop-${account.roblox_username}">
 
 
 
-btn.innerText="Inventory";
-
-
 }
 
 
@@ -898,16 +1386,21 @@ btn.innerText="Inventory";
 function createButton(label,value,color,type,user){
 
 
-
 return `
 
 
 <div class="card"
 
-onclick="${type ?
+onclick="${
+type ?
+
 `toggleItems('${type}','${user}')`
+
 :
-''}">
+
+""
+
+}">
 
 
 <div class="label">
@@ -942,8 +1435,11 @@ function total(items){
 let count = 0;
 
 
-if(!items)
+if(!items){
+
 return 0;
+
+}
 
 
 
@@ -952,6 +1448,7 @@ for(let item in items){
 count += Number(items[item]) || 0;
 
 }
+
 
 
 return count;
@@ -966,20 +1463,22 @@ return count;
 function toggleItems(type,user){
 
 
+let box = document.getElementById(
 
-let box =
-document.getElementById(
-"drop-"+user
+"drop-" + user
+
 );
 
 
 
-if(activeDropdown == box && box.classList.contains("open")){
+if(activeDropdown === box &&
+
+box.classList.contains("open")){
 
 
 box.classList.remove("open");
 
-activeDropdown=null;
+activeDropdown = null;
 
 return;
 
@@ -993,6 +1492,7 @@ activeDropdown = box;
 
 
 let items =
+
 inventoryData[type] || {};
 
 
@@ -1009,21 +1509,28 @@ let clean = name.trim();
 
 
 merged[clean] =
-(merged[clean] || 0)
-+
-(Number(items[name]) || 0);
 
+(merged[clean] || 0)
+
++
+
+(Number(items[name]) || 0);
 
 
 }
 
 
 
-let iconMap = {
+
+
+let icons = {
 
 Seeds:"🌱",
+
 Gear:"⚙️",
+
 Crates:"📦",
+
 Pets:"🐾"
 
 };
@@ -1032,20 +1539,21 @@ Pets:"🐾"
 
 let html = `
 
+
 <div class="dropdown-header">
 
-${iconMap[type] || ""}
+${icons[type] || ""}
 
 ${type} Inventory
 
 </div>
+
 
 `;
 
 
 
 for(let name in merged){
-
 
 
 html += `
@@ -1061,7 +1569,6 @@ ${name}
 </div>
 
 
-
 <div class="item-count">
 
 x${merged[name].toLocaleString()}
@@ -1075,13 +1582,14 @@ x${merged[name].toLocaleString()}
 `;
 
 
-
 }
 
 
 
 box.innerHTML =
+
 html ||
+
 "<div class='empty'>No items</div>";
 
 
@@ -1093,7 +1601,18 @@ box.classList.add("open");
 
 
 
+
+// START
+
+if(secretKey){
+
 loadAccounts();
+
+}else{
+
+showLogin();
+
+}
 
 
 </script>
