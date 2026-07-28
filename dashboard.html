@@ -1322,7 +1322,7 @@ document.getElementById("app").innerHTML = `
 </div>
 
 <div class="stat-card clickable ${mainActiveType === 'TotalSeeds' ? 'active-card' : ''}" onclick="toggleMainItems('TotalSeeds')">
-<div class="stat-label">TOTAL SEEDS</div>
+<div class="stat-label">TOTAL SEED</div>
 <div class="stat-value" id="stat-items">${totalSeedsCount.toLocaleString()}</div>
 </div>
 
@@ -1514,25 +1514,15 @@ function showMainDropdownContent(type) {
 
   accounts.forEach(acc => {
     let inv = acc.inventory || {};
-    if(type === 'TotalSeeds') {
-      let seedItems = inv['Seeds'] || {};
-      for(let name in seedItems) {
-        let cleanName = name.trim();
-        aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(seedItems[name]) || 0);
-      }
-    } else if(type === 'TotalPets') {
-      let petItems = inv['Pets'] || {};
-      for(let name in petItems) {
-        let cleanName = name.trim();
-        let cleanLower = cleanName.toLowerCase();
-        if(cleanLower === "build" || cleanLower === "shovel") continue;
-        aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(petItems[name]) || 0);
-      }
+    let seedItems = inv['Seeds'] || {};
+    for(let name in seedItems) {
+      let cleanName = name.trim();
+      aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(seedItems[name]) || 0);
     }
   });
 
-  let titleText = type === 'TotalSeeds' ? 'Total Seeds Inventory' : 'Total Pets Inventory';
-  let iconSymbol = type === 'TotalSeeds' ? '🌱' : '🐾';
+  let titleText = 'Total Seed Inventory';
+  let iconSymbol = '🌱';
 
   let html = `<div class="dropdown-header">${iconSymbol} ${titleText}</div>`;
 
@@ -1541,7 +1531,7 @@ function showMainDropdownContent(type) {
     html += `<div class='empty'>No items found</div>`;
   } else {
     keys.forEach(name => {
-      let iconType = type === 'TotalSeeds' ? 'Seeds' : 'Pets';
+      let iconType = 'Seeds';
       let iconUrl = getItemIcon(iconType, name);
       let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
 
@@ -1732,14 +1722,14 @@ if(!isHorizontal) return;
 let diff = currentX - startX;
 box.style.transition = 'transform 0.2s ease-out';
 
-if(diff < -50) {
+if(diff < -40) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(-236px)`;
 currentlySwipedUsername = username;
 localStorage.setItem("norms_swiped_username", username);
-} else if(diff > 50) {
+} else if(diff > 40) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
@@ -1755,10 +1745,9 @@ localStorage.removeItem("norms_swiped_username");
 }
 }, {passive: true});
 
-// If the user clicks on the card while it is fully swiped open, reset it back to its original position
+// Clicking anywhere on the card while it is swiped open will close it back to its original position
 box.addEventListener('click', (e) => {
 if (currentlySwipedUsername === username) {
-// Check if they didn't click the inventory button inside the header
 if (!e.target.closest('button')) {
 resetSwipedCard(username);
 e.stopPropagation();
