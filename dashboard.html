@@ -480,14 +480,14 @@ touch-action: pan-y;
 .swipe-actions-bg {
 position: absolute;
 top: 0;
-left: 0;
+right: 0;
 width: 100%;
 height: 100%;
 display: flex;
 justify-content: flex-end;
 align-items: center;
-gap: 6px;
-padding-right: 12px;
+gap: 4px;
+padding-right: 8px;
 border-radius: 16px;
 z-index: 1;
 }
@@ -529,26 +529,30 @@ background: #ef4444;
 /* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
 .toggle-switch-wrapper {
 display: flex;
+flex-direction: column;
 align-items: center;
-gap: 6px;
+justify-content: center;
+gap: 3px;
 background: #1e293b;
-padding: 6px 10px;
+padding: 4px 6px;
 border-radius: 8px;
-height: 38px;
+height: 48px;
 color: white;
-font-size: 11px;
-font-weight: 800;
+font-size: 9px;
+font-weight: 700;
 cursor: pointer;
 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 user-select: none;
+text-align: center;
+width: 72px;
 }
 
 .ios-switch {
 position: relative;
-width: 36px;
-height: 20px;
+width: 32px;
+height: 18px;
 background: #475569;
-border-radius: 20px;
+border-radius: 18px;
 transition: background 0.3s;
 display: inline-block;
 flex-shrink: 0;
@@ -559,8 +563,8 @@ content: "";
 position: absolute;
 top: 2px;
 left: 2px;
-width: 16px;
-height: 16px;
+width: 14px;
+height: 14px;
 background: white;
 border-radius: 50%;
 transition: transform 0.3s;
@@ -571,7 +575,7 @@ background: #22c55e;
 }
 
 .ios-switch.active::after {
-transform: translateX(16px);
+transform: translateX(14px);
 }
 
 .account-box{
@@ -2040,15 +2044,15 @@ html += `
 </div>
 <div class="swipe-actions-bg">
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
-<span>Auto Buy Seeds</span>
+<span>Auto Seeds</span>
 <div class="ios-switch" id="switch-seeds-${acc.roblox_username}"></div>
 </div>
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
-<span>Auto Buy Gears</span>
+<span>Auto Gears</span>
 <div class="ios-switch" id="switch-gears-${acc.roblox_username}"></div>
 </div>
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
-<span>Auto Catch Pets</span>
+<span>Auto Pets</span>
 <div class="ios-switch" id="switch-pets-${acc.roblox_username}"></div>
 </div>
 </div>
@@ -2178,9 +2182,9 @@ if(!isHorizontal) return;
 let diff = currentX - startX;
 box.style.transition = 'transform 0.2s ease-out';
 
-if(diff < -150) {
-// Swipe left all the way -> reveal 3 toggle buttons (shifted left enough to show them fully)
-box.style.transform = `translateX(-285px)`;
+if(diff < -110) {
+// Swipe left all the way -> reveal 3 toggle buttons completely
+box.style.transform = `translateX(-236px)`;
 } else if(diff > 150) {
 // Swipe right all the way -> trigger delete
 let username = container.getAttribute('data-username');
