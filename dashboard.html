@@ -1,32 +1,2328 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<title>NORMS Dashboard</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+html, body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+font-family:Segoe UI,Arial,sans-serif;
+background:var(--bg-color);
+color:var(--text-color);
+overflow:hidden;
+transition: background 0.3s, color 0.3s;
+}
+
+:root {
+--bg-color: #f5f5f7;
+--text-color: #111827;
+--card-bg: #ffffff;
+--border-color: #e5e7eb;
+--subtext-color: #6b7280;
+--input-bg: #f3f4f6;
+--item-bg: #f9fafb;
+}
+
+[data-theme="dark"] {
+--bg-color: #0f172a;
+--text-color: #f8fafc;
+--card-bg: #1e293b;
+--border-color: #334155;
+--subtext-color: #94a3b8;
+--input-bg: #0f172a;
+--item-bg: #111827;
+}
+
+
+.container{
+width:100%;
+height:100%;
+margin:0;
+padding:12px;
+display:flex;
+flex-direction:column;
+justify-content:stretch;
+}
+
+
+#app{
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+gap:8px;
+}
+
+
+/* LOGIN / REGISTER */
+
+.auth-box{
+
+max-width:400px;
+margin:auto;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:24px;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+width:100%;
+
+}
+
+
+.auth-title{
+
+font-size:24px;
+font-weight:900;
+margin-bottom:4px;
+
+}
+
+
+.auth-subtitle{
+
+font-size:13px;
+color:var(--subtext-color);
+margin-bottom:16px;
+
+}
+
+
+input{
+
+width:100%;
+padding:10px 12px;
+border:1px solid var(--border-color);
+background:var(--input-bg);
+color:var(--text-color);
+border-radius:8px;
+margin-bottom:10px;
+font-size:14px;
+
+}
+
+
+button{
+
+border:none;
+background:#111827;
+color:white;
+padding:10px 16px;
+border-radius:8px;
+cursor:pointer;
+font-weight:700;
+
+}
+
+[data-theme="dark"] button {
+background: #38bdf8;
+color: #0f172a;
+}
+
+
+.auth-btn{
+
+width:100%;
+
+}
+
+
+.switch{
+
+margin-top:12px;
+text-align:center;
+font-size:13px;
+color:var(--subtext-color);
+cursor:pointer;
+
+}
+
+
+.error{
+
+color:#ef4444;
+font-size:13px;
+margin-bottom:8px;
+
+}
+
+
+.success{
+
+color:#16a34a;
+font-size:13px;
+margin-bottom:8px;
+
+}
+
+/* SIMPLE CAPTCHA */
+
+.captcha-box{
+
+display:flex;
+align-items:center;
+gap:8px;
+margin-bottom:10px;
+
+}
+
+.captcha-display{
+
+background:var(--input-bg);
+border:1px solid var(--border-color);
+padding:8px 12px;
+border-radius:8px;
+font-weight:800;
+letter-spacing:2px;
+font-size:14px;
+user-select:none;
+color:var(--text-color);
+min-width:80px;
+text-align:center;
+
+}
+
+.captcha-box input{
+
+margin-bottom:0;
+
+}
+
+
+/* LOADING SCREEN */
+
+.loading-screen{
+
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:24px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+max-width:320px;
+margin:auto;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+text-align:center;
+height:100%;
+width:100%;
+
+}
+
+.spinner{
+
+width:36px;
+height:36px;
+border:4px solid var(--border-color);
+border-top:4px solid #111827;
+border-radius:50%;
+animation:spin 0.8s linear infinite;
+margin-bottom:12px;
+
+}
+
+@keyframes spin{
+
+0%{ transform: rotate(0deg); }
+100%{ transform: rotate(360deg); }
+
+}
+
+.loading-text{
+
+font-weight:700;
+font-size:14px;
+color:var(--subtext-color);
+
+}
+
+
+
+/* HERO - MADE VERY BIG */
+
+.hero-box{
+
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:18px;
+padding:26px 24px;
+box-shadow:0 2px 8px rgba(0,0,0,.03);
+display:flex;
+align-items:center;
+gap:18px;
+flex-shrink:0;
+
+}
+
+
+.hero-icon{
+
+width:64px;
+height:64px;
+border-radius:16px;
+object-fit:cover;
+background:var(--input-bg);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:15px;
+font-weight:700;
+color:var(--subtext-color);
+text-align:center;
+flex-shrink:0;
+
+}
+
+
+.hero-title{
+
+font-size:26px;
+font-weight:900;
+line-height:1.1;
+
+}
+
+
+.hero-subtitle{
+
+font-size:15px;
+color:var(--subtext-color);
+margin-top:4px;
+
+}
+
+
+/* STATS - MADE VERY BIG */
+
+.stats-grid{
+
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+flex-shrink:0;
+
+}
+
+
+.stat-card{
+
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:18px 16px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+
+}
+
+
+.stat-label{
+
+font-size:11px;
+font-weight:800;
+color:var(--subtext-color);
+
+}
+
+
+.stat-value{
+
+font-size:26px;
+font-weight:900;
+color:#16a34a;
+margin-top:6px;
+
+}
+
+
+.stat-value.money{
+
+color:var(--text-color);
+
+}
+
+
+/* NAVIGATION CARDS */
+
+.nav-stack{
+
+display:flex;
+flex-direction:column;
+gap:8px;
+flex-shrink:0;
+
+}
+
+.nav-row-grid{
+display:grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 8px;
+}
+
+.accounts-toggle-card{
+
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:14px;
+padding:14px 16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+cursor:pointer;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+
+}
+
+.square-toggle-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 12px 16px;
+height: 48px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+text-align: center;
+}
+
+
+.accounts-toggle-title{
+
+font-size:14px;
+font-weight:800;
+
+}
+
+
+.logout{
+
+width:100%;
+background:#ef4444;
+padding:12px;
+font-size:14px;
+font-weight:800;
+border-radius:14px;
+flex-shrink:0;
+box-shadow:0 2px 6px rgba(239,68,68,.2);
+color: white;
+
+}
+
+/* ACCOUNTS CONTAINER VIEW */
+
+.accounts-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.accounts-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:8px;
+padding-right:2px;
+}
+
+/* ACCOUNT CARD */
+
+.account-box{
+
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:14px;
+padding:12px 14px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+flex-shrink:0;
+
+}
+
+
+.account-header-row{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+}
+
+
+.account-info-col{
+
+display:flex;
+flex-direction:column;
+
+}
+
+
+.user{
+
+font-size:16px;
+font-weight:800;
+
+}
+
+
+.status{
+
+font-size:11px;
+margin-top:2px;
+
+}
+
+
+.online{
+
+color:#16a34a;
+
+}
+
+
+.offline{
+
+color:var(--subtext-color);
+
+}
+
+
+.open-btn{
+
+background:#111827;
+padding:8px 14px;
+font-size:13px;
+border-radius:8px;
+color: white;
+}
+
+[data-theme="dark"] .open-btn {
+background: #38bdf8;
+color: #0f172a;
+}
+
+
+/* INVENTORY */
+
+.account-dashboard-slot{
+
+margin-top:10px;
+
+}
+
+
+.slider-container{
+
+overflow-x:auto;
+scrollbar-width:none;
+
+}
+
+
+.slider-container::-webkit-scrollbar{
+
+display:none;
+
+}
+
+
+.slider{
+
+display:flex;
+gap:8px;
+width:max-content;
+
+}
+
+
+.card{
+
+min-width:120px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:10px;
+padding:10px;
+cursor:pointer;
+box-shadow:0 1px 4px rgba(0,0,0,.02);
+
+}
+
+
+.label{
+
+font-size:11px;
+font-weight:700;
+color:var(--subtext-color);
+
+}
+
+
+.value{
+
+margin-top:4px;
+font-size:18px;
+font-weight:800;
+color:#16a34a;
+
+}
+
+
+.money{
+
+color:#ef4444;
+
+}
+
+
+/* DROPDOWN */
+
+
+.global-dropdown{
+
+display:none;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:10px;
+padding:8px;
+margin-top:8px;
+max-height:160px;
+overflow-y:auto;
+
+}
+
+
+.global-dropdown.open{
+
+display:block;
+
+}
+
+
+.dropdown-header{
+
+font-size:13px;
+font-weight:800;
+margin-bottom:6px;
+
+}
+
+
+.item{
+
+display:flex;
+justify-content:space-between;
+background:var(--item-bg);
+padding:6px 10px;
+border-radius:6px;
+margin-bottom:4px;
+font-size:13px;
+
+}
+
+
+.item-name{
+
+font-weight:600;
+
+}
+
+
+.item-count{
+
+font-weight:800;
+color:#16a34a;
+
+}
+
+
+.empty{
+
+color:var(--subtext-color);
+padding:8px;
+font-size:13px;
+
+}
+
+
+.back{
+
+background:#111827;
+margin-bottom:8px;
+padding:8px 14px;
+font-size:13px;
+border-radius:8px;
+flex-shrink:0;
+color: white;
+}
+
+[data-theme="dark"] .back {
+background: #38bdf8;
+color: #0f172a;
+}
+
+
+/* SCRIPT DASHBOARD STYLES */
+
+.script-box{
+
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:14px;
+padding:14px;
+margin-top:6px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+
+}
+
+.script-section-title{
+
+font-size:13px;
+font-weight:800;
+margin-bottom:6px;
+
+}
+
+.key-display-box{
+
+display:flex;
+gap:8px;
+margin-bottom:12px;
+
+}
+
+.key-input{
+
+flex:1;
+background:var(--input-bg);
+font-family:monospace;
+font-weight:700;
+color:var(--text-color);
+margin-bottom:0;
+padding:8px 10px;
+font-size:13px;
+
+}
+
+.copy-btn{
+
+background:#111827;
+padding:0 14px;
+border-radius:8px;
+font-size:12px;
+color: white;
+}
+
+[data-theme="dark"] .copy-btn {
+background: #38bdf8;
+color: #0f172a;
+}
+
+.code-block-container{
+
+position:relative;
+
+}
+
+.script-code-area{
+
+width:100%;
+height:110px;
+background:#0f172a;
+color:#34d399;
+font-family:monospace;
+font-size:12px;
+padding:10px;
+border-radius:8px;
+resize:none;
+border:none;
+outline:none;
+line-height:1.3;
+
+}
+
+.copy-script-btn{
+
+position:absolute;
+top:8px;
+right:8px;
+background:#374151;
+color:white;
+padding:4px 10px;
+font-size:11px;
+border-radius:6px;
+
+}
+
+/* SETTINGS & COMING SOON */
+.center-message-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 16px;
+padding: 30px;
+text-align: center;
+margin: auto;
+max-width: 350px;
+box-shadow: 0 2px 8px rgba(0,0,0,.03);
+}
+
+.center-message-title {
+font-size: 20px;
+font-weight: 800;
+margin-bottom: 8px;
+}
+
+.center-message-subtitle {
+font-size: 13px;
+color: var(--subtext-color);
+margin-bottom: 16px;
+}
+
+.settings-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 16px;
+margin-bottom: 10px;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+}
+
+.settings-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 8px;
+}
+
+.theme-toggle-btn {
+background: var(--input-bg);
+color: var(--text-color);
+border: 1px solid var(--border-color);
+padding: 8px 14px;
+border-radius: 8px;
+font-weight: 700;
+cursor: pointer;
+}
+
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+<div id="app">
+
+Loading NORMS...
+
+</div>
+
+
+</div>
+
+
+<script>
+
+
+const API = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev";
+
+
+let secretKey = localStorage.getItem("norms_secret");
+let currentTheme = localStorage.getItem("norms_theme") || "light";
+document.documentElement.setAttribute("data-theme", currentTheme);
+
+let accounts = [];
+let inventoryData = {};
+let currentInventory = {};
+let activeDropdown = null;
+let currentCaptcha = "";
+
+
+
+function generateCaptcha(){
+let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let code = "";
+for(let i=0; i<4; i++){
+code += chars[Math.floor(Math.random() * chars.length)];
+}
+currentCaptcha = code;
+}
+
+
+
+function saveSecret(key){
+
+secretKey = key;
+
+localStorage.setItem(
+"norms_secret",
+key
+);
+
+}
+
+
+
+function showLoading(text){
+document.getElementById("app").innerHTML = `
+<div class="loading-screen">
+<div class="spinner"></div>
+<div class="loading-text">${text}</div>
+</div>
+`;
+}
+
+
+
+function logout(){
+
+showLoading("Logging out...");
+
+setTimeout(()=>{
+
+localStorage.removeItem("norms_secret");
+secretKey = null;
+showLogin();
+
+}, 600);
+
+}
+
+
+
+function showLogin(){
+
+generateCaptcha();
+
+document.getElementById("app").innerHTML = `
+
+
+<div class="auth-box" style="margin: auto;">
+
+
+<div class="auth-title">
+
+NORMS
+
+</div>
+
+
+<div class="auth-subtitle">
+
+Login to your dashboard
+
+</div>
+
+
+<div id="message"></div>
+
+
+<input id="loginUser" placeholder="Username">
+
+
+<input id="loginPass" type="password" placeholder="Password">
+
+
+<div class="captcha-box">
+<div class="captcha-display" id="loginCaptchaText">${currentCaptcha}</div>
+<input id="loginCaptchaInput" placeholder="Enter code">
+</div>
+
+
+<button class="auth-btn" onclick="login()">
+
+Login
+
+</button>
+
+
+<div class="switch" onclick="showRegister()">
+
+Create account
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+
+
+function showRegister(){
+
+generateCaptcha();
+
+document.getElementById("app").innerHTML = `
+
+
+<div class="auth-box" style="margin: auto;">
+
+
+<div class="auth-title">
+
+NORMS
+
+</div>
+
+
+<div class="auth-subtitle">
+
+Create your account
+
+</div>
+
+
+<div id="message"></div>
+
+
+<input id="regUser" placeholder="Username">
+
+
+<input id="regPass" type="password" placeholder="Password">
+
+
+<div class="captcha-box">
+<div class="captcha-display" id="regCaptchaText">${currentCaptcha}</div>
+<input id="regCaptchaInput" placeholder="Enter code">
+</div>
+
+
+<button class="auth-btn" onclick="register()">
+
+Register
+
+</button>
+
+
+<div class="switch" onclick="showLogin()">
+
+Already have account
+
+</div>
+
+
+</div>
+
+
+`;
+
+}
+
+async function login(){
+
+const username =
+document.getElementById("loginUser").value.trim();
+
+const password =
+document.getElementById("loginPass").value;
+
+const captchaInput =
+document.getElementById("loginCaptchaInput").value.trim().toUpperCase();
+
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML =
+`<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("loginCaptchaText").innerText = currentCaptcha;
+document.getElementById("loginCaptchaInput").value = "";
+return;
+}
+
+
+showLoading("Signing in...");
+
+
+const res = await fetch(API + "/login",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username,
+password
+
+})
+
+});
+
+
+const data = await res.json();
+
+
+if(!data.success){
+
+showLogin();
+document.getElementById("message").innerHTML =
+
+`<div class="error">${data.message}</div>`;
+
+return;
+
+}
+
+
+saveSecret(data.secret_key);
+
+
+loadAccounts();
+
+
+}
+
+
+
+async function register(){
+
+const username =
+document.getElementById("regUser").value.trim();
+
+const password =
+document.getElementById("regPass").value;
+
+const captchaInput =
+document.getElementById("regCaptchaInput").value.trim().toUpperCase();
+
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML =
+`<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("regCaptchaText").innerText = currentCaptcha;
+document.getElementById("regCaptchaInput").value = "";
+return;
+}
+
+
+showLoading("Creating account...");
+
+
+
+const res = await fetch(API + "/register",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+
+username,
+password
+
+})
+
+});
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
+showRegister();
+document.getElementById("message").innerHTML =
+
+`<div class="error">${data.message}</div>`;
+
+return;
+
+}
+
+
+
+saveSecret(data.secret_key);
+
+
+
+setTimeout(()=>{
+
+loadAccounts();
+
+},1000);
+
+
+
+}
+
+
+
+async function loadAccounts(){
+
+
+if(!secretKey){
+
+showLogin();
+
+return;
+
+}
+
+
+
+const res = await fetch(
+
+API + "/accounts?secret_key=" + encodeURIComponent(secretKey)
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
+logout();
+
+return;
+
+}
+
+
+
+accounts = data.accounts;
+
+
+renderMain();
+
+
+}
+
+
+
+function getStatus(time){
+
+
+let minutes =
+
+(Date.now() -
+new Date(time).getTime())
+/1000/60;
+
+
+
+if(minutes <= 10){
+
+return {
+
+icon:"🟢",
+
+text:"Roblox • Online",
+
+class:"online"
+
+};
+
+}
+
+
+
+return {
+
+icon:"⚫",
+
+text:"Roblox • Offline ("+
+Math.floor(minutes)+
+" min ago)",
+
+class:"offline"
+
+};
+
+
+}
+
+
+
+
+function renderMain(){
+
+
+let online = 0;
+
+let totalSheckles = 0;
+
+let totalItems = 0;
+
+let totalPets = 0;
+
+
+
+accounts.forEach(acc=>{
+
+
+if(getStatus(acc.updated_at).class=="online"){
+
+online++;
+
+}
+
+
+
+totalSheckles += Number(
+acc.sheckles || 0
+);
+
+
+
+let inv = acc.inventory || {};
+
+
+
+totalItems +=
+
+total(inv.Seeds)
+
++
+
+total(inv.Gear)
+
++
+
+total(inv.Crates)
+
++
+
+total(inv.Pets);
+
+
+
+totalPets +=
+
+total(inv.Pets);
+
+
+});
+
+
+
+
+
+document.getElementById("app").innerHTML = `
+
+
+<div class="hero-box">
+
+
+<div class="hero-icon">
+Icon
+</div>
+
+
+<div>
+
+<div class="hero-title">
+
+Grow A Garden 2
+
+</div>
+
+
+<div class="hero-subtitle">
+
+Overview of your tracked accounts
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stats-grid">
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+
+ONLINE / TOTAL
+
+</div>
+
+
+<div class="stat-value">
+
+${online}/${accounts.length}
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+
+TOTAL MONEY
+
+</div>
+
+
+<div class="stat-value money">
+
+${totalSheckles.toLocaleString()}
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+
+TOTAL ITEMS
+
+</div>
+
+
+<div class="stat-value">
+
+${totalItems.toLocaleString()}
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div class="stat-card">
+
+<div class="stat-label">
+
+TOTAL PETS
+
+</div>
+
+
+<div class="stat-value">
+
+${totalPets.toLocaleString()}
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+
+
 <div class="nav-stack">
 
 <div class="accounts-toggle-card" onclick="openAccountsTab()">
-<div class="accounts-toggle-title">Account</div>
+
+
+<div class="accounts-toggle-title">
+
+Account
+
 </div>
+
+
+</div>
+
 
 <div class="accounts-toggle-card" onclick="openScriptTab()">
-<div class="accounts-toggle-title">Script</div>
+
+
+<div class="accounts-toggle-title">
+
+Script
+
 </div>
+
+
+</div>
+
 
 <div class="nav-row-grid">
+
 <div class="square-toggle-card" onclick="openMailTab()">
-<div class="accounts-toggle-title">Mail</div>
+
+
+<div class="accounts-toggle-title">
+
+Mail
+
 </div>
+
+
+</div>
+
 
 <div class="square-toggle-card" onclick="openSettingsTab()">
-<div class="accounts-toggle-title">Setting</div>
-</div>
-</div>
+
+
+<div class="accounts-toggle-title">
+
+Setting
 
 </div>
 
 
-<!-- Added Tutorial Button right above logout -->
+</div>
+
+</div>
+
+</div>
+
+
+
+
 <button class="logout" style="background:#3b82f6; margin-bottom:8px;" onclick="openTutorialTab()">
+
 Tutorial
+
 </button>
+
 
 
 <button class="logout" onclick="logout()">
+
 lagout
+
 </button>
+
+
+
+`;
+
+
+
+}
+
+
+
+function openAccountsTab(){
+
+
+let html = `
+
+
+<button class="back"
+
+onclick="renderMain()">
+
+Back
+
+</button>
+
+
+<div class="hero-box">
+
+
+<div class="hero-icon">
+Icon
+</div>
+
+
+<div>
+
+
+<div class="hero-title">
+
+Account
+
+</div>
+
+
+<div class="hero-subtitle">
+
+Your tracked Roblox accounts
+
+</div>
+
+
+</div>
+
+
+</div>
+
+
+<div class="accounts-wrapper">
+<div class="accounts-scroll-area">
+`;
+
+
+
+accounts.forEach(acc=>{
+
+
+let status =
+getStatus(acc.updated_at);
+
+
+
+html += `
+
+
+<div class="account-box">
+
+
+<div class="account-header-row">
+
+
+<div class="account-info-col">
+
+
+<div class="user">
+
+${status.icon}
+
+${acc.roblox_username}
+
+</div>
+
+
+
+<div class="status ${status.class}">
+
+${status.text}
+
+</div>
+
+
+
+</div>
+
+
+
+<button class="open-btn" onclick="openAccount(${JSON.stringify(acc.roblox_username)})">
+
+Inventory
+
+</button>
+
+
+</div>
+
+
+
+<div id="slot-${acc.roblox_username}"
+
+class="account-dashboard-slot">
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+});
+
+
+
+html += `
+</div>
+</div>
+`;
+
+
+
+document.getElementById("app").innerHTML = html;
+
+
+}
+
+
+
+function openScriptTab(){
+
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/script"))();`;
+
+let html = `
+
+<button class="back"
+
+onclick="renderMain()">
+
+Back
+
+</button>
+
+
+<div class="hero-box">
+
+<div class="hero-icon">
+Icon
+</div>
+
+<div>
+
+<div class="hero-title">
+
+Script
+
+</div>
+
+<div class="hero-subtitle">
+
+Your Secret Key and Roblox script loader
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="script-box">
+
+<div class="script-section-title">Your Secret Key</div>
+
+<div class="key-display-box">
+
+<input class="key-input" id="scriptKeyInput" readonly value="${secretKey || ""}">
+
+<button class="copy-btn" onclick="copyKey()">Copy</button>
+
+</div>
+
+
+<div class="script-section-title">Roblox Execution Script</div>
+
+<div class="code-block-container">
+
+<textarea class="script-code-area" readonly id="robloxScriptArea">${robloxScript}</textarea>
+
+<button class="copy-script-btn" onclick="copyScript()">Copy Script</button>
+
+</div>
+
+</div>
+
+`;
+
+document.getElementById("app").innerHTML = html;
+
+}
+
+
+
+function openMailTab(){
+
+let html = `
+
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="center-message-box">
+<div class="center-message-title">Mail</div>
+<div class="center-message-subtitle">Coming Soon</div>
+<button onclick="renderMain()">Go Back</button>
+</div>
+
+`;
+
+document.getElementById("app").innerHTML = html;
+
+}
+
+
+
+function openSettingsTab(){
+
+let html = `
+
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="hero-box">
+<div class="hero-icon">Icon</div>
+<div>
+<div class="hero-title">Setting</div>
+<div class="hero-subtitle">Manage account password and display settings</div>
+</div>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Change Password</div>
+<div id="passwordMessage"></div>
+<input id="oldPass" type="password" placeholder="Current Password">
+<input id="newPass" type="password" placeholder="New Password">
+<button onclick="changePassword()" style="width:100%; margin-top:4px;">Update Password</button>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Appearance</div>
+<div class="settings-row">
+<div style="font-size:13px; font-weight:600;">Theme Mode</div>
+<button class="theme-toggle-btn" onclick="toggleTheme()">${currentTheme === 'dark' ? '🌙 Dark Mode' : '☀️ White Mode'}</button>
+</div>
+</div>
+
+`;
+
+document.getElementById("app").innerHTML = html;
+
+}
+
+function openTutorialTab(){
+
+let html = `
+
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="hero-box">
+<div class="hero-icon">Icon</div>
+<div>
+<div class="hero-title">Tutorial</div>
+<div class="hero-subtitle">Learn how to use NORMS Dashboard</div>
+</div>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Getting Started</div>
+<div style="font-size:13px; color:var(--subtext-color); line-height:1.4;">
+1. Go to the <b>Script</b> tab to copy your Secret Key and Roblox Execution Script.<br><br>
+2. Execute the script inside your Roblox executor while playing the supported game.<br><br>
+3. Track your accounts, inventory, money (sheckles), and pets live from the <b>Account</b> tab.
+</div>
+</div>
+
+`;
+
+document.getElementById("app").innerHTML = html;
+
+}
+
+
+
+async function changePassword(){
+let oldPassword = document.getElementById("oldPass").value;
+let newPassword = document.getElementById("newPass").value;
+let msgBox = document.getElementById("passwordMessage");
+
+if(!oldPassword || !newPassword){
+msgBox.innerHTML = `<div class="error">Please fill in both fields</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/change-password", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, old_password: oldPassword, new_password: newPassword })
+});
+let data = await res.json();
+if(data.success){
+msgBox.innerHTML = `<div class="success">Password updated successfully</div>`;
+document.getElementById("oldPass").value = "";
+document.getElementById("newPass").value = "";
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || 'Failed to update'}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+
+
+function toggleTheme(){
+currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+localStorage.setItem("norms_theme", currentTheme);
+document.documentElement.setAttribute("data-theme", currentTheme);
+openSettingsTab();
+}
+
+
+
+function copyKey(){
+let input = document.getElementById("scriptKeyInput");
+input.select();
+navigator.clipboard.writeText(input.value);
+alert("Secret key copied to clipboard!");
+}
+
+
+
+function copyScript(){
+let area = document.getElementById("robloxScriptArea");
+area.select();
+navigator.clipboard.writeText(area.value);
+alert("Roblox script copied to clipboard!");
+}
+
+
+
+async function openAccount(username){
+
+
+const res = await fetch(
+
+API +
+"/account?secret_key=" +
+encodeURIComponent(secretKey) +
+"&username=" +
+encodeURIComponent(username)
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
+return;
+
+}
+
+
+
+let account = data.account;
+
+
+
+currentInventory =
+account.inventory || {};
+
+
+
+showAccountDashboard(account);
+
+
+}
+
+
+
+
+function showAccountDashboard(account){
+
+
+let slot = document.getElementById(
+
+"slot-" + account.roblox_username
+
+);
+
+
+
+if(!slot) return;
+
+
+
+if(slot.innerHTML !== ""){
+
+
+slot.innerHTML = "";
+
+return;
+
+
+}
+
+
+
+slot.innerHTML = `
+
+
+<div class="slider-container">
+
+
+<div class="slider">
+
+
+
+${createButton(
+
+"💰 Sheckles",
+
+Number(account.sheckles || 0)
+.toLocaleString(),
+
+"money",
+
+null,
+
+account.roblox_username
+
+)}
+
+
+
+${createButton(
+
+"🌱 Seeds",
+
+total(currentInventory.Seeds)
+.toLocaleString(),
+
+"",
+
+"Seeds",
+
+account.roblox_username
+
+)}
+
+
+
+${createButton(
+
+"⚙️ Gear",
+
+total(currentInventory.Gear)
+.toLocaleString(),
+
+"",
+
+"Gear",
+
+account.roblox_username
+
+)}
+
+
+
+${createButton(
+
+"📦 Crates",
+
+total(currentInventory.Crates)
+.toLocaleString(),
+
+"",
+
+"Crates",
+
+account.roblox_username
+
+)}
+
+
+
+${createButton(
+
+"🐾 Pets",
+
+total(currentInventory.Pets)
+.toLocaleString(),
+
+"",
+
+"Pets",
+
+account.roblox_username
+
+)}
+
+
+
+</div>
+
+
+</div>
+
+
+
+<div class="global-dropdown"
+
+id="drop-${account.roblox_username}">
+
+</div>
+
+
+`;
+
+
+
+}
+
+
+
+
+function createButton(label,value,color,type,user){
+
+
+return `
+
+
+<div class="card"
+
+onclick="${
+type ?
+
+`toggleItems('${type}', ${JSON.stringify(user)})`
+
+:
+
+""
+
+}">
+
+
+<div class="label">
+
+${label}
+
+</div>
+
+
+<div class="value ${color}">
+
+${value}
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+}
+
+
+
+
+
+function total(items){
+
+
+let count = 0;
+
+
+if(!items){
+
+return 0;
+
+}
+
+
+
+for(let item in items){
+
+count += Number(items[item]) || 0;
+
+}
+
+
+
+return count;
+
+
+}
+
+
+
+
+
+function toggleItems(type,user){
+
+
+let box = document.getElementById(
+
+"drop-" + user
+
+);
+
+
+
+if(activeDropdown === box &&
+
+box.classList.contains("open")){
+
+
+box.classList.remove("open");
+
+activeDropdown = null;
+
+return;
+
+
+}
+
+
+
+activeDropdown = box;
+
+
+
+let items =
+
+currentInventory[type] || {};
+
+
+
+let merged = {};
+
+
+
+for(let name in items){
+
+
+let clean = name.trim();
+
+
+
+merged[clean] =
+
+(merged[clean] || 0)
+
++
+
+(Number(items[name]) || 0);
+
+
+}
+
+
+
+
+
+let icons = {
+
+Seeds:"🌱",
+
+Gear:"⚙️",
+
+Crates:"📦",
+
+Pets:"🐾"
+
+};
+
+
+
+let html = `
+
+
+<div class="dropdown-header">
+
+${icons[type] || ""}
+
+${type} Inventory
+
+</div>
+
+
+`;
+
+
+
+for(let name in merged){
+
+
+html += `
+
+
+<div class="item">
+
+
+<div class="item-name">
+
+${name}
+
+</div>
+
+
+<div class="item-count">
+
+x${merged[name].toLocaleString()}
+
+</div>
+
+
+</div>
+
+
+`;
+
+
+}
+
+
+
+box.innerHTML =
+
+html ||
+
+"<div class='empty'>No items</div>";
+
+
+
+box.classList.add("open");
+
+
+}
+
+
+
+
+// START
+
+if(secretKey){
+showLoading("Loading dashboard layout...");
+loadAccounts();
+}else{
+showLogin();
+}
+
+
+</script>
+
+
+</body>
+
+</html>
