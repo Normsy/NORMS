@@ -572,11 +572,11 @@ vertical-align: top;
 }
 
 .card.active-card {
-border: 2px solid #111827;
+border: 2px solid #9ca3af;
 }
 
 [data-theme="dark"] .card.active-card {
-border: 2px solid #38bdf8;
+border: 2px solid #64748b;
 }
 
 .card.non-clickable {
@@ -1991,14 +1991,12 @@ return;
 
 
 
-currentInventory =
-account.inventory || {};
-
+let targetAccountInventory = account.inventory || {};
 currentActiveType[username] = null;
 
 
 
-showAccountDashboard(account);
+showAccountDashboard(account, targetAccountInventory);
 
 
 }
@@ -2006,7 +2004,7 @@ showAccountDashboard(account);
 
 
 
-function showAccountDashboard(account){
+function showAccountDashboard(account, targetInventory){
 
 
 let slot = document.getElementById(
@@ -2075,7 +2073,7 @@ ${createButton(
 
 "🌱 Seeds",
 
-total(currentInventory.Seeds)
+total(targetInventory.Seeds)
 .toLocaleString(),
 
 "",
@@ -2093,7 +2091,7 @@ ${createButton(
 
 "⚙️ Gear",
 
-total(currentInventory.Gear)
+total(targetInventory.Gear)
 .toLocaleString(),
 
 "",
@@ -2111,7 +2109,7 @@ ${createButton(
 
 "📦 Crates",
 
-total(currentInventory.Crates)
+total(targetInventory.Crates)
 .toLocaleString(),
 
 "",
@@ -2129,7 +2127,7 @@ ${createButton(
 
 "🐾 Pets",
 
-total(currentInventory.Pets)
+total(targetInventory.Pets)
 .toLocaleString(),
 
 "",
@@ -2258,30 +2256,22 @@ let box = document.getElementById(
 
 );
 
+let account = accounts.find(acc => acc.roblox_username === user);
+if(!account) return;
+let targetInventory = account.inventory || {};
+
 currentActiveType[user] = currentActiveType[user] === type ? null : type;
 
-// Re-render slider cards to update active outlines
-let account = accounts.find(acc => acc.roblox_username === user);
-if(account) {
 let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
 let slider = document.getElementById("slider-" + user);
 if(slider) {
 slider.innerHTML = `
 ${createButton("💰 Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
-${createButton("🌱 Seeds", total(currentInventory.Seeds).toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
-${createButton("⚙️ Gear", total(currentInventory.Gear).toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
-${createButton("📦 Crates", total(currentInventory.Crates).toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
-${createButton("🐾 Pets", total(currentInventory.Pets).toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+${createButton("🌱 Seeds", total(targetInventory.Seeds).toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("⚙️ Gear", total(targetInventory.Gear).toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("📦 Crates", total(targetInventory.Crates).toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("🐾 Pets", total(targetInventory.Pets).toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
 `;
-}
-}
-
-
-
-if(activeDropdown === box &&
-
-!box.classList.contains("open")){
-// Handled toggle off state via currentActiveType check above
 }
 
 
@@ -2300,7 +2290,7 @@ activeDropdown = box;
 
 let items =
 
-currentInventory[type] || {};
+targetInventory[type] || {};
 
 
 
@@ -2321,7 +2311,7 @@ merged[clean] =
 
 +
 
-(Number(items[item]) || 0);
+(Number(items[name]) || 0);
 
 
 }
