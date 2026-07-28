@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+l<!DOCTYPE html>
 <html lang="en" data-theme="light">
 
 <head>
@@ -1592,6 +1592,10 @@ let status = getStatus(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 let settings = acc.settings || {};
 
+let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
+let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
+let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
+
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
 <div class="swipe-actions-left-bg">
@@ -1600,15 +1604,15 @@ html += `
 <div class="swipe-actions-bg">
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
 <span>Auto Seeds</span>
-<div class="ios-switch ${settings.AutoSeeds ? 'active' : ''}" id="switch-seeds-${acc.roblox_username}"></div>
+<div class="ios-switch ${isAutoSeeds ? 'active' : ''}" id="switch-seeds-${acc.roblox_username}"></div>
 </div>
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
 <span>Auto Gears</span>
-<div class="ios-switch ${settings.AutoGear ? 'active' : ''}" id="switch-gears-${acc.roblox_username}"></div>
+<div class="ios-switch ${isAutoGear ? 'active' : ''}" id="switch-gears-${acc.roblox_username}"></div>
 </div>
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
 <span>Auto Pets</span>
-<div class="ios-switch ${settings.AutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
+<div class="ios-switch ${isAutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
 </div>
 </div>
 <div class="account-box" id="acc-box-${acc.roblox_username}">
@@ -1765,6 +1769,8 @@ async function toggleAutoFeature(element, username, feature) {
     const enabled = !sw.classList.contains("active");
     sw.classList.toggle("active");
 
+    localStorage.setItem(`setting_${username}_${feature}`, enabled);
+
     try{
         const res = await fetch(API + "/account/settings",{
             method:"POST",
@@ -1783,6 +1789,7 @@ async function toggleAutoFeature(element, username, feature) {
 
         if(!data.success){
             sw.classList.toggle("active");
+            localStorage.setItem(`setting_${username}_${feature}`, !enabled);
             alert(data.message);
         } else {
             let account = accounts.find(acc => acc.roblox_username === username);
@@ -1798,6 +1805,7 @@ async function toggleAutoFeature(element, username, feature) {
 
     }catch(e){
         sw.classList.toggle("active");
+        localStorage.setItem(`setting_${username}_${feature}`, !enabled);
     }
 }
 
