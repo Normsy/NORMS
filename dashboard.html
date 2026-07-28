@@ -2183,10 +2183,10 @@ let isSwiping = false;
 let isHorizontal = false;
 
 box.addEventListener('touchstart', (e) => {
-// Guard condition: if inventory is open for this account, do not allow swipe
-let activeType = currentActiveType[username];
+// Guard condition: check if inventory slot is populated or button says Close
 let slot = document.getElementById("slot-" + username);
-let isInventoryOpen = slot && slot.innerHTML.trim() !== "" && activeType !== null;
+let btn = document.getElementById("btn-" + username);
+let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
 if(isInventoryOpen) {
 isSwiping = false;
 return;
@@ -2213,10 +2213,9 @@ isHorizontal = true;
 
 if(isHorizontal) {
 currentX = x;
-// Clamp diffX so it doesn't go too far out in either direction
 let maxRight = 100;
 let maxLeft = -250;
-if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2; // slight resistance past max
+if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
 if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
 
 box.style.transform = `translateX(${diffX}px)`;
@@ -2568,7 +2567,6 @@ alert("Roblox script copied to clipboard!");
 
 
 function openAccount(username){
-// If another account is currently swiped out, reset its position when clicking this account
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
@@ -2599,7 +2597,6 @@ showAccountDashboard(account, targetAccountInventory);
 
 
 function showAccountDashboard(account, targetInventory){
-// Reset any swiped card if we are interacting with accounts/inventory
 if(currentlySwipedUsername && currentlySwipedUsername !== account.roblox_username) {
 resetSwipedCard(currentlySwipedUsername);
 }
@@ -2866,7 +2863,6 @@ return count;
 
 
 function toggleItems(type,user){
-// If another account is currently swiped out, reset its position when interacting with items
 if(currentlySwipedUsername && currentlySwipedUsername !== user) {
 resetSwipedCard(currentlySwipedUsername);
 }
