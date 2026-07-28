@@ -1533,6 +1533,10 @@ totalPets += pCount;
 
 });
 
+let isUserAdmin = Boolean(userInfo.is_admin);
+let isUserPremium = Boolean(userInfo.is_premium) || isUserAdmin;
+let maxLimit = isUserPremium ? "Unlimited" : "5 max";
+
 
 
 
@@ -1559,7 +1563,7 @@ Grow A Garden 2
 
 <div class="hero-subtitle">
 
-Overview of your tracked accounts
+Overview of your tracked accounts (${accounts.length}/${maxLimit})
 
 </div>
 
@@ -1729,6 +1733,11 @@ Setting
 </div>
 
 
+${isUserAdmin ? `
+<button class="logout" style="background:#8b5cf6; margin-bottom:8px;" onclick="openAdminTab()">
+Admin Panel
+</button>
+` : ''}
 
 
 <button class="logout" style="background:#3b82f6; margin-bottom:8px;" onclick="openTutorialTab()">
@@ -1978,6 +1987,10 @@ function openAccountsTab(){
 currentPage = "accounts";
 currentlySwipedUsername = null;
 
+let isUserAdmin = Boolean(userInfo.is_admin);
+let isUserPremium = Boolean(userInfo.is_premium) || isUserAdmin;
+let maxLimitNum = isUserPremium ? 999999 : 5;
+
 let html = `
 
 
@@ -2010,7 +2023,7 @@ Accounts
 
 <div class="hero-subtitle">
 
-Your tracked Roblox accounts
+Your tracked Roblox accounts (${accounts.length}/${isUserPremium ? 'Unlimited' : '5'})
 
 </div>
 
@@ -2183,7 +2196,6 @@ let isSwiping = false;
 let isHorizontal = false;
 
 box.addEventListener('touchstart', (e) => {
-// Guard condition: check if inventory slot is populated or button says Close
 let slot = document.getElementById("slot-" + username);
 let btn = document.getElementById("btn-" + username);
 let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
@@ -2256,7 +2268,6 @@ function toggleAutoFeature(element, username, feature) {
   let switchEl = element.querySelector('.ios-switch');
   if(switchEl) {
     switchEl.classList.toggle('active');
-    let isActive = switchEl.classList.contains('active');
   }
 }
 
@@ -2391,6 +2402,7 @@ currentPage = "settings";
 
 let currentUsername = userInfo.username || "User";
 let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
+let userRole = userInfo.is_admin ? "Admin" : (userInfo.is_premium ? "Premium User" : "Free User");
 
 let html = `
 
@@ -2410,6 +2422,7 @@ let html = `
 <div class="settings-box">
 <div class="script-section-title">Account Details</div>
 <div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Username: <b>${currentUsername}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Account Tier: <b>${userRole}</b></div>
 <div style="font-size:13px; color:var(--subtext-color);">Date Created: <b>${createdDate}</b></div>
 </div>
 
@@ -2443,6 +2456,64 @@ let html = `
 
 document.getElementById("app").innerHTML = html;
 
+}
+
+
+
+function openAdminTab() {
+currentPage = "admin";
+
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">Admin Panel</div>
+<div class="hero-subtitle">Grant premium access to site users</div>
+</div>
+</div>
+
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+<div class="settings-box">
+<div class="script-section-title">Give Premium Access</div>
+<div id="adminMessage"></div>
+<input id="targetUsernameInput" placeholder="Target Username">
+<button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#8b5cf6;">Grant Premium</button>
+</div>
+</div>
+</div>
+`;
+
+document.getElementById("app").innerHTML = html;
+}
+
+async function grantPremium() {
+let targetUser = document.getElementById("targetUsernameInput").value.trim();
+let msgBox = document.getElementById("adminMessage");
+
+if(!targetUser) {
+msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/admin/grant-premium", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, target_username: targetUser })
+});
+let data = await res.json();
+if(data.success) {
+msgBox.innerHTML = `<div class="success">Successfully granted premium access to ${targetUser}</div>`;
+document.getElementById("targetUsernameInput").value = "";
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || "Failed to grant premium"}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
 }
 
 function openTutorialTab(){
