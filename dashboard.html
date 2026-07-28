@@ -286,6 +286,8 @@ grid-template-columns:repeat(2,1fr);
 gap:10px;
 flex-shrink:0;
 margin-bottom:4px;
+position: relative;
+z-index: 5;
 }
 
 .stat-card{
@@ -294,6 +296,8 @@ border:1px solid var(--border-color);
 border-radius:16px;
 padding:18px 16px;
 box-shadow:0 2px 6px rgba(0,0,0,.02);
+position: relative;
+z-index: 5;
 }
 
 .stat-card.clickable {
@@ -730,12 +734,19 @@ padding:12px;
 margin-top:10px;
 max-height:450px;
 overflow-y:auto;
-width: 100%;
-box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+width:100%;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+
+position:relative;
+z-index:9999;
 }
 
 .global-dropdown.open{
 display:block;
+}
+
+.stats-grid + .global-dropdown {
+    margin-bottom:10px;
 }
 
 .dropdown-header{
