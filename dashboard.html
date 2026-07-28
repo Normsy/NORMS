@@ -2470,23 +2470,49 @@ let html = `
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
 <div>
 <div class="hero-title">Admin Panel</div>
-<div class="hero-subtitle">Grant premium access to site users</div>
+<div class="hero-subtitle">Manage users, premium tiers, and banned accounts</div>
 </div>
 </div>
 
 <div class="settings-wrapper">
 <div class="settings-scroll-area">
-<div class="settings-box">
-<div class="script-section-title">Give Premium Access</div>
-<div id="adminMessage"></div>
-<input id="targetUsernameInput" placeholder="Target Username">
-<button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#8b5cf6;">Grant Premium</button>
-</div>
+  
+  <!-- GIVE PREMIUM ACCESS -->
+  <div class="settings-box">
+    <div class="script-section-title">Give Premium Access</div>
+    <div id="adminMessage"></div>
+    <input id="targetUsernameInput" placeholder="Target Username">
+    <button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#8b5cf6;">Grant Premium</button>
+  </div>
+
+  <!-- BAN USER -->
+  <div class="settings-box">
+    <div class="script-section-title">Ban / Unban User</div>
+    <div id="adminBanMessage"></div>
+    <input id="targetBanUsernameInput" placeholder="Username to Ban/Unban">
+    <div style="display:flex; gap:8px; margin-top:4px;">
+      <button onclick="setUserBanStatus(true)" style="flex:1; background:#ef4444;">Ban User</button>
+      <button onclick="setUserBanStatus(false)" style="flex:1; background:#16a34a;">Unban User</button>
+    </div>
+  </div>
+
+  <!-- SEPARATE USER LISTS -->
+  <div class="settings-box">
+    <div class="script-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Platform Users List</span>
+      <button onclick="fetchAdminUsers()" style="padding:4px 8px; font-size:11px;">Refresh List</button>
+    </div>
+    <div id="adminUserListContainer" style="margin-top:8px;">
+      <div class="empty">Click Refresh List to load users</div>
+    </div>
+  </div>
+
 </div>
 </div>
 `;
 
 document.getElementById("app").innerHTML = html;
+fetchAdminUsers();
 }
 
 async function grantPremium() {
@@ -2508,11 +2534,93 @@ let data = await res.json();
 if(data.success) {
 msgBox.innerHTML = `<div class="success">Successfully granted premium access to ${targetUser}</div>`;
 document.getElementById("targetUsernameInput").value = "";
+fetchAdminUsers();
 } else {
 msgBox.innerHTML = `<div class="error">${data.message || "Failed to grant premium"}</div>`;
 }
 } catch(e) {
 msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function setUserBanStatus(isBanned) {
+let targetUser = document.getElementById("targetBanUsernameInput").value.trim();
+let msgBox = document.getElementById("adminBanMessage");
+
+if(!targetUser) {
+msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/admin/set-ban", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, target_username: targetUser, banned: isBanned })
+});
+let data = await res.json();
+if(data.success) {
+msgBox.innerHTML = `<div class="success">Successfully ${isBanned ? 'banned' : 'unbanned'} ${targetUser}</div>`;
+document.getElementById("targetBanUsernameInput").value = "";
+fetchAdminUsers();
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || "Failed to update ban status"}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function fetchAdminUsers() {
+let container = document.getElementById("adminUserListContainer");
+if(!container) return;
+
+container.innerHTML = `<div class="empty">Loading users...</div>`;
+
+try {
+let res = await fetch(API + "/admin/users?secret_key=" + encodeURIComponent(secretKey));
+let data = await res.json();
+
+if(!data.success) {
+container.innerHTML = `<div class="error">${data.message || "Failed to fetch users"}</div>`;
+return;
+}
+
+let users = data.users || [];
+let premiumUsers = users.filter(u => u.is_premium && !u.is_admin);
+let freeUsers = users.filter(u => !u.is_premium && !u.is_admin);
+let adminUsers = users.filter(u => u.is_admin);
+let bannedUsers = users.filter(u => u.is_banned);
+
+let renderUserRow = (u) => `
+  <div class="item" style="justify-content:space-between;">
+    <div>
+      <div class="item-name">${u.username} ${u.is_banned ? '<span style="color:#ef4444; font-size:11px;">(Banned)</span>' : ''}</div>
+      <div style="font-size:11px; color:var(--subtext-color);">Created: ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
+    </div>
+    <div style="display:flex; gap:4px;">
+      <button onclick="document.getElementById('targetBanUsernameInput').value='${u.username}'" style="padding:4px 8px; font-size:10px; background:${u.is_banned ? '#16a34a' : '#ef4444'};">${u.is_banned ? 'Unban' : 'Ban'}</button>
+    </div>
+  </div>
+`;
+
+let html = `
+  <div style="font-weight:800; margin-bottom:4px; font-size:13px; color:#8b5cf6;">👑 Admins (${adminUsers.length})</div>
+  ${adminUsers.length ? adminUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:#38bdf8;">⭐ Premium Users (${premiumUsers.length})</div>
+  ${premiumUsers.length ? premiumUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--subtext-color);">👤 Free Users (${freeUsers.length})</div>
+  ${freeUsers.length ? freeUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:#ef4444;">🚫 Banned Users (${bannedUsers.length})</div>
+  ${bannedUsers.length ? bannedUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+`;
+
+container.innerHTML = html;
+} catch(e) {
+container.innerHTML = `<div class="error">Network error occurred while fetching users</div>`;
 }
 }
 
