@@ -1976,44 +1976,15 @@ alert("Roblox script copied to clipboard!");
 
 
 async function openAccount(username){
+let account = accounts.find(acc => acc.roblox_username === username);
 
-
-const res = await fetch(
-
-API +
-"/account?secret_key=" +
-encodeURIComponent(secretKey) +
-"&username=" +
-encodeURIComponent(username)
-
-);
-
-
-
-const data = await res.json();
-
-
-
-if(!data.success){
-
+if(!account){
 return;
-
 }
 
-
-
-let account = data.account;
-
-
-
-currentInventory =
-account.inventory || {};
-
-
+currentInventory = account.inventory || {};
 
 showAccountDashboard(account);
-
-
 }
 
 
