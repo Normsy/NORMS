@@ -391,7 +391,7 @@ box-shadow:0 2px 6px rgba(0,0,0,.02);
 .square-toggle-card {
 background: var(--card-bg);
 border: 1px solid var(--border-color);
-border-radius: 14px;
+border-radius:14px;
 padding: 12px 16px;
 height: 48px;
 display: flex;
@@ -1706,7 +1706,7 @@ document.getElementById("app").innerHTML = html;
 
 function openScriptTab(){
 
-let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/loadscript"))();`;
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/script"))();`;
 
 let html = `
 
@@ -1872,9 +1872,9 @@ let html = `
 <div class="settings-box">
 <div class="script-section-title">Getting Started</div>
 <div style="font-size:13px; color:var(--subtext-color); line-height:1.4;">
-1. Go to the <b>Script</b> tab to copy your Secret Key and Roblox Execution Script.<br><br>
-2. Execute the script inside your Roblox executor while playing the supported game.<br><br>
-3. Track your accounts, inventory, money (sheckles), and pets live from the <b>Accounts</b> tab.
+1. Get your Secret Key from the <b>Script</b> tab.<br><br>
+2. Execute the loader script in Roblox.<br><br>
+3. View stats live in the <b>Accounts</b> tab.
 </div>
 </div>
 
@@ -2135,7 +2135,7 @@ total(currentInventory.Pets)
 
 "Pets",
 
-account.roblox_username
+account.roPreferenceKeys || account.roblox_username
 
 )}
 
@@ -2164,7 +2164,7 @@ id="drop-${account.roblox_username}">
 
 
 
-function currentButton(label,value,color,type,user){
+function createButton(label,value,color,type,user){
 
 
 return `
@@ -2389,7 +2389,7 @@ if(secretKey){
 showLoading("Loading dashboard layout...");
 loadAccounts();
 }else{
-showLogin();
+$showLogin();
 }
 
 
