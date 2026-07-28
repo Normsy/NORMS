@@ -522,7 +522,7 @@ color: #0f172a;
 }
 
 
-/* INVENTORY - MADE BIGGER CARDS */
+/* INVENTORY CARDS & SLIDER */
 
 .account-dashboard-slot{
 
@@ -532,10 +532,13 @@ margin-top:14px;
 
 
 .slider-container{
-
-overflow-x:auto;
-scrollbar-width:none;
-
+width: 100%;
+overflow-x: auto;
+overflow-y: hidden;
+white-space: nowrap;
+-webkit-overflow-scrolling: touch;
+scrollbar-width: none;
+padding-bottom: 4px;
 }
 
 
@@ -548,15 +551,15 @@ display:none;
 
 .slider{
 
-display:flex;
+display:inline-flex;
 gap:10px;
-width:max-content;
 
 }
 
 
 .card{
 
+display: inline-block;
 min-width:135px;
 background:var(--card-bg);
 border:1px solid var(--border-color);
@@ -564,6 +567,7 @@ border-radius:12px;
 padding:12px 14px;
 cursor:pointer;
 box-shadow:0 1px 4px rgba(0,0,0,.02);
+vertical-align: top;
 
 }
 
@@ -605,7 +609,7 @@ border:1px solid var(--border-color);
 border-radius:12px;
 padding:10px;
 margin-top:10px;
-max-height:180px;
+max-height:220px;
 overflow-y:auto;
 
 }
@@ -1662,7 +1666,7 @@ ${status.text}
 
 
 
-<button class="open-btn" onclick="openAccount(${JSON.stringify(acc.roblox_username)})">
+<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount(${JSON.stringify(acc.roblox_username)})">
 
 Inventory
 
@@ -1976,15 +1980,44 @@ alert("Roblox script copied to clipboard!");
 
 
 async function openAccount(username){
-let account = accounts.find(acc => acc.roblox_username === username);
 
-if(!account){
+
+const res = await fetch(
+
+API +
+"/account?secret_key=" +
+encodeURIComponent(secretKey) +
+"&username=" +
+encodeURIComponent(username)
+
+);
+
+
+
+const data = await res.json();
+
+
+
+if(!data.success){
+
 return;
+
 }
 
-currentInventory = account.inventory || {};
+
+
+let account = data.account;
+
+
+
+currentInventory =
+account.inventory || {};
+
+
 
 showAccountDashboard(account);
+
+
 }
 
 
@@ -1999,6 +2032,12 @@ let slot = document.getElementById(
 
 );
 
+let btn = document.getElementById(
+
+"btn-" + account.roblox_username
+
+);
+
 
 
 if(!slot) return;
@@ -2009,6 +2048,7 @@ if(slot.innerHTML !== ""){
 
 
 slot.innerHTML = "";
+if(btn) btn.innerText = "Inventory";
 
 return;
 
@@ -2106,7 +2146,7 @@ total(currentInventory.Pets)
 
 "Pets",
 
-account.roPreferenceKeys || account.roblox_username
+account.roblox_username
 
 )}
 
@@ -2128,7 +2168,7 @@ id="drop-${account.roblox_username}">
 
 `;
 
-
+if(btn) btn.innerText = "Close";
 
 }
 
