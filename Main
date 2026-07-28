@@ -1,1 +1,604 @@
---[[ v1.0.0 https://wearedevs.net/obfuscator ]] return(function(...)local H={"\076\065\047\078\097\082\079\054\080\112\101\043\076\078\069\043\111\112\090\061","\099\108\069\101\105\099\055\079\122\112\065\056\109\112\097\061","\105\087\102\108\043\117\061\061";"\106\066\051\104\122\103\114\120\050\051\104\061";"\121\098\066\065\105\100\061\061","\065\052\115\053\118\086\078\117";"\055\078\089\052\097\078\089\121\122\119\047\051\105\106\061\061";"\055\119\047\073\105\104\105\084\090\120\102\052\106\078\079\084\109\112\106\061";"\106\119\086\115\109\097\100\052\076\112\055\082\118\049\061\061";"\075\090\121\101\121\077\053\071\074\055\074\105\104\083\082\061";"\089\078\065\048\076\065\084\043\076\115\122\114\054\108\079\111\122\106\061\061","\112\100\122\110\065\072\077\049\108\051\043\121\087\117\061\061","\090\119\065\073\105\112\069\101";"\054\087\089\047\111\104\048\072\118\075\089\065\072\115\117\086","\090\119\089\086\122\072\089\116\122\049\061\061";"\104\118\051\075\105\079\054\102\080\121\118\080\105\072\114\061","\109\075\104\061";"\105\078\108\079\122\112\102\103";"\122\112\065\056\109\112\097\061";"\089\112\065\101\090\112\089\121\053\104\055\047\122\112\089\051\122\112\089\082\053\106\061\061";"\099\108\069\114\105\072\113\061","\067\083\065\050\084\067\115\081\110\121\071\073\114\078\076\088\099\084\120\069\103\100\061\061","\097\048\114\107\050\117\061\061","\100\118\077\120\116\106\061\061";"\099\108\069\120\043\100\061\061";"\105\075\097\108\089\120\102\068\043\099\053\108\054\097\084\114\118\116\049\061","\076\120\122\072\097\087\084\089\102\065\122\077\111\052\079\052","\112\078\054\112\079\077\084\100","\055\116\057\100\075\075\113\061";"\099\068\076\084\073\106\043\055\110\051\113\088\104\056\052\099\078\121\071\120\110\073\107\087\050\097\055\115\108\108\107\114\074\080\110\122\082\088\051\048\047\108\069\110\087\070\114\085\100\083\073\077\052\081\120\089\104\109\082\061";"\080\104\069\086\043\078\104\086\111\119\084\050\122\115\047\054\118\119\090\061";"\122\112\069\116\122\115\057\084\109\119\090\061";"\085\056\117\047\105\083\103\084\085\117\061\061";"\122\078\065\121\109\117\061\061";"\120\113\111\043\111\065\109\066\089\112\079\081\067\088\052\061";"\111\104\122\107\089\116\107\100\122\118\106\108\122\104\079\097\089\049\061\061","\101\077\054\085\076\047\121\118\072\112\077\050";"\055\078\089\052\106\078\079\084\109\112\055\121\105\072\113\061";"\090\112\065\084\090\120\111\061","\109\117\047\053\050\117\061\061";"\073\099\070\101\065\049\061\061";"\117\050\122\067\111\106\061\061","\107\048\111\048\085\054\052\061";"\088\105\088\100\110\106\061\061","\109\075\053\061";"\071\065\065\052\097\117\061\061";"\090\087\055\121\076\072\048\120";"\122\112\069\073\122\072\108\056\105\099\053\061","\043\120\047\052\105\106\061\061","\109\120\086\069\112\049\051\116\080\110\098\104\078\049\061\061";"\048\071\099\075\097\100\109\084\051\043\071\085\075\073\050\075","\090\053\083\077";"\054\047\102\070\118\082\089\073\043\078\069\082\105\106\061\061","\099\108\069\084\109\119\055\047\080\049\061\061","\043\108\107\115\102\065\117\048\089\047\049\061";"\122\097\047\066\122\120\105\074\097\078\105\100\122\118\057\118","\081\113\047\076\065\053\067\066\098\117\061\061";"\112\067\087\105\120\117\053\097\072\119\119\099\043\100\061\061","\097\072\048\100\085\072\055\043\105\115\055\082\109\052\065\119\089\117\061\061","\111\072\055\085\106\082\089\076\111\104\105\078\111\112\114\087";"\084\089\109\082\122\049\061\061";"\107\056\071\066\054\111\111\054\081\102\115\116\049\067\057\071","\043\078\079\079\090\117\061\061","\105\104\048\119\072\120\049\087\111\115\105\072\090\078\065\107\055\100\061\061";"","\043\111\048\117\116\112\107\115","\101\101\052\053\115\066\084\074\079\050\106\061";"\085\117\061\061","\090\119\089\101\109\087\105\047";"\105\078\065\101\105\106\061\061";"\050\108\066\070\056\078\054\090\101\078\103\061";"\109\112\089\073";"\055\097\086\101\109\051\105\113\080\082\086\105\055\075\102\070\089\106\061\061","\109\097\047\048\054\051\053\116\076\097\055\070\089\072\069\065","\105\078\089\052\105\078\089\073\122\117\061\061","\057\051\120\055\105\052\053\102\103\049\061\061";"\054\099\102\107","\106\050\087\106\120\116\054\047\066\084\076\089\076\055\110\068\120\098\088\086\051\051\069\110\076\108\103\082\107\117\119\102\107\084\114\049\110\068\122\049\066\103\122\052\082\088\101\071\065\117\110\056\088\068\078\079\085\078\071\122\117\089\052\117\108\089\110\104\067\103\077\102\085\052\118\088\085\121\090\061","\107\114\109\069\104\049\100\118\113\117\061\061","\107\112\081\080\104\115\043\061","\097\120\065\101\097\049\061\061","\116\098\082\116\110\048\118\070\103\056\106\061","\055\078\089\052\106\099\055\052\090\119\047\056\122\099\055\047","\109\120\065\068\106\116\122\103\118\104\089\101\054\082\052\052\105\049\061\061","\105\099\057\121\109\087\053\061";"\105\119\086\071\109\087\053\061";"\109\082\067\068\065\106\061\061","\065\065\119\114\078\067\120\048\085\069\083\087","\118\073\105\054\075\066\054\051\057\078\114\061";"\065\074\087\121\110\100\065\120\115\084\086\102\100\111\107\057\122\055\108\084\110\090\080\055\105\100\061\061";"\053\099\068\113\110\099\057\087\115\108\078\078\102\043\066\086\107\120\052\101\056\103\116\110\116\057\049\100";"\054\116\079\097\089\119\097\048\106\072\101\073\043\051\057\118","\122\112\065\116\076\100\061\061","\097\071\090\122\097\055\113\061","\118\078\079\066\075\122\086\099";"\085\112\065\101\102\075\079\075\105\112\105\083\111\104\048\108\089\106\061\061","\118\118\104\114\121\117\049\061";"\105\051\065\112\102\047\103\116\076\118\122\118\102\078\103\078";"\104\066\115\054\067\118\049\080","\122\072\048\100\043\072\102\077";"\048\079\114\120\089\074\104\052\068\068\113\057\084\100\061\061","\054\109\122\083\103\117\061\061";"\090\078\089\052\109\072\089\052\043\099\055\079\043\119\086\047","\109\072\065\052\076\049\061\061";"\090\115\057\084\109\120\106\061","\109\068\121\049\118\072\043\098\110\083\072\120\078\098\052\061","\072\086\114\106\078\122\102\084\055\085\043\053","\048\082\082\047\080\081\071\116\071\110\054\117","\080\075\102\085\089\100\061\061";"\089\078\065\084\122\104\105\071\090\082\102\103\076\072\086\082";"\105\067\084\116\119\077\090\061";"\105\097\105\043\118\072\084\113\089\047\122\043\054\119\048\089";"\049\054\121\078\102\118\079\050\120\099\107\083","\111\115\057\106\054\116\047\047\055\072\100\116\106\052\122\086\043\097\082\061","\080\119\117\108\054\052\057\054";"\075\047\081\090\100\106\061\061";"\043\078\069\073\043\078\065\052";"\090\112\102\079\109\112\100\061"}local function S(S)return H[S+(-897747-(-917461))]end for S,j in ipairs({{-119190+119191;-110100+110218};{170991-170990,-61646+61740};{-938564+938659,270753-270635}})do while j[807525+-807524]<j[-863916-(-863918)]do H[j[-819285+819286]],H[j[940216-940214]],j[690562+-690561],j[722214-722212]=H[j[191687+-191685]],H[j[-300958+300959]],j[365579+-365578]+(-174245+174246),j[804778-804776]-(-519227-(-519228))end end do local S=math.floor local j=string.len local R={h=774392-774388;["\043"]=82898-82874;n=-860708+860771,v=34879-34860;U=-324460-(-324474),["\054"]=178237-178219,R=1024164-1024128;p=-475190+475196;C=773135-773076;E=379770-379709,["\052"]=-498700+498752,Q=-740258+740318,b=486622+-486591;O=999420+-999387;J=-558217-(-558227),Y=-778996+779017,I=-265386-(-265432);l=-171988-(-172041),X=1035026-1034964,L=912896-912870;z=69778+-69749,N=-359033+359087,t=-88082+88133;u=-385259+385291;["\055"]=577611+-577594,["\048"]=627935+-627878;["\056"]=48547-48513;["\050"]=-429280-(-429322),m=53327+-53300;["\047"]=876693+-876656,w=896564+-896526,["\053"]=930518-930510;y=-1025164-(-1025214);B=378692+-378681;H=461371-461349;o=-790981+790993,i=-54148-(-54173),W=-680192+680247,Z=-983711+983739,d=371136+-371088;s=-233127+233134;f=-370878-(-370891),V=-1018902-(-1018951),r=-267124-(-267168);P=-232639-(-232669),j=-667019+667035,D=-925532+925590;A=518599-518594;q=-716663-(-716719),g=-967311+967351,S=275786-275784,["\049"]=438696+-438696,k=414571+-414570;G=929852+-929805,F=911359+-911344,c=-461028+461051;["\057"]=-215921+215930;K=202859-202856,a=299202+-299182;T=548998-548957;M=502530-502487,["\051"]=-884265-(-884300),x=151131+-151092;e=-400371+400416}local h=H local u=table.insert local M=table.concat local z=type local r=string.sub local t=string.char for H=-440308-(-440309),#h,553883-553882 do local f=h[H]if z(f)=="\115\116\114\105\110\103"then local z=j(f)local l={}local o=-288966+288967 local x=-532937+532937 local O=-967588+967588 while o<=z do local H=r(f,o,o)local j=R[H]if j then x=x+j*(566317-566253)^((559558-559555)-O)O=O+(-657986+657987)if O==-309975+309979 then O=-420431-(-420431)local H=S(x/(548553+-483017))local j=S((x%(694052+-628516))/(-587211+587467))local R=x%(-795580-(-795836))u(l,t(H,j,R))x=-560204+560204 end elseif H=="\061"then u(l,t(S(x/(-795806+861342))))if o>=z or r(f,o+(-734828+734829),o+(115521+-115520))~="\061"then u(l,t(S((x%(-25963+91499))/(704894+-704638))))end break end o=o+(62272+-62271)end h[H]=M(l)end end end return(function(H,R,h,u,M,z,r,D,B,x,f,F,k,t,b,l,o,O,p,v,j,q)l,j,o,x,p,k,t,v,D,f,q,O,B,b,F=function()o=(599221-599220)+o f[o]=583575+-583574 return o end,function(j,h,u,M)local r,E,i,I,P,U,o,K,N,w,T,n,L,Y,G,x,A,e,Z,g,c,Q,f,C,s,a,X,O,d,J,V,m,y,p,W while j do if j<-341340+9831766 then if j<-450383+5477700 then if j<2740335-(-427098)then if j<-755649+1470815 then if j<-273025+686175 then if j<563708-263815 then if j<-40712-(-233982)then U=-323645-(-323647)Y=-964418-(-964431)x=543877+-543845 o=t[u[708989+-708986]]f=o%x O=t[u[866219+-866215]]V=t[u[80463+-80461]]c=t[u[-160957+160960]]w=c-f c=-947442-(-947474)I=w/c P=Y-I d=U^P A=V/d p=O(A)O=911635+4294055661 x=p%O p=365858+-365856 O=p^f o=x/O O=t[u[1034931+-1034927]]d=-1015828+1015829 V=o%d d=-1021789+4295989085 A=V*d p=O(A)O=t[u[280374+-280370]]A=O(o)x=p+A U=-98569+98825 V=-454248+519784 p=247650+-182114 O=x%p A=x-O p=A/V j=84104+13299161 V=-4386-(-4642)A=O%V d=O-A o=nil V=d/U f=nil U=-419355+419611 d=p%U Y=380130-379874 P=p-d U=P/Y p=nil P={A;V,d,U}d=nil U=nil V=nil O=nil A=nil t[u[774790-774789]]=P x=nil else j=t[u[467734+-467724]]o=t[u[721145-721134]]f[j]=o j=t[u[-261695-(-261707)]]o={j(f)}r={R(o)}j=H[S(571810+-591517)]end else if j<624119+-266781 then r=S(-461247+441627)j=H[r]o=D(11739972-975492,{u[757250+-757249];u[1015385-1015383],u[-1008574-(-1008577)];u[-466755-(-466759)];u[-1022350-(-1022355)]})x={j(o)}f=x[-645079-(-645081)]r=x[-616681-(-616682)]o=r j=o and 201204+14640797 or 6012303-623103 else j=H[S(-987910-(-968228))]r={}end end else if j<869954-239127 then if j<-505336+936701 then P=10634906191006-880966 A=t[u[832721-832720]]V=t[u[-582196+582198]]U=S(270206+-289821)d=V(U,P)p=A[d]r=o==p j=r and 467298+8987177 or 13713446-544983 else j=-463341+10733419 o=t[u[184195+-184193]]x=t[u[708310-708307]]f=o==x r=f end else P=t[O]Y=t[o]w=S(-943615+923983)c=151986+9483834310542 I=Y(w,c)j=884028+5988081 U=P[I]p=U end end else if j<382506+2083398 then if j<2440298-662829 then if j<-676514+1967971 then n=n+s c=n<=e Z=not K c=Z and c Z=n>=e Z=K and Z c=Z or c Z=8430012-12887 j=c and Z c=5220681-936630 j=j or c else o=S(-373620+353997)r=13071857-(-769656)x=16937759-651586 f=o^x j=r-f f=j r=S(309856-329539)j=r/f r={j}j=H[S(-185108-(-165434))]end else if j<1441420-(-575785)then s=l()t[s]=i K=S(-936659-(-917025))Z=952839-952739 r=H[K]N=-99460+99460 L=-201382+201384 K=S(383017-402624)j=r[K]K=-404131-(-404132)C=747994+-747739 r=j(K,Z)J=393149+-383149 K=l()y=-616538+616539 t[K]=r j=t[V]Z=165151+-165151 r=j(Z,C)Z=l()t[Z]=r j=t[V]C=-87228-(-87229)X=t[K]r=j(C,X)C=l()t[C]=r r=t[V]X=r(y,L)r=965320-965319 j=X==r X=l()r=S(795518-815223)t[X]=j L=S(-924817-(-905147))a=S(-431544+411838)m=H[a]W=t[V]Q={W(N,J)}j=S(-677867+658250)a=m(R(Q))m=S(956442+-976112)g=a..m y=L..g j=c[j]j=j(c,r,y)L=S(395522-415142)y=l()t[y]=j r=H[L]g=v(2914877-163046,{V,s,P,x;o;n;X;y;K;C;Z;U})L={r(g)}j={R(L)}L=j j=t[X]j=j and 4393685-969849 or 9433359-(-500528)else j=557482-557482 r={j}j=H[S(9948+-29572)]end end else if j<929760+1955919 then if j<-431423+3159280 then j=16476803-545270 else o=t[u[-404674+404675]]O=-234042+234043 p=225717-225715 x=o(O,p)o=-340523+340524 f=x==o r=f j=f and 10537126-267048 or-470163+904061 end else r={}j=true t[u[158616+-158615]]=j j=H[S(-657278+637576)]end end end else if j<-956084+5221249 then if j<489350+3122960 then if j<2996724-(-526915)then if j<-922091+4344282 then f=S(-298790+279190)r=S(-274757+255104)j=H[r]r=j(f)j=H[S(-85494+65854)]r={}else g=t[o]r=g j=g and 601896+15978462 or 12335529-(-549592)end else if j<2865258-(-731159)then j=t[V]G=-45758+45759 e=444371+-444365 E=j(G,e)e=S(-946484+926791)j=S(-637+-19056)H[j]=E G=H[e]e=-266933+266935 j=G>e j=j and 640042+13835790 or 950835+6238751 else U=-674324+674579 d=643526-643526 j=t[u[-390559+390560]]o=x V=j(d,U)f[o]=V o=nil j=9281861-(-418930)end end else if j<606688+3518831 then if j<4226818-407136 then J=S(-1017587-(-997915))C=S(-11037-8643)X=-131155+9320540197191 e=t[O]s=t[o]y=827428+27825468035705 Z=s(C,X)n=e[Z]s=t[O]W=12549671936545-133966 Z=t[o]j=H[S(-544334+524670)]X=S(-663526+643855)C=Z(X,y)a=S(-810678+790986)e=s[C]Z=t[V]I=nil X=t[O]y=t[o]L=y(a,W)C=X[L]T=-126634+1442370990409 s=Z[C]C=t[O]a=5401054412331-(-1035176)X=t[o]L=S(-942290+922676)y=X(L,a)X=S(878973+-898679)Z=C[y]C=H[X]L=t[V]W=t[O]Q=t[o]A=nil N=Q(J,T)a=W[N]W=S(322964+-342620)y=L[a]X=C(y)Q=21663298169672-508897 y=t[O]L=t[o]a=L(W,Q)C=y[a]J=664794+14884889245241 N=S(-658230-(-638580))y=Y()a=t[O]W=t[o]Q=W(N,J)L=a[Q]a=t[P]V=k(V)w={[n]=p;[e]=s,[Z]=X,[C]=y,[L]=a}r={}n=l()L=317543+8459966838524 y=S(650757-670465)X=S(-777421+757736)P=k(P)t[n]=w e=S(770940-790573)w=H[e]s=t[x]C=t[n]X=s[X]Z={X(s,C)}e=w(R(Z))e=S(411504-431137)w=H[e]Z=t[O]C=t[o]X=C(y,L)s=Z[X]e=w(s)p=nil c=nil s=S(84681+-104326)y=S(-279693+260035)L=29152549204220-506869 e=H[s]d=k(d)Z=t[O]C=t[o]X=C(y,L)s=Z[X]w=e[s]Y=nil s=B(12693-(-321937),{O;o,U;x,n})o=k(o)e=w(s)O=k(O)n=k(n)x=k(x)U=k(U)else j=14488907-867399 end else j=t[u[856352+-856351]]o=h[-775695-(-775697)]x=j f=h[459836-459835]j=x[o]j=j and 328431+3795741 or 16944362-536727 end end else if j<-842265+5424145 then if j<3906407-(-465480)then if j<-441782+4792819 then e=-552558+552558 n=#w c=n==e j=12561215-(-365577)else x=701674+1643144 r=9299044-(-135042)o=S(581863-601492)f=o^x j=r-f r=S(-403101+383490)f=j j=r/f r={j}j=H[S(-55743-(-36065))]end else if j<5320215-798045 then j={}f=j o=403811+-403810 x=t[u[94072+-94063]]O=x x=-444586+444587 j=-885425+10586216 p=x x=-794532-(-794532)A=p<x x=o-p else o=nil j=H[S(337545+-357151)]x=nil f=nil r={}end end else if j<922562+3978944 then if j<683762+4192459 then s=not e i=i+G r=i<=E r=s and r s=i>=E s=e and s r=s or r s=-673764+2498035 j=r and s r=8644878-(-411362)j=j or r else o=t[u[-324258-(-324261)]]x=-318023+318024 f=o~=x j=f and-935504+1120542 or-85148+11082235 end else t[u[389667-389662]]=r f=nil j=14032451-68152 end end end end else if j<780396+6838872 then if j<62907+6409082 then if j<-585574+6558075 then if j<-903069+6652250 then if j<4519437-(-989492)then r=S(397265+-416969)d=-404777+20952901079877 j=H[r]O=t[u[323137+-323136]]p=t[u[-802178-(-802180)]]V=S(-940006-(-920358))A=p(V,d)x=O[A]r=j(x)r=S(-39493-(-19789))j=H[r]O=S(358298-378004)x=H[O]O={x(f)}r=j(R(O))j=-687272+11177371 else P=S(589568+-609206)U=H[P]j=515279+11616322 r=U end else if j<-547070+6448655 then j=t[u[-502571+502572]]r=S(-41365+21753)o=t[u[-593691+593693]]p=S(-401995-(-382391))x=t[u[-475916-(-475919)]]r=j[r]A=5000071451946-314386 O=x(p,A)f=o[O]r=r(j,f)f=r j=f and-675448+7596316 or-838246+2977206 else r={}j=H[S(328764+-348475)]end end else if j<599990+5708081 then if j<6106490-(-128309)then j=-990881+16055153 else t[o]=g N=642781+-642780 Q=t[C]W=Q+N a=L[W]m=Y+a a=369002+-368746 j=m%a Y=j W=t[Z]a=I+W W=736091+-735835 m=a%W j=12874039-(-493625)I=m end else r=S(-884806+865113)f=S(-297308-(-277705))j=H[r]r=H[f]f=S(562660-582263)H[f]=j f=S(-768756+749063)H[f]=r f=t[u[190815-190814]]o=f()j=520586+11112214 end end else if j<8266081-991902 then if j<6319022-(-575309)then if j<6347461-(-341019)then f=h[-348232+348233]o=h[-683858-(-683860)]j=not o x=h[-143037+143040]j=j and-224146+632468 or 8270878-(-941103)else C=2632826370617-(-264849)j=d w=356629+7017595919278 c=S(808694+-828335)U=t[O]P=t[o]Z=S(-616699-(-597056))I=S(206444+-226104)X=S(-685378-(-665781))Y=P(I,w)d=U[Y]n=962933+7489250073642 U=l()t[U]=d s=460421+2119445708117 Y=t[O]I=t[o]w=I(c,n)P=Y[w]Y={}e=S(653758-673452)w=t[O]c=t[o]n=c(e,s)I=w[n]n=t[O]w={}e=t[o]y=704118+22916304939833 s=e(Z,C)c=n[s]n={}s=t[O]Z=t[o]C=Z(X,y)e=s[C]s={}d={[P]=Y,[I]=w,[c]=n,[e]=s}P=l()j=-854185+10006161 c=S(-434768-(-415140))t[P]=d Y=B(-814327+7371181,{P})d=l()I=D(16161783-378333,{O;o,d})t[d]=Y w=t[V]C=S(-808012-(-788363))c=w[c]e=t[O]X=1024460+10996557558324 Y=D(5103279-(-781889),{V;O,o})s=t[o]Z=s(C,X)n=e[Z]c=c(w,n)n=S(-266088+246389)w=H[n]C=S(486961+-506661)C=c[C]Z={C(c)}C={w(R(Z))}e=C[-606390-(-606392)]s=C[341360-341357]n=C[693816-693815]end else if j<541547+6437373 then o=t[u[-961095+961097]]A=28074555305603-(-623758)p=S(41337+-60953)j=S(-128591+108979)x=t[u[-941355+941358]]O=x(p,A)r=o[O]j=f[j]j=j(f,r)o=j j=o and 13325889-(-612648)or 15253492-255470 else e=S(543415+-563108)j=H[e]e=S(-122042-(-102439))H[e]=j j=7139750-(-295769)end end else if j<7687140-119850 then if j<6544684-(-1019102)then j=-1039790+16104062 else f=t[u[1022544+-1022543]]r=#f f=-849036-(-849036)j=r==f j=j and-801338+10282353 or-507727+13890992 end else s,Z=n(e,s)j=s and 1009494+14878970 or-973783+9602158 end end end else if j<9276667-501857 then if j<859023+7707383 then if j<9214627-859347 then if j<-767650+8829270 then G=S(-475383+455692)d=P E=H[G]G=S(-216647+196958)i=E[G]E=i(f,d)i=t[u[-136640+136646]]G=i()j=-793196+15370821 n=E+G c=n+A G=586794+-586793 n=-555437+555693 w=c%n n=x[o]A=w E=A+G i=O[E]c=n..i x[o]=c d=nil else j=true j=j and 610145+5539659 or 15414414-(-808166)end else if j<9088209-674823 then V=nil A=nil O=nil j=363857+13257651 else c=n j=655473-(-300644)Z=c w[c]=Z c=nil end end else if j<8560159-(-171587)then if j<-433202+9062406 then j=-824512+4525575 else j=true j=17225376-1002796 end else U=D(629067+1086760,{})O=S(-470238+450532)r=S(217396+-237086)j=H[r]f=t[u[-385761+385765]]x=H[O]d=S(-364747-(-345127))V=H[d]d={V(U)}A={R(d)}V=310803-310801 p=A[V]O=x(p)x=S(936914+-956619)o=f(O,x)f={o()}r=j(R(f))o=t[u[396215+-396210]]f=r j=o and 103000+9675461 or 5282182-365788 r=o end end else if j<8464481-(-721898)then if j<417886+8535999 then if j<1010256+7786987 then j=-406419+12039219 else j=P r=U j=U and 464881+11666720 or 164933+5522685 end else if j<850119+8287848 then E=t[o]j=E and-697041+16415280 or-978617+16802016 i=E else s,Z=n(e,s)j=s and-509111+13899254 or-417927+10256737 end end else if j<94579+9379994 then if j<-988505+10289782 then O=t[u[-865186-(-865187)]]r=O[f]j=r[o]j=j and 14044223-(-230605)or-107152+16107507 else j=10648283-(-750977)P=S(405578-425235)r=t[u[-756742-(-756745)]]V=t[u[2274+-2273]]Y=340334+11497113461627 d=t[u[90488-90486]]U=d(P,Y)A=V[U]p=r(A,O,x)end else o=t[u[-1020814+1020816]]x=-1019088+1019097 f=o*x o=-431532+33508354019997 r=f+o f=-1036564+35184373125396 j=r%f t[u[619239+-619237]]=j o=412305-412304 j=10474070-(-523017)f=t[u[565517+-565514]]r=f~=o end end end end end else if j<945924+12400076 then if j<-686893+11956329 then if j<-114307+10497200 then if j<-476396+10300296 then if j<-690413+10353064 then if j<10087619-453750 then V=t[u[-681956+681957]]Y=34281360779032-(-218947)d=t[u[352088-352086]]P=S(-969965-(-950267))U=d(P,Y)j=11366581-(-286652)A=V[U]p=f[A]r=p else x=179976+-179976 f=S(-451245-(-431592))j=H[f]o=t[u[480333+-480325]]f=j(o,x)j=4266781-(-189423)end else if j<817261+8951840 then V=not A x=x+p o=x<=O o=V and o V=x>=O V=A and V o=V or o V=800210+2805156 j=o and V o=584438-293391 j=j or o else x=t[u[1029413+-1029407]]o=x==f j=679295+4237099 r=o end end else if j<188700+9971524 then if j<10159860-288958 then n=t[V]s=t[O]y=314215+22126768676056 Z=t[o]X=S(752724-772355)C=Z(X,y)e=s[C]w=n[e]j=w and 1025070+13551620 or 240252+3460811 else m=t[o]g=m j=m and 11311677-(-55517)or 947940+5342546 end else j=r and 9180045-439478 or 13588720-(-375579)end end else if j<-691398+11497188 then if j<957051+9786298 then if j<119317+10518104 then j=H[S(290478+-310157)]o=nil r={}f=nil else r=t[u[599288-599285]]V=t[u[496797+-496796]]d=t[u[-536646+536648]]P=S(19054+-38764)j=10469955-(-929305)Y=-919773+24497599952236 U=d(P,Y)A=V[U]p=r(A,O,x)end else if j<9944972-(-837808)then r=S(-731512-(-711907))j=H[r]A=S(-669842+650156)w=3982978519001-903323 x=t[u[821874+-821873]]Y=22004408097302-881168 U=11092793366558-(-424975)O=t[u[-1028934+1028936]]V=518083+17004335560491 p=O(A,V)o=x[p]d=S(-395442+375803)x=t[u[-457843-(-457846)]]P=16884481764382-(-471704)p=t[u[452599-452598]]A=t[u[-975406+975408]]V=A(d,U)O=p[V]A=t[u[-140877+140878]]V=t[u[323826+-323824]]U=S(-968161+948510)d=V(U,P)p=A[d]I=S(887189+-906865)V=t[u[242648-242647]]d=t[u[230802+-230800]]P=S(755982-775663)U=d(P,Y)c=410361+21053518947154 A=V[U]U=t[u[-445168+445169]]P=t[u[-823695-(-823697)]]Y=P(I,w)d=U[Y]w=S(821951-841549)P=t[u[-486982-(-486983)]]Y=t[u[-844968+844970]]I=Y(w,c)U=P[I]V={[d]=U}U=t[u[-294048+294049]]w=14675956521274-(-213368)P=t[u[679612-679610]]I=S(-71968-(-52291))Y=P(I,w)P=S(-830384-(-810699))d=U[Y]U=t[u[86577+-86573]]P=U[P]Y=t[u[-327309-(-327314)]]P=P(U,Y)f={[o]=x;[O]=p,[A]=V;[d]=P}r={j(f)}r={R(r)}j=H[S(-1051462-(-1031836))]else j=m j=13243224-358103 r=g end end else if j<611412+10450242 then if j<11795417-906100 then Y=5069136177174-(-221474)d=S(171569-191196)p=t[u[521879+-521878]]A=t[u[-236997-(-236999)]]U=-993063+27509325502769 V=A(d,U)O=p[V]x=S(-642191+622536)x=f[x]x=x(f,O)O=936889-936888 r=x or O O=j x=r V=t[u[683717-683716]]P=S(63761-83428)d=t[u[1008411-1008409]]U=d(P,Y)p=S(708277-727932)A=V[U]p=f[p]p=p(f,A)j=p and 10705643-(-947590)or-244177+9772497 r=p else x=331054-330999 o=t[u[-139691-(-139694)]]f=o*x j=95745+4803245 o=-211976+212233 r=f%o t[u[-269987-(-269990)]]=r end else n=#w e=-1011114+1011114 c=n==e j=c and-61879+16275780 or 13511872-585080 end end end else if j<11970059-(-200925)then if j<11358785-(-281578)then if j<-591712+12018846 then if j<11909419-530577 then j=379893+5910593 a=923284-923283 m=L[a]g=m else x=nil O=nil j=14061383-(-460550)end else if j<12488136-996388 then A=t[p]r=A j=518765+11344579 else j=true j=j and 833440+5576186 or 100823+13843901 end end else if j<-92280+12004788 then if j<12754756-937299 then j=O U=S(329886+-349522)A=t[u[446902-446901]]O=r V=t[u[-827240+827242]]P=31261686373413-(-826552)d=V(U,P)p=A[d]r=o==p j=r and-142752+16738663 or-452070-(-866167)else A=r V=S(563437+-583071)r=H[V]I=S(816425+-836026)V=S(-716235+696628)d=S(-619067+599466)j=r[V]V=l()t[V]=j r=H[d]d=S(641447-661068)j=r[d]d=j Y=H[I]U=Y P=j j=Y and-207206+13565219 or 303680+8513769 end else w=S(913415+-933035)U=l()P=-668384-(-668387)Y=287135-287070 G=S(457928-477634)t[U]=r j=t[V]c=v(3606316-(-746675),{})r=j(P,Y)j=109226+-109226 P=l()Y=j t[P]=r r=H[w]j=928637+-928637 I=j w={r(c)}r=-980742+980744 j={R(w)}w=j j=w[r]c=j r=S(577122+-596812)j=H[r]n=t[x]E=H[G]G=E(c)E=S(114139+-133844)i=n(G,E)n={i()}r=j(R(n))j=-559653+5144068 n=l()t[n]=r i=t[P]r=420139-420138 E=i i=-55869+55870 G=i i=-170569+170569 e=G<i i=r-G end end else if j<12494586-(-590904)then if j<11982326-(-277676)then if j<11962021-(-231949)then d=S(329446+-349042)U=945802+20966802634649 r=t[u[-381207-(-381210)]]Y=-437964+4810696734604 p=t[u[-993713-(-993714)]]A=t[u[237945-237943]]j=14274039-(-247894)V=A(d,U)P=S(-557529-(-537907))O=p[V]V=t[u[-723474+723475]]d=t[u[-233695+233697]]U=d(P,Y)A=V[U]p=f[A]A=-774661+774662 x=r(O,p,A)else r={}j=H[S(-494875+475163)]end else if j<13665527-770822 then t[o]=r j=-779763+14147427 else Z=762351-762350 e=#w n=749733+-749732 c=x(n,e)j=1040153+10190395 n=A(w,c)c=nil e=t[I]K=n-Z s=V(K)e[n]=s n=nil end end else if j<13614101-345824 then if j<465201+12704913 then P=19060875755834-581263 A=t[u[-706694-(-706695)]]V=t[u[-691687-(-691689)]]U=S(655934+-675643)d=V(U,P)p=A[d]r=o==p j=r and 331383+10315158 or 426472+10972788 else j=S(-680733+661078)o=t[u[-248716-(-248717)]]j=f[j]p=S(-366064+346377)A=16756612841403-(-7871)x=t[u[167351+-167349]]O=x(p,A)r=o[O]j=j(f,r)o=j j=o and-832103+11661005 or 11249011-(-938389)end else Q=908949-908947 W=L[Q]Q=t[y]a=W==Q j=-810420+11612265 g=a end end end end else if j<-835501+15690554 then if j<14269005-316009 then if j<13478415-(-3495)then if j<14218987-837142 then if j<12918793-(-446045)then w=S(657936-677537)I=H[w]w=S(172134+-191772)Y=I[w]U=Y j=-69279+8886728 else s=k(s)L=nil X=k(X)K=k(K)j=4572054-(-12361)C=k(C)y=k(y)Z=k(Z)end else if j<-588938+13978458 then x=S(-315577+295976)o=H[x]x=S(23576-43245)f=o[x]x=t[u[-878649+878650]]o={f(x)}j=H[S(963669-983334)]r={R(o)}else w=s C=I(Z)Z=nil j=8836030-(-315946)w=nil end end else if j<271260+13671373 then if j<14088928-445620 then r={o}j=H[S(-974281-(-954672))]else x=t[u[340797+-340795]]O=t[u[-967282+967285]]A=S(-139744-(-120049))V=4169037484295-379250 p=O(A,V)r=x[p]j=o[r]r={j}j=H[S(-949167-(-929548))]end else r={}j=H[S(438580-458226)]end end else if j<13880024-(-688218)then if j<13716809-(-666839)then if j<14100906-(-93806)then j=t[u[-596417-(-596424)]]j=j and 199405+9441641 or-303393+4759597 else r=t[u[706396-706395]]j=r[f]j[o]+=x j=213289+4368011 end else if j<13559432-(-924848)then s=S(-85808+66205)G=S(-687787-(-668081))j=H[G]e=H[s]G=j(e)j=S(416743-436436)H[j]=G j=734156+6701363 else f=nil j=H[S(-211120+191478)]o=nil r={}end end else if j<-483640+15242939 then if j<14847850-270633 then n=S(1030771+-1050470)j=817344+6766183 Q=699391+3992749284164 w=H[n]C=t[V]W=S(623392+-643017)y=t[O]L=t[o]a=L(W,Q)X=y[a]Z=C[X]X=S(-802135+782435)X=Z[X]C={X(Z)}Z={w(R(C))}s=Z[-53512+53515]e=Z[-904014+904016]n=Z[801976+-801975]else P=P+Y d=P<=U w=not I d=w and d w=P>=U w=I and w d=w or d w=7035359-(-1012185)j=d and w d=8262469-(-145754)j=j or d end else r=S(-869677+850044)j=H[r]O=t[u[615103-615102]]V=S(721717+-741405)p=t[u[-58654-(-58656)]]U=S(-428233-(-408596))d=200303+20739590264650 A=p(V,d)d=13378472238276-476271 P=19836579358753-1036 x=O[A]r=j(x)r=S(230816+-250449)V=S(260049-279696)j=H[r]O=t[u[-23926-(-23927)]]p=t[u[825889-825887]]A=p(V,d)V=S(847302-866961)x=O[A]r=j(x)r=S(927601-947234)j=H[r]O=t[u[954063-954062]]p=t[u[666914+-666912]]d=-901260+19745094034550 A=p(V,d)x=O[A]A=t[u[-4860-(-4861)]]V=t[u[289095+-289093]]d=V(U,P)p=A[d]U=S(-136689-(-116993))O=f[p]r=j(x,O)r=S(-656758-(-637125))j=H[r]V=S(-129915+110214)d=-470896+9455787327651 O=t[u[131473-131472]]P=22889966170410-(-931960)p=t[u[-108260-(-108262)]]A=p(V,d)x=O[A]A=t[u[1016728-1016727]]V=t[u[-796357-(-796359)]]d=V(U,P)p=A[d]O=f[p]r=j(x,O)d=30471484461841-(-205916)r=S(91553+-111186)j=H[r]V=S(-194781-(-175173))O=t[u[-21333-(-21334)]]p=t[u[704774+-704772]]A=p(V,d)x=O[A]r=j(x)j=-34662+10524761 end end end else if j<15005033-(-888812)then if j<14932559-(-797219)then if j<841995+14495582 then if j<15658403-628306 then j=932371+1206589 o=nil else j=true j=j and 806895+2772094 or-598503+12793694 end else if j<16433860-754127 then o=l()x=S(792216+-811907)j=true O=l()f=h t[o]=j r=H[x]x=S(629776-649378)j=r[x]x=l()t[x]=j j=F(561788+2611560,{})p=l()t[O]=j j=false V=S(-1045133-(-1025513))t[p]=j A=H[V]d=q(561952+2346946,{p})V=A(d)r=V j=V and 299516+11180501 or-668949+12532293 else E=Y==I j=15217868-(-605531)i=E end end else if j<-54904+15891936 then if j<-737368+16553949 then V=865085+27855920758638 r=S(771651-791312)A=S(731614+-751311)f=h[148902-148901]x=t[u[-463384-(-463385)]]O=t[u[481052-481050]]p=O(A,V)r=f[r]o=x[p]r=r(f,o)j=not r j=j and 5140152-(-806660)or 12728799-(-497805)else t[o]=i j=t[o]j=j and 1707120-(-944429)or 9320368-678554 end else C=I(Z)w=s Z=nil j=6646230-(-937297)w=nil end end else if j<-818249+17086347 then if j<-116990+16178483 then if j<-338319+16270718 then P=k(P)c=nil V=k(V)P=l()p=k(p)w=nil x=k(x)n=k(n)x=nil o=k(o)o=nil Y=nil I=nil n=-643377-(-643633)U=k(U)V=S(825840-845474)d=nil A=nil d=S(-561527-(-541926))O=k(O)j=316006+640111 A=S(400075-419709)O=l()t[O]=o I=l()o=l()t[o]=x p=H[A]A=S(172215+-191867)x=p[A]p=l()t[p]=x A=H[V]V=S(-955268+935661)U=S(41064+-60755)x=A[V]V=H[d]d=S(-52379+32710)A=V[d]Y={}w={}d=H[U]U=S(195978+-215653)V=d[U]c=-445288+445289 U=l()d=456076+-456076 t[U]=d d=-146135-(-146137)t[P]=d d={}e=n t[I]=Y n=-325599-(-325600)Y=350148+-350148 s=n n=440381-440381 K=s<n n=c-s else O=t[u[-793406-(-793407)]]j=3632082-(-949218)r=O[f]O=x r[o]=O end else if j<17129045-914904 then w=nil s=l()K=S(568341-587976)x=nil n=l()L=S(-277105+257487)a=nil e=v(-389798+7955412,{n;U;P,p})c={}Y=nil t[n]=c c=l()t[c]=e Z={}X=S(653926+-673610)e={}Y=-59725+8556921878749 t[s]=e e=H[K]y=t[s]V=nil C={[X]=y,[L]=a}K=e(Z,C)e=b(571474+3563595,{s,n;I,U;P;c})n=k(n)p=k(p)P=k(P)p=S(-524397+504729)t[O]=K s=k(s)t[o]=e I=k(I)c=k(c)U=k(U)d=nil A=nil x=H[p]V=t[O]P=S(419622+-439232)d=t[o]U=d(P,Y)A=V[U]p=S(-937697-(-918084))Y=S(522307+-541969)p=x[p]I=-370508+31264887857194 p=p(x,A)x=l()A=S(412865+-432533)t[x]=p p=H[A]n=S(989208-1008838)d=t[O]A=S(1029336+-1048949)U=t[o]P=U(Y,I)A=p[A]I=8801273115018-(-990840)Y=S(405685-425388)V=d[P]A=A(p,V)d=t[O]U=t[o]P=U(Y,I)V=d[P]p=A[V]d=j V=l()e=9113624937873-(-920322)t[V]=p Y=S(426043-445706)P=H[Y]Y=P()I=t[O]w=t[o]c=w(n,e)P=I[c]U=Y[P]j=U and 6298483-(-573626)or-388338+1064354 p=U else j=v(195591+8597060,{O})E={j()}j=H[S(-889621-(-869967))]r={R(E)}end end else if j<-30562+16625586 then if j<16303522-(-122511)then p=-407659+35184372496491 V=-423220-(-423475)j={}t[u[-639544-(-639546)]]=j P=476867+-476866 r=t[u[839436+-839433]]O=r r=o%p t[u[994133+-994129]]=r A=o%V Y=P V=321765+-321763 d=S(-1024391-(-1004700))P=-117227-(-117227)p=A+V t[u[-158877+158882]]=p V=H[d]I=Y<P j=-558302+15135927 d=S(1005998+-1025664)A=V[d]d=851492+-851491 V=A(f)A=S(801095+-820768)P=d-Y x[o]=A U=V A=-131465-(-131506)else Q=-947784-(-947785)W=L[Q]m=j Q=false a=W==Q g=a j=a and 13265113-(-24129)or 10556898-(-244947)end else P=S(576014-595658)Y=283490+3144873669206 r=t[u[-1030228+1030231]]V=t[u[-121572-(-121573)]]d=t[u[305542-305540]]j=11355462-(-43798)U=d(P,Y)A=V[U]p=r(A,O,x)end end end end end end end j=#M return R(r)end,-9403-(-9403),function(H)for S=-381094-(-381095),#H,-788406+788407 do f[H[S]]=f[H[S]]+(-102468-(-102469))end if h then local j=h(true)local R=M(j)R[S(393213+-412897)],R[S(-518615-(-498902))],R[S(-970594+950995)]=H,O,function()return-1090612-(-400872)end return j else return u({},{[S(-600520+580807)]=O,[S(750750-770434)]=H,[S(768980+-788579)]=function()return 205693+-895433 end})end end,function(H,S)local R=x(S)local h=function(...)return j(H,{...},S,R)end return h end,function(H)f[H]=f[H]-(365917-365916)if-402203+402203==f[H]then f[H],t[H]=nil,nil end end,{},function(H,S)local R=x(S)local h=function(h,u)return j(H,{h;u},S,R)end return h end,function(H,S)local R=x(S)local h=function(h,u,M,z,r)return j(H,{h,u,M,z;r},S,R)end return h end,{},function(H,S)local R=x(S)local h=function(h,u,M)return j(H,{h;u;M},S,R)end return h end,function(H)local S,j=-217411-(-217412),H[-454820-(-454821)]while j do f[j],S=f[j]-(-930298-(-930299)),S+(-200359+200360)if 852993+-852993==f[j]then f[j],t[j]=nil,nil end j=H[S]end end,function(H,S)local R=x(S)local h=function(h,u,M,z)return j(H,{h,u;M,z},S,R)end return h end,function(H,S)local R=x(S)local h=function(h,u,M,z,r,t)return j(H,{h;u;M,z,r;t},S,R)end return h end,function(H,S)local R=x(S)local h=function(h)return j(H,{h},S,R)end return h end return(p(-757580+16147449,{}))(R(r))end)(getfenv and getfenv()or _ENV,unpack or table[S(-622623+602985)],newproxy,setmetatable,getmetatable,select,{...})end)(...)
+--// NORMS Main Script (Fully Combined & Integrated)
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+local Lighting = game:GetService("Lighting")
+
+local player = Players.LocalPlayer
+
+if not game or not game:GetService("Players") then
+    error("[NORMS] Must run inside Roblox game")
+end
+
+if not player then
+    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+    player = Players.LocalPlayer
+end
+
+-- =====================
+-- CONFIG
+-- =====================
+local SECRET_KEY = getgenv().SecretKey or "DEFAULT_KEY"
+local UPDATE_URL = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev/update"
+local SETTINGS_URL = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev/account/settings"
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_"
+
+-- Bot State Control
+local BotState = {
+    Running = true,
+    StartTime = os.time(),
+
+    AutoBuySeeds = false,
+    AutoBuyGears = false,
+    AutoCatchPets = false
+}
+
+-- Rarity Decimal Mapping for Embeds
+local RARITY_DATA = {
+    Common = { decimal = 16777215 },
+    Uncommon = { decimal = 65280 },
+    Rare = { decimal = 255 },
+    Epic = { decimal = 8388736 },
+    Legendary = { decimal = 16766720 },
+    Mythic = { decimal = 16711680 }
+}
+
+-- =====================
+-- NETWORKING HELPER
+-- =====================
+local Networking = {}
+
+function Networking.fire(path, ...)
+    local args = {...}
+    local argc = select("#", ...)
+    pcall(function()
+        local shared = ReplicatedStorage:WaitForChild("SharedModules", 5)
+        local netModule = shared and shared:WaitForChild("Networking", 5)
+        if netModule then
+            local net = require(netModule)
+            local current = net
+            for segment in string.gmatch(path, "[^%.]+") do
+                if type(current) == "table" then current = current[segment] end
+            end
+            if current and type(current) == "table" and current.fire then
+                current:fire(unpack(args, 1, argc))
+            elseif current and current.Fire then
+                current:Fire(unpack(args, 1, argc))
+            end
+        end
+    end)
+end
+
+-- =====================
+-- INVENTORY & GAME SCANNER
+-- =====================
+local function getSheckles()
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local sheckles = leaderstats:FindFirstChild("Sheckles")
+        if sheckles then
+            return sheckles.Value
+        end
+    end
+    return 0
+end
+
+local function scanTool(inventory, tool)
+    if not tool:IsA("Tool") then return end
+    local category = tool:GetAttribute("MainCategory")
+
+    if category then
+        local count = tool:GetAttribute("Count") or 1
+        local itemName = tool:GetAttribute("SeedTool") or tool.Name
+
+        if category == "Seed" then
+            inventory.Seeds[itemName] = (inventory.Seeds[itemName] or 0) + count
+        elseif category == "Gear" then
+            inventory.Gear[itemName] = (inventory.Gear[itemName] or 0) + count
+        elseif category == "Crate" then
+            inventory.Crates[itemName] = (inventory.Crates[itemName] or 0) + count
+        end
+    else
+        local cleanLower = tool.Name:lower()
+        if cleanLower ~= "build" and cleanLower ~= "shovel" then
+            inventory.Pets[tool.Name] = (inventory.Pets[tool.Name] or 0) + 1
+        end
+    end
+end
+
+local function gatherInventoryData()
+    local inventory = {
+        Seeds = {},
+        Gear = {},
+        Crates = {},
+        Pets = {}
+    }
+
+    -- Scan Backpack
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in pairs(backpack:GetChildren()) do
+            scanTool(inventory, tool)
+        end
+    end
+
+    -- Scan Character (equipped items)
+    if player.Character then
+        for _, tool in pairs(player.Character:GetChildren()) do
+            scanTool(inventory, tool)
+        end
+    end
+
+    return inventory
+end
+
+local function isPetInInventory(petName)
+    local success, found = pcall(function()
+        local inventories = ReplicatedStorage:FindFirstChild("Inventories") or player:FindFirstChild("Inventory") or ReplicatedStorage:FindFirstChild("PlayerInventories")
+        if not inventories then
+            inventories = player:FindFirstChild("Data") and player.Data:FindFirstChild("Pets")
+        end
+        
+        if inventories then
+            for _, item in ipairs(inventories:GetDescendants()) do
+                if item.Name == petName or item:GetAttribute("PetName") == petName or item.Value == petName then
+                    return true
+                end
+            end
+        end
+        return true
+    end)
+    return success and found
+end
+
+-- =====================
+-- UI & VISUAL SETUP
+-- =====================
+pcall(function()
+    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
+end)
+
+local targetStorage = CoreGui or player:FindFirstChildOfClass("PlayerGui")
+if targetStorage:FindFirstChild("WaterBotUI") then
+    targetStorage.WaterBotUI:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WaterBotUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 99999999
+ScreenGui.Parent = targetStorage
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(1, 0, 1, 0)
+MainFrame.Position = UDim2.new(0, 0, 0, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+MainFrame.BackgroundTransparency = 0 
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local LogoContainer = Instance.new("Frame")
+LogoContainer.Size = UDim2.new(0, 140, 0, 140)
+LogoContainer.Position = UDim2.new(0.5, -70, 0.5, -70)
+LogoContainer.BackgroundTransparency = 1
+LogoContainer.ZIndex = 5
+LogoContainer.Parent = MainFrame
+
+local CenterN = Instance.new("TextLabel")
+CenterN.Size = UDim2.new(0, 50, 0, 50)
+CenterN.Position = UDim2.new(0.5, -25, 0.5, -25)
+CenterN.BackgroundTransparency = 1
+CenterN.Text = "N"
+CenterN.Font = Enum.Font.GothamBold
+CenterN.TextSize = 52
+CenterN.TextColor3 = Color3.fromRGB(0, 0, 0)
+CenterN.TextStrokeTransparency = 1
+CenterN.ZIndex = 6
+CenterN.Parent = LogoContainer
+
+local letters = {"O", "R", "M", "S"}
+local labelObjects = {}
+
+for i, letter in ipairs(letters) do
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0, 20, 0, 20)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = letter
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 18
+    lbl.TextColor3 = Color3.fromRGB(0, 0, 0)
+    lbl.ZIndex = 6
+    lbl.Parent = LogoContainer
+    table.insert(labelObjects, lbl)
+end
+
+-- Rotation & Logo Orbit Engine
+task.spawn(function()
+    local angle = 0
+    local radius = 46
+    local rotationSpeed = 0.18
+    
+    while BotState.Running do
+        local deltaTime = task.wait()
+        angle = angle + (rotationSpeed * deltaTime)
+        
+        for i, lbl in ipairs(labelObjects) do
+            local currentAngle = angle + ((i - 1) * (math.pi / 2))
+            local xOffset = math.cos(currentAngle) * radius
+            local yOffset = math.sin(currentAngle) * radius
+            
+            lbl.Position = UDim2.new(0.5, xOffset - 10, 0.5, yOffset - 10)
+        end
+    end
+end)
+
+-- =====================
+-- OPTIMIZERS & PERFORMANCE
+-- =====================
+pcall(function()
+    setfpscap(15)
+end)
+
+pcall(function()
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.Brightness = 2
+    for _, v in ipairs(Lighting:GetChildren()) do
+        if v:IsA("PostEffect") or v:IsA("Sky") then
+            v:Destroy()
+        end
+    end
+end)
+
+-- Continuous Low-Lag Booster (Clearing particles, textures, and heavy assets)
+task.spawn(function()
+    while BotState.Running do
+        pcall(function()
+            for _, v in ipairs(Workspace:GetDescendants()) do
+                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                    v:Destroy()
+                elseif v:IsA("BasePart") then
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.CastShadow = false
+                end
+            end
+        end)
+        task.wait(10)
+    end
+end)
+
+-- Instant and continuous cleanup for Workspace.Gardens and Map folders
+task.spawn(function()
+    while BotState.Running do
+        pcall(function()
+            local gardens = Workspace:FindFirstChild("Gardens")
+            if gardens then
+                gardens:Destroy()
+            end
+
+            local map = Workspace:FindFirstChild("Map")
+            if map then
+                for _, name in ipairs({"Garden", "Gardens", "GardenFolder"}) do
+                    local folder = map:FindFirstChild("Map"):FindFirstChild(name) or map:FindFirstChild(name)
+                    if folder then
+                        folder:Destroy()
+                    end
+                end
+            end
+        end)
+        task.wait(0.001)
+    end
+end)
+
+-- Anti-AFK Engine
+task.spawn(function()
+    local VirtualUser = game:GetService("VirtualUser")
+
+    player.Idled:Connect(function()
+        pcall(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+        end)
+    end)
+
+    while BotState.Running do
+        task.wait(240)
+
+        pcall(function()
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+
+            if hrp then
+                local oldPos = hrp.CFrame
+                hrp.CFrame = oldPos * CFrame.new(0, 0, 0.1)
+                task.wait(0.2)
+                hrp.CFrame = oldPos
+            end
+        end)
+    end
+end)
+
+-- =====================
+-- DISCORD & NOTIFICATIONS
+-- =====================
+local function sendDiscordEmbed(username, petName, rarity, price)
+    pcall(function()
+        local info = RARITY_DATA[rarity] or RARITY_DATA["Common"]
+        local embedColor = info.decimal
+        
+        local embed = {
+            ["title"] = "🐾 New Pet Caught!",
+            ["color"] = embedColor,
+            ["fields"] = {
+                {
+                    ["name"] = "Username",
+                    ["value"] = tostring(username),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Name",
+                    ["value"] = tostring(petName),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Rarity",
+                    ["value"] = tostring(rarity),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Price",
+                    ["value"] = string.format("**₵ %s**", tostring(price)),
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Norms Pet Catcher"
+            }
+        }
+
+        local data = {
+            ["embeds"] = { embed }
+        }
+        
+        local body = HttpService:JSONEncode(data)
+        request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = body
+        })
+    end)
+end
+
+local function showNotification(petName, rarity, price)
+    local message = string.format("%s %s\nfor ₵ %s", tostring(rarity), tostring(petName), tostring(price))
+    
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "Pet Caught!",
+            Text = message,
+            Duration = 5,
+        })
+    end)
+end
+
+-- =====================
+-- MAIN AUTOMATION LOOP (PET CATCHING)
+-- =====================
+task.spawn(function()
+    local notifiedPets = {}
+
+    while BotState.Running do
+        task.wait(0.01)
+        
+        if not BotState.AutoCatchPets then
+            task.wait(1)
+            continue
+        end
+        
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            continue
+        end
+        local humanoidRootPart = character.HumanoidRootPart
+
+        local map = Workspace:FindFirstChild("Map")
+        if not map then continue end
+        
+        local wildPetSpawns = map:FindFirstChild("WildPetSpawns")
+        local wildPetRef = map:FindFirstChild("WildPetRef")
+        if not wildPetSpawns or not wildPetRef then continue end
+
+        local spawns = wildPetSpawns:GetChildren()
+        
+        if #spawns == 0 then
+            task.wait(0.1)
+            continue
+        end
+
+        for _, spawnModel in ipairs(spawns) do
+            local spawnName = spawnModel.Name
+            local uuid = spawnName:match("WildPet_[^_]+_WildPet_(.+)") or spawnName:match("_(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") or spawnName
+            local petRef = wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
+
+            if petRef and spawnModel.Parent then
+                local rootPart = spawnModel:FindFirstChild("RootPart") or spawnModel.PrimaryPart or spawnModel:FindFirstChildWhichIsA("BasePart")
+                if not rootPart then continue end
+
+                local currentOwner = petRef:GetAttribute("OwnerUserId")
+
+                if currentOwner == player.UserId then
+                    if not notifiedPets[spawnModel] then
+                        notifiedPets[spawnModel] = true
+                        
+                        local petName = petRef:GetAttribute("PetName") or "Unknown"
+                        local rarity = petRef:GetAttribute("Rarity") or "Common"
+                        local price = petRef:GetAttribute("Price") or "0"
+
+                        task.wait(0.2)
+                        if isPetInInventory(petName) then
+                            showNotification(petName, rarity, price)
+                            sendDiscordEmbed(player.Name, petName, rarity, price)
+                        end
+                    end
+                else
+                    if notifiedPets[spawnModel] then
+                        notifiedPets[spawnModel] = nil
+                    end
+
+                    if humanoidRootPart and humanoidRootPart.Parent then
+                        humanoidRootPart.CFrame = rootPart.CFrame + Vector3.new(3, 0, 3)
+                    end
+
+                    pcall(function()
+                        local prompt = rootPart:FindFirstChild("BuyPrompt", true) or spawnModel:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            prompt.HoldDuration = 0
+                            fireproximityprompt(prompt)
+                        end
+                    end)
+                end
+            end
+        end
+        
+        for model, _ in pairs(notifiedPets) do
+            if not model.Parent then
+                notifiedPets[model] = nil
+            end
+        end
+    end
+end)
+
+-- =====================
+-- AUTO-BUY SEEDS LOOP
+-- =====================
+task.spawn(function()
+    local seedShopFolder = ReplicatedStorage:WaitForChild("StockValues", 10) and ReplicatedStorage.StockValues:WaitForChild("SeedShop", 5) and ReplicatedStorage.StockValues.SeedShop:WaitForChild("Items", 5)
+    
+    while BotState.Running do
+        if BotState.AutoBuySeeds and seedShopFolder then
+            for _, seedInstance in ipairs(seedShopFolder:GetChildren()) do
+                if not BotState.Running or not BotState.AutoBuySeeds then break end
+                
+                local stock = seedInstance.Value
+                if stock > 0 or stock == -1 then
+                    local seedName = seedInstance.Name
+                    Networking.fire("SeedShop.PurchaseSeed", seedName)
+                    task.wait(0.15)
+                end
+            end
+        end
+        task.wait(1.5)
+    end
+end)
+
+-- =====================
+-- AUTO-BUY GEARS LOOP
+-- =====================
+task.spawn(function()
+    local gearShopFolder = ReplicatedStorage:WaitForChild("StockValues", 10) and ReplicatedStorage.StockValues:WaitForChild("GearShop", 5) and ReplicatedStorage.StockValues.GearShop:WaitForChild("Items", 5)
+    
+    while BotState.Running do
+        if BotState.AutoBuyGears and gearShopFolder then
+            for _, gearInstance in ipairs(gearShopFolder:GetChildren()) do
+                if not BotState.Running or not BotState.AutoBuyGears then break end
+                
+                local stock = gearInstance.Value
+                if stock > 0 or stock == -1 then
+                    local gearName = gearInstance.Name
+                    Networking.fire("GearShop.PurchaseGear", gearName)
+                    task.wait(0.15)
+                end
+            end
+        end
+        task.wait(2.5)
+    end
+end)
+
+-- =====================
+-- SETTINGS DOWNLOAD LOOP
+-- =====================
+
+task.spawn(function()
+
+    while BotState.Running do
+
+        local success, response = pcall(function()
+            return request({
+                Url = SETTINGS_URL .. "?secret_key=" .. SECRET_KEY,
+                Method = "GET"
+            })
+        end)
+
+        if success and response.StatusCode == 200 then
+
+            local ok, settings = pcall(function()
+                return HttpService:JSONDecode(response.Body)
+            end)
+
+            if ok and settings.success and settings.settings then
+
+                BotState.AutoBuySeeds = settings.settings.AutoBuySeeds == true
+                BotState.AutoBuyGears = settings.settings.AutoBuyGears == true
+                BotState.AutoCatchPets = settings.settings.AutoCatchPets == true
+
+                print(
+                    "[NORMS SETTINGS]",
+                    BotState.AutoBuySeeds,
+                    BotState.AutoBuyGears,
+                    BotState.AutoCatchPets
+                )
+
+            end
+
+        end
+
+        task.wait(2)
+
+    end
+
+end)
+
+-- =====================
+-- CONTINUOUS SYNC & UPLOAD LOOP
+-- =====================
+print("Starting NORMS background continuous sync loop...")
+
+task.spawn(function()
+    while BotState.Running do
+        local currentInventory = gatherInventoryData()
+        
+        local data = {
+            secret_key = SECRET_KEY,
+            username = player.Name,
+            userid = tostring(player.UserId),
+            sheckles = getSheckles(),
+            inventory = currentInventory
+        }
+
+        local success, response = pcall(function()
+            return request({
+                Url = UPDATE_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = HttpService:JSONEncode(data)
+            })
+        end)
+
+        if success then
+            print("[NORMS] Sync successful - Status:", response.StatusCode)
+        else
+            warn("[NORMS] Sync Failed:", tostring(response))
+        end
+
+        task.wait(5)
+    end
+end)
