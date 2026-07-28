@@ -287,7 +287,14 @@ font-weight:700;
 color:var(--subtext-color);
 text-align:center;
 flex-shrink:0;
+overflow:hidden;
 
+}
+
+.hero-icon img {
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 
 
@@ -674,12 +681,27 @@ margin-bottom:8px;
 
 display:flex;
 justify-content:space-between;
+align-items: center;
 background:var(--item-bg);
 padding:8px 12px;
 border-radius:8px;
 margin-bottom:6px;
 font-size:14px;
 
+}
+
+.item-left {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.item-icon {
+width: 24px;
+height: 24px;
+object-fit: contain;
+border-radius: 4px;
+flex-shrink: 0;
 }
 
 
@@ -921,6 +943,68 @@ let currentInventory = {};
 let activeDropdown = null;
 let currentActiveType = {};
 let currentCaptcha = "";
+
+
+// ASSET MAPPINGS
+const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
+
+const logoAssets = {
+  account: assetBase + "AccountLogo.webp",
+  garden: assetBase + "GrowAGarden2Logo.webp",
+  roblox: assetBase + "RobloxLogo.webp",
+  tutorial: assetBase + "TutorialLogo.webp"
+};
+
+const seedAssets = {
+  "apple": assetBase + "AppleSeed.webp",
+  "bamboo": assetBase + "BambooSeed.webp",
+  "banana": assetBase + "BananaSeed.webp",
+  "blueberry": assetBase + "BlueberrySeed.webp",
+  "briar rose": assetBase + "BriarRoseSeed.webp",
+  "cactus": assetBase + "CactusSeed.webp",
+  "carrot": assetBase + "CarrotSeed.webp",
+  "cherry": assetBase + "CherrySeed.webp",
+  "coconut": assetBase + "CoconutSeed.webp",
+  "corn": assetBase + "CornSeed.webp",
+  "dragon fruit": assetBase + "DragonFruitSeed.webp",
+  "dragons breath": assetBase + "DragonsBreathSeed.webp",
+  "fire fern": assetBase + "FireFernSeed.webp"
+};
+
+const petAssets = {
+  "bald eagle": assetBase + "BaldEagle.webp",
+  "bear": assetBase + "Bear.webp",
+  "bee": assetBase + "Bee.webp",
+  "black dragon": assetBase + "BlackDragon.webp",
+  "butterfly": assetBase + "Butterfly.webp",
+  "deer": assetBase + "Deer.webp",
+  "frog": assetBase + "FrogNoBackground.webp",
+  "golden dragonfly": assetBase + "GoldenDragonfly.webp",
+  "ice serpent": assetBase + "IceSerpent.webp",
+  "monkey": assetBase + "Monkey.webp",
+  "owl": assetBase + "Owl.webp",
+  "racoon": assetBase + "Racoon.webp",
+  "robin": assetBase + "Robin.webp"
+};
+
+function getItemIcon(type, name) {
+  let cleanName = name.trim().toLowerCase();
+  if (type === "Seeds") {
+    // try exact or remove "seed" suffix matching
+    for (let key in seedAssets) {
+      if (cleanName.includes(key)) {
+        return seedAssets[key];
+      }
+    }
+  } else if (type === "Pets") {
+    for (let key in petAssets) {
+      if (cleanName.includes(key)) {
+        return petAssets[key];
+      }
+    }
+  }
+  return null;
+}
 
 
 
@@ -1389,7 +1473,7 @@ document.getElementById("app").innerHTML = `
 
 
 <div class="hero-icon">
-Icon
+<img src="${logoAssets.garden}" alt="Logo">
 </div>
 
 
@@ -1616,7 +1700,7 @@ Back
 
 
 <div class="hero-icon">
-Icon
+<img src="${logoAssets.account}" alt="Logo">
 </div>
 
 
@@ -1827,7 +1911,7 @@ Back
 <div class="hero-box">
 
 <div class="hero-icon">
-Icon
+<img src="${logoAssets.roblox}" alt="Logo">
 </div>
 
 <div>
@@ -1912,7 +1996,7 @@ let html = `
 <button class="back" onclick="renderMain()">Back</button>
 
 <div class="hero-box">
-<div class="hero-icon">Icon</div>
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
 <div>
 <div class="hero-title">Setting</div>
 <div class="hero-subtitle">Manage account details and display settings</div>
@@ -1967,7 +2051,7 @@ let html = `
 <button class="back" onclick="renderMain()">Back</button>
 
 <div class="hero-box">
-<div class="hero-icon">Icon</div>
+<div class="hero-icon"><img src="${logoAssets.tutorial}" alt="Logo"></div>
 <div>
 <div class="hero-title">Tutorial</div>
 <div class="hero-subtitle">Learn how to use NORMS Dashboard</div>
@@ -2479,17 +2563,21 @@ ${type} Inventory
 
 for(let name in merged){
 
+let iconUrl = getItemIcon(type, name);
+let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
 
 html += `
 
 
 <div class="item">
 
-
+<div class="item-left">
+${iconHtml}
 <div class="item-name">
 
 ${name}
 
+</div>
 </div>
 
 
