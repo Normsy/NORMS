@@ -1699,29 +1699,48 @@ if(!isSwiping) return;
 isSwiping = false;
 if(!isHorizontal) return;
 
-let diff = currentX - startX;
-box.style.transition = 'transform 0.2s ease-out';
-
-if(diff < -110) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(-236px)`;
-currentlySwipedUsername = username;
-} else if(diff > 75) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(90px)`;
-currentlySwipedUsername = username;
-} else {
-box.style.transform = 'translateX(0px)';
-if(currentlySwipedUsername === username) {
-currentlySwipedUsername = null;
-}
-}
+handleTouchEnd(e, box, username);
 }, {passive: true});
 });
+}
+
+function handleTouchEnd(e, box, username) {
+    const diff = currentX - startX;
+    
+    // Reset transition
+    box.style.transition = 'transform 0.3s ease';
+
+    // If swiped far enough to the right, trigger deletion directly
+    if (diff > 110) {
+        box.style.transform = 'translateX(0px)';
+        if (currentlySwipedUsername === username) {
+            currentlySwipedUsername = null;
+        }
+        deleteAccount(username);
+    } 
+    // If swiped right just enough to reveal the actions menu
+    else if (diff > 50) {
+        if (currentlySwipedUsername && currentlySwipedUsername !== username) {
+            resetSwipedCard(currentlySwipedUsername);
+        }
+        box.style.transform = 'translateX(90px)';
+        currentlySwipedUsername = username;
+    } 
+    // If swiped left to reveal right-side actions
+    else if (diff < -50) {
+        if (currentlySwipedUsername && currentlySwipedUsername !== username) {
+            resetSwipedCard(currentlySwipedUsername);
+        }
+        box.style.transform = 'translateX(-90px)';
+        currentlySwipedUsername = username;
+    } 
+    // Otherwise snap back to center
+    else {
+        box.style.transform = 'translateX(0px)';
+        if (currentlySwipedUsername === username) {
+            currentlySwipedUsername = null;
+        }
+    }
 }
 
 function toggleAutoFeature(element, username, feature) {
