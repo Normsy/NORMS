@@ -992,6 +992,7 @@ let currentActiveType = {};
 let mainActiveType = null;
 let currentCaptcha = "";
 let autoRefreshInterval = null;
+let currentPage = "main";
 
 
 // ASSET MAPPINGS
@@ -1072,7 +1073,7 @@ showLogin();
 
 
 function showLogin(){
-
+currentPage = "login";
 generateCaptcha();
 
 document.getElementById("app").innerHTML = `
@@ -1134,7 +1135,7 @@ Create account
 
 
 function showRegister(){
-
+currentPage = "register";
 generateCaptcha();
 
 document.getElementById("app").innerHTML = `
@@ -1377,7 +1378,11 @@ accounts = data.accounts;
 userInfo = data.user || {};
 
 
-renderMain(silent);
+if (silent) {
+  updateCurrentPageData();
+} else {
+  renderMain();
+}
 
 
 }
@@ -1430,6 +1435,7 @@ class:"offline"
 
 
 function renderMain(silent = false){
+currentPage = "main";
 
 
 let online = 0;
@@ -1526,7 +1532,7 @@ ONLINE / TOTAL
 </div>
 
 
-<div class="stat-value">
+<div class="stat-value" id="stat-online">
 
 ${online}/${accounts.length}
 
@@ -1548,7 +1554,7 @@ TOTAL SHECKLES
 </div>
 
 
-<div class="stat-value money">
+<div class="stat-value money" id="stat-sheckles">
 
 ${totalSheckles.toLocaleString()}
 
@@ -1570,7 +1576,7 @@ TOTAL ITEMS
 </div>
 
 
-<div class="stat-value">
+<div class="stat-value" id="stat-items">
 
 ${totalItems.toLocaleString()}
 
@@ -1592,7 +1598,7 @@ TOTAL PETS
 </div>
 
 
-<div class="stat-value">
+<div class="stat-value" id="stat-pets">
 
 ${totalPets.toLocaleString()}
 
@@ -1698,6 +1704,143 @@ if(mainActiveType) {
 
 
 
+function updateDashboardStats() {
+  let online = 0;
+  let totalSheckles = 0;
+  let totalItems = 0;
+  let totalPets = 0;
+
+  accounts.forEach(acc=>{
+    if(getStatus(acc.updated_at).class=="online"){
+      online++;
+    }
+    totalSheckles += Number(acc.sheckles || 0);
+    let inv = acc.inventory || {};
+    let sCount = totalFiltered(inv.Seeds, "Seeds");
+    let gCount = totalFiltered(inv.Gear, "Gear");
+    let cCount = totalFiltered(inv.Crates, "Crates");
+    let pCount = totalFiltered(inv.Pets, "Pets");
+    totalItems += (sCount + gCount + cCount + pCount);
+    totalPets += pCount;
+  });
+
+  let elOnline = document.getElementById("stat-online");
+  let elSheckles = document.getElementById("stat-sheckles");
+  let elItems = document.getElementById("stat-items");
+  let elPets = document.getElementById("stat-pets");
+
+  if(elOnline) elOnline.innerText = `${online}/${accounts.length}`;
+  if(elSheckles) elSheckles.innerText = totalSheckles.toLocaleString();
+  if(elItems) elItems.innerText = totalItems.toLocaleString();
+  if(elPets) elPets.innerText = totalPets.toLocaleString();
+
+  if(mainActiveType) {
+    showMainDropdownContent(mainActiveType);
+  }
+}
+
+
+
+function updateOnlineStatus() {
+  accounts.forEach(acc => {
+    let status = getStatus(acc.updated_at);
+    let container = document.querySelector(`.account-card-container[data-username="${acc.roblox_username}"]`);
+    if(container) {
+      let statusEl = container.querySelector('.status');
+      let userEl = container.querySelector('.user');
+      if(statusEl) {
+        statusEl.className = `status ${status.class}`;
+        statusEl.innerText = status.text;
+      }
+      if(userEl) {
+        let textNode = userEl.lastChild;
+        if(textNode) {
+          userEl.innerHTML = `${status.icon} ${acc.roblox_username}`;
+        }
+      }
+    }
+  });
+}
+
+
+
+function updateInventory(username) {
+  let account = accounts.find(acc => acc.roblox_username === username);
+  if(!account) return;
+
+  let activeType = currentActiveType[username];
+  let targetInventory = account.inventory || {};
+
+  let slider = document.getElementById("slider-" + username);
+  if(slider) {
+    let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+    slider.innerHTML = `
+      ${createButton("💰 Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
+      ${createButton("🌱 Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+      ${createButton("⚙️ Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+      ${createButton("📦 Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+      ${createButton("🐾 Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+    `;
+  }
+
+  if(activeType) {
+    let box = document.getElementById("drop-" + username);
+    if(box && box.classList.contains("open")) {
+      let items = targetInventory[activeType] || {};
+      let merged = {};
+      for(let name in items){
+        let clean = name.trim();
+        let cleanLower = clean.toLowerCase();
+        if(activeType === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) continue;
+        merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
+      }
+
+      let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+      let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
+
+      for(let name in merged){
+        let iconUrl = getItemIcon(activeType, name);
+        let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[activeType] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[activeType] || ""}</span>`;
+
+        html += `
+          <div class="item">
+            <div class="item-left">
+              ${iconHtml}
+              <div class="item-name">${name}</div>
+            </div>
+            <div class="item-count">x${merged[name].toLocaleString()}</div>
+          </div>
+        `;
+      }
+      box.innerHTML = html || "<div class='empty'>No items</div>";
+    }
+  }
+}
+
+
+
+function updateAccountsView() {
+  updateOnlineStatus();
+  accounts.forEach(acc => {
+    let slot = document.getElementById("slot-" + acc.roblox_username);
+    if(slot && slot.innerHTML !== "") {
+      updateInventory(acc.roblox_username);
+    }
+  });
+}
+
+
+
+function updateCurrentPageData() {
+  if (currentPage === "main") {
+    updateDashboardStats();
+  } else if (currentPage === "accounts") {
+    updateAccountsView();
+  }
+}
+
+
+
 function toggleMainItems(type) {
   let box = document.getElementById("main-drop");
   if(!box) return;
@@ -1779,7 +1922,7 @@ function showMainDropdownContent(type) {
 
 
 function openAccountsTab(){
-
+currentPage = "accounts";
 
 let html = `
 
@@ -1843,7 +1986,7 @@ let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 html += `
 
 
-<div class="account-card-container" data-username="${escapedUsername}">
+<div class="account-card-container" data-username="${acc.roblox_username}">
 <div class="swipe-actions-left-bg">
 <button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
 </div>
@@ -1943,7 +2086,6 @@ let startY = 0;
 let currentX = 0;
 let isSwiping = false;
 let isHorizontal = false;
-let username = container.getAttribute('data-username');
 
 box.addEventListener('touchstart', (e) => {
 startX = e.touches[0].clientX;
@@ -2039,6 +2181,7 @@ loadAccounts();
 
 
 function openScriptTab(){
+currentPage = "script";
 
 let robloxScript = `getgenv().SecretKey = "${secretKey || ""}"\n\nloadstring(game:HttpGet("https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/Main"))()`;
 
@@ -2112,6 +2255,7 @@ document.getElementById("app").innerHTML = html;
 
 
 function openMailTab(){
+currentPage = "mail";
 
 let html = `
 
@@ -2132,6 +2276,7 @@ document.getElementById("app").innerHTML = html;
 
 
 function openSettingsTab(){
+currentPage = "settings";
 
 let currentUsername = userInfo.username || "User";
 let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
@@ -2190,6 +2335,7 @@ document.getElementById("app").innerHTML = html;
 }
 
 function openTutorialTab(){
+currentPage = "tutorial";
 
 let html = `
 
@@ -2719,7 +2865,7 @@ html += `
 <div class="item">
 
 <div class="item-left">
-{iconHtml}
+${iconHtml}
 <div class="item-name">
 
 ${name}
