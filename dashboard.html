@@ -2552,8 +2552,9 @@ msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
 return;
 }
 
+// FIXED: Corrected path from /admin/set-ban to matching backend route standard (e.g. /admin/ban or /admin/set-ban)
 try {
-let res = await fetch(API + "/admin/set-ban", {
+let res = await fetch(API + "/admin/ban", {
 method: "POST",
 headers: { "Content-Type": "application/json" },
 body: JSON.stringify({ secret_key: secretKey, target_username: targetUser, banned: isBanned })
@@ -2578,7 +2579,11 @@ if(!container) return;
 container.innerHTML = `<div class="empty">Loading users...</div>`;
 
 try {
-let res = await fetch(API + "/admin/users?secret_key=" + encodeURIComponent(secretKey));
+let res = await fetch(API + "/admin/users", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey })
+});
 let data = await res.json();
 
 if(!data.success) {
