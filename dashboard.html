@@ -509,7 +509,7 @@ cursor: pointer;
 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 user-select: none;
 text-align: center;
-width: 72px;
+width: 65px;
 }
 
 [data-theme="dark"] .toggle-switch-wrapper {
@@ -1626,7 +1626,7 @@ if (currentlySwipedUsername) {
   if (container) {
     let box = container.querySelector('.account-box');
     if (box) {
-      box.style.transform = 'translateX(-236px)';
+      box.style.transform = 'translateX(-218px)';
     }
   }
 }
@@ -1709,7 +1709,7 @@ isHorizontal = true;
 if(isHorizontal) {
 currentX = x;
 let maxRight = 100;
-let maxLeft = -250;
+let maxLeft = -230;
 
 if (currentlySwipedUsername === username) {
 if (diffX > 0) diffX = 0;
@@ -1735,7 +1735,7 @@ if(diff < -40) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
-box.style.transform = `translateX(-236px)`;
+box.style.transform = `translateX(-218px)`;
 currentlySwipedUsername = username;
 localStorage.setItem("norms_swiped_username", username);
 } else if(diff > 40) {
