@@ -1731,31 +1731,42 @@ function toggleAutoFeature(element, username, feature) {
   }
 }
 
-async function deleteAccount(username){
-if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
-return;
-}
+async function deleteAccount(username) {
+  if (!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
+    return;
+  }
 
-showLoading("Deleting account...");
+  showLoading("Deleting account...");
 
-try {
-let res = await fetch(API + "/delete-account", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
-});
-let data = await res.json();
+  try {
+    let res = await fetch(API + "/delete-account", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        secret_key: secretKey, 
+        roblox_username: username,
+        username: username 
+      })
+    });
+    
+    let data = await res.json();
 
-if(data && data.success){
-  loadAccounts();
-} else {
-  alert((data && data.message) || "Failed to delete account");
-  loadAccounts();
-}
-} catch(e) {
-alert("Network error occurred");
-loadAccounts();
-}
+    if (data && data.success) {
+      accounts = accounts.filter(acc => acc.roblox_username !== username && acc.username !== username);
+      
+      if (typeof currentlySwipedUsername !== 'undefined' && currentlySwipedUsername === username) {
+        currentlySwipedUsername = null;
+      }
+
+      openAccountsTab();
+    } else {
+      alert((data && data.message) || "Failed to delete account");
+      loadAccounts();
+    }
+  } catch (e) {
+    alert("Network error occurred");
+    loadAccounts();
+  }
 }
 
 function openScriptTab(){
