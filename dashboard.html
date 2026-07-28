@@ -338,6 +338,19 @@ box-shadow:0 2px 6px rgba(0,0,0,.02);
 
 }
 
+.stat-card.clickable {
+cursor: pointer;
+transition: border-color 0.2s;
+}
+
+.stat-card.clickable.active-card {
+border: 2px solid #9ca3af;
+}
+
+[data-theme="dark"] .stat-card.clickable.active-card {
+border: 2px solid #64748b;
+}
+
 
 .stat-label{
 
@@ -942,6 +955,7 @@ let userInfo = {};
 let currentInventory = {};
 let activeDropdown = null;
 let currentActiveType = {};
+let mainActiveType = null;
 let currentCaptcha = "";
 
 
@@ -956,11 +970,15 @@ const logoAssets = {
 };
 
 function getItemIcon(type, name) {
-  let cleanName = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  let cleanName = name.trim().toLowerCase();
   if (type === "Seeds") {
     return `${assetBase}Seed/${name.trim().replace(/\s+/g, '')}Seed.webp`;
   } else if (type === "Pets") {
     return `${assetBase}Pet/${name.trim().replace(/\s+/g, '')}.webp`;
+  } else if (type === "AllItems") {
+    // Check if it matches seed or pet
+    let seedUrl = `${assetBase}Seed/${name.trim().replace(/\s+/g, '')}Seed.webp`;
+    return seedUrl;
   }
   return null;
 }
@@ -1508,7 +1526,7 @@ ${totalSheckles.toLocaleString()}
 
 
 
-<div class="stat-card">
+<div class="stat-card clickable ${mainActiveType === 'TotalItems' ? 'active-card' : ''}" onclick="toggleMainItems('TotalItems')">
 
 <div class="stat-label">
 
@@ -1530,7 +1548,7 @@ ${totalItems.toLocaleString()}
 
 
 
-<div class="stat-card">
+<div class="stat-card clickable ${mainActiveType === 'TotalPets' ? 'active-card' : ''}" onclick="toggleMainItems('TotalPets')">
 
 <div class="stat-label">
 
@@ -1550,6 +1568,9 @@ ${totalPets.toLocaleString()}
 
 
 </div>
+
+
+<div class="global-dropdown" id="main-drop"></div>
 
 
 
@@ -1634,8 +1655,90 @@ Log Out
 
 `;
 
+if(mainActiveType) {
+  showMainDropdownContent(mainActiveType);
+}
+
+}
 
 
+
+function toggleMainItems(type) {
+  let box = document.getElementById("main-drop");
+  if(!box) return;
+
+  if(mainActiveType === type) {
+    mainActiveType = null;
+    box.classList.remove("open");
+    renderMain();
+    return;
+  }
+
+  mainActiveType = type;
+  renderMain();
+}
+
+function showMainDropdownContent(type) {
+  let box = document.getElementById("main-drop");
+  if(!box) return;
+
+  let aggregated = {};
+
+  accounts.forEach(acc => {
+    let inv = acc.inventory || {};
+    if(type === 'TotalItems') {
+      ['Seeds', 'Gear', 'Crates', 'Pets'].forEach(cat => {
+        let catItems = inv[cat] || {};
+        for(let name in catItems) {
+          let cleanName = name.trim();
+          let cleanLower = cleanName.toLowerCase();
+          if(cat === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) continue;
+          aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(catItems[name]) || 0);
+        }
+      });
+    } else if(type === 'TotalPets') {
+      let petItems = inv['Pets'] || {};
+      for(let name in petItems) {
+        let cleanName = name.trim();
+        let cleanLower = cleanName.toLowerCase();
+        if(cleanLower === "build" || cleanLower === "shovel") continue;
+        aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(petItems[name]) || 0);
+      }
+    }
+  });
+
+  let titleText = type === 'TotalItems' ? 'Total Items Inventory' : 'Total Pets Inventory';
+  let iconSymbol = type === 'TotalItems' ? '📦' : '🐾';
+
+  let html = `
+    <div class="dropdown-header">
+      ${iconSymbol} ${titleText}
+    </div>
+  `;
+
+  let keys = Object.keys(aggregated);
+  if(keys.length === 0) {
+    html += `<div class='empty'>No items found</div>`;
+  } else {
+    keys.forEach(name => {
+      let iconType = type === 'TotalPets' ? 'Pets' : 'Seeds';
+      let iconUrl = getItemIcon(iconType, name);
+      let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
+
+      html += `
+        <div class="item">
+          <div class="item-left">
+            ${iconHtml}
+            <div class="item-name">${name}</div>
+          </div>
+          <div class="item-count">x${aggregated[name].toLocaleString()}</div>
+        </div>
+      `;
+    });
+  }
+
+  box.innerHTML = html;
+  box.classList.add("open");
 }
 
 
