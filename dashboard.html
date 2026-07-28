@@ -957,6 +957,7 @@ let activeDropdown = null;
 let currentActiveType = {};
 let mainActiveType = null;
 let currentCaptcha = "";
+let autoRefreshInterval = null;
 
 
 // ASSET MAPPINGS
@@ -976,7 +977,6 @@ function getItemIcon(type, name) {
   } else if (type === "Pets") {
     return `${assetBase}Pet/${name.trim().replace(/\s+/g, '')}.webp`;
   } else if (type === "AllItems") {
-    // Check if it matches seed or pet
     let seedUrl = `${assetBase}Seed/${name.trim().replace(/\s+/g, '')}Seed.webp`;
     return seedUrl;
   }
@@ -1022,6 +1022,7 @@ document.getElementById("app").innerHTML = `
 
 function logout(){
 
+if(autoRefreshInterval) clearInterval(autoRefreshInterval);
 showLoading("Logging out...");
 
 setTimeout(()=>{
@@ -1303,7 +1304,7 @@ loadAccounts();
 
 
 
-async function loadAccounts(){
+async function loadAccounts(silent = false){
 
 
 if(!secretKey){
@@ -1342,7 +1343,7 @@ accounts = data.accounts;
 userInfo = data.user || {};
 
 
-renderMain();
+renderMain(silent);
 
 
 }
@@ -1394,7 +1395,7 @@ class:"offline"
 
 
 
-function renderMain(){
+function renderMain(silent = false){
 
 
 let online = 0;
@@ -1659,6 +1660,7 @@ if(mainActiveType) {
   showMainDropdownContent(mainActiveType);
 }
 
+// Preserve expanded account inventory dropdowns if user is looking at Accounts view or main drop
 }
 
 
@@ -1879,6 +1881,16 @@ html += `
 
 document.getElementById("app").innerHTML = html;
 initSwipeToDelete();
+
+// Re-render open account slots if they were active
+for(let username in currentActiveType) {
+  if(currentActiveType[username] !== null) {
+    let acc = accounts.find(a => a.roblox_username === username);
+    if(acc) {
+      showAccountDashboard(acc, acc.inventory || {});
+    }
+  }
+}
 
 }
 
@@ -2677,6 +2689,10 @@ box.classList.add("open");
 if(secretKey){
 showLoading("Loading dashboard layout...");
 loadAccounts();
+// Auto refresh background data every 10 seconds silently
+autoRefreshInterval = setInterval(() => {
+  loadAccounts(true);
+}, 10000);
 }else{
 showLogin();
 }
