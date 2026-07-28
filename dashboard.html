@@ -1676,6 +1676,12 @@ let isSwiping = false;
 let isHorizontal = false;
 
 box.addEventListener('touchstart', (e) => {
+// Prevent swiping if this card is already swiped open
+if (currentlySwipedUsername === username) {
+isSwiping = false;
+return;
+}
+
 let slot = document.getElementById("slot-" + username);
 let btn = document.getElementById("btn-" + username);
 let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
@@ -1693,7 +1699,7 @@ box.style.transition = 'none';
 }, {passive: true});
 
 box.addEventListener('touchmove', (e) => {
-if(!isSwiping) return;
+if(!isSwiping || currentlySwipedUsername === username) return;
 let x = e.touches[0].clientX;
 let y = e.touches[0].clientY;
 let diffX = x - startX;
@@ -2213,6 +2219,8 @@ alert("Roblox script copied to clipboard!");
 }
 
 function openAccount(username){
+if (currentlySwipedUsername === username) return;
+
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
