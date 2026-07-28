@@ -1045,6 +1045,7 @@ let mainActiveType = null;
 let currentCaptcha = "";
 let autoRefreshInterval = null;
 let currentPage = "main";
+let currentlySwipedUsername = null;
 
 
 // ASSET MAPPINGS
@@ -1975,6 +1976,7 @@ function showMainDropdownContent(type) {
 
 function openAccountsTab(){
 currentPage = "accounts";
+currentlySwipedUsername = null;
 
 let html = `
 
@@ -2020,7 +2022,7 @@ Your tracked Roblox accounts
 
 
 <div class="accounts-wrapper">
-<div class="accounts-scroll-area">
+<div class="accounts-scroll-area" id="accountsScrollArea">
 `;
 
 
@@ -2125,6 +2127,7 @@ html += `
 
 document.getElementById("app").innerHTML = html;
 initSwipeToDelete();
+initScrollReset();
 
 for(let username in currentActiveType) {
   if(currentActiveType[username] !== null) {
@@ -2139,8 +2142,39 @@ for(let username in currentActiveType) {
 
 
 
+function resetSwipedCard(username) {
+  if(!username) return;
+  let container = document.querySelector(`.account-card-container[data-username="${username}"]`);
+  if(container) {
+    let box = container.querySelector('.account-box');
+    if(box) {
+      box.style.transition = 'transform 0.2s ease-out';
+      box.style.transform = 'translateX(0px)';
+    }
+  }
+  if(currentlySwipedUsername === username) {
+    currentlySwipedUsername = null;
+  }
+}
+
+
+
+function initScrollReset() {
+  let scrollArea = document.getElementById("accountsScrollArea");
+  if(scrollArea) {
+    scrollArea.addEventListener('scroll', () => {
+      if(currentlySwipedUsername) {
+        resetSwipedCard(currentlySwipedUsername);
+      }
+    }, {passive: true});
+  }
+}
+
+
+
 function initSwipeToDelete(){
 document.querySelectorAll('.account-card-container').forEach(container => {
+let username = container.getAttribute('data-username');
 let box = container.querySelector('.account-box');
 let startX = 0;
 let startY = 0;
@@ -2149,6 +2183,15 @@ let isSwiping = false;
 let isHorizontal = false;
 
 box.addEventListener('touchstart', (e) => {
+// Guard condition: if inventory is open for this account, do not allow swipe
+let activeType = currentActiveType[username];
+let slot = document.getElementById("slot-" + username);
+let isInventoryOpen = slot && slot.innerHTML.trim() !== "" && activeType !== null;
+if(isInventoryOpen) {
+isSwiping = false;
+return;
+}
+
 startX = e.touches[0].clientX;
 startY = e.touches[0].clientY;
 currentX = startX;
@@ -2170,6 +2213,12 @@ isHorizontal = true;
 
 if(isHorizontal) {
 currentX = x;
+// Clamp diffX so it doesn't go too far out in either direction
+let maxRight = 100;
+let maxLeft = -250;
+if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2; // slight resistance past max
+if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
+
 box.style.transform = `translateX(${diffX}px)`;
 }
 }, {passive: true});
@@ -2183,15 +2232,22 @@ let diff = currentX - startX;
 box.style.transition = 'transform 0.2s ease-out';
 
 if(diff < -110) {
-// Swipe left all the way -> reveal 3 toggle buttons completely
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
 box.style.transform = `translateX(-236px)`;
-} else if(diff > 150) {
-// Swipe right all the way -> trigger delete
-let username = container.getAttribute('data-username');
-box.style.transform = `translateX(0px)`;
-deleteAccount(username);
+currentlySwipedUsername = username;
+} else if(diff > 75) {
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+box.style.transform = `translateX(90px)`;
+currentlySwipedUsername = username;
 } else {
 box.style.transform = 'translateX(0px)';
+if(currentlySwipedUsername === username) {
+currentlySwipedUsername = null;
+}
 }
 }, {passive: true});
 });
@@ -2202,7 +2258,6 @@ function toggleAutoFeature(element, username, feature) {
   if(switchEl) {
     switchEl.classList.toggle('active');
     let isActive = switchEl.classList.contains('active');
-    // Save or execute feature state update here if needed
   }
 }
 
@@ -2513,6 +2568,10 @@ alert("Roblox script copied to clipboard!");
 
 
 function openAccount(username){
+// If another account is currently swiped out, reset its position when clicking this account
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
 
 let account = accounts.find(acc => acc.roblox_username === username);
 
@@ -2540,7 +2599,10 @@ showAccountDashboard(account, targetAccountInventory);
 
 
 function showAccountDashboard(account, targetInventory){
-
+// Reset any swiped card if we are interacting with accounts/inventory
+if(currentlySwipedUsername && currentlySwipedUsername !== account.roblox_username) {
+resetSwipedCard(currentlySwipedUsername);
+}
 
 let slot = document.getElementById(
 
@@ -2804,7 +2866,10 @@ return count;
 
 
 function toggleItems(type,user){
-
+// If another account is currently swiped out, reset its position when interacting with items
+if(currentlySwipedUsername && currentlySwipedUsername !== user) {
+resetSwipedCard(currentlySwipedUsername);
+}
 
 let box = document.getElementById(
 
