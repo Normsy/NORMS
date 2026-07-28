@@ -856,6 +856,7 @@ let currentTheme = localStorage.getItem("norms_theme") || "light";
 document.documentElement.setAttribute("data-theme", currentTheme);
 
 let accounts = [];
+let userInfo = {};
 let inventoryData = {};
 let currentInventory = {};
 let activeDropdown = null;
@@ -1217,6 +1218,7 @@ return;
 
 
 accounts = data.accounts;
+userInfo = data.user || {};
 
 
 renderMain();
@@ -1399,7 +1401,7 @@ ${online}/${accounts.length}
 
 <div class="stat-label">
 
-TOTAL MONEY
+TOTAL SHECKLES
 
 </div>
 
@@ -1535,7 +1537,7 @@ Tutorial
 
 <button class="logout" onclick="logout()">
 
-lagout
+Log Out
 
 </button>
 
@@ -1780,6 +1782,9 @@ document.getElementById("app").innerHTML = html;
 
 function openSettingsTab(){
 
+let currentUsername = userInfo.username || "User";
+let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
+
 let html = `
 
 <button class="back" onclick="renderMain()">Back</button>
@@ -1788,8 +1793,21 @@ let html = `
 <div class="hero-icon">Icon</div>
 <div>
 <div class="hero-title">Setting</div>
-<div class="hero-subtitle">Manage account password and display settings</div>
+<div class="hero-subtitle">Manage account details and display settings</div>
 </div>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Account Details</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Username: <b>${currentUsername}</b></div>
+<div style="font-size:13px; color:var(--subtext-color);">Date Created: <b>${createdDate}</b></div>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Change Username</div>
+<div id="usernameMessage"></div>
+<input id="newUsernameInput" placeholder="New Username">
+<button onclick="changeUsername()" style="width:100%; margin-top:4px;">Update Username</button>
 </div>
 
 <div class="settings-box">
@@ -1841,6 +1859,37 @@ let html = `
 
 document.getElementById("app").innerHTML = html;
 
+}
+
+
+
+async function changeUsername(){
+let newUsername = document.getElementById("newUsernameInput").value.trim();
+let msgBox = document.getElementById("usernameMessage");
+
+if(!newUsername){
+msgBox.innerHTML = `<div class="error">Please enter a new username</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/change-username", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, new_username: newUsername })
+});
+let data = await res.json();
+if(data.success){
+msgBox.innerHTML = `<div class="success">Username updated successfully</div>`;
+userInfo.username = newUsername;
+document.getElementById("newUsernameInput").value = "";
+setTimeout(() => { openSettingsTab(); }, 1000);
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || 'Failed to update'}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
 }
 
 
