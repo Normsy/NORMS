@@ -1735,14 +1735,14 @@ if(!isHorizontal) return;
 let diff = currentX - startX;
 box.style.transition = 'transform 0.2s ease-out';
 
-if(diff < -110) {
+if(diff < -50) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(-236px)`;
 currentlySwipedUsername = username;
 localStorage.setItem("norms_swiped_username", username);
-} else if(diff > 75) {
+} else if(diff > 50) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
