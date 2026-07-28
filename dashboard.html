@@ -797,13 +797,30 @@ color: var(--subtext-color);
 margin-bottom: 16px;
 }
 
+.settings-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.settings-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-right:2px;
+}
+
 .settings-box {
 background: var(--card-bg);
 border: 1px solid var(--border-color);
 border-radius: 14px;
 padding: 16px;
-margin-bottom: 10px;
 box-shadow: 0 2px 6px rgba(0,0,0,.02);
+flex-shrink: 0;
 }
 
 .settings-row {
@@ -1472,7 +1489,7 @@ ${totalPets.toLocaleString()}
 
 <div class="accounts-toggle-title">
 
-Account
+Accounts
 
 </div>
 
@@ -1579,7 +1596,7 @@ Icon
 
 <div class="hero-title">
 
-Account
+Accounts
 
 </div>
 
@@ -1797,6 +1814,9 @@ let html = `
 </div>
 </div>
 
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+
 <div class="settings-box">
 <div class="script-section-title">Account Details</div>
 <div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Username: <b>${currentUsername}</b></div>
@@ -1826,6 +1846,9 @@ let html = `
 </div>
 </div>
 
+</div>
+</div>
+
 `;
 
 document.getElementById("app").innerHTML = html;
@@ -1851,7 +1874,7 @@ let html = `
 <div style="font-size:13px; color:var(--subtext-color); line-height:1.4;">
 1. Go to the <b>Script</b> tab to copy your Secret Key and Roblox Execution Script.<br><br>
 2. Execute the script inside your Roblox executor while playing the supported game.<br><br>
-3. Track your accounts, inventory, money (sheckles), and pets live from the <b>Account</b> tab.
+3. Track your accounts, inventory, money (sheckles), and pets live from the <b>Accounts</b> tab.
 </div>
 </div>
 
