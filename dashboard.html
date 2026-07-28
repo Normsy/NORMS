@@ -1615,6 +1615,8 @@ accounts.forEach(acc=>{
 let status =
 getStatus(acc.updated_at);
 
+let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
+
 
 
 html += `
@@ -1651,7 +1653,7 @@ ${status.text}
 
 
 
-<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount(${JSON.stringify(acc.roblox_username)})">
+<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">
 
 Inventory
 
@@ -2021,6 +2023,8 @@ return;
 
 }
 
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+
 
 
 slot.innerHTML = `
@@ -2044,7 +2048,7 @@ Number(account.sheckles || 0)
 
 null,
 
-account.roblox_username
+escapedUsername
 
 )}
 
@@ -2061,7 +2065,7 @@ total(currentInventory.Seeds)
 
 "Seeds",
 
-account.roblox_username
+escapedUsername
 
 )}
 
@@ -2078,7 +2082,7 @@ total(currentInventory.Gear)
 
 "Gear",
 
-account.roblox_username
+escapedUsername
 
 )}
 
@@ -2095,7 +2099,7 @@ total(currentInventory.Crates)
 
 "Crates",
 
-account.roblox_username
+escapedUsername
 
 )}
 
@@ -2112,7 +2116,7 @@ total(currentInventory.Pets)
 
 "Pets",
 
-account.roblox_username
+escapedUsername
 
 )}
 
@@ -2152,7 +2156,7 @@ return `
 onclick="${
 type ?
 
-`toggleItems('${type}', ${JSON.stringify(user)})`
+`toggleItems('${type}', '${user}')`
 
 :
 
