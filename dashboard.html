@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 
@@ -445,6 +447,20 @@ border-radius: 16px;
 z-index: 1;
 }
 
+.swipe-actions-left-bg {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: flex-start;
+align-items: center;
+padding-left: 12px;
+border-radius: 16px;
+z-index: 1;
+}
+
 .swipe-action-btn {
 background: #334155;
 color: white;
@@ -625,23 +641,6 @@ border: none;
 }
 
 [data-theme="dark"] .open-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
-}
-
-.delete-action-btn {
-background: #ef4444;
-padding: 10px 14px;
-font-size: 14px;
-font-weight: 700;
-border-radius: 10px;
-color: white;
-border: none;
-cursor: pointer;
-}
-
-[data-theme="dark"] .delete-action-btn {
 background: #ffffff;
 color: #000000;
 border: 1px solid #ffffff;
@@ -1575,6 +1574,9 @@ let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
+<div class="swipe-actions-left-bg">
+<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+</div>
 <div class="swipe-actions-bg">
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
 <span>Auto Seeds</span>
@@ -1595,10 +1597,7 @@ html += `
 <div class="user">${status.icon} ${acc.roblox_username}</div>
 <div class="status ${status.class}">${status.text}</div>
 </div>
-<div style="display:flex; gap:6px; align-items:center;">
 <button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
-<button class="delete-action-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
-</div>
 </div>
 <div id="slot-${acc.roblox_username}" class="account-dashboard-slot"></div>
 </div>
@@ -1688,7 +1687,7 @@ isHorizontal = true;
 
 if(isHorizontal) {
 currentX = x;
-let maxRight = 10;
+let maxRight = 100;
 let maxLeft = -250;
 if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
 if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
@@ -1710,6 +1709,12 @@ if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(-236px)`;
+currentlySwipedUsername = username;
+} else if(diff > 75) {
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+box.style.transform = `translateX(90px)`;
 currentlySwipedUsername = username;
 } else {
 box.style.transform = 'translateX(0px)';
