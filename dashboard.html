@@ -726,7 +726,7 @@ color:#ef4444;
 color: #ffffff;
 }
 
-/* DROPDOWN - FIXED HEIGHT & SCROLLABLE */
+/* DROPDOWN - FIXED HEIGHT & SCROLLABLE WITH OPAQUE BACKGROUND */
 
 .global-dropdown{
 display:none;
@@ -742,6 +742,7 @@ box-shadow:0 8px 20px rgba(0,0,0,0.15);
 position:relative;
 z-index:99999;
 -webkit-overflow-scrolling: touch;
+opacity: 1 !important;
 }
 
 .global-dropdown.open{
@@ -1381,6 +1382,11 @@ ${isUserAdmin ? `
 
 if(mainActiveType) {
   showMainDropdownContent(mainActiveType);
+  // Auto-scroll the main container down so the opened dropdown is immediately fully visible
+  let mainScrollArea = document.querySelector('.main-scroll-area');
+  if(mainScrollArea) {
+    mainScrollArea.scrollTop = mainScrollArea.scrollHeight;
+  }
 }
 }
 
