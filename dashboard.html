@@ -1676,12 +1676,6 @@ let isSwiping = false;
 let isHorizontal = false;
 
 box.addEventListener('touchstart', (e) => {
-// Prevent swiping if this card is already swiped open
-if (currentlySwipedUsername === username) {
-isSwiping = false;
-return;
-}
-
 let slot = document.getElementById("slot-" + username);
 let btn = document.getElementById("btn-" + username);
 let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
@@ -1699,7 +1693,7 @@ box.style.transition = 'none';
 }, {passive: true});
 
 box.addEventListener('touchmove', (e) => {
-if(!isSwiping || currentlySwipedUsername === username) return;
+if(!isSwiping) return;
 let x = e.touches[0].clientX;
 let y = e.touches[0].clientY;
 let diffX = x - startX;
@@ -1713,8 +1707,14 @@ if(isHorizontal) {
 currentX = x;
 let maxRight = 100;
 let maxLeft = -250;
+
+if (currentlySwipedUsername === username) {
+if (diffX > 0) diffX = 0;
+if (diffX < maxLeft) diffX = maxLeft;
+} else {
 if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
 if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
+}
 
 box.style.transform = `translateX(${diffX}px)`;
 }
