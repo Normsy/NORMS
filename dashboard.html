@@ -1039,7 +1039,6 @@ let autoRefreshInterval = null;
 let currentPage = "main";
 let currentlySwipedUsername = null;
 let dashboardVersion = 0;
-let swipedStates = {}; // Stores swipe positions per username
 
 // ASSET MAPPINGS
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
@@ -1093,6 +1092,7 @@ showLoading("Logging out...");
 
 setTimeout(()=>{
 localStorage.removeItem("norms_secret");
+localStorage.removeItem("norms_swiped_username");
 secretKey = null;
 showLogin();
 }, 600);
@@ -1246,27 +1246,18 @@ if(!silent) logout();
 }
 
 async function checkVersion() {
-    if (!secretKey) return;
-
+    if(!secretKey) return;
     try {
         const res = await fetch(API + "/sync?secret_key=" + encodeURIComponent(secretKey));
         const data = await res.json();
 
         if (!data.success) return;
 
-        // Refresh if ANYTHING changed
-        if (
-            data.version !== dashboardVersion ||
-            data.updated
-        ) {
+        if (data.version !== dashboardVersion) {
             dashboardVersion = data.version;
             loadAccounts(true);
         }
-
-        // Always update the timer text every refresh
-        updateOnlineStatus();
-
-    } catch (e) {}
+    } catch(e) {}
 }
 
 function getStatus(time){
@@ -1579,6 +1570,7 @@ function showMainDropdownContent(type) {
 
 function openAccountsTab(){
 currentPage = "accounts";
+currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
 
 let html = `
 <button class="back" onclick="renderMain()">Back</button>
@@ -1599,7 +1591,6 @@ accounts.forEach(acc=>{
 let status = getStatus(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 let settings = acc.settings || {};
-let savedTransform = swipedStates[acc.roblox_username] || 'translateX(0px)';
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
@@ -1620,7 +1611,7 @@ html += `
 <div class="ios-switch ${settings.AutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
 </div>
 </div>
-<div class="account-box" id="acc-box-${acc.roblox_username}" style="transform: ${savedTransform};">
+<div class="account-box" id="acc-box-${acc.roblox_username}">
 <div class="account-header-row">
 <div class="account-info-col">
 <div class="user ${status.class}">${acc.roblox_username}</div>
@@ -1639,6 +1630,16 @@ html += `</div></div>`;
 document.getElementById("app").innerHTML = html;
 initSwipeToDelete();
 initScrollReset();
+
+if (currentlySwipedUsername) {
+  let container = document.querySelector(`.account-card-container[data-username="${currentlySwipedUsername}"]`);
+  if (container) {
+    let box = container.querySelector('.account-box');
+    if (box) {
+      box.style.transform = 'translateX(-236px)';
+    }
+  }
+}
 
 for(let username in currentActiveType) {
   if(currentActiveType[username] !== null) {
@@ -1660,9 +1661,9 @@ function resetSwipedCard(username) {
       box.style.transform = 'translateX(0px)';
     }
   }
-  swipedStates[username] = 'translateX(0px)';
   if(currentlySwipedUsername === username) {
     currentlySwipedUsername = null;
+    localStorage.removeItem("norms_swiped_username");
   }
 }
 
@@ -1739,20 +1740,20 @@ if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(-236px)`;
-swipedStates[username] = 'translateX(-236px)';
 currentlySwipedUsername = username;
+localStorage.setItem("norms_swiped_username", username);
 } else if(diff > 75) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(90px)`;
-swipedStates[username] = 'translateX(90px)';
 currentlySwipedUsername = username;
+localStorage.setItem("norms_swiped_username", username);
 } else {
 box.style.transform = 'translateX(0px)';
-swipedStates[username] = 'translateX(0px)';
 if(currentlySwipedUsername === username) {
 currentlySwipedUsername = null;
+localStorage.removeItem("norms_swiped_username");
 }
 }
 }, {passive: true});
@@ -1848,7 +1849,6 @@ if(!data) {
 }
 
 if(data && data.success){
-delete swipedStates[username];
 loadAccounts();
 } else {
 alert((data && data.message) || "Failed to delete account");
@@ -2381,10 +2381,7 @@ box.classList.add("open");
 if(secretKey){
 showLoading("Loading dashboard layout...");
 loadAccounts();
-autoRefreshInterval = setInterval(() => {
-    checkVersion();
-    updateOnlineStatus();
-}, 3000);
+autoRefreshInterval = setInterval(checkVersion, 3000);
 }else{
 showLogin();
 }
