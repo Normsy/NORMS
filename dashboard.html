@@ -352,6 +352,10 @@ color: #ffffff;
 color:var(--text-color);
 }
 
+[data-theme="dark"] .stat-value.money {
+color: #ffffff;
+}
+
 
 /* NAVIGATION CARDS */
 
@@ -417,8 +421,8 @@ border: none;
 }
 
 [data-theme="dark"] .logout {
-background: #000000;
-color: #ffffff;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -496,12 +500,19 @@ justify-content: center;
 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+[data-theme="dark"] .swipe-action-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
 .swipe-action-btn.delete-btn {
 background: #ef4444;
 }
 
 [data-theme="dark"] .swipe-action-btn.delete-btn {
-background: #000000;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -527,7 +538,8 @@ width: 72px;
 }
 
 [data-theme="dark"] .toggle-switch-wrapper {
-background: #000000;
+background: #ffffff;
+color: #000000;
 border: 1px solid var(--border-color);
 }
 
@@ -542,6 +554,10 @@ display: inline-block;
 flex-shrink: 0;
 }
 
+[data-theme="dark"] .ios-switch {
+background: #d4d4d8;
+}
+
 .ios-switch::after {
 content: "";
 position: absolute;
@@ -554,16 +570,20 @@ border-radius: 50%;
 transition: transform 0.3s;
 }
 
+[data-theme="dark"] .ios-switch::after {
+background: #000000;
+}
+
 .ios-switch.active {
 background: #22c55e;
 }
 
 [data-theme="dark"] .ios-switch.active {
-background: #ffffff;
+background: #16a34a;
 }
 
 [data-theme="dark"] .ios-switch.active::after {
-background: #000000;
+background: #ffffff;
 }
 
 .ios-switch.active::after {
@@ -651,8 +671,8 @@ border: none;
 }
 
 [data-theme="dark"] .open-btn {
-background: #000000;
-color: #ffffff;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -832,8 +852,8 @@ border: none;
 }
 
 [data-theme="dark"] .back {
-background: #000000;
-color: #ffffff;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -882,8 +902,8 @@ border: none;
 }
 
 [data-theme="dark"] .copy-btn {
-background: #000000;
-color: #ffffff;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -906,6 +926,11 @@ outline:none;
 line-height:1.4;
 }
 
+[data-theme="dark"] .script-code-area {
+background: #121212;
+border: 1px solid #ffffff;
+}
+
 .copy-script-btn{
 position:absolute;
 top:10px;
@@ -919,7 +944,8 @@ border: none;
 }
 
 [data-theme="dark"] .copy-script-btn {
-background: #000000;
+background: #ffffff;
+color: #000000;
 border: 1px solid #ffffff;
 }
 
@@ -1012,16 +1038,16 @@ background: #22c55e;
 }
 
 [data-theme="dark"] .ios-theme-toggle {
-background: #000000;
+background: #121212;
 border: 1px solid #ffffff;
 }
 
 [data-theme="dark"] .ios-theme-toggle.active {
-background: #ffffff;
+background: #16a34a;
 }
 
 [data-theme="dark"] .ios-theme-toggle.active::after {
-background: #000000;
+background: #ffffff;
 }
 
 .ios-theme-toggle.active::after {
@@ -1618,9 +1644,6 @@ function openAccountsTab(){
 currentPage = "accounts";
 currentlySwipedUsername = null;
 
-let isUserAdmin = Boolean(userInfo.is_admin);
-let isUserPremium = Boolean(userInfo.is_premium) || isUserAdmin;
-
 let html = `
 <button class="back" onclick="renderMain()">Back</button>
 
@@ -1628,7 +1651,7 @@ let html = `
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
 <div>
 <div class="hero-title">Accounts</div>
-<div class="hero-subtitle">Your tracked Roblox accounts (${accounts.length}/${isUserPremium ? 'Unlimited' : '5'})</div>
+<div class="hero-subtitle">Accounts <span style="color:#22c55e; font-weight:800;">(${accounts.length} roblox account login)</span></div>
 </div>
 </div>
 
@@ -1817,7 +1840,12 @@ return;
 showLoading("Deleting account...");
 
 try {
-let endpoints = [API + "/delete-account", API + "/deleteAccount", API + "/account/delete"];
+let endpoints = [
+  API + "/delete-account", 
+  API + "/deleteAccount", 
+  API + "/account/delete",
+  API + "/delete_account"
+];
 let data = null;
 
 for(let ep of endpoints) {
@@ -1833,8 +1861,20 @@ for(let ep of endpoints) {
         data = json;
         break;
       } else if(json.message) {
-        data = json; // keep to read error message if all fail
+        data = json;
       }
+    }
+  } catch(e) {}
+}
+
+if(!data) {
+  try {
+    let res = await fetch(API + "/delete-account?secret_key=" + encodeURIComponent(secretKey) + "&roblox_username=" + encodeURIComponent(username), {
+      method: "GET"
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) data = json;
     }
   } catch(e) {}
 }
