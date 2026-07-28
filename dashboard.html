@@ -448,6 +448,30 @@ padding-right:2px;
 
 /* ACCOUNT CARD - MADE BIGGER */
 
+.account-card-container {
+position: relative;
+overflow: hidden;
+border-radius: 16px;
+flex-shrink: 0;
+}
+
+.swipe-delete-bg {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background: #ef4444;
+color: white;
+display: flex;
+align-items: center;
+padding-left: 20px;
+font-weight: 800;
+font-size: 14px;
+border-radius: 16px;
+z-index: 1;
+}
+
 .account-box{
 
 background:var(--card-bg);
@@ -455,8 +479,10 @@ border:1px solid var(--border-color);
 border-radius:16px;
 padding:16px 18px;
 box-shadow:0 2px 6px rgba(0,0,0,.02);
-flex-shrink:0;
-
+position: relative;
+z-index: 2;
+transition: transform 0.1s ease-out;
+user-select: none;
 }
 
 
@@ -1636,7 +1662,9 @@ let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 html += `
 
 
-<div class="account-box">
+<div class="account-card-container">
+<div class="swipe-delete-bg">Delete Account</div>
+<div class="account-box" id="acc-box-${acc.roblox_username}" data-username="${escapedUsername}">
 
 
 <div class="account-header-row">
@@ -1686,6 +1714,7 @@ class="account-dashboard-slot">
 
 
 </div>
+</div>
 
 
 `;
@@ -1703,8 +1732,79 @@ html += `
 
 
 document.getElementById("app").innerHTML = html;
+initSwipeToDelete();
+
+}
 
 
+
+function initSwipeToDelete(){
+document.querySelectorAll('.account-box').forEach(box => {
+let startX = 0;
+let currentX = 0;
+let isSwiping = false;
+let username = box.getAttribute('data-username');
+
+box.addEventListener('touchstart', (e) => {
+startX = e.touches[0].clientX;
+isSwiping = true;
+box.style.transition = 'none';
+});
+
+box.addEventListener('touchmove', (e) => {
+if(!isSwiping) return;
+currentX = e.touches[0].clientX;
+let diff = currentX - startX;
+if(diff > 0) {
+box.style.transform = `translateX(${diff}px)`;
+}
+});
+
+box.addEventListener('touchend', (e) => {
+if(!isSwiping) return;
+isSwiping = false;
+let diff = currentX - startX;
+box.style.transition = 'transform 0.2s ease-out';
+
+if(diff > 120) {
+box.style.transform = `translateX(100%)`;
+setTimeout(() => {
+deleteAccount(username);
+}, 200);
+} else {
+box.style.transform = 'translateX(0px)';
+}
+});
+});
+}
+
+
+
+async function deleteAccount(username){
+if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
+openAccountsTab();
+return;
+}
+
+showLoading("Deleting account...");
+
+try {
+let res = await fetch(API + "/delete-account", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+});
+let data = await res.json();
+if(data.success){
+loadAccounts();
+} else {
+alert(data.message || "Failed to delete account");
+loadAccounts();
+}
+} catch(e) {
+alert("Network error occurred");
+loadAccounts();
+}
 }
 
 
