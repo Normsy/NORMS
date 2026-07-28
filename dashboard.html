@@ -728,7 +728,7 @@ border:1px solid var(--border-color);
 border-radius:12px;
 padding:12px;
 margin-top:10px;
-max-height:300px;
+max-height:450px;
 overflow-y:auto;
 width: 100%;
 box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -1514,15 +1514,19 @@ function showMainDropdownContent(type) {
 
   accounts.forEach(acc => {
     let inv = acc.inventory || {};
-    let seedItems = inv['Seeds'] || {};
-    for(let name in seedItems) {
+    let targetKey = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
+    let targetItems = inv[targetKey] || {};
+    for(let name in targetItems) {
       let cleanName = name.trim();
-      aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(seedItems[name]) || 0);
+      let cleanLower = cleanName.toLowerCase();
+      if(targetKey === 'Pets' && (cleanLower === 'build' || cleanLower === 'shovel')) continue;
+      aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(targetItems[name]) || 0);
     }
   });
 
-  let titleText = 'Total Seed Inventory';
-  let iconSymbol = '🌱';
+  let titleText = (type === 'TotalSeeds') ? 'Total Seed Inventory' : 'Total Pets Inventory';
+  let iconSymbol = (type === 'TotalSeeds') ? '🌱' : '🐾';
+  let iconType = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
 
   let html = `<div class="dropdown-header">${iconSymbol} ${titleText}</div>`;
 
@@ -1531,7 +1535,6 @@ function showMainDropdownContent(type) {
     html += `<div class='empty'>No items found</div>`;
   } else {
     keys.forEach(name => {
-      let iconType = 'Seeds';
       let iconUrl = getItemIcon(iconType, name);
       let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
 
@@ -1751,7 +1754,6 @@ localStorage.removeItem("norms_swiped_username");
 }
 }, {passive: true});
 
-// Clicking anywhere on the card while it is swiped open will close it back to its original position
 box.addEventListener('click', (e) => {
 if (currentlySwipedUsername === username) {
 if (!e.target.closest('button')) {
