@@ -466,7 +466,7 @@ gap:10px;
 padding-right:2px;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE */
+/* ACCOUNT CARD & SWIPE DELETE / ACTIONS */
 
 .account-card-container {
 position: relative;
@@ -475,21 +475,39 @@ border-radius: 16px;
 flex-shrink: 0;
 }
 
-.swipe-delete-bg {
+.swipe-actions-bg {
 position: absolute;
 top: 0;
 left: 0;
 width: 100%;
 height: 100%;
-background: #ef4444;
-color: white;
 display: flex;
+justify-content: flex-end;
 align-items: center;
-padding-left: 20px;
-font-weight: 800;
-font-size: 14px;
+gap: 6px;
+padding-right: 12px;
 border-radius: 16px;
 z-index: 1;
+}
+
+.swipe-action-btn {
+background: #334155;
+color: white;
+border: none;
+border-radius: 8px;
+padding: 8px 10px;
+font-size: 11px;
+font-weight: 800;
+cursor: pointer;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.swipe-action-btn.delete-btn {
+background: #ef4444;
 }
 
 .account-box{
@@ -1811,7 +1829,12 @@ html += `
 
 
 <div class="account-card-container">
-<div class="swipe-delete-bg">Delete Account</div>
+<div class="swipe-actions-bg">
+<button class="swipe-action-btn" onclick="onToggleAction1('${escapedUsername}')">Toggle 1</button>
+<button class="swipe-action-btn" onclick="onToggleAction2('${escapedUsername}')">Toggle 2</button>
+<button class="swipe-action-btn" onclick="onToggleAction3('${escapedUsername}')">Toggle 3</button>
+<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+</div>
 <div class="account-box" id="acc-box-${acc.roblox_username}" data-username="${escapedUsername}">
 
 
@@ -1913,7 +1936,7 @@ box.addEventListener('touchmove', (e) => {
 if(!isSwiping) return;
 currentX = e.touches[0].clientX;
 let diff = currentX - startX;
-if(diff > 0) {
+if(diff < 0) { // Swiping left
 box.style.transform = `translateX(${diff}px)`;
 }
 });
@@ -1922,18 +1945,30 @@ box.addEventListener('touchend', (e) => {
 if(!isSwiping) return;
 isSwiping = false;
 let diff = currentX - startX;
-box.style.transform = 'transform 0.2s ease-out';
+box.style.transition = 'transform 0.2s ease-out';
 
-if(diff > 120) {
-box.style.transform = `translateX(100%)`;
-setTimeout(() => {
-deleteAccount(username);
-}, 200);
+if(diff < -90) { // Swiped left enough to reveal 3 toggles + delete buttons
+box.style.transform = `translateX(-190px)`;
 } else {
 box.style.transform = 'translateX(0px)';
 }
 });
 });
+}
+
+function onToggleAction1(username) {
+  alert("Toggle 1 clicked for " + username);
+  openAccountsTab();
+}
+
+function onToggleAction2(username) {
+  alert("Toggle 2 clicked for " + username);
+  openAccountsTab();
+}
+
+function onToggleAction3(username) {
+  alert("Toggle 3 clicked for " + username);
+  openAccountsTab();
 }
 
 
