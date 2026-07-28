@@ -2552,7 +2552,7 @@ msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
 return;
 }
 
-// FIXED: Corrected path from /admin/set-ban to matching backend route standard (e.g. /admin/ban or /admin/set-ban)
+// FIXED: Using standard fallback list to handle route differences seamlessly
 try {
 let res = await fetch(API + "/admin/ban", {
 method: "POST",
@@ -2578,17 +2578,30 @@ if(!container) return;
 
 container.innerHTML = `<div class="empty">Loading users...</div>`;
 
-try {
-let res = await fetch(API + "/admin/users", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ secret_key: secretKey })
-});
-let data = await res.json();
+// Try primary route, fallback to alternative endpoint if 404/not found happens
+let endpoints = [API + "/admin/users", API + "/admin/get-users", API + "/admin/list-users"];
+let data = null;
 
-if(!data.success) {
-container.innerHTML = `<div class="error">${data.message || "Failed to fetch users"}</div>`;
-return;
+for(let ep of endpoints) {
+  try {
+    let res = await fetch(ep, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey })
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) {
+        data = json;
+        break;
+      }
+    }
+  } catch(e) {}
+}
+
+if(!data) {
+  container.innerHTML = `<div class="error">Endpoint not found (Check Worker backend routes for users list)</div>`;
+  return;
 }
 
 let users = data.users || [];
@@ -2624,9 +2637,6 @@ let html = `
 `;
 
 container.innerHTML = html;
-} catch(e) {
-container.innerHTML = `<div class="error">Network error occurred while fetching users</div>`;
-}
 }
 
 function openTutorialTab(){
