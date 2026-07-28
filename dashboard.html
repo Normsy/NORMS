@@ -428,6 +428,19 @@ overflow: hidden;
 border-radius: 16px;
 flex-shrink: 0;
 touch-action: pan-y;
+transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+max-height: 200px;
+opacity: 1;
+}
+
+.account-card-container.deleting {
+max-height: 0;
+opacity: 0;
+margin-top: 0;
+margin-bottom: 0;
+padding-top: 0;
+padding-bottom: 0;
+overflow: hidden;
 }
 
 .swipe-actions-bg {
@@ -1558,7 +1571,7 @@ let html = `
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
 <div>
 <div class="hero-title">Accounts</div>
-<div class="hero-subtitle">Accounts <span style="color:#22c55e; font-weight:800;">(${accounts.length} roblox account login)</span></div>
+<div class="hero-subtitle">Accounts <span style="color:#22c55e; font-weight:800;" id="accountsCountText">(${accounts.length} roblox account login)</span></div>
 </div>
 </div>
 
@@ -1707,10 +1720,8 @@ handleTouchEnd(e, box, username);
 function handleTouchEnd(e, box, username) {
     const diff = currentX - startX;
     
-    // Reset transition
     box.style.transition = 'transform 0.3s ease';
 
-    // If swiped far enough to the right, trigger deletion directly
     if (diff > 110) {
         box.style.transform = 'translateX(0px)';
         if (currentlySwipedUsername === username) {
@@ -1718,7 +1729,6 @@ function handleTouchEnd(e, box, username) {
         }
         deleteAccount(username);
     } 
-    // If swiped right just enough to reveal the actions menu
     else if (diff > 50) {
         if (currentlySwipedUsername && currentlySwipedUsername !== username) {
             resetSwipedCard(currentlySwipedUsername);
@@ -1726,7 +1736,6 @@ function handleTouchEnd(e, box, username) {
         box.style.transform = 'translateX(90px)';
         currentlySwipedUsername = username;
     } 
-    // If swiped left to reveal right-side actions
     else if (diff < -50) {
         if (currentlySwipedUsername && currentlySwipedUsername !== username) {
             resetSwipedCard(currentlySwipedUsername);
@@ -1734,7 +1743,6 @@ function handleTouchEnd(e, box, username) {
         box.style.transform = 'translateX(-90px)';
         currentlySwipedUsername = username;
     } 
-    // Otherwise snap back to center
     else {
         box.style.transform = 'translateX(0px)';
         if (currentlySwipedUsername === username) {
@@ -1752,10 +1760,14 @@ function toggleAutoFeature(element, username, feature) {
 
 async function deleteAccount(username) {
   if (!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
+    resetSwipedCard(username);
     return;
   }
 
-  showLoading("Deleting account...");
+  let container = document.querySelector(`.account-card-container[data-username="${username}"]`);
+  if (container) {
+    container.classList.add('deleting');
+  }
 
   try {
     let res = await fetch(API + "/delete-account", {
@@ -1777,13 +1789,21 @@ async function deleteAccount(username) {
         currentlySwipedUsername = null;
       }
 
-      openAccountsTab();
+      setTimeout(() => {
+        if (container) container.remove();
+        let countText = document.getElementById("accountsCountText");
+        if (countText) {
+          countText.innerText = `(${accounts.length} roblox account login)`;
+        }
+      }, 300);
     } else {
       alert((data && data.message) || "Failed to delete account");
+      if (container) container.classList.remove('deleting');
       loadAccounts();
     }
   } catch (e) {
     alert("Network error occurred");
+    if (container) container.classList.remove('deleting');
     loadAccounts();
   }
 }
