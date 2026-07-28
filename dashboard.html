@@ -526,6 +526,54 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 background: #ef4444;
 }
 
+/* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
+.toggle-switch-wrapper {
+display: flex;
+align-items: center;
+gap: 6px;
+background: #1e293b;
+padding: 6px 10px;
+border-radius: 8px;
+height: 38px;
+color: white;
+font-size: 11px;
+font-weight: 800;
+cursor: pointer;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+user-select: none;
+}
+
+.ios-switch {
+position: relative;
+width: 36px;
+height: 20px;
+background: #475569;
+border-radius: 20px;
+transition: background 0.3s;
+display: inline-block;
+flex-shrink: 0;
+}
+
+.ios-switch::after {
+content: "";
+position: absolute;
+top: 2px;
+left: 2px;
+width: 16px;
+height: 16px;
+background: white;
+border-radius: 50%;
+transition: transform 0.3s;
+}
+
+.ios-switch.active {
+background: #22c55e;
+}
+
+.ios-switch.active::after {
+transform: translateX(16px);
+}
+
 .account-box{
 
 background:var(--card-bg);
@@ -1991,9 +2039,18 @@ html += `
 <button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
 </div>
 <div class="swipe-actions-bg">
-<button class="swipe-action-btn" onclick="onToggleAction1('${escapedUsername}')">Toggle 1</button>
-<button class="swipe-action-btn" onclick="onToggleAction2('${escapedUsername}')">Toggle 2</button>
-<button class="swipe-action-btn" onclick="onToggleAction3('${escapedUsername}')">Toggle 3</button>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
+<span>Auto Buy Seeds</span>
+<div class="ios-switch" id="switch-seeds-${acc.roblox_username}"></div>
+</div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
+<span>Auto Buy Gears</span>
+<div class="ios-switch" id="switch-gears-${acc.roblox_username}"></div>
+</div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
+<span>Auto Catch Pets</span>
+<div class="ios-switch" id="switch-pets-${acc.roblox_username}"></div>
+</div>
 </div>
 <div class="account-box" id="acc-box-${acc.roblox_username}">
 
@@ -2121,12 +2178,14 @@ if(!isHorizontal) return;
 let diff = currentX - startX;
 box.style.transition = 'transform 0.2s ease-out';
 
-if(diff < -90) {
-// Swipe left -> reveal 3 toggle buttons
-box.style.transform = `translateX(-215px)`;
-} else if(diff > 90) {
-// Swipe right -> reveal delete button
-box.style.transform = `translateX(90px)`;
+if(diff < -150) {
+// Swipe left all the way -> reveal 3 toggle buttons (shifted left enough to show them fully)
+box.style.transform = `translateX(-285px)`;
+} else if(diff > 150) {
+// Swipe right all the way -> trigger delete
+let username = container.getAttribute('data-username');
+box.style.transform = `translateX(0px)`;
+deleteAccount(username);
 } else {
 box.style.transform = 'translateX(0px)';
 }
@@ -2134,19 +2193,13 @@ box.style.transform = 'translateX(0px)';
 });
 }
 
-function onToggleAction1(username) {
-  alert("Toggle 1 clicked for " + username);
-  openAccountsTab();
-}
-
-function onToggleAction2(username) {
-  alert("Toggle 2 clicked for " + username);
-  openAccountsTab();
-}
-
-function onToggleAction3(username) {
-  alert("Toggle 3 clicked for " + username);
-  openAccountsTab();
+function toggleAutoFeature(element, username, feature) {
+  let switchEl = element.querySelector('.ios-switch');
+  if(switchEl) {
+    switchEl.classList.toggle('active');
+    let isActive = switchEl.classList.contains('active');
+    // Save or execute feature state update here if needed
+  }
 }
 
 
