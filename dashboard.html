@@ -949,48 +949,47 @@ let currentCaptcha = "";
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
 
 const logoAssets = {
-  account: assetBase + "AccountLogo.webp",
-  garden: assetBase + "GrowAGarden2Logo.webp",
-  roblox: assetBase + "RobloxLogo.webp",
-  tutorial: assetBase + "TutorialLogo.webp"
+  account: assetBase + "icon/AccountLogo.webp",
+  garden: assetBase + "icon/GrowAGarden2Logo.webp",
+  roblox: assetBase + "icon/RobloxLogo.webp",
+  tutorial: assetBase + "icon/TutorialLogo.webp"
 };
 
 const seedAssets = {
-  "apple": assetBase + "AppleSeed.webp",
-  "bamboo": assetBase + "BambooSeed.webp",
-  "banana": assetBase + "BananaSeed.webp",
-  "blueberry": assetBase + "BlueberrySeed.webp",
-  "briar rose": assetBase + "BriarRoseSeed.webp",
-  "cactus": assetBase + "CactusSeed.webp",
-  "carrot": assetBase + "CarrotSeed.webp",
-  "cherry": assetBase + "CherrySeed.webp",
-  "coconut": assetBase + "CoconutSeed.webp",
-  "corn": assetBase + "CornSeed.webp",
-  "dragon fruit": assetBase + "DragonFruitSeed.webp",
-  "dragons breath": assetBase + "DragonsBreathSeed.webp",
-  "fire fern": assetBase + "FireFernSeed.webp"
+  "apple": assetBase + "Seed/AppleSeed.webp",
+  "bamboo": assetBase + "Seed/BambooSeed.webp",
+  "banana": assetBase + "Seed/BananaSeed.webp",
+  "blueberry": assetBase + "Seed/BlueberrySeed.webp",
+  "briar rose": assetBase + "Seed/BriarRoseSeed.webp",
+  "cactus": assetBase + "Seed/CactusSeed.webp",
+  "carrot": assetBase + "Seed/CarrotSeed.webp",
+  "cherry": assetBase + "Seed/CherrySeed.webp",
+  "coconut": assetBase + "Seed/CoconutSeed.webp",
+  "corn": assetBase + "Seed/CornSeed.webp",
+  "dragon fruit": assetBase + "Seed/DragonFruitSeed.webp",
+  "dragons breath": assetBase + "Seed/DragonsBreathSeed.webp",
+  "fire fern": assetBase + "Seed/FireFernSeed.webp"
 };
 
 const petAssets = {
-  "bald eagle": assetBase + "BaldEagle.webp",
-  "bear": assetBase + "Bear.webp",
-  "bee": assetBase + "Bee.webp",
-  "black dragon": assetBase + "BlackDragon.webp",
-  "butterfly": assetBase + "Butterfly.webp",
-  "deer": assetBase + "Deer.webp",
-  "frog": assetBase + "FrogNoBackground.webp",
-  "golden dragonfly": assetBase + "GoldenDragonfly.webp",
-  "ice serpent": assetBase + "IceSerpent.webp",
-  "monkey": assetBase + "Monkey.webp",
-  "owl": assetBase + "Owl.webp",
-  "racoon": assetBase + "Racoon.webp",
-  "robin": assetBase + "Robin.webp"
+  "bald eagle": assetBase + "Pet/BaldEagle.webp",
+  "bear": assetBase + "Pet/Bear.webp",
+  "bee": assetBase + "Pet/Bee.webp",
+  "black dragon": assetBase + "Pet/BlackDragon.webp",
+  "butterfly": assetBase + "Pet/Butterfly.webp",
+  "deer": assetBase + "Pet/Deer.webp",
+  "frog": assetBase + "Pet/FrogNoBackground.webp",
+  "golden dragonfly": assetBase + "Pet/GoldenDragonfly.webp",
+  "ice serpent": assetBase + "Pet/IceSerpent.webp",
+  "monkey": assetBase + "Pet/Monkey.webp",
+  "owl": assetBase + "Pet/Owl.webp",
+  "racoon": assetBase + "Pet/Racoon.webp",
+  "robin": assetBase + "Pet/Robin.webp"
 };
 
 function getItemIcon(type, name) {
   let cleanName = name.trim().toLowerCase();
   if (type === "Seeds") {
-    // try exact or remove "seed" suffix matching
     for (let key in seedAssets) {
       if (cleanName.includes(key)) {
         return seedAssets[key];
