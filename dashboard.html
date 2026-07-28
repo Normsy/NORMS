@@ -1054,12 +1054,10 @@ const logoAssets = {
 function getItemIcon(type, name) {
   if (!name) return null;
   let cleanName = name.trim();
-  if (type === "Seeds") {
+  if (type === "Seeds" || type === "TotalSeeds") {
     return `${assetBase}Seed/${cleanName.replace(/\s+/g, '')}Seed.webp`;
   } else if (type === "Pets") {
     return `${assetBase}Pet/${cleanName.replace(/\s+/g, '')}.webp`;
-  } else if (type === "AllItems" || type === "TotalItems") {
-    return `${assetBase}Seed/${cleanName.replace(/\s+/g, '')}Seed.webp`;
   }
   return null;
 }
@@ -1277,7 +1275,7 @@ currentPage = "main";
 
 let online = 0;
 let totalSheckles = 0;
-let totalItems = 0;
+let totalSeedsCount = 0;
 let totalPets = 0;
 
 accounts.forEach(acc=>{
@@ -1293,7 +1291,7 @@ let gCount = totalFiltered(inv.Gear, "Gear");
 let cCount = totalFiltered(inv.Crates, "Crates");
 let pCount = totalFiltered(inv.Pets, "Pets");
 
-totalItems += (sCount + gCount + cCount + pCount);
+totalSeedsCount += sCount;
 totalPets += pCount;
 });
 
@@ -1323,9 +1321,9 @@ document.getElementById("app").innerHTML = `
 <div class="stat-value money" id="stat-sheckles">${totalSheckles.toLocaleString()}</div>
 </div>
 
-<div class="stat-card clickable ${mainActiveType === 'TotalItems' ? 'active-card' : ''}" onclick="toggleMainItems('TotalItems')">
-<div class="stat-label">TOTAL ITEMS</div>
-<div class="stat-value" id="stat-items">${totalItems.toLocaleString()}</div>
+<div class="stat-card clickable ${mainActiveType === 'TotalSeeds' ? 'active-card' : ''}" onclick="toggleMainItems('TotalSeeds')">
+<div class="stat-label">TOTAL SEEDS</div>
+<div class="stat-value" id="stat-items">${totalSeedsCount.toLocaleString()}</div>
 </div>
 
 <div class="stat-card clickable ${mainActiveType === 'TotalPets' ? 'active-card' : ''}" onclick="toggleMainItems('TotalPets')">
@@ -1373,7 +1371,7 @@ if(mainActiveType) {
 function updateDashboardStats() {
   let online = 0;
   let totalSheckles = 0;
-  let totalItems = 0;
+  let totalSeedsCount = 0;
   let totalPets = 0;
 
   accounts.forEach(acc=>{
@@ -1383,10 +1381,8 @@ function updateDashboardStats() {
     totalSheckles += Number(acc.sheckles || 0);
     let inv = acc.inventory || {};
     let sCount = totalFiltered(inv.Seeds, "Seeds");
-    let gCount = totalFiltered(inv.Gear, "Gear");
-    let cCount = totalFiltered(inv.Crates, "Crates");
     let pCount = totalFiltered(inv.Pets, "Pets");
-    totalItems += (sCount + gCount + cCount + pCount);
+    totalSeedsCount += sCount;
     totalPets += pCount;
   });
 
@@ -1397,7 +1393,7 @@ function updateDashboardStats() {
 
   if(elOnline) elOnline.innerText = `${online}/${accounts.length}`;
   if(elSheckles) elSheckles.innerText = totalSheckles.toLocaleString();
-  if(elItems) elItems.innerText = totalItems.toLocaleString();
+  if(elItems) elItems.innerText = totalSeedsCount.toLocaleString();
   if(elPets) elPets.innerText = totalPets.toLocaleString();
 
   if(mainActiveType) {
@@ -1518,16 +1514,12 @@ function showMainDropdownContent(type) {
 
   accounts.forEach(acc => {
     let inv = acc.inventory || {};
-    if(type === 'TotalItems') {
-      ['Seeds', 'Gear', 'Crates', 'Pets'].forEach(cat => {
-        let catItems = inv[cat] || {};
-        for(let name in catItems) {
-          let cleanName = name.trim();
-          let cleanLower = cleanName.toLowerCase();
-          if(cat === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) continue;
-          aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(catItems[name]) || 0);
-        }
-      });
+    if(type === 'TotalSeeds') {
+      let seedItems = inv['Seeds'] || {};
+      for(let name in seedItems) {
+        let cleanName = name.trim();
+        aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(seedItems[name]) || 0);
+      }
     } else if(type === 'TotalPets') {
       let petItems = inv['Pets'] || {};
       for(let name in petItems) {
@@ -1539,8 +1531,8 @@ function showMainDropdownContent(type) {
     }
   });
 
-  let titleText = type === 'TotalItems' ? 'Total Items Inventory' : 'Total Pets Inventory';
-  let iconSymbol = type === 'TotalItems' ? '📦' : '🐾';
+  let titleText = type === 'TotalSeeds' ? 'Total Seeds Inventory' : 'Total Pets Inventory';
+  let iconSymbol = type === 'TotalSeeds' ? '🌱' : '🐾';
 
   let html = `<div class="dropdown-header">${iconSymbol} ${titleText}</div>`;
 
@@ -1549,7 +1541,7 @@ function showMainDropdownContent(type) {
     html += `<div class='empty'>No items found</div>`;
   } else {
     keys.forEach(name => {
-      let iconType = type === 'TotalPets' ? 'Pets' : 'TotalItems';
+      let iconType = type === 'TotalSeeds' ? 'Seeds' : 'Pets';
       let iconUrl = getItemIcon(iconType, name);
       let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
 
@@ -1762,6 +1754,17 @@ localStorage.removeItem("norms_swiped_username");
 }
 }
 }, {passive: true});
+
+// If the user clicks on the card while it is fully swiped open, reset it back to its original position
+box.addEventListener('click', (e) => {
+if (currentlySwipedUsername === username) {
+// Check if they didn't click the inventory button inside the header
+if (!e.target.closest('button')) {
+resetSwipedCard(username);
+e.stopPropagation();
+}
+}
+});
 });
 }
 
