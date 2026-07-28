@@ -41,11 +41,11 @@ transition: background 0.3s, color 0.3s;
 [data-theme="dark"] {
 --bg-color: #000000;
 --text-color: #ffffff;
---card-bg: #121212;
---border-color: #27272a;
+--card-bg: #000000;
+--border-color: #ffffff;
 --subtext-color: #a1a1aa;
---input-bg: #18181b;
---item-bg: #18181b;
+--input-bg: #121212;
+--item-bg: #121212;
 }
 
 
@@ -135,6 +135,7 @@ font-weight:700;
 [data-theme="dark"] button {
 background: #ffffff;
 color: #000000;
+border: 1px solid #ffffff;
 }
 
 
@@ -223,6 +224,7 @@ margin-bottom:12px;
 }
 
 [data-theme="dark"] .spinner {
+border-color: #27272a;
 border-top-color: #ffffff;
 }
 
@@ -270,6 +272,7 @@ color:var(--subtext-color);
 text-align:center;
 flex-shrink:0;
 overflow:hidden;
+border:1px solid var(--border-color);
 }
 
 .hero-icon img {
@@ -318,7 +321,7 @@ transition: border-color 0.2s;
 }
 
 .stat-card.clickable.active-card {
-border: 2px solid #9ca3af;
+border: 2px solid #111827;
 }
 
 [data-theme="dark"] .stat-card.clickable.active-card {
@@ -410,10 +413,13 @@ border-radius:14px;
 flex-shrink:0;
 box-shadow:0 2px 6px rgba(239,68,68,.2);
 color: white;
+border: none;
 }
 
 [data-theme="dark"] .logout {
+background: #000000;
 color: #ffffff;
+border: 1px solid #ffffff;
 }
 
 /* ACCOUNTS CONTAINER VIEW */
@@ -494,6 +500,11 @@ box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 background: #ef4444;
 }
 
+[data-theme="dark"] .swipe-action-btn.delete-btn {
+background: #000000;
+border: 1px solid #ffffff;
+}
+
 /* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
 .toggle-switch-wrapper {
 display: flex;
@@ -516,7 +527,7 @@ width: 72px;
 }
 
 [data-theme="dark"] .toggle-switch-wrapper {
-background: #18181b;
+background: #000000;
 border: 1px solid var(--border-color);
 }
 
@@ -545,6 +556,14 @@ transition: transform 0.3s;
 
 .ios-switch.active {
 background: #22c55e;
+}
+
+[data-theme="dark"] .ios-switch.active {
+background: #ffffff;
+}
+
+[data-theme="dark"] .ios-switch.active::after {
+background: #000000;
 }
 
 .ios-switch.active::after {
@@ -616,6 +635,10 @@ color: #ffffff;
 color:#ef4444;
 }
 
+[data-theme="dark"] .offline {
+color: #a1a1aa;
+}
+
 
 .open-btn{
 background:#111827;
@@ -624,11 +647,13 @@ font-size:14px;
 font-weight:700;
 border-radius:10px;
 color: white;
+border: none;
 }
 
 [data-theme="dark"] .open-btn {
-background: #ffffff;
-color: #000000;
+background: #000000;
+color: #ffffff;
+border: 1px solid #ffffff;
 }
 
 
@@ -674,7 +699,7 @@ vertical-align: top;
 }
 
 .card.active-card {
-border: 2px solid #9ca3af;
+border: 2px solid #111827;
 }
 
 [data-theme="dark"] .card.active-card {
@@ -710,7 +735,7 @@ color:#ef4444;
 }
 
 [data-theme="dark"] .money {
-color: #a1a1aa;
+color: #ffffff;
 }
 
 
@@ -722,10 +747,12 @@ display:none;
 background:var(--card-bg);
 border:1px solid var(--border-color);
 border-radius:12px;
-padding:10px;
+padding:12px;
 margin-top:10px;
-max-height:220px;
+max-height:300px;
 overflow-y:auto;
+width: 100%;
+box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 
@@ -735,9 +762,11 @@ display:block;
 
 
 .dropdown-header{
-font-size:14px;
+font-size:15px;
 font-weight:800;
-margin-bottom:8px;
+margin-bottom:12px;
+padding-bottom: 6px;
+border-bottom: 1px solid var(--border-color);
 }
 
 
@@ -746,21 +775,22 @@ display:flex;
 justify-content:space-between;
 align-items: center;
 background:var(--item-bg);
-padding:8px 12px;
+padding:10px 14px;
 border-radius:8px;
-margin-bottom:6px;
+margin-bottom:8px;
 font-size:14px;
+border: 1px solid var(--border-color);
 }
 
 .item-left {
 display: flex;
 align-items: center;
-gap: 10px;
+gap: 12px;
 }
 
 .item-icon {
-width: 24px;
-height: 24px;
+width: 28px;
+height: 28px;
 object-fit: contain;
 border-radius: 4px;
 flex-shrink: 0;
@@ -784,8 +814,9 @@ color: #ffffff;
 
 .empty{
 color:var(--subtext-color);
-padding:10px;
+padding:16px;
 font-size:14px;
+text-align: center;
 }
 
 
@@ -797,11 +828,13 @@ font-size:13px;
 border-radius:8px;
 flex-shrink:0;
 color: white;
+border: none;
 }
 
 [data-theme="dark"] .back {
-background: #ffffff;
-color: #000000;
+background: #000000;
+color: #ffffff;
+border: 1px solid #ffffff;
 }
 
 
@@ -845,11 +878,13 @@ padding:0 16px;
 border-radius:8px;
 font-size:13px;
 color: white;
+border: none;
 }
 
 [data-theme="dark"] .copy-btn {
-background: #ffffff;
-color: #000000;
+background: #000000;
+color: #ffffff;
+border: 1px solid #ffffff;
 }
 
 .code-block-container{
@@ -880,6 +915,12 @@ color:white;
 padding:6px 12px;
 font-size:12px;
 border-radius:6px;
+border: none;
+}
+
+[data-theme="dark"] .copy-script-btn {
+background: #000000;
+border: 1px solid #ffffff;
 }
 
 /* SETTINGS & COMING SOON */
@@ -971,7 +1012,8 @@ background: #22c55e;
 }
 
 [data-theme="dark"] .ios-theme-toggle {
-background: #27272a;
+background: #000000;
+border: 1px solid #ffffff;
 }
 
 [data-theme="dark"] .ios-theme-toggle.active {
@@ -1046,7 +1088,7 @@ function getItemIcon(type, name) {
     return `${assetBase}Seed/${cleanName.replace(/\s+/g, '')}Seed.webp`;
   } else if (type === "Pets") {
     return `${assetBase}Pet/${cleanName.replace(/\s+/g, '')}.webp`;
-  } else if (type === "AllItems") {
+  } else if (type === "AllItems" || type === "TotalItems") {
     return `${assetBase}Seed/${cleanName.replace(/\s+/g, '')}Seed.webp`;
   }
   return null;
@@ -1347,10 +1389,10 @@ document.getElementById("app").innerHTML = `
 </div>
 
 ${isUserAdmin ? `
-<button class="logout" style="background:#8b5cf6; margin-bottom:8px;" onclick="openAdminTab()">Admin Panel</button>
+<button class="logout" style="background:#000000; border: 1px solid #ffffff; margin-bottom:8px;" onclick="openAdminTab()">Admin Panel</button>
 ` : ''}
 
-<button class="logout" style="background:#3b82f6; margin-bottom:8px;" onclick="openTutorialTab()">Tutorial</button>
+<button class="logout" style="background:#000000; border: 1px solid #ffffff; margin-bottom:8px;" onclick="openTutorialTab()">Tutorial</button>
 <button class="logout" onclick="logout()">Log Out</button>
 </div>
 `;
@@ -1550,7 +1592,7 @@ function showMainDropdownContent(type) {
     html += `<div class='empty'>No items found</div>`;
   } else {
     keys.forEach(name => {
-      let iconType = type === 'TotalPets' ? 'Pets' : 'Seeds';
+      let iconType = type === 'TotalPets' ? 'Pets' : 'TotalItems';
       let iconUrl = getItemIcon(iconType, name);
       let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
 
@@ -1769,23 +1811,38 @@ function toggleAutoFeature(element, username, feature) {
 
 async function deleteAccount(username){
 if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
-openAccountsTab();
 return;
 }
 
 showLoading("Deleting account...");
 
 try {
-let res = await fetch(API + "/delete-account", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
-});
-let data = await res.json();
-if(data.success){
+let endpoints = [API + "/delete-account", API + "/deleteAccount", API + "/account/delete"];
+let data = null;
+
+for(let ep of endpoints) {
+  try {
+    let res = await fetch(ep, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) {
+        data = json;
+        break;
+      } else if(json.message) {
+        data = json; // keep to read error message if all fail
+      }
+    }
+  } catch(e) {}
+}
+
+if(data && data.success){
 loadAccounts();
 } else {
-alert(data.message || "Failed to delete account");
+alert((data && data.message) || "Failed to delete account");
 loadAccounts();
 }
 } catch(e) {
@@ -1878,13 +1935,6 @@ let html = `
 </div>
 
 <div class="settings-box">
-<div class="script-section-title">Change Username</div>
-<div id="usernameMessage"></div>
-<input id="newUsernameInput" placeholder="New Username">
-<button onclick="changeUsername()" style="width:100%; margin-top:4px;">Update Username</button>
-</div>
-
-<div class="settings-box">
 <div class="script-section-title">Change Password</div>
 <div id="passwordMessage"></div>
 <input id="oldPass" type="password" placeholder="Current Password">
@@ -1931,7 +1981,7 @@ let html = `
     <div class="script-section-title">Give Premium Access</div>
     <div id="adminMessage"></div>
     <input id="targetUsernameInput" placeholder="Target Username">
-    <button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#8b5cf6;">Grant Premium</button>
+    <button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#000000; border: 1px solid #ffffff;">Grant Premium</button>
   </div>
 
   <div class="settings-box">
@@ -1939,8 +1989,8 @@ let html = `
     <div id="adminBanMessage"></div>
     <input id="targetBanUsernameInput" placeholder="Username to Ban/Unban">
     <div style="display:flex; gap:8px; margin-top:4px;">
-      <button onclick="setUserBanStatus(true)" style="flex:1; background:#ef4444;">Ban User</button>
-      <button onclick="setUserBanStatus(false)" style="flex:1; background:#16a34a;">Unban User</button>
+      <button onclick="setUserBanStatus(true)" style="flex:1; background:#000000; border: 1px solid #ffffff;">Ban User</button>
+      <button onclick="setUserBanStatus(false)" style="flex:1; background:#000000; border: 1px solid #ffffff;">Unban User</button>
     </div>
   </div>
 
@@ -2061,22 +2111,22 @@ let renderUserRow = (u) => `
       <div style="font-size:11px; color:var(--subtext-color);">Created: ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
     </div>
     <div style="display:flex; gap:4px;">
-      <button onclick="document.getElementById('targetBanUsernameInput').value='${u.username}'" style="padding:4px 8px; font-size:10px; background:${u.is_banned ? '#16a34a' : '#ef4444'};">${u.is_banned ? 'Unban' : 'Ban'}</button>
+      <button onclick="document.getElementById('targetBanUsernameInput').value='${u.username}'" style="padding:4px 8px; font-size:10px; background:#000000; border: 1px solid #ffffff;">${u.is_banned ? 'Unban' : 'Ban'}</button>
     </div>
   </div>
 `;
 
 let html = `
-  <div style="font-weight:800; margin-bottom:4px; font-size:13px; color:#8b5cf6;">👑 Admins (${adminUsers.length})</div>
+  <div style="font-weight:800; margin-bottom:4px; font-size:13px; color:var(--text-color);">👑 Admins (${adminUsers.length})</div>
   ${adminUsers.length ? adminUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
 
-  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:#38bdf8;">⭐ Premium Users (${premiumUsers.length})</div>
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--text-color);">⭐ Premium Users (${premiumUsers.length})</div>
   ${premiumUsers.length ? premiumUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
 
   <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--subtext-color);">👤 Free Users (${freeUsers.length})</div>
   ${freeUsers.length ? freeUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
 
-  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:#ef4444;">🚫 Banned Users (${bannedUsers.length})</div>
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--text-color);">🚫 Banned Users (${bannedUsers.length})</div>
   ${bannedUsers.length ? bannedUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
 `;
 
@@ -2108,37 +2158,6 @@ let html = `
 `;
 
 document.getElementById("app").innerHTML = html;
-}
-
-
-
-async function changeUsername(){
-let newUsername = document.getElementById("newUsernameInput").value.trim();
-let msgBox = document.getElementById("usernameMessage");
-
-if(!newUsername){
-msgBox.innerHTML = `<div class="error">Please enter a new username</div>`;
-return;
-}
-
-try {
-let res = await fetch(API + "/change-username", {
-method: "POST",
-headers: { "Content-Type": "application/json" },
-body: JSON.stringify({ secret_key: secretKey, new_username: newUsername })
-});
-let data = await res.json();
-if(data.success){
-msgBox.innerHTML = `<div class="success">Username updated successfully</div>`;
-userInfo.username = newUsername;
-document.getElementById("newUsernameInput").value = "";
-setTimeout(() => { openSettingsTab(); }, 1000);
-} else {
-msgBox.innerHTML = `<div class="error">${data.message || 'Failed to update'}</div>`;
-}
-} catch(e) {
-msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
-}
 }
 
 
@@ -2285,7 +2304,8 @@ return `
 function total(items){
 if(!items) return 0;
 let count = 0;
-for(let item in items){
+let item;
+for(item in items){
 count += Number(items[item]) || 0;
 }
 return count;
@@ -2295,7 +2315,8 @@ function totalFiltered(items, type){
 if(!items) return 0;
 let count = 0;
 let cleanLower = "";
-for(let item in items){
+let item;
+for(item in items){
 let cleanName = item.trim();
 cleanLower = cleanName.toLowerCase();
 if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
@@ -2346,7 +2367,8 @@ activeDropdown = box;
 let items = targetInventory[type] || {};
 let merged = {};
 
-for(let name in items){
+let name;
+for(name in items){
 let clean = name.trim();
 let cleanLower = clean.toLowerCase();
 if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
@@ -2358,7 +2380,7 @@ merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
 let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
 let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
 
-for(let name in merged){
+for(name in merged){
 let iconUrl = getItemIcon(type, name);
 let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
 
