@@ -571,6 +571,18 @@ vertical-align: top;
 
 }
 
+.card.active-card {
+border: 2px solid #111827;
+}
+
+[data-theme="dark"] .card.active-card {
+border: 2px solid #38bdf8;
+}
+
+.card.non-clickable {
+cursor: default;
+}
+
 
 .label{
 
@@ -880,6 +892,7 @@ let accounts = [];
 let userInfo = {};
 let currentInventory = {};
 let activeDropdown = null;
+let currentActiveType = {};
 let currentCaptcha = "";
 
 
@@ -1981,6 +1994,8 @@ return;
 currentInventory =
 account.inventory || {};
 
+currentActiveType[username] = null;
+
 
 
 showAccountDashboard(account);
@@ -2017,6 +2032,7 @@ if(slot.innerHTML !== ""){
 
 slot.innerHTML = "";
 if(btn) btn.innerText = "Inventory";
+currentActiveType[account.roblox_username] = null;
 
 return;
 
@@ -2033,7 +2049,7 @@ slot.innerHTML = `
 <div class="slider-container">
 
 
-<div class="slider">
+<div class="slider" id="slider-${account.roblox_username}">
 
 
 
@@ -2048,7 +2064,8 @@ Number(account.sheckles || 0)
 
 null,
 
-escapedUsername
+escapedUsername,
+account.roblox_username
 
 )}
 
@@ -2065,7 +2082,8 @@ total(currentInventory.Seeds)
 
 "Seeds",
 
-escapedUsername
+escapedUsername,
+account.roblox_username
 
 )}
 
@@ -2082,7 +2100,8 @@ total(currentInventory.Gear)
 
 "Gear",
 
-escapedUsername
+escapedUsername,
+account.roblox_username
 
 )}
 
@@ -2099,7 +2118,8 @@ total(currentInventory.Crates)
 
 "Crates",
 
-escapedUsername
+escapedUsername,
+account.roblox_username
 
 )}
 
@@ -2116,7 +2136,8 @@ total(currentInventory.Pets)
 
 "Pets",
 
-escapedUsername
+escapedUsername,
+account.roblox_username
 
 )}
 
@@ -2145,13 +2166,19 @@ if(btn) btn.innerText = "Close";
 
 
 
-function createButton(label,value,color,type,user){
+function createButton(label,value,color,type,user,rawUser){
+
+let activeType = currentActiveType[rawUser];
+let isActive = type && activeType === type;
+let activeClass = isActive ? "active-card" : "";
+let clickableClass = type ? "" : "non-clickable";
 
 
 return `
 
 
-<div class="card"
+<div class="card ${activeClass} ${clickableClass}"
+id="card-${rawUser}-${type || 'money'}"
 
 onclick="${
 type ?
@@ -2231,20 +2258,38 @@ let box = document.getElementById(
 
 );
 
+currentActiveType[user] = currentActiveType[user] === type ? null : type;
+
+// Re-render slider cards to update active outlines
+let account = accounts.find(acc => acc.roblox_username === user);
+if(account) {
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+let slider = document.getElementById("slider-" + user);
+if(slider) {
+slider.innerHTML = `
+${createButton("💰 Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
+${createButton("🌱 Seeds", total(currentInventory.Seeds).toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("⚙️ Gear", total(currentInventory.Gear).toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("📦 Crates", total(currentInventory.Crates).toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("🐾 Pets", total(currentInventory.Pets).toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+`;
+}
+}
+
 
 
 if(activeDropdown === box &&
 
-box.classList.contains("open")){
+!box.classList.contains("open")){
+// Handled toggle off state via currentActiveType check above
+}
 
 
+
+if(currentActiveType[user] === null){
 box.classList.remove("open");
-
 activeDropdown = null;
-
 return;
-
-
 }
 
 
