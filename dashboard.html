@@ -949,58 +949,18 @@ let currentCaptcha = "";
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
 
 const logoAssets = {
-  account: assetBase + "icon/AccountLogo.webp",
+  account: assetBase + "icon/RobloxLogo.webp",
   garden: assetBase + "icon/GrowAGarden2Logo.webp",
   roblox: assetBase + "icon/RobloxLogo.webp",
   tutorial: assetBase + "icon/TutorialLogo.webp"
 };
 
-const seedAssets = {
-  "apple": assetBase + "Seed/AppleSeed.webp",
-  "bamboo": assetBase + "Seed/BambooSeed.webp",
-  "banana": assetBase + "Seed/BananaSeed.webp",
-  "blueberry": assetBase + "Seed/BlueberrySeed.webp",
-  "briar rose": assetBase + "Seed/BriarRoseSeed.webp",
-  "cactus": assetBase + "Seed/CactusSeed.webp",
-  "carrot": assetBase + "Seed/CarrotSeed.webp",
-  "cherry": assetBase + "Seed/CherrySeed.webp",
-  "coconut": assetBase + "Seed/CoconutSeed.webp",
-  "corn": assetBase + "Seed/CornSeed.webp",
-  "dragon fruit": assetBase + "Seed/DragonFruitSeed.webp",
-  "dragons breath": assetBase + "Seed/DragonsBreathSeed.webp",
-  "fire fern": assetBase + "Seed/FireFernSeed.webp"
-};
-
-const petAssets = {
-  "bald eagle": assetBase + "Pet/BaldEagle.webp",
-  "bear": assetBase + "Pet/Bear.webp",
-  "bee": assetBase + "Pet/Bee.webp",
-  "black dragon": assetBase + "Pet/BlackDragon.webp",
-  "butterfly": assetBase + "Pet/Butterfly.webp",
-  "deer": assetBase + "Pet/Deer.webp",
-  "frog": assetBase + "Pet/FrogNoBackground.webp",
-  "golden dragonfly": assetBase + "Pet/GoldenDragonfly.webp",
-  "ice serpent": assetBase + "Pet/IceSerpent.webp",
-  "monkey": assetBase + "Pet/Monkey.webp",
-  "owl": assetBase + "Pet/Owl.webp",
-  "racoon": assetBase + "Pet/Racoon.webp",
-  "robin": assetBase + "Pet/Robin.webp"
-};
-
 function getItemIcon(type, name) {
-  let cleanName = name.trim().toLowerCase();
+  let cleanName = name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
   if (type === "Seeds") {
-    for (let key in seedAssets) {
-      if (cleanName.includes(key)) {
-        return seedAssets[key];
-      }
-    }
+    return `${assetBase}Seed/${name.trim().replace(/\s+/g, '')}Seed.webp`;
   } else if (type === "Pets") {
-    for (let key in petAssets) {
-      if (cleanName.includes(key)) {
-        return petAssets[key];
-      }
-    }
+    return `${assetBase}Pet/${name.trim().replace(/\s+/g, '')}.webp`;
   }
   return null;
 }
@@ -2563,7 +2523,7 @@ ${type} Inventory
 for(let name in merged){
 
 let iconUrl = getItemIcon(type, name);
-let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
+let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
 
 html += `
 
