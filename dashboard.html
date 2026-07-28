@@ -878,7 +878,6 @@ document.documentElement.setAttribute("data-theme", currentTheme);
 
 let accounts = [];
 let userInfo = {};
-let inventoryData = {};
 let currentInventory = {};
 let activeDropdown = null;
 let currentCaptcha = "";
@@ -1979,34 +1978,15 @@ alert("Roblox script copied to clipboard!");
 
 
 
-async function openAccount(username){
+function openAccount(username){
 
+let account = accounts.find(acc => acc.roblox_username === username);
 
-const res = await fetch(
-
-API +
-"/account?secret_key=" +
-encodeURIComponent(secretKey) +
-"&username=" +
-encodeURIComponent(username)
-
-);
-
-
-
-const data = await res.json();
-
-
-
-if(!data.success){
+if(!account){
 
 return;
 
 }
-
-
-
-let account = data.account;
 
 
 
