@@ -1327,27 +1327,13 @@ let inv = acc.inventory || {};
 
 
 
-totalItems +=
+let sCount = total(inv.Seeds);
+let gCount = total(inv.Gear);
+let cCount = total(inv.Crates);
+let pCount = total(inv.Pets);
 
-total(inv.Seeds)
-
-+
-
-total(inv.Gear)
-
-+
-
-total(inv.Crates)
-
-+
-
-total(inv.Pets);
-
-
-
-totalPets +=
-
-total(inv.Pets);
+totalItems += (sCount + gCount + cCount + pCount);
+totalPets += pCount;
 
 
 });
@@ -2286,7 +2272,7 @@ merged[clean] =
 
 +
 
-(Number(items[name]) || 0);
+(Number(items[item]) || 0);
 
 
 }
