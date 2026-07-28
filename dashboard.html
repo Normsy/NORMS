@@ -1706,7 +1706,7 @@ document.getElementById("app").innerHTML = html;
 
 function openScriptTab(){
 
-let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/script"))();`;
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/loadscript"))();`;
 
 let html = `
 
@@ -2164,7 +2164,7 @@ id="drop-${account.roblox_username}">
 
 
 
-function createButton(label,value,color,type,user){
+function currentButton(label,value,color,type,user){
 
 
 return `
