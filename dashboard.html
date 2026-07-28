@@ -776,7 +776,7 @@ border-radius:6px;
 .tutorial-box {
 background: var(--card-bg);
 border: 1px solid var(--border-color);
-border-radius: 14px;
+border-radius:14px;
 padding: 14px;
 margin-top: 8px;
 box-shadow: 0 2px 6px rgba(0,0,0,.02);
@@ -1236,7 +1236,7 @@ return;
 }
 
 
-
+try {
 const res = await fetch(
 
 API + "/accounts?secret_key=" + encodeURIComponent(secretKey)
@@ -1263,6 +1263,9 @@ accounts = data.accounts;
 
 
 renderMain();
+} catch(e) {
+logout();
+}
 
 
 }
@@ -2353,9 +2356,18 @@ box.classList.add("open");
 
 // START
 
+// Added error handling block so if API request hangs/fails, it doesn't stay permanently stuck on loading.
 if(secretKey){
 showLoading("Loading dashboard layout...");
-loadAccounts();
+loadAccounts().catch(() => {
+    logout();
+});
+// Fallback safety timeout in case fetch hangs indefinitely
+setTimeout(() => {
+    if(document.querySelector('.loading-screen')) {
+        logout();
+    }
+}, 8000);
 }else{
 showLogin();
 }
