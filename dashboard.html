@@ -357,7 +357,7 @@ color:var(--text-color);
 }
 
 
-/* NAVIGATION CARDS - GRID LAYOUT FOR ACCOUNTS, SCRIPT, MAIL, SETTING */
+/* NAVIGATION CARDS */
 
 .nav-stack{
 
@@ -388,19 +388,25 @@ box-shadow:0 2px 6px rgba(0,0,0,.02);
 
 }
 
+.square-toggle-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 24px 16px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+text-align: center;
+}
+
 
 .accounts-toggle-title{
 
 font-size:15px;
 font-weight:800;
-
-}
-
-.accounts-toggle-arrow{
-
-font-size:15px;
-font-weight:700;
-color:var(--subtext-color);
 
 }
 
@@ -1467,13 +1473,6 @@ Accounts
 </div>
 
 
-<div class="accounts-toggle-arrow">
-
-→
-
-</div>
-
-
 </div>
 
 
@@ -1487,19 +1486,12 @@ Script
 </div>
 
 
-<div class="accounts-toggle-arrow">
-
-→
-
-</div>
-
-
 </div>
 
 
 <div class="nav-row-grid">
 
-<div class="accounts-toggle-card" onclick="openMailTab()">
+<div class="square-toggle-card" onclick="openMailTab()">
 
 
 <div class="accounts-toggle-title">
@@ -1509,29 +1501,15 @@ Mail
 </div>
 
 
-<div class="accounts-toggle-arrow">
-
-→
-
 </div>
 
 
-</div>
-
-
-<div class="accounts-toggle-card" onclick="openSettingsTab()">
+<div class="square-toggle-card" onclick="openSettingsTab()">
 
 
 <div class="accounts-toggle-title">
 
 Setting
-
-</div>
-
-
-<div class="accounts-toggle-arrow">
-
-→
 
 </div>
 
