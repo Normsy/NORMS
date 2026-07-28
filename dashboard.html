@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -232,6 +233,14 @@ width:55px;
 height:55px;
 border-radius:12px;
 object-fit:cover;
+background:#f3f4f6;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+font-weight:700;
+color:#6b7280;
+text-align:center;
 
 }
 
@@ -300,7 +309,16 @@ color:#111827;
 }
 
 
-/* ACCOUNT BUTTON */
+/* NAVIGATION CARDS */
+
+.nav-grid{
+
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px;
+margin-bottom:15px;
+
+}
 
 .accounts-toggle-card{
 
@@ -319,7 +337,7 @@ box-shadow:0 5px 15px rgba(0,0,0,.05);
 
 .accounts-toggle-title{
 
-font-size:18px;
+font-size:16px;
 font-weight:800;
 
 }
@@ -327,8 +345,9 @@ font-weight:800;
 
 .logout{
 
-margin-top:15px;
+width:100%;
 background:#ef4444;
+margin-top:5px;
 
 }
 
@@ -545,6 +564,92 @@ padding:10px;
 
 background:#111827;
 margin-bottom:10px;
+
+}
+
+
+/* SCRIPT DASHBOARD STYLES */
+
+.script-box{
+
+background:white;
+border:1px solid #e5e7eb;
+border-radius:16px;
+padding:20px;
+margin-top:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.05);
+
+}
+
+.script-section-title{
+
+font-size:16px;
+font-weight:800;
+margin-bottom:10px;
+
+}
+
+.key-display-box{
+
+display:flex;
+gap:10px;
+margin-bottom:15px;
+
+}
+
+.key-input{
+
+flex:1;
+background:#f3f4f6;
+font-family:monospace;
+font-weight:700;
+color:#374151;
+margin-bottom:0;
+
+}
+
+.copy-btn{
+
+background:#111827;
+padding:0 15px;
+border-radius:10px;
+font-size:13px;
+
+}
+
+.code-block-container{
+
+position:relative;
+
+}
+
+.script-code-area{
+
+width:100%;
+height:140px;
+background:#111827;
+color:#34d399;
+font-family:monospace;
+font-size:13px;
+padding:15px;
+border-radius:12px;
+resize:none;
+border:none;
+outline:none;
+line-height:1.4;
+
+}
+
+.copy-script-btn{
+
+position:absolute;
+top:10px;
+right:10px;
+background:#374151;
+color:white;
+padding:6px 12px;
+font-size:12px;
+border-radius:8px;
 
 }
 
@@ -1069,9 +1174,9 @@ document.getElementById("app").innerHTML = `
 <div class="hero-box">
 
 
-<img class="hero-icon"
-
-src="https://tr.rbxcdn.com/183f064f20387532fa7e5fbccb69a21d/150/150/Image/Png">
+<div class="hero-icon">
+Icon
+</div>
 
 
 <div>
@@ -1085,7 +1190,7 @@ Grow A Garden 2
 
 <div class="hero-subtitle">
 
-NORMS Account Dashboard
+Overview of your tracked accounts
 
 </div>
 
@@ -1128,7 +1233,7 @@ ${online}/${accounts.length}
 
 <div class="stat-label">
 
-TOTAL SHECKLES
+TOTAL MONEY
 
 </div>
 
@@ -1192,6 +1297,8 @@ ${totalPets.toLocaleString()}
 
 
 
+<div class="nav-grid">
+
 <div class="accounts-toggle-card"
 
 onclick="openAccountsTab()">
@@ -1210,6 +1317,30 @@ Open →
 
 </div>
 
+
+</div>
+
+
+<div class="accounts-toggle-card"
+
+onclick="openScriptTab()">
+
+
+<div class="accounts-toggle-title">
+
+Script Dashboard
+
+</div>
+
+
+<div>
+
+Open →
+
+</div>
+
+
+</div>
 
 </div>
 
@@ -1252,6 +1383,11 @@ onclick="renderMain()">
 <div class="hero-box">
 
 
+<div class="hero-icon">
+Icon
+</div>
+
+
 <div>
 
 
@@ -1264,7 +1400,7 @@ Accounts
 
 <div class="hero-subtitle">
 
-Your Roblox accounts
+Your tracked Roblox accounts
 
 </div>
 
@@ -1353,6 +1489,99 @@ document.getElementById("app").innerHTML = html;
 
 
 }
+
+
+
+function openScriptTab(){
+
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}";\nloadstring(game:HttpGet("${API}/script"))();`;
+
+let html = `
+
+<button class="back"
+
+onclick="renderMain()">
+
+← Back
+
+</button>
+
+
+<div class="hero-box">
+
+<div class="hero-icon">
+Icon
+</div>
+
+<div>
+
+<div class="hero-title">
+
+Script Dashboard
+
+</div>
+
+<div class="hero-subtitle">
+
+Your Secret Key and Roblox script loader
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="script-box">
+
+<div class="script-section-title">Your Secret Key</div>
+
+<div class="key-display-box">
+
+<input class="key-input" id="scriptKeyInput" readonly value="${secretKey || ""}">
+
+<button class="copy-btn" onclick="copyKey()">Copy</button>
+
+</div>
+
+
+<div class="script-section-title">Roblox Execution Script</div>
+
+<div class="code-block-container">
+
+<textarea class="script-code-area" readonly id="robloxScriptArea">${robloxScript}</textarea>
+
+<button class="copy-script-btn" onclick="copyScript()">Copy Script</button>
+
+</div>
+
+</div>
+
+`;
+
+document.getElementById("app").innerHTML = html;
+
+}
+
+
+
+function copyKey(){
+let input = document.getElementById("scriptKeyInput");
+input.select();
+navigator.clipboard.writeText(input.value);
+alert("Secret key copied to clipboard!");
+}
+
+
+
+function copyScript(){
+let area = document.getElementById("robloxScriptArea");
+area.select();
+navigator.clipboard.writeText(area.value);
+alert("Roblox script copied to clipboard!");
+}
+
+
 
 async function openAccount(username){
 
