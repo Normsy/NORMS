@@ -280,12 +280,18 @@ margin-top:4px;
 
 /* STATS */
 
+.stats-container-wrapper {
+display: flex;
+flex-direction: column;
+gap: 10px;
+flex-shrink: 0;
+margin-bottom: 4px;
+}
+
 .stats-grid{
 display:grid;
 grid-template-columns:repeat(2,1fr);
 gap:10px;
-flex-shrink:0;
-margin-bottom:4px;
 }
 
 .stat-card{
@@ -728,22 +734,17 @@ background:var(--card-bg);
 border:1px solid var(--border-color);
 border-radius:12px;
 padding:12px;
-margin-top:10px;
+margin-top:0px;
 max-height:450px;
 overflow-y:auto;
 width:100%;
 box-shadow:0 8px 20px rgba(0,0,0,0.15);
-
 position:relative;
 z-index:99999;
 }
 
 .global-dropdown.open{
 display:block;
-}
-
-.stats-grid + .global-dropdown {
-    margin-bottom:10px;
 }
 
 .dropdown-header{
@@ -1318,6 +1319,7 @@ document.getElementById("app").innerHTML = `
 </div>
 </div>
 
+<div class="stats-container-wrapper">
 <div class="stats-grid">
 <div class="stat-card">
 <div class="stat-label">ONLINE / TOTAL</div>
@@ -1341,6 +1343,7 @@ document.getElementById("app").innerHTML = `
 </div>
 
 <div class="global-dropdown" id="main-drop"></div>
+</div>
 
 <div class="nav-stack">
 <div class="accounts-toggle-card" onclick="openAccountsTab()">
