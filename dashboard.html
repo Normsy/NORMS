@@ -48,7 +48,6 @@ transition: background 0.3s, color 0.3s;
 --item-bg: #121212;
 }
 
-
 .container{
 width:100%;
 height:100%;
@@ -58,7 +57,6 @@ display:flex;
 flex-direction:column;
 justify-content:stretch;
 }
-
 
 #app{
 width:100%;
@@ -81,7 +79,6 @@ padding-bottom:20px;
 -webkit-overflow-scrolling:touch;
 }
 
-
 /* LOGIN / REGISTER */
 
 .auth-box{
@@ -95,20 +92,17 @@ box-shadow:0 4px 16px rgba(0,0,0,.06);
 width:100%;
 }
 
-
 .auth-title{
 font-size:24px;
 font-weight:900;
 margin-bottom:4px;
 }
 
-
 .auth-subtitle{
 font-size:13px;
 color:var(--subtext-color);
 margin-bottom:16px;
 }
-
 
 input{
 width:100%;
@@ -120,7 +114,6 @@ border-radius:8px;
 margin-bottom:10px;
 font-size:16px;
 }
-
 
 button{
 border:none;
@@ -138,11 +131,9 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-
 .auth-btn{
 width:100%;
 }
-
 
 .switch{
 margin-top:12px;
@@ -152,13 +143,11 @@ color:var(--subtext-color);
 cursor:pointer;
 }
 
-
 .error{
 color:#ef4444;
 font-size:13px;
 margin-bottom:8px;
 }
-
 
 .success{
 color:#16a34a;
@@ -192,7 +181,6 @@ text-align:center;
 .captcha-box input{
 margin-bottom:0;
 }
-
 
 /* LOADING SCREEN */
 
@@ -239,8 +227,6 @@ font-size:14px;
 color:var(--subtext-color);
 }
 
-
-
 /* HERO */
 
 .hero-box{
@@ -255,7 +241,6 @@ gap:18px;
 flex-shrink:0;
 margin-bottom:4px;
 }
-
 
 .hero-icon{
 width:64px;
@@ -281,20 +266,17 @@ height: 100%;
 object-fit: cover;
 }
 
-
 .hero-title{
 font-size:26px;
 font-weight:900;
 line-height:1.1;
 }
 
-
 .hero-subtitle{
 font-size:15px;
 color:var(--subtext-color);
 margin-top:4px;
 }
-
 
 /* STATS */
 
@@ -305,7 +287,6 @@ gap:10px;
 flex-shrink:0;
 margin-bottom:4px;
 }
-
 
 .stat-card{
 background:var(--card-bg);
@@ -328,13 +309,11 @@ border: 2px solid #111827;
 border: 2px solid #ffffff;
 }
 
-
 .stat-label{
 font-size:11px;
 font-weight:800;
 color:var(--subtext-color);
 }
-
 
 .stat-value{
 font-size:26px;
@@ -347,7 +326,6 @@ margin-top:6px;
 color: #ffffff;
 }
 
-
 .stat-value.money{
 color:var(--text-color);
 }
@@ -355,7 +333,6 @@ color:var(--text-color);
 [data-theme="dark"] .stat-value.money {
 color: #ffffff;
 }
-
 
 /* NAVIGATION CARDS */
 
@@ -400,12 +377,10 @@ box-shadow: 0 2px 6px rgba(0,0,0,.02);
 text-align: center;
 }
 
-
 .accounts-toggle-title{
 font-size:14px;
 font-weight:800;
 }
-
 
 .logout{
 width:100%;
@@ -445,154 +420,39 @@ gap:10px;
 padding-right:2px;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE / ACTIONS */
+/* ACCOUNT CARD & DELETE BUTTON BEHIND */
 
 .account-card-container {
 position: relative;
 overflow: hidden;
 border-radius: 16px;
 flex-shrink: 0;
-touch-action: pan-y;
 }
 
-.swipe-actions-bg {
+/* Dedicated delete button placed permanently behind the account card */
+.account-delete-behind-btn {
 position: absolute;
 top: 0;
 right: 0;
-width: 100%;
+width: 100px;
 height: 100%;
-display: flex;
-justify-content: flex-end;
-align-items: center;
-gap: 4px;
-padding-right: 8px;
-border-radius: 16px;
-z-index: 1;
-}
-
-.swipe-actions-left-bg {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: flex-start;
-align-items: center;
-padding-left: 12px;
-border-radius: 16px;
-z-index: 3;
-pointer-events: auto;
-}
-
-.swipe-action-btn {
-background: #334155;
+background: #ef4444;
 color: white;
 border: none;
-border-radius: 8px;
-padding: 8px 10px;
-font-size: 11px;
+font-size: 13px;
 font-weight: 800;
-cursor: pointer;
-height: 38px;
 display: flex;
 align-items: center;
 justify-content: center;
-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-[data-theme="dark"] .swipe-action-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
-}
-
-.swipe-action-btn.delete-btn {
-background:#ef4444;
-color:white;
-position:relative;
-z-index:5;
-pointer-events:auto;
-}
-
-[data-theme="dark"] .swipe-action-btn.delete-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
-}
-
-/* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
-.toggle-switch-wrapper {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-gap: 3px;
-background: #1e293b;
-padding: 4px 6px;
-border-radius: 8px;
-height: 48px;
-color: white;
-font-size: 9px;
-font-weight: 700;
 cursor: pointer;
-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-user-select: none;
-text-align: center;
-width: 72px;
+z-index: 1;
+border-top-right-radius: 16px;
+border-bottom-right-radius: 16px;
 }
 
-[data-theme="dark"] .toggle-switch-wrapper {
+[data-theme="dark"] .account-delete-behind-btn {
 background: #ffffff;
 color: #000000;
-border: 1px solid var(--border-color);
-}
-
-.ios-switch {
-position: relative;
-width: 32px;
-height: 18px;
-background: #475569;
-border-radius: 18px;
-transition: background 0.3s;
-display: inline-block;
-flex-shrink: 0;
-}
-
-[data-theme="dark"] .ios-switch {
-background: #d4d4d8;
-}
-
-.ios-switch::after {
-content: "";
-position: absolute;
-top: 2px;
-left: 2px;
-width: 14px;
-height: 14px;
-background: white;
-border-radius: 50%;
-transition: transform 0.3s;
-}
-
-[data-theme="dark"] .ios-switch::after {
-background: #000000;
-}
-
-.ios-switch.active {
-background: #22c55e;
-}
-
-[data-theme="dark"] .ios-switch.active {
-background: #16a34a;
-}
-
-[data-theme="dark"] .ios-switch.active::after {
-background: #ffffff;
-}
-
-.ios-switch.active::after {
-transform: translateX(14px);
 }
 
 .account-box{
@@ -603,11 +463,9 @@ padding:16px 18px;
 box-shadow:0 2px 6px rgba(0,0,0,.02);
 position: relative;
 z-index: 2;
-will-change: transform;
-user-select:none;
-transition:transform .2s ease-out;
+user-select: none;
+transition: transform 0.2s ease;
 }
-
 
 .account-header-row{
 display:flex;
@@ -615,12 +473,10 @@ justify-content:space-between;
 align-items:center;
 }
 
-
 .account-info-col{
 display:flex;
 flex-direction:column;
 }
-
 
 .user{
 font-size:18px;
@@ -641,12 +497,10 @@ background:#ef4444;
 background:#22c55e;
 }
 
-
 .status{
 font-size:13px;
 margin-top:3px;
 }
-
 
 .online{
 color:#16a34a;
@@ -656,7 +510,6 @@ color:#16a34a;
 color: #ffffff;
 }
 
-
 .offline{
 color:#ef4444;
 }
@@ -664,7 +517,6 @@ color:#ef4444;
 [data-theme="dark"] .offline {
 color: #a1a1aa;
 }
-
 
 .open-btn{
 background:#111827;
@@ -682,13 +534,11 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-
 /* INVENTORY CARDS & SLIDER */
 
 .account-dashboard-slot{
 margin-top:14px;
 }
-
 
 .slider-container{
 width: 100%;
@@ -700,17 +550,14 @@ scrollbar-width: none;
 padding-bottom: 4px;
 }
 
-
 .slider-container::-webkit-scrollbar{
 display:none;
 }
-
 
 .slider{
 display:inline-flex;
 gap:10px;
 }
-
 
 .card{
 display: inline-block;
@@ -736,13 +583,11 @@ border: 2px solid #ffffff;
 cursor: default;
 }
 
-
 .label{
 font-size:12px;
 font-weight:800;
 color:var(--subtext-color);
 }
-
 
 .value{
 margin-top:6px;
@@ -755,7 +600,6 @@ color:#16a34a;
 color: #ffffff;
 }
 
-
 .money{
 color:#ef4444;
 }
@@ -764,9 +608,7 @@ color:#ef4444;
 color: #ffffff;
 }
 
-
 /* DROPDOWN */
-
 
 .global-dropdown{
 display:none;
@@ -781,11 +623,9 @@ width: 100%;
 box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
-
 .global-dropdown.open{
 display:block;
 }
-
 
 .dropdown-header{
 font-size:15px;
@@ -794,7 +634,6 @@ margin-bottom:12px;
 padding-bottom: 6px;
 border-bottom: 1px solid var(--border-color);
 }
-
 
 .item{
 display:flex;
@@ -822,11 +661,9 @@ border-radius: 4px;
 flex-shrink: 0;
 }
 
-
 .item-name{
 font-weight:600;
 }
-
 
 .item-count{
 font-weight:800;
@@ -837,14 +674,12 @@ color:#16a34a;
 color: #ffffff;
 }
 
-
 .empty{
 color:var(--subtext-color);
 padding:16px;
 font-size:14px;
 text-align: center;
 }
-
 
 .back{
 background:#111827;
@@ -862,7 +697,6 @@ background: #ffffff;
 color: #000000;
 border: 1px solid #ffffff;
 }
-
 
 /* SCRIPT DASHBOARD STYLES */
 
@@ -1064,12 +898,9 @@ transform: translateX(20px);
 
 </head>
 
-
 <body>
 
-
 <div class="container">
-
 
 <div id="app">
 
@@ -1077,15 +908,11 @@ Loading NORMS...
 
 </div>
 
-
 </div>
-
 
 <script>
 
-
 const API = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev";
-
 
 let secretKey = localStorage.getItem("norms_secret");
 let currentTheme = localStorage.getItem("norms_theme") || "light";
@@ -1100,8 +927,6 @@ let mainActiveType = null;
 let currentCaptcha = "";
 let autoRefreshInterval = null;
 let currentPage = "main";
-let currentlySwipedUsername = null;
-
 
 // ASSET MAPPINGS
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
@@ -1126,8 +951,6 @@ function getItemIcon(type, name) {
   return null;
 }
 
-
-
 function generateCaptcha(){
 let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 let code = "";
@@ -1137,14 +960,10 @@ code += chars[Math.floor(Math.random() * chars.length)];
 currentCaptcha = code;
 }
 
-
-
 function saveSecret(key){
 secretKey = key;
 localStorage.setItem("norms_secret", key);
 }
-
-
 
 function showLoading(text){
 document.getElementById("app").innerHTML = `
@@ -1154,8 +973,6 @@ document.getElementById("app").innerHTML = `
 </div>
 `;
 }
-
-
 
 function logout(){
 if(autoRefreshInterval) clearInterval(autoRefreshInterval);
@@ -1167,8 +984,6 @@ secretKey = null;
 showLogin();
 }, 600);
 }
-
-
 
 function showLogin(){
 currentPage = "login";
@@ -1190,8 +1005,6 @@ document.getElementById("app").innerHTML = `
 </div>
 `;
 }
-
-
 
 function showRegister(){
 currentPage = "register";
@@ -1251,8 +1064,6 @@ document.getElementById("message").innerHTML = `<div class="error">Network error
 }
 }
 
-
-
 async function register(){
 const username = document.getElementById("regUser").value.trim();
 const password = document.getElementById("regPass").value;
@@ -1290,8 +1101,6 @@ document.getElementById("message").innerHTML = `<div class="error">Network error
 }
 }
 
-
-
 async function loadAccounts(silent = false){
 if(!secretKey){
 showLogin();
@@ -1320,8 +1129,6 @@ if(!silent) logout();
 }
 }
 
-
-
 function getStatus(time){
 if(!time) return { icon:"", text:"Roblox • Offline", class:"offline" };
 let minutes = (Date.now() - new Date(time).getTime()) / 1000 / 60;
@@ -1332,9 +1139,6 @@ return { icon:"", text:"Roblox • Online", class:"online" };
 
 return { icon:"", text:"Roblox • Offline (" + Math.floor(minutes) + " min ago)", class:"offline" };
 }
-
-
-
 
 function renderMain(silent = false){
 currentPage = "main";
@@ -1434,8 +1238,6 @@ if(mainActiveType) {
 }
 }
 
-
-
 function updateDashboardStats() {
   let online = 0;
   let totalSheckles = 0;
@@ -1471,8 +1273,6 @@ function updateDashboardStats() {
   }
 }
 
-
-
 function updateOnlineStatus() {
   accounts.forEach(acc => {
     let status = getStatus(acc.updated_at);
@@ -1490,8 +1290,6 @@ function updateOnlineStatus() {
     }
   });
 }
-
-
 
 function updateInventory(username) {
   let account = accounts.find(acc => acc.roblox_username === username);
@@ -1546,8 +1344,6 @@ function updateInventory(username) {
   }
 }
 
-
-
 function updateAccountsView() {
   updateOnlineStatus();
   accounts.forEach(acc => {
@@ -1558,8 +1354,6 @@ function updateAccountsView() {
   });
 }
 
-
-
 function updateCurrentPageData() {
   if (currentPage === "main") {
     updateDashboardStats();
@@ -1567,8 +1361,6 @@ function updateCurrentPageData() {
     updateAccountsView();
   }
 }
-
-
 
 function toggleMainItems(type) {
   let box = document.getElementById("main-drop");
@@ -1644,11 +1436,8 @@ function showMainDropdownContent(type) {
   box.classList.add("open");
 }
 
-
-
 function openAccountsTab(){
 currentPage = "accounts";
-currentlySwipedUsername = null;
 
 let html = `
 <button class="back" onclick="renderMain()">Back</button>
@@ -1671,30 +1460,14 @@ let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
-<div class="swipe-actions-left-bg">
-<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
-</div>
-<div class="swipe-actions-bg">
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
-<span>Auto Seeds</span>
-<div class="ios-switch" id="switch-seeds-${acc.roblox_username}"></div>
-</div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
-<span>Auto Gears</span>
-<div class="ios-switch" id="switch-gears-${acc.roblox_username}"></div>
-</div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
-<span>Auto Pets</span>
-<div class="ios-switch" id="switch-pets-${acc.roblox_username}"></div>
-</div>
-</div>
-<div class="account-box" id="acc-box-${acc.roblox_username}">
+<button class="account-delete-behind-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+<div class="account-box" id="acc-box-${acc.roblox_username}" onclick="revealDeleteButton(this)">
 <div class="account-header-row">
 <div class="account-info-col">
 <div class="user">${status.icon} ${acc.roblox_username}</div>
 <div class="status ${status.class}">${status.text}</div>
 </div>
-<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
+<button class="open-btn" id="btn-${acc.roblox_username}" onclick="event.stopPropagation(); openAccount('${escapedUsername}')">Inventory</button>
 </div>
 <div id="slot-${acc.roblox_username}" class="account-dashboard-slot"></div>
 </div>
@@ -1705,8 +1478,6 @@ html += `
 html += `</div></div>`;
 
 document.getElementById("app").innerHTML = html;
-initSwipeToDelete();
-initScrollReset();
 
 for(let username in currentActiveType) {
   if(currentActiveType[username] !== null) {
@@ -1718,125 +1489,18 @@ for(let username in currentActiveType) {
 }
 }
 
-
-
-function resetSwipedCard(username) {
-  if(!username) return;
-  let container = document.querySelector(`.account-card-container[data-username="${username}"]`);
-  if(container) {
-    let box = container.querySelector('.account-box');
-    if(box) {
-      box.style.transition = 'transform 0.2s ease-out';
+function revealDeleteButton(cardElement) {
+  // Toggle transform slide to reveal the delete button behind it upon clicking the dashboard card
+  if (cardElement.style.transform === 'translateX(-100px)') {
+    cardElement.style.transform = 'translateX(0px)';
+  } else {
+    // Reset any other open cards first
+    document.querySelectorAll('.account-box').forEach(box => {
       box.style.transform = 'translateX(0px)';
-    }
-  }
-  if(currentlySwipedUsername === username) {
-    currentlySwipedUsername = null;
+    });
+    cardElement.style.transform = 'translateX(-100px)';
   }
 }
-
-
-
-function initScrollReset() {
-  let scrollArea = document.getElementById("accountsScrollArea");
-  if(scrollArea) {
-    scrollArea.addEventListener('scroll', () => {
-      if(currentlySwipedUsername) {
-        resetSwipedCard(currentlySwipedUsername);
-      }
-    }, {passive: true});
-  }
-}
-
-
-
-function initSwipeToDelete(){
-document.querySelectorAll('.account-card-container').forEach(container => {
-let username = container.getAttribute('data-username');
-let box = container.querySelector('.account-box');
-let startX = 0;
-let startY = 0;
-let currentX = 0;
-let isSwiping = false;
-let isHorizontal = false;
-
-box.addEventListener('touchstart', (e) => {
-let slot = document.getElementById("slot-" + username);
-let btn = document.getElementById("btn-" + username);
-let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
-if(isInventoryOpen) {
-isSwiping = false;
-return;
-}
-
-startX = e.touches[0].clientX;
-startY = e.touches[0].clientY;
-currentX = startX;
-isSwiping = true;
-isHorizontal = false;
-box.style.transition = 'none';
-}, {passive: true});
-
-box.addEventListener('touchmove', (e) => {
-if(!isSwiping) return;
-let x = e.touches[0].clientX;
-let y = e.touches[0].clientY;
-let diffX = x - startX;
-let diffY = y - startY;
-
-if(!isHorizontal && Math.abs(diffX) > Math.abs(diffY)) {
-isHorizontal = true;
-}
-
-if(isHorizontal) {
-currentX = x;
-let maxRight = 100;
-let maxLeft = -250;
-if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
-if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
-
-box.style.transform = `translateX(${diffX}px)`;
-}
-}, {passive: true});
-
-box.addEventListener('touchend', (e) => {
-if(!isSwiping) return;
-isSwiping = false;
-if(!isHorizontal) return;
-
-let diff = currentX - startX;
-box.style.transition = 'transform 0.2s ease-out';
-
-if(diff < -110) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(-236px)`;
-currentlySwipedUsername = username;
-} else if(diff > 75) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(90px)`;
-currentlySwipedUsername = username;
-} else {
-box.style.transform = 'translateX(0px)';
-if(currentlySwipedUsername === username) {
-currentlySwipedUsername = null;
-}
-}
-}, {passive: true});
-});
-}
-
-function toggleAutoFeature(element, username, feature) {
-  let switchEl = element.querySelector('.ios-switch');
-  if(switchEl) {
-    switchEl.classList.toggle('active');
-  }
-}
-
-
 
 async function deleteAccount(username){
 if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
@@ -1897,8 +1561,6 @@ loadAccounts();
 }
 }
 
-
-
 function openScriptTab(){
 currentPage = "script";
 
@@ -1933,8 +1595,6 @@ let html = `
 document.getElementById("app").innerHTML = html;
 }
 
-
-
 function openMailTab(){
 currentPage = "mail";
 
@@ -1950,8 +1610,6 @@ let html = `
 
 document.getElementById("app").innerHTML = html;
 }
-
-
 
 function openSettingsTab(){
 currentPage = "settings";
@@ -2004,8 +1662,6 @@ let html = `
 
 document.getElementById("app").innerHTML = html;
 }
-
-
 
 function openAdminTab() {
 currentPage = "admin";
@@ -2206,8 +1862,6 @@ let html = `
 document.getElementById("app").innerHTML = html;
 }
 
-
-
 async function changePassword(){
 let oldPassword = document.getElementById("oldPass").value;
 let newPassword = document.getElementById("newPass").value;
@@ -2237,16 +1891,12 @@ msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
 }
 }
 
-
-
 function toggleTheme(){
 currentTheme = currentTheme === 'light' ? 'dark' : 'light';
 localStorage.setItem("norms_theme", currentTheme);
 document.documentElement.setAttribute("data-theme", currentTheme);
 openSettingsTab();
 }
-
-
 
 function copyKey(){
 let input = document.getElementById("scriptKeyInput");
@@ -2255,8 +1905,6 @@ navigator.clipboard.writeText(input.value);
 alert("Secret key copied to clipboard!");
 }
 
-
-
 function copyScript(){
 let area = document.getElementById("robloxScriptArea");
 area.select();
@@ -2264,13 +1912,7 @@ navigator.clipboard.writeText(area.value);
 alert("Roblox script copied to clipboard!");
 }
 
-
-
 function openAccount(username){
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let account = accounts.find(acc => acc.roblox_username === username);
 if(!account) return;
 
@@ -2282,14 +1924,7 @@ currentActiveType[username] = null;
 showAccountDashboard(account, targetAccountInventory);
 }
 
-
-
-
 function showAccountDashboard(account, targetInventory){
-if(currentlySwipedUsername && currentlySwipedUsername !== account.roblox_username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let slot = document.getElementById("slot-" + account.roblox_username);
 let btn = document.getElementById("btn-" + account.roblox_username);
 
@@ -2326,9 +1961,6 @@ toggleItems(currentActive, account.roblox_username);
 }
 }
 
-
-
-
 function createButton(label,value,color,type,user,rawUser){
 let activeType = currentActiveType[rawUser];
 let isActive = type && activeType === type;
@@ -2342,10 +1974,6 @@ return `
 </div>
 `;
 }
-
-
-
-
 
 function total(items){
 if(!items) return 0;
@@ -2373,15 +2001,7 @@ count += Number(items[item]) || 0;
 return count;
 }
 
-
-
-
-
 function toggleItems(type,user){
-if(currentlySwipedUsername && currentlySwipedUsername !== user) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let account = accounts.find(acc => acc.roblox_username === user);
 if(!account) return;
 
@@ -2444,9 +2064,6 @@ ${iconHtml}
 box.innerHTML = html || "<div class='empty'>No items</div>";
 box.classList.add("open");
 }
-
-
-
 
 // START
 
