@@ -1039,6 +1039,7 @@ let autoRefreshInterval = null;
 let currentPage = "main";
 let currentlySwipedUsername = null;
 let dashboardVersion = 0;
+let swipedStates = {}; // Stores swipe positions per username
 
 // ASSET MAPPINGS
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
@@ -1245,18 +1246,27 @@ if(!silent) logout();
 }
 
 async function checkVersion() {
-    if(!secretKey) return;
+    if (!secretKey) return;
+
     try {
         const res = await fetch(API + "/sync?secret_key=" + encodeURIComponent(secretKey));
         const data = await res.json();
 
         if (!data.success) return;
 
-        if (data.version !== dashboardVersion) {
+        // Refresh if ANYTHING changed
+        if (
+            data.version !== dashboardVersion ||
+            data.updated
+        ) {
             dashboardVersion = data.version;
             loadAccounts(true);
         }
-    } catch(e) {}
+
+        // Always update the timer text every refresh
+        updateOnlineStatus();
+
+    } catch (e) {}
 }
 
 function getStatus(time){
@@ -1569,7 +1579,6 @@ function showMainDropdownContent(type) {
 
 function openAccountsTab(){
 currentPage = "accounts";
-currentlySwipedUsername = null;
 
 let html = `
 <button class="back" onclick="renderMain()">Back</button>
@@ -1590,6 +1599,7 @@ accounts.forEach(acc=>{
 let status = getStatus(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 let settings = acc.settings || {};
+let savedTransform = swipedStates[acc.roblox_username] || 'translateX(0px)';
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
@@ -1610,7 +1620,7 @@ html += `
 <div class="ios-switch ${settings.AutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
 </div>
 </div>
-<div class="account-box" id="acc-box-${acc.roblox_username}">
+<div class="account-box" id="acc-box-${acc.roblox_username}" style="transform: ${savedTransform};">
 <div class="account-header-row">
 <div class="account-info-col">
 <div class="user ${status.class}">${acc.roblox_username}</div>
@@ -1650,6 +1660,7 @@ function resetSwipedCard(username) {
       box.style.transform = 'translateX(0px)';
     }
   }
+  swipedStates[username] = 'translateX(0px)';
   if(currentlySwipedUsername === username) {
     currentlySwipedUsername = null;
   }
@@ -1728,15 +1739,18 @@ if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(-236px)`;
+swipedStates[username] = 'translateX(-236px)';
 currentlySwipedUsername = username;
 } else if(diff > 75) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
 box.style.transform = `translateX(90px)`;
+swipedStates[username] = 'translateX(90px)';
 currentlySwipedUsername = username;
 } else {
 box.style.transform = 'translateX(0px)';
+swipedStates[username] = 'translateX(0px)';
 if(currentlySwipedUsername === username) {
 currentlySwipedUsername = null;
 }
@@ -1834,6 +1848,7 @@ if(!data) {
 }
 
 if(data && data.success){
+delete swipedStates[username];
 loadAccounts();
 } else {
 alert((data && data.message) || "Failed to delete account");
@@ -2366,7 +2381,10 @@ box.classList.add("open");
 if(secretKey){
 showLoading("Loading dashboard layout...");
 loadAccounts();
-autoRefreshInterval = setInterval(checkVersion, 3000);
+autoRefreshInterval = setInterval(() => {
+    checkVersion();
+    updateOnlineStatus();
+}, 3000);
 }else{
 showLogin();
 }
