@@ -334,11 +334,11 @@ color: #ffffff;
 }
 
 .stat-value.money{
-color:var(--text-color);
+color:#eab308 !important; /* Gold color */
 }
 
 [data-theme="dark"] .stat-value.money {
-color: #ffffff;
+color: #eab308 !important; /* Gold color */
 }
 
 /* NAVIGATION CARDS */
@@ -719,11 +719,11 @@ color: #ffffff;
 }
 
 .money{
-color:#ef4444;
+color:#eab308 !important; /* Gold color */
 }
 
 [data-theme="dark"] .money {
-color: #ffffff;
+color: #eab308 !important; /* Gold color */
 }
 
 /* DROPDOWN - FIXED HEIGHT & SCROLLABLE WITH OPAQUE BACKGROUND */
@@ -1066,6 +1066,14 @@ const logoAssets = {
   tutorial: assetBase + "icon/TutorialLogo.webp"
 };
 
+function formatSheckles(num) {
+  if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toLocaleString();
+}
+
 function getItemIcon(type, name) {
   if (!name) return null;
   let cleanName = name.trim();
@@ -1334,7 +1342,7 @@ document.getElementById("app").innerHTML = `
 
 <div class="stat-card">
 <div class="stat-label">TOTAL SHECKLES</div>
-<div class="stat-value money" id="stat-sheckles">${totalSheckles.toLocaleString()}</div>
+<div class="stat-value money" id="stat-sheckles">${formatSheckles(totalSheckles)}</div>
 </div>
 
 <div class="stat-card clickable ${mainActiveType === 'TotalSeeds' ? 'active-card' : ''}" onclick="toggleMainItems('TotalSeeds')">
@@ -1382,7 +1390,6 @@ ${isUserAdmin ? `
 
 if(mainActiveType) {
   showMainDropdownContent(mainActiveType);
-  // Auto-scroll the main container down so the opened dropdown is immediately fully visible
   let mainScrollArea = document.querySelector('.main-scroll-area');
   if(mainScrollArea) {
     mainScrollArea.scrollTop = mainScrollArea.scrollHeight;
@@ -1414,7 +1421,7 @@ function updateDashboardStats() {
   let elPets = document.getElementById("stat-pets");
 
   if(elOnline) elOnline.innerText = `${online}/${accounts.length}`;
-  if(elSheckles) elSheckles.innerText = totalSheckles.toLocaleString();
+  if(elSheckles) elSheckles.innerText = formatSheckles(totalSheckles);
   if(elItems) elItems.innerText = totalSeedsCount.toLocaleString();
   if(elPets) elPets.innerText = totalPets.toLocaleString();
 
@@ -1453,7 +1460,7 @@ function updateInventory(username) {
   if(slider) {
     let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
     slider.innerHTML = `
-      ${createButton("Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
+      ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
       ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
       ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
       ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
@@ -2282,7 +2289,7 @@ let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
 slot.innerHTML = `
 <div class="slider-container">
 <div class="slider" id="slider-${account.roblox_username}">
-${createButton("Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
@@ -2357,7 +2364,7 @@ let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
 let slider = document.getElementById("slider-" + user);
 if(slider) {
 slider.innerHTML = `
-${createButton("Sheckles", Number(account.sheckles || 0).toLocaleString(), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
