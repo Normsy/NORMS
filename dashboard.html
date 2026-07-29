@@ -335,11 +335,11 @@ color: #ffffff;
 }
 
 .stat-value.money{
-color:#d97706 !important; /* Honey gold color */
+color:#d97706 !important;
 }
 
 [data-theme="dark"] .stat-value.money {
-color:#f59e0b !important; /* Slightly brighter honey gold for dark mode readability */
+color:#f59e0b !important;
 }
 
 /* NAVIGATION CARDS */
@@ -721,11 +721,11 @@ color: #ffffff;
 }
 
 .money{
-color:#d97706 !important; /* Honey gold color */
+color:#d97706 !important;
 }
 
 [data-theme="dark"] .money {
-color:#f59e0b !important; /* Slightly brighter honey gold for dark mode readability */
+color:#f59e0b !important;
 }
 
 /* DROPDOWN - FIXED HEIGHT & SCROLLABLE WITH OPAQUE BACKGROUND */
@@ -1095,7 +1095,7 @@ function formatSheckles(num) {
 
 function getItemIcon(type, name) {
   if (!name) return null;
-  let cleanName = name.replace(/\s+/g, '');
+  let cleanName = name.replace(/['\s]+/g, '');
   
   if (type === "Seeds" || type === "TotalSeeds") {
     return `${assetBase}Seed/${cleanName}Seed.webp`;
