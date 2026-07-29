@@ -1083,6 +1083,8 @@ const logoAssets = {
   tutorial: assetBase + "icon/TutorialLogo.webp"
 };
 
+const ignoredGearList = ["sign", "lantern", "megaphone", "teleporter", "wheelbarrow", "playermagnet", "strawberrysniper"];
+
 function formatSheckles(num) {
   if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
   if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
@@ -1490,6 +1492,7 @@ function updateInventory(username) {
         let clean = name.trim();
         let cleanLower = clean.toLowerCase();
         if(activeType === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) continue;
+        if(activeType === "Gear" && ignoredGearList.includes(cleanLower)) continue;
         merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
       }
 
@@ -2359,6 +2362,9 @@ cleanLower = cleanName.toLowerCase();
 if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
 continue;
 }
+if(type === "Gear" && ignoredGearList.includes(cleanLower)) {
+continue;
+}
 count += Number(items[item]) || 0;
 }
 return count;
@@ -2418,6 +2424,9 @@ for(name in items){
 let clean = name.trim();
 let cleanLower = clean.toLowerCase();
 if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
+continue;
+}
+if(type === "Gear" && ignoredGearList.includes(cleanLower)) {
 continue;
 }
 merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
