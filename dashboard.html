@@ -1099,8 +1099,9 @@ function getItemIcon(type, name) {
   
   if (type === "Seeds" || type === "TotalSeeds") {
     return `${assetBase}Seed/${cleanName}Seed.webp`;
+  } else if (type === "Crops") {
+    return `${assetBase}Crop/${cleanName}.webp`;
   } else if (type === "Pets" || type === "TotalPets") {
-    // Strip modifiers like Big, Mega, Rainbow to fallback to the normal base pet icon
     let basePetName = cleanName.replace(/^(Big|Mega|Rainbow)+/i, '');
     return `${assetBase}Pet/${basePetName}.webp`;
   } else if (type === "Gear") {
@@ -1117,7 +1118,9 @@ function isValidItemForCategory(type, name) {
   
   if (type === "Seeds" || type === "TotalSeeds") {
     if (cleanLower === "build" || cleanLower === "shovel") return false;
-    if (cleanLower.includes("gnome")) return false; // Gnomes are not seeds
+    if (cleanLower.includes("gnome")) return false;
+  } else if (type === "Crops") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
   } else if (type === "Pets" || type === "TotalPets") {
     if (cleanLower === "build" || cleanLower === "shovel") return false;
   } else if (type === "Gear") {
@@ -1497,6 +1500,7 @@ function updateInventory(username) {
     slider.innerHTML = `
       ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
       ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+      ${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
       ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
       ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
       ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -1514,7 +1518,7 @@ function updateInventory(username) {
         merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
       }
 
-      let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+      let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
       let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
 
       for(let name in merged){
@@ -2329,6 +2333,7 @@ slot.innerHTML = `
 <div class="slider" id="slider-${account.roblox_username}">
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2391,6 +2396,7 @@ let targetInventory = account.inventory || {};
 slider.innerHTML = `
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2408,6 +2414,7 @@ let targetInventory = account.inventory || {};
 slider.innerHTML = `
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2426,7 +2433,7 @@ if(!isValidItemForCategory(type, clean)) continue;
 merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
 }
 
-let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
 let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
 
 for(name in merged){
