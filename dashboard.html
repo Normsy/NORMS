@@ -1644,6 +1644,13 @@ function openAccountsTab(){
 currentPage = "accounts";
 currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
 
+// Sort accounts to prioritize online users at the top
+let sortedAccounts = [...accounts].sort((a, b) => {
+  let statusA = getStatus(a.updated_at).class === "online" ? 0 : 1;
+  let statusB = getStatus(b.updated_at).class === "online" ? 0 : 1;
+  return statusA - statusB;
+});
+
 let html = `
 <button class="back" onclick="renderMain()">Back</button>
 
@@ -1659,7 +1666,7 @@ let html = `
 <div class="accounts-scroll-area" id="accountsScrollArea">
 `;
 
-accounts.forEach(acc=>{
+sortedAccounts.forEach(acc=>{
 let status = getStatus(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 let settings = acc.settings || {};
