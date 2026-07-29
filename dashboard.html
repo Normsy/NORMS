@@ -1093,14 +1093,27 @@ function formatSheckles(num) {
   return num.toLocaleString();
 }
 
+function parseItemNameAndWeight(rawName) {
+  if (!rawName) return { name: "", isCropWithWeight: false };
+  let trimmed = rawName.trim();
+  let weightMatch = trimmed.match(/^(.*?)\s*\[\d+(\.\d+)?kg\]$/i);
+  if (weightMatch) {
+    let cleanItemName = weightMatch[1].trim();
+    return { name: cleanItemName, isCropWithWeight: true };
+  }
+  return { name: trimmed, isCropWithWeight: false };
+}
+
 function getItemIcon(type, name) {
   if (!name) return null;
-  let cleanName = name.replace(/['\s]+/g, '');
+  let parsed = parseItemNameAndWeight(name);
+  let cleanName = parsed.name.replace(/['\s]+/g, '');
   
-  if (type === "Seeds" || type === "TotalSeeds") {
+  if (type === "Seeds" || type === "TotalSeeds" || parsed.isCropWithWeight) {
     return `${assetBase}Seed/${cleanName}Seed.webp`;
+  } else if (type === "Crops") {
+    return `${assetBase}Crop/${cleanName}.webp`;
   } else if (type === "Pets" || type === "TotalPets") {
-    // Strip modifiers like Big, Mega, Rainbow to fallback to the normal base pet icon
     let basePetName = cleanName.replace(/^(Big|Mega|Rainbow)+/i, '');
     return `${assetBase}Pet/${basePetName}.webp`;
   } else if (type === "Gear") {
@@ -1113,11 +1126,14 @@ function getItemIcon(type, name) {
 
 function isValidItemForCategory(type, name) {
   if (!name) return false;
-  let cleanLower = name.trim().toLowerCase();
+  let parsed = parseItemNameAndWeight(name);
+  let cleanLower = parsed.name.trim().toLowerCase();
   
   if (type === "Seeds" || type === "TotalSeeds") {
     if (cleanLower === "build" || cleanLower === "shovel") return false;
-    if (cleanLower.includes("gnome")) return false; // Gnomes are not seeds
+    if (cleanLower.includes("gnome")) return false;
+  } else if (type === "Crops") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
   } else if (type === "Pets" || type === "TotalPets") {
     if (cleanLower === "build" || cleanLower === "shovel") return false;
   } else if (type === "Gear") {
@@ -1497,6 +1513,7 @@ function updateInventory(username) {
     slider.innerHTML = `
       ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
       ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+      ${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
       ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
       ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
       ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -1511,10 +1528,12 @@ function updateInventory(username) {
       for(let name in items){
         let clean = name.trim();
         if(!isValidItemForCategory(activeType, clean)) continue;
-        merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
+        let parsed = parseItemNameAndWeight(clean);
+        let keyName = activeType === "Crops" && parsed.isCropWithWeight ? clean : parsed.name;
+        merged[keyName] = (merged[keyName] || 0) + (Number(items[name]) || 0);
       }
 
-      let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+      let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
       let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
 
       for(let name in merged){
@@ -1585,7 +1604,9 @@ function showMainDropdownContent(type) {
     for(let name in targetItems) {
       let cleanName = name.trim();
       if(!isValidItemForCategory(targetKey, cleanName)) continue;
-      aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(targetItems[name]) || 0);
+      let parsed = parseItemNameAndWeight(cleanName);
+      let keyName = parsed.name;
+      aggregated[keyName] = (aggregated[keyName] || 0) + (Number(targetItems[name]) || 0);
     }
   });
 
@@ -2329,6 +2350,7 @@ slot.innerHTML = `
 <div class="slider" id="slider-${account.roblox_username}">
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2391,6 +2413,7 @@ let targetInventory = account.inventory || {};
 slider.innerHTML = `
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2408,6 +2431,7 @@ let targetInventory = account.inventory || {};
 slider.innerHTML = `
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Crops", totalFiltered(targetInventory.Crops, "Crops").toLocaleString(), "", "Crops", escapedUsername, account.roblox_username)}
 ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
 ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
 ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
@@ -2423,10 +2447,12 @@ let name;
 for(name in items){
 let clean = name.trim();
 if(!isValidItemForCategory(type, clean)) continue;
-merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
+let parsed = parseItemNameAndWeight(clean);
+let keyName = type === "Crops" && parsed.isCropWithWeight ? clean : parsed.name;
+merged[keyName] = (merged[keyName] || 0) + (Number(items[name]) || 0);
 }
 
-let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
 let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
 
 for(name in merged){
