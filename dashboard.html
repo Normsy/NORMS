@@ -1109,6 +1109,21 @@ function getItemIcon(type, name) {
   return null;
 }
 
+function isValidItemForCategory(type, name) {
+  if (!name) return false;
+  let cleanLower = name.trim().toLowerCase();
+  
+  if (type === "Seeds" || type === "TotalSeeds") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+    if (cleanLower.includes("gnome")) return false; // Gnomes are not seeds
+  } else if (type === "Pets" || type === "TotalPets") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+  } else if (type === "Gear") {
+    if (ignoredGearList.includes(cleanLower)) return false;
+  }
+  return true;
+}
+
 function generateCaptcha(){
 let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 let code = "";
@@ -1334,8 +1349,6 @@ totalSheckles += Number(acc.sheckles || 0);
 
 let inv = acc.inventory || {};
 let sCount = totalFiltered(inv.Seeds, "Seeds");
-let gCount = totalFiltered(inv.Gear, "Gear");
-let cCount = totalFiltered(inv.Crates, "Crates");
 let pCount = totalFiltered(inv.Pets, "Pets");
 
 totalSeedsCount += sCount;
@@ -1495,9 +1508,7 @@ function updateInventory(username) {
       let merged = {};
       for(let name in items){
         let clean = name.trim();
-        let cleanLower = clean.toLowerCase();
-        if(activeType === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) continue;
-        if(activeType === "Gear" && ignoredGearList.includes(cleanLower)) continue;
+        if(!isValidItemForCategory(activeType, clean)) continue;
         merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
       }
 
@@ -1571,8 +1582,7 @@ function showMainDropdownContent(type) {
     let targetItems = inv[targetKey] || {};
     for(let name in targetItems) {
       let cleanName = name.trim();
-      let cleanLower = cleanName.toLowerCase();
-      if(targetKey === 'Pets' && (cleanLower === 'build' || cleanLower === 'shovel')) continue;
+      if(!isValidItemForCategory(targetKey, cleanName)) continue;
       aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(targetItems[name]) || 0);
     }
   });
@@ -2346,30 +2356,13 @@ return `
 `;
 }
 
-function total(items){
-if(!items) return 0;
-let count = 0;
-let item;
-for(item in items){
-count += Number(items[item]) || 0;
-}
-return count;
-}
-
 function totalFiltered(items, type){
 if(!items) return 0;
 let count = 0;
-let cleanLower = "";
 let item;
 for(item in items){
 let cleanName = item.trim();
-cleanLower = cleanName.toLowerCase();
-if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
-continue;
-}
-if(type === "Gear" && ignoredGearList.includes(cleanLower)) {
-continue;
-}
+if(!isValidItemForCategory(type, cleanName)) continue;
 count += Number(items[item]) || 0;
 }
 return count;
@@ -2427,13 +2420,7 @@ let merged = {};
 let name;
 for(name in items){
 let clean = name.trim();
-let cleanLower = clean.toLowerCase();
-if(type === "Pets" && (cleanLower === "build" || cleanLower === "shovel")) {
-continue;
-}
-if(type === "Gear" && ignoredGearList.includes(cleanLower)) {
-continue;
-}
+if(!isValidItemForCategory(type, clean)) continue;
 merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
 }
 
