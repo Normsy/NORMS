@@ -1100,7 +1100,9 @@ function getItemIcon(type, name) {
   if (type === "Seeds" || type === "TotalSeeds") {
     return `${assetBase}Seed/${cleanName}Seed.webp`;
   } else if (type === "Pets" || type === "TotalPets") {
-    return `${assetBase}Pet/${cleanName}.webp`;
+    // Strip modifiers like Big, Mega, Rainbow to fallback to the normal base pet icon
+    let basePetName = cleanName.replace(/^(Big|Mega|Rainbow)+/i, '');
+    return `${assetBase}Pet/${basePetName}.webp`;
   } else if (type === "Gear") {
     return `${assetBase}Gear/${cleanName}.webp`;
   } else if (type === "Crates") {
