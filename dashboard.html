@@ -1,614 +1,2465 @@
---// NORMS Main Script (Fully Combined & Integrated)
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
 
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local CoreGui = game:GetService("CoreGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterGui = game:GetService("StarterGui")
-local Lighting = game:GetService("Lighting")
+<head>
 
-local player = Players.LocalPlayer
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
-if not game or not game:GetService("Players") then
-    error("[NORMS] Must run inside Roblox game")
-end
+<title>NORMS Dashboard</title>
 
-if not player then
-    Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
-    player = Players.LocalPlayer
-end
+<style>
 
--- =====================
--- CONFIG
--- =====================
-local SECRET_KEY = getgenv().SecretKey or "DEFAULT_KEY"
-local UPDATE_URL = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev/update"
-local SETTINGS_URL = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev/account/settings"
-local WEBHOOK_URL = "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_"
-
--- Bot State Control
-local BotState = {
-    Running = true,
-    StartTime = os.time(),
-
-    AutoBuySeeds = false,
-    AutoBuyGears = false,
-    AutoCatchPets = false
+*{
+box-sizing:border-box;
+-webkit-tap-highlight-color: transparent;
 }
 
--- Rarity Decimal Mapping for Embeds
-local RARITY_DATA = {
-    Common = { decimal = 16777215 },
-    Uncommon = { decimal = 65280 },
-    Rare = { decimal = 255 },
-    Epic = { decimal = 8388736 },
-    Legendary = { decimal = 16766720 },
-    Mythic = { decimal = 16711680 }
+html, body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+font-family:Segoe UI,Arial,sans-serif;
+background:var(--bg-color);
+color:var(--text-color);
+overflow:auto;
+touch-action: manipulation;
+transition: background 0.3s, color 0.3s;
 }
 
--- =====================
--- NETWORKING HELPER
--- =====================
-local Networking = {}
+:root {
+--bg-color: #f5f5f7;
+--text-color: #111827;
+--card-bg: #ffffff;
+--border-color: #e5e7eb;
+--subtext-color: #6b7280;
+--input-bg: #f3f4f6;
+--item-bg: #f9fafb;
+}
 
-function Networking.fire(path, ...)
-    local args = {...}
-    local argc = select("#", ...)
-    pcall(function()
-        local shared = ReplicatedStorage:WaitForChild("SharedModules", 5)
-        local netModule = shared and shared:WaitForChild("Networking", 5)
-        if netModule then
-            local net = require(netModule)
-            local current = net
-            for segment in string.gmatch(path, "[^%.]+") do
-                if type(current) == "table" then current = current[segment] end
-            end
-            if current and type(current) == "table" and current.fire then
-                current:fire(unpack(args, 1, argc))
-            elseif current and current.Fire then
-                current:Fire(unpack(args, 1, argc))
-            end
-        end
-    end)
-end
+[data-theme="dark"] {
+--bg-color: #000000;
+--text-color: #ffffff;
+--card-bg: #000000;
+--border-color: #ffffff;
+--subtext-color: #a1a1aa;
+--input-bg: #121212;
+--item-bg: #121212;
+}
 
--- =====================
--- INVENTORY & GAME SCANNER
--- =====================
-local function getSheckles()
-    local leaderstats = player:FindFirstChild("leaderstats")
-    if leaderstats then
-        local sheckles = leaderstats:FindFirstChild("Sheckles")
-        if sheckles then
-            return sheckles.Value
-        end
-    end
-    return 0
-end
+.container{
+width:100%;
+height:100%;
+margin:0;
+padding:12px;
+display:flex;
+flex-direction:column;
+justify-content:stretch;
+}
 
-local function scanTool(inventory, tool)
-    if not tool:IsA("Tool") then return end
-    local category = tool:GetAttribute("MainCategory")
+#app{
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+flex:1;
+overflow-y:auto;
+overflow-x:hidden;
+gap:8px;
+}
 
-    -- Check if name contains "kg" pattern (e.g. "[10.74kg]" or "[0.00kg]")
-    if string.match(tool.Name, "%[%d+%.?%d*kg%]") then
-        local itemName = tool.Name
-        inventory.Crops[itemName] = (inventory.Crops[itemName] or 0) + 1
-        return
-    end
+.main-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-bottom:20px;
+-webkit-overflow-scrolling:touch;
+}
 
-    if category then
-        local count = tool:GetAttribute("Count") or 1
-        local itemName = tool:GetAttribute("SeedTool") or tool.Name
+/* LOGIN / REGISTER */
 
-        if category == "Seed" then
-            inventory.Seeds[itemName] = (inventory.Seeds[itemName] or 0) + count
-        elseif category == "Gear" then
-            inventory.Gear[itemName] = (inventory.Gear[itemName] or 0) + count
-        elseif category == "Crate" then
-            inventory.Crates[itemName] = (inventory.Crates[itemName] or 0) + count
-        elseif category == "Crop" then
-            inventory.Crops[itemName] = (inventory.Crops[itemName] or 0) + count
-        end
-    else
-        local cleanLower = tool.Name:lower()
-        if cleanLower ~= "build" and cleanLower ~= "shovel" then
-            inventory.Pets[tool.Name] = (inventory.Pets[tool.Name] or 0) + 1
-        end
-    end
-end
+.auth-box{
+max-width:400px;
+margin:auto;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:24px;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+width:100%;
+}
 
-local function gatherInventoryData()
-    local inventory = {
-        Seeds = {},
-        Gear = {},
-        Crates = {},
-        Crops = {},
-        Pets = {}
+.auth-title{
+font-size:24px;
+font-weight:900;
+margin-bottom:4px;
+}
+
+.auth-subtitle{
+font-size:13px;
+color:var(--subtext-color);
+margin-bottom:16px;
+}
+
+input{
+width:100%;
+padding:10px 12px;
+border:1px solid var(--border-color);
+background:var(--input-bg);
+color:var(--text-color);
+border-radius:8px;
+margin-bottom:10px;
+font-size:16px;
+}
+
+button{
+border:none;
+background:#111827;
+color:white;
+padding:10px 16px;
+border-radius:8px;
+cursor:pointer;
+font-weight:700;
+}
+
+[data-theme="dark"] button {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.auth-btn{
+width:100%;
+}
+
+.switch{
+margin-top:12px;
+text-align:center;
+font-size:13px;
+color:var(--subtext-color);
+cursor:pointer;
+}
+
+.error{
+color:#ef4444;
+font-size:13px;
+margin-bottom:8px;
+}
+
+.success{
+color:#16a34a;
+font-size:13px;
+margin-bottom:8px;
+}
+
+/* SIMPLE CAPTCHA */
+
+.captcha-box{
+display:flex;
+align-items:center;
+gap:8px;
+margin-bottom:10px;
+}
+
+.captcha-display{
+background:var(--input-bg);
+border:1px solid var(--border-color);
+padding:8px 12px;
+border-radius:8px;
+font-weight:800;
+letter-spacing:2px;
+font-size:14px;
+user-select:none;
+color:var(--text-color);
+min-width:80px;
+text-align:center;
+}
+
+.captcha-box input{
+margin-bottom:0;
+}
+
+/* LOADING SCREEN */
+
+.loading-screen{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:24px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+max-width:320px;
+margin:auto;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+text-align:center;
+height:100%;
+width:100%;
+}
+
+.spinner{
+width:36px;
+height:36px;
+border:4px solid var(--border-color);
+border-top:4px solid #111827;
+border-radius:50%;
+animation:spin 0.8s linear infinite;
+margin-bottom:12px;
+}
+
+[data-theme="dark"] .spinner {
+border-color: #27272a;
+border-top-color: #ffffff;
+}
+
+@keyframes spin{
+0%{ transform: rotate(0deg); }
+100%{ transform: rotate(360deg); }
+}
+
+.loading-text{
+font-weight:700;
+font-size:14px;
+color:var(--subtext-color);
+}
+
+/* HERO */
+
+.hero-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:18px;
+padding:26px 24px;
+box-shadow:0 2px 8px rgba(0,0,0,.03);
+display:flex;
+align-items:center;
+gap:18px;
+flex-shrink:0;
+margin-bottom:4px;
+}
+
+.hero-icon{
+width:64px;
+height:64px;
+border-radius:16px;
+object-fit:cover;
+background:var(--input-bg);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:15px;
+font-weight:700;
+color:var(--subtext-color);
+text-align:center;
+flex-shrink:0;
+overflow:hidden;
+border:1px solid var(--border-color);
+}
+
+.hero-icon img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.hero-title{
+font-size:26px;
+font-weight:900;
+line-height:1.1;
+}
+
+.hero-subtitle{
+font-size:15px;
+color:var(--subtext-color);
+margin-top:4px;
+}
+
+/* STATS */
+
+.stats-container-wrapper {
+position: relative;
+display: flex;
+flex-direction: column;
+gap: 10px;
+flex-shrink: 0;
+margin-bottom: 4px;
+}
+
+.stats-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat-card{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:18px 16px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+position: relative;
+}
+
+.stat-card.clickable {
+cursor: pointer;
+transition: border-color 0.2s;
+}
+
+.stat-card.clickable.active-card {
+border: 2px solid #111827;
+}
+
+[data-theme="dark"] .stat-card.clickable.active-card {
+border: 2px solid #ffffff;
+}
+
+.stat-label{
+font-size:11px;
+font-weight:800;
+color:var(--subtext-color);
+}
+
+.stat-value{
+font-size:26px;
+font-weight:900;
+color:#16a34a;
+margin-top:6px;
+}
+
+[data-theme="dark"] .stat-value {
+color: #ffffff;
+}
+
+.stat-value.money{
+color:#d97706 !important;
+}
+
+[data-theme="dark"] .stat-value.money {
+color:#f59e0b !important;
+}
+
+/* NAVIGATION CARDS */
+
+.nav-stack{
+display:flex;
+flex-direction:column;
+gap:8px;
+flex-shrink:0;
+margin-top:4px;
+}
+
+.nav-row-grid{
+display:grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 8px;
+}
+
+.accounts-toggle-card{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:14px;
+padding:14px 16px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+cursor:pointer;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+}
+
+.square-toggle-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius:14px;
+padding: 12px 16px;
+height: 48px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+cursor: pointer;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+text-align: center;
+}
+
+.accounts-toggle-title{
+font-size:14px;
+font-weight:800;
+}
+
+.logout{
+width:100%;
+background:#ef4444;
+padding:12px;
+font-size:14px;
+font-weight:800;
+border-radius:14px;
+flex-shrink:0;
+box-shadow:0 2px 6px rgba(239,68,68,.2);
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .logout {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* ACCOUNTS CONTAINER VIEW */
+
+.accounts-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.accounts-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-right:2px;
+}
+
+/* ACCOUNT CARD & SWIPE DELETE / ACTIONS */
+
+.account-card-container {
+position: relative;
+overflow: visible;
+border-radius: 16px;
+flex-shrink: 0;
+touch-action: pan-y;
+}
+
+.swipe-actions-bg {
+position: absolute;
+top: 0;
+right: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: flex-end;
+align-items: center;
+gap: 4px;
+padding-right: 8px;
+border-radius: 16px;
+z-index: 1;
+}
+
+.swipe-actions-left-bg {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: flex-start;
+align-items: center;
+padding-left: 12px;
+border-radius: 16px;
+z-index: 1;
+}
+
+.swipe-action-btn {
+background: #334155;
+color: white;
+border: none;
+border-radius: 8px;
+padding: 8px 10px;
+font-size: 11px;
+font-weight: 800;
+cursor: pointer;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .swipe-action-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.swipe-action-btn.delete-btn {
+background: #ef4444;
+}
+
+[data-theme="dark"] .swipe-action-btn.delete-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
+.toggle-switch-wrapper {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 3px;
+background: #1e293b;
+padding: 4px 6px;
+border-radius: 8px;
+height: 48px;
+color: white;
+font-size: 9px;
+font-weight: 700;
+cursor: pointer;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+user-select: none;
+text-align: center;
+width: 65px;
+}
+
+[data-theme="dark"] .toggle-switch-wrapper {
+background: #ffffff;
+color: #000000;
+border: 1px solid var(--border-color);
+}
+
+.ios-switch {
+position: relative;
+width: 32px;
+height: 18px;
+background: #475569;
+border-radius: 18px;
+transition: background 0.3s;
+display: inline-block;
+flex-shrink: 0;
+}
+
+[data-theme="dark"] .ios-switch {
+background: #d4d4d8;
+}
+
+.ios-switch::after {
+content: "";
+position: absolute;
+top: 2px;
+left: 2px;
+width: 14px;
+height: 14px;
+background: white;
+border-radius: 50%;
+transition: transform 0.3s;
+}
+
+[data-theme="dark"] .ios-switch::after {
+background: #000000;
+}
+
+.ios-switch.active {
+background: #22c55e;
+}
+
+[data-theme="dark"] .ios-switch.active {
+background: #16a34a;
+}
+
+[data-theme="dark"] .ios-switch.active::after {
+background: #ffffff;
+}
+
+.ios-switch.active::after {
+transform: translateX(14px);
+}
+
+.account-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:16px 18px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+position: relative;
+z-index: 2;
+will-change: transform;
+user-select: none;
+}
+
+.account-header-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.account-info-col{
+display:flex;
+flex-direction:column;
+}
+
+.user{
+font-size:18px;
+font-weight:800;
+color: #000000 !important;
+}
+
+.user::before{
+content:"";
+display:inline-block;
+width:8px;
+height:8px;
+margin-right:6px;
+border-radius:50%;
+background:#ef4444;
+}
+
+.user.online::before{
+background:#22c55e;
+}
+
+.status{
+font-size:13px;
+margin-top:3px;
+}
+
+.online{
+color:#16a34a;
+}
+
+[data-theme="dark"] .online {
+color: #ffffff;
+}
+
+.offline{
+color:#ef4444;
+}
+
+[data-theme="dark"] .offline {
+color: #a1a1aa;
+}
+
+.open-btn{
+background:#111827;
+padding:10px 18px;
+font-size:14px;
+font-weight:700;
+border-radius:10px;
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .open-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* INVENTORY CARDS & SLIDER */
+
+.account-dashboard-slot{
+margin-top:14px;
+position: relative;
+}
+
+.slider-container{
+width: 100%;
+overflow-x: auto;
+overflow-y: hidden;
+white-space: nowrap;
+-webkit-overflow-scrolling: touch;
+scrollbar-width: none;
+padding-bottom: 4px;
+}
+
+.slider-container::-webkit-scrollbar{
+display:none;
+}
+
+.slider{
+display:inline-flex;
+gap:10px;
+}
+
+.card{
+display: inline-block;
+min-width:135px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:12px;
+padding:12px 14px;
+cursor:pointer;
+box-shadow:0 1px 4px rgba(0,0,0,.02);
+vertical-align: top;
+}
+
+.card.active-card {
+border: 2px solid #111827;
+}
+
+[data-theme="dark"] .card.active-card {
+border: 2px solid #ffffff;
+}
+
+.card.non-clickable {
+cursor: default;
+}
+
+.label{
+font-size:12px;
+font-weight:800;
+color:var(--subtext-color);
+}
+
+.value{
+margin-top:6px;
+font-size:20px;
+font-weight:900;
+color:#16a34a;
+}
+
+[data-theme="dark"] .value {
+color: #ffffff;
+}
+
+.money{
+color:#d97706 !important;
+}
+
+[data-theme="dark"] .money {
+color:#f59e0b !important;
+}
+
+/* DROPDOWN - FIXED HEIGHT & SCROLLABLE WITH OPAQUE BACKGROUND */
+
+.global-dropdown{
+display:none;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:12px;
+padding:12px;
+max-height:220px;
+overflow-y:auto;
+width:100%;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+z-index:99999;
+-webkit-overflow-scrolling: touch;
+opacity: 1 !important;
+}
+
+.global-dropdown.open{
+display:block;
+}
+
+/* FLOATING OVERLAY DROPDOWN FOR MAIN STAT CARDS */
+.stats-container-wrapper .global-dropdown {
+position: absolute;
+top: calc(100% + 4px);
+left: 0;
+right: 0;
+margin-top: 0;
+}
+
+/* FLOATING OVERLAY DROPDOWN FOR ACCOUNT CARDS */
+.account-dashboard-slot .global-dropdown {
+position: relative;
+margin-top: 8px;
+left: 0;
+right: 0;
+}
+
+.dropdown-header{
+font-size:15px;
+font-weight:800;
+margin-bottom:12px;
+padding-bottom: 6px;
+border-bottom: 1px solid var(--border-color);
+position: sticky;
+top: 0;
+background: var(--card-bg);
+z-index: 2;
+}
+
+.item{
+display:flex;
+justify-content:space-between;
+align-items: center;
+background:var(--item-bg);
+padding:10px 14px;
+border-radius:8px;
+margin-bottom:8px;
+font-size:14px;
+border: 1px solid var(--border-color);
+}
+
+.item-left {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.item-icon {
+width: 28px;
+height: 28px;
+object-fit: contain;
+border-radius: 4px;
+flex-shrink: 0;
+}
+
+.item-name{
+font-weight:600;
+}
+
+.item-count{
+font-weight:800;
+color:#16a34a;
+}
+
+[data-theme="dark"] .item-count {
+color: #ffffff;
+}
+
+.empty{
+color:var(--subtext-color);
+padding:16px;
+font-size:14px;
+text-align: center;
+}
+
+.back{
+background:#111827;
+margin-bottom:8px;
+padding:8px 14px;
+font-size:13px;
+border-radius:8px;
+flex-shrink:0;
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .back {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* SCRIPT DASHBOARD STYLES */
+
+.script-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:18px;
+margin-top:6px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+}
+
+.script-section-title{
+font-size:14px;
+font-weight:800;
+margin-bottom:8px;
+}
+
+.key-display-box{
+display:flex;
+gap:8px;
+margin-bottom:16px;
+}
+
+.key-input{
+flex:1;
+background:var(--input-bg);
+font-family:monospace;
+font-weight:700;
+color:var(--text-color);
+margin-bottom:0;
+padding:10px 12px;
+font-size:14px;
+}
+
+.copy-btn{
+background:#111827;
+padding:0 16px;
+border-radius:8px;
+font-size:13px;
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .copy-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.code-block-container{
+position:relative;
+}
+
+.script-code-area{
+width:100%;
+height:160px;
+background:#000000;
+color:#ffffff;
+border:1px solid var(--border-color);
+font-family:monospace;
+font-size:13px;
+padding:12px;
+border-radius:10px;
+resize:none;
+outline:none;
+line-height:1.4;
+}
+
+[data-theme="dark"] .script-code-area {
+background: #121212;
+border: 1px solid #ffffff;
+}
+
+.copy-script-btn{
+position:absolute;
+top:10px;
+right:10px;
+background:#27272a;
+color:white;
+padding:6px 12px;
+font-size:12px;
+border-radius:6px;
+border: none;
+}
+
+[data-theme="dark"] .copy-script-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* SETTINGS & COMING SOON */
+.center-message-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius:16px;
+padding: 30px;
+text-align: center;
+margin: auto;
+max-width: 350px;
+box-shadow: 0 2px 8px rgba(0,0,0,.03);
+}
+
+.center-message-title {
+font-size: 20px;
+font-weight: 800;
+margin-bottom: 8px;
+}
+
+.center-message-subtitle {
+font-size: 13px;
+color: var(--subtext-color);
+margin-bottom: 16px;
+}
+
+.settings-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.settings-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-right:2px;
+}
+
+.settings-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 16px;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+flex-shrink: 0;
+}
+
+.settings-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 8px;
+}
+
+/* IPHONE TOGGLE FOR THEME */
+.ios-theme-toggle {
+position: relative;
+width: 44px;
+height: 24px;
+background: #e9e9ea;
+border-radius: 24px;
+cursor: pointer;
+transition: background 0.3s ease;
+display: inline-block;
+border: 1px solid var(--border-color);
+flex-shrink: 0;
+}
+
+.ios-theme-toggle::after {
+content: "";
+position: absolute;
+top: 2px;
+left: 2px;
+width: 18px;
+height: 18px;
+background: #ffffff;
+border-radius: 50%;
+transition: transform 0.3s ease;
+box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.ios-theme-toggle.active {
+background: #22c55e;
+}
+
+[data-theme="dark"] .ios-theme-toggle {
+background: #121212;
+border: 1px solid #ffffff;
+}
+
+[data-theme="dark"] .ios-theme-toggle.active {
+background: #16a34a;
+}
+
+[data-theme="dark"] .ios-theme-toggle.active::after {
+background: #ffffff;
+}
+
+.ios-theme-toggle.active::after {
+transform: translateX(20px);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div id="app">
+
+Loading NORMS...
+
+</div>
+
+</div>
+
+<script>
+
+const API = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev";
+
+let secretKey = localStorage.getItem("norms_secret");
+let currentTheme = localStorage.getItem("norms_theme") || "light";
+document.documentElement.setAttribute("data-theme", currentTheme);
+
+let accounts = [];
+let userInfo = {};
+let currentInventory = {};
+let activeDropdown = null;
+let currentActiveType = {};
+let mainActiveType = null;
+let currentCaptcha = "";
+let autoRefreshInterval = null;
+let currentPage = "main";
+let currentlySwipedUsername = null;
+let dashboardVersion = 0;
+
+// ASSET MAPPINGS
+const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
+
+const logoAssets = {
+  account: assetBase + "icon/RobloxLogo.webp",
+  garden: assetBase + "icon/GrowAGarden2Logo.webp",
+  roblox: assetBase + "icon/RobloxLogo.webp",
+  tutorial: assetBase + "icon/TutorialLogo.webp"
+};
+
+const ignoredGearList = ["sign", "lantern", "megaphone", "teleporter", "wheelbarrow", "playermagnet", "strawberrysniper"];
+
+function formatSheckles(num) {
+  if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toLocaleString();
+}
+
+function getItemIcon(type, name) {
+  if (!name) return null;
+  let cleanName = name.replace(/['\s]+/g, '');
+  
+  if (type === "Seeds" || type === "TotalSeeds") {
+    return `${assetBase}Seed/${cleanName}Seed.webp`;
+  } else if (type === "Pets" || type === "TotalPets") {
+    // Strip modifiers like Big, Mega, Rainbow to fallback to the normal base pet icon
+    let basePetName = cleanName.replace(/^(Big|Mega|Rainbow)+/i, '');
+    return `${assetBase}Pet/${basePetName}.webp`;
+  } else if (type === "Gear") {
+    return `${assetBase}Gear/${cleanName}.webp`;
+  } else if (type === "Crates") {
+    return `${assetBase}Crate/${cleanName}.webp`;
+  }
+  return null;
+}
+
+function isValidItemForCategory(type, name) {
+  if (!name) return false;
+  let cleanLower = name.trim().toLowerCase();
+  
+  if (type === "Seeds" || type === "TotalSeeds") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+    if (cleanLower.includes("gnome")) return false; // Gnomes are not seeds
+  } else if (type === "Pets" || type === "TotalPets") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+  } else if (type === "Gear") {
+    if (ignoredGearList.includes(cleanLower)) return false;
+  }
+  return true;
+}
+
+function generateCaptcha(){
+let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let code = "";
+for(let i=0; i<4; i++){
+code += chars[Math.floor(Math.random() * chars.length)];
+}
+currentCaptcha = code;
+}
+
+function saveSecret(key){
+secretKey = key;
+localStorage.setItem("norms_secret", key);
+}
+
+function showLoading(text){
+document.getElementById("app").innerHTML = `
+<div class="loading-screen">
+<div class="spinner"></div>
+<div class="loading-text">${text}</div>
+</div>
+`;
+}
+
+function logout(){
+if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+showLoading("Logging out...");
+
+setTimeout(()=>{
+localStorage.removeItem("norms_secret");
+localStorage.removeItem("norms_swiped_username");
+secretKey = null;
+showLogin();
+}, 600);
+}
+
+function showLogin(){
+currentPage = "login";
+generateCaptcha();
+
+document.getElementById("app").innerHTML = `
+<div class="auth-box" style="margin: auto;">
+<div class="auth-title">NORMS</div>
+<div class="auth-subtitle">Login to your dashboard</div>
+<div id="message"></div>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<div class="captcha-box">
+<div class="captcha-display" id="loginCaptchaText">${currentCaptcha}</div>
+<input id="loginCaptchaInput" placeholder="Enter code">
+</div>
+<button class="auth-btn" onclick="login()">Login</button>
+<div class="switch" onclick="showRegister()">Create account</div>
+</div>
+`;
+}
+
+function showRegister(){
+currentPage = "register";
+generateCaptcha();
+
+document.getElementById("app").innerHTML = `
+<div class="auth-box" style="margin: auto;">
+<div class="auth-title">NORMS</div>
+<div class="auth-subtitle">Create your account</div>
+<div id="message"></div>
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
+<div class="captcha-box">
+<div class="captcha-display" id="regCaptchaText">${currentCaptcha}</div>
+<input id="regCaptchaInput" placeholder="Enter code">
+</div>
+<button class="auth-btn" onclick="register()">Register</button>
+<div class="switch" onclick="showLogin()">Already have account</div>
+</div>
+`;
+}
+
+async function login(){
+const username = document.getElementById("loginUser").value.trim();
+const password = document.getElementById("loginPass").value;
+const captchaInput = document.getElementById("loginCaptchaInput").value.trim().toUpperCase();
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML = `<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("loginCaptchaText").innerText = currentCaptcha;
+document.getElementById("loginCaptchaInput").value = "";
+return;
+}
+
+showLoading("Signing in...");
+
+try {
+const res = await fetch(API + "/login",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ username, password })
+});
+const data = await res.json();
+
+if(!data.success){
+showLogin();
+document.getElementById("message").innerHTML = `<div class="error">${data.message}</div>`;
+return;
+}
+
+saveSecret(data.secret_key);
+loadAccounts();
+} catch(e) {
+showLogin();
+document.getElementById("message").innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function register(){
+const username = document.getElementById("regUser").value.trim();
+const password = document.getElementById("regPass").value;
+const captchaInput = document.getElementById("regCaptchaInput").value.trim().toUpperCase();
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML = `<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("regCaptchaText").innerText = currentCaptcha;
+document.getElementById("regCaptchaInput").value = "";
+return;
+}
+
+showLoading("Creating account...");
+
+try {
+const res = await fetch(API + "/register",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ username, password })
+});
+const data = await res.json();
+
+if(!data.success){
+showRegister();
+document.getElementById("message").innerHTML = `<div class="error">${data.message}</div>`;
+return;
+}
+
+saveSecret(data.secret_key);
+setTimeout(()=>{ loadAccounts(); }, 1000);
+} catch(e) {
+showRegister();
+document.getElementById("message").innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function loadAccounts(silent = false){
+if(!secretKey){
+showLogin();
+return;
+}
+
+try {
+const res = await fetch(API + "/accounts?secret_key=" + encodeURIComponent(secretKey));
+const data = await res.json();
+
+if(!data.success){
+logout();
+return;
+}
+
+accounts = data.accounts || [];
+userInfo = data.user || {};
+if(data.version !== undefined) {
+  dashboardVersion = data.version;
+}
+
+if (silent) {
+  updateCurrentPageData();
+} else {
+  renderMain();
+}
+} catch(e) {
+if(!silent) logout();
+}
+}
+
+async function checkVersion() {
+    if(!secretKey) return;
+    try {
+        const res = await fetch(API + "/sync?secret_key=" + encodeURIComponent(secretKey));
+        const data = await res.json();
+
+        if (!data.success) return;
+
+        if (data.version !== dashboardVersion) {
+            dashboardVersion = data.version;
+            loadAccounts(true);
+        }
+    } catch(e) {}
+}
+
+function getStatus(time){
+if(!time) return { text:"Roblox • Offline", class:"offline" };
+let minutes = (Date.now() - new Date(time).getTime()) / 1000 / 60;
+
+if(minutes <= 10){
+return { text:"Roblox • Online", class:"online" };
+}
+
+return { text:"Roblox • Offline (" + Math.floor(minutes) + " min ago)", class:"offline" };
+}
+
+function renderMain(silent = false){
+currentPage = "main";
+
+let online = 0;
+let totalSheckles = 0;
+let totalSeedsCount = 0;
+let totalPets = 0;
+
+accounts.forEach(acc=>{
+if(getStatus(acc.updated_at).class=="online"){
+online++;
+}
+
+totalSheckles += Number(acc.sheckles || 0);
+
+let inv = acc.inventory || {};
+let sCount = totalFiltered(inv.Seeds, "Seeds");
+let pCount = totalFiltered(inv.Pets, "Pets");
+
+totalSeedsCount += sCount;
+totalPets += pCount;
+});
+
+let isUserAdmin = Boolean(userInfo.is_admin);
+let isUserPremium = Boolean(userInfo.is_premium) || isUserAdmin;
+let maxLimit = isUserPremium ? "Unlimited" : "5 max";
+
+document.getElementById("app").innerHTML = `
+<div class="main-scroll-area">
+
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.garden}" alt="Logo"></div>
+<div>
+<div class="hero-title">Grow A Garden 2</div>
+<div class="hero-subtitle">Overview of your tracked accounts (${accounts.length}/${maxLimit})</div>
+</div>
+</div>
+
+<div class="stats-container-wrapper">
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-label">ONLINE / TOTAL</div>
+<div class="stat-value" id="stat-online">${online}/${accounts.length}</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label">TOTAL SHECKLES</div>
+<div class="stat-value money" id="stat-sheckles">${formatSheckles(totalSheckles)}</div>
+</div>
+
+<div class="stat-card clickable ${mainActiveType === 'TotalSeeds' ? 'active-card' : ''}" onclick="toggleMainItems('TotalSeeds')">
+<div class="stat-label">TOTAL SEED</div>
+<div class="stat-value" id="stat-items">${totalSeedsCount.toLocaleString()}</div>
+</div>
+
+<div class="stat-card clickable ${mainActiveType === 'TotalPets' ? 'active-card' : ''}" onclick="toggleMainItems('TotalPets')">
+<div class="stat-label">TOTAL PETS</div>
+<div class="stat-value" id="stat-pets">${totalPets.toLocaleString()}</div>
+</div>
+</div>
+
+<div class="global-dropdown" id="main-drop"></div>
+</div>
+
+<div class="nav-stack">
+<div class="accounts-toggle-card" onclick="openAccountsTab()">
+<div class="accounts-toggle-title">Accounts</div>
+</div>
+
+<div class="accounts-toggle-card" onclick="openScriptTab()">
+<div class="accounts-toggle-title">Script</div>
+</div>
+
+<div class="nav-row-grid">
+<div class="square-toggle-card" onclick="openMailTab()">
+<div class="accounts-toggle-title">Mail</div>
+</div>
+
+<div class="square-toggle-card" onclick="openSettingsTab()">
+<div class="accounts-toggle-title">Setting</div>
+</div>
+</div>
+</div>
+
+${isUserAdmin ? `
+<button class="logout" style="background:#000000; border: 1px solid #ffffff; margin-bottom:8px;" onclick="openAdminTab()">Admin Panel</button>
+` : ''}
+
+<button class="logout" style="background:#000000; border: 1px solid #ffffff; margin-bottom:8px;" onclick="openTutorialTab()">Tutorial</button>
+<button class="logout" onclick="logout()">Log Out</button>
+</div>
+`;
+
+if(mainActiveType) {
+  showMainDropdownContent(mainActiveType);
+}
+}
+
+function updateDashboardStats() {
+  let online = 0;
+  let totalSheckles = 0;
+  let totalSeedsCount = 0;
+  let totalPets = 0;
+
+  accounts.forEach(acc=>{
+    if(getStatus(acc.updated_at).class=="online"){
+      online++;
     }
+    totalSheckles += Number(acc.sheckles || 0);
+    let inv = acc.inventory || {};
+    let sCount = totalFiltered(inv.Seeds, "Seeds");
+    let pCount = totalFiltered(inv.Pets, "Pets");
+    totalSeedsCount += sCount;
+    totalPets += pCount;
+  });
 
-    -- Scan Backpack
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        for _, tool in pairs(backpack:GetChildren()) do
-            scanTool(inventory, tool)
-        end
-    end
+  let elOnline = document.getElementById("stat-online");
+  let elSheckles = document.getElementById("stat-sheckles");
+  let elItems = document.getElementById("stat-items");
+  let elPets = document.getElementById("stat-pets");
 
-    -- Scan Character (equipped items)
-    if player.Character then
-        for _, tool in pairs(player.Character:GetChildren()) do
-            scanTool(inventory, tool)
-        end
-    end
+  if(elOnline) elOnline.innerText = `${online}/${accounts.length}`;
+  if(elSheckles) elSheckles.innerText = formatSheckles(totalSheckles);
+  if(elItems) elItems.innerText = totalSeedsCount.toLocaleString();
+  if(elPets) elPets.innerText = totalPets.toLocaleString();
 
-    return inventory
-end
+  if(mainActiveType) {
+    showMainDropdownContent(mainActiveType);
+  }
+}
 
-local function isPetInInventory(petName)
-    local success, found = pcall(function()
-        local inventories = ReplicatedStorage:FindFirstChild("Inventories") or player:FindFirstChild("Inventory") or ReplicatedStorage:FindFirstChild("PlayerInventories")
-        if not inventories then
-            inventories = player:FindFirstChild("Data") and player.Data:FindFirstChild("Pets")
-        end
-        
-        if inventories then
-            for _, item in ipairs(inventories:GetDescendants()) do
-                if item.Name == petName or item:GetAttribute("PetName") == petName or item.Value == petName then
-                    return true
-                end
-            end
-        end
-        return true
-    end)
-    return success and found
-end
+function updateOnlineStatus() {
+  accounts.forEach(acc => {
+    let status = getStatus(acc.updated_at);
+    let container = document.querySelector(`.account-card-container[data-username="${acc.roblox_username}"]`);
+    if(container) {
+      let statusEl = container.querySelector('.status');
+      let userEl = container.querySelector('.user');
+      if(statusEl) {
+        statusEl.className = `status ${status.class}`;
+        statusEl.innerText = status.text;
+      }
+      if(userEl){
+          userEl.className = `user ${status.class}`;
+          userEl.textContent = acc.roblox_username;
+      }
+    }
+  });
+}
 
--- =====================
--- UI & VISUAL SETUP
--- =====================
-pcall(function()
-    StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.All, false)
-end)
+function updateInventory(username) {
+  let account = accounts.find(acc => acc.roblox_username === username);
+  if(!account) return;
 
-local targetStorage = CoreGui or player:FindFirstChildOfClass("PlayerGui")
-if targetStorage:FindFirstChild("WaterBotUI") then
-    targetStorage.WaterBotUI:Destroy()
-end
+  let activeType = currentActiveType[username];
+  let targetInventory = account.inventory || {};
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "WaterBotUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.DisplayOrder = 99999999
-ScreenGui.Parent = targetStorage
+  let slider = document.getElementById("slider-" + username);
+  if(slider) {
+    let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+    slider.innerHTML = `
+      ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
+      ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+      ${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+      ${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+      ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+    `;
+  }
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(1, 0, 1, 0)
-MainFrame.Position = UDim2.new(0, 0, 0, 0)
-MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-MainFrame.BackgroundTransparency = 0 
-MainFrame.BorderSizePixel = 0
-MainFrame.Parent = ScreenGui
+  if(activeType) {
+    let box = document.getElementById("drop-" + username);
+    if(box && box.classList.contains("open")) {
+      let items = targetInventory[activeType] || {};
+      let merged = {};
+      for(let name in items){
+        let clean = name.trim();
+        if(!isValidItemForCategory(activeType, clean)) continue;
+        merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
+      }
 
-local LogoContainer = Instance.new("Frame")
-LogoContainer.Size = UDim2.new(0, 140, 0, 140)
-LogoContainer.Position = UDim2.new(0.5, -70, 0.5, -70)
-LogoContainer.BackgroundTransparency = 1
-LogoContainer.ZIndex = 5
-LogoContainer.Parent = MainFrame
+      let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+      let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
 
-local CenterN = Instance.new("TextLabel")
-CenterN.Size = UDim2.new(0, 50, 0, 50)
-CenterN.Position = UDim2.new(0.5, -25, 0.5, -25)
-CenterN.BackgroundTransparency = 1
-CenterN.Text = "N"
-CenterN.Font = Enum.Font.GothamBold
-CenterN.TextSize = 52
-CenterN.TextColor3 = Color3.fromRGB(0, 0, 0)
-CenterN.TextStrokeTransparency = 1
-CenterN.ZIndex = 6
-CenterN.Parent = LogoContainer
+      for(let name in merged){
+        let iconUrl = getItemIcon(activeType, name);
+        let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[activeType] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[activeType] || ""}</span>`;
 
-local letters = {"O", "R", "M", "S"}
-local labelObjects = {}
+        html += `
+          <div class="item">
+            <div class="item-left">
+              ${iconHtml}
+              <div class="item-name">${name}</div>
+            </div>
+            <div class="item-count">x${merged[name].toLocaleString()}</div>
+          </div>
+        `;
+      }
+      box.innerHTML = html || "<div class='empty'>No items</div>";
+    }
+  }
+}
 
-for i, letter in ipairs(letters) do
-    local lbl = Instance.new("TextLabel")
-    lbl.Size = UDim2.new(0, 20, 0, 20)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = letter
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextSize = 18
-    lbl.TextColor3 = Color3.fromRGB(0, 0, 0)
-    lbl.ZIndex = 6
-    lbl.Parent = LogoContainer
-    table.insert(labelObjects, lbl)
-end
+function updateAccountsView() {
+  updateOnlineStatus();
+  accounts.forEach(acc => {
+    let slot = document.getElementById("slot-" + acc.roblox_username);
+    if(slot && slot.innerHTML !== "") {
+      updateInventory(acc.roblox_username);
+    }
+  });
+}
 
--- Rotation & Logo Orbit Engine
-task.spawn(function()
-    local angle = 0
-    local radius = 46
-    local rotationSpeed = 0.18
-    
-    while BotState.Running do
-        local deltaTime = task.wait()
-        angle = angle + (rotationSpeed * deltaTime)
-        
-        for i, lbl in ipairs(labelObjects) do
-            local currentAngle = angle + ((i - 1) * (math.pi / 2))
-            local xOffset = math.cos(currentAngle) * radius
-            local yOffset = math.sin(currentAngle) * radius
-            
-            lbl.Position = UDim2.new(0.5, xOffset - 10, 0.5, yOffset - 10)
-        end
-    end
-end)
+function updateCurrentPageData() {
+  if (currentPage === "main") {
+    updateDashboardStats();
+  } else if (currentPage === "accounts") {
+    updateAccountsView();
+  }
+}
 
--- =====================
--- OPTIMIZERS & PERFORMANCE
--- =====================
-pcall(function()
-    setfpscap(15)
-end)
+function toggleMainItems(type) {
+  let box = document.getElementById("main-drop");
+  
+  if(mainActiveType === type) {
+    mainActiveType = null;
+    if(box) box.classList.remove("open");
+    document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
+    return;
+  }
 
-pcall(function()
-    Lighting.GlobalShadows = false
-    Lighting.FogEnd = 9e9
-    Lighting.Brightness = 2
-    for _, v in ipairs(Lighting:GetChildren()) do
-        if v:IsA("PostEffect") or v:IsA("Sky") then
-            v:Destroy()
-        end
-    end
-end)
+  mainActiveType = type;
+  document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
+  let clickedCard = event ? event.currentTarget : null;
+  if(clickedCard) clickedCard.classList.add('active-card');
 
--- Continuous Low-Lag Booster (Clearing particles, textures, and heavy assets)
-task.spawn(function()
-    while BotState.Running do
-        pcall(function()
-            for _, v in ipairs(Workspace:GetDescendants()) do
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                    v:Destroy()
-                elseif v:IsA("BasePart") then
-                    v.Material = Enum.Material.SmoothPlastic
-                    v.CastShadow = false
-                end
-            end
-        end)
-        task.wait(10)
-    end
-end)
+  showMainDropdownContent(type);
+}
 
--- Instant and continuous cleanup for Workspace.Gardens and Map folders
-task.spawn(function()
-    while BotState.Running do
-        pcall(function()
-            local gardens = Workspace:FindFirstChild("Gardens")
-            if gardens then
-                gardens:Destroy()
-            end
+function showMainDropdownContent(type) {
+  let box = document.getElementById("main-drop");
+  if(!box) return;
 
-            local map = Workspace:FindFirstChild("Map")
-            if map then
-                for _, name in ipairs({"Garden", "Gardens", "GardenFolder"}) do
-                    local folder = map:FindFirstChild("Map"):FindFirstChild(name) or map:FindFirstChild(name)
-                    if folder then
-                        folder:Destroy()
-                    end
-                end
-            end
-        end)
-        task.wait(0.001)
-    end
-end)
+  let aggregated = {};
 
--- Anti-AFK Engine
-task.spawn(function()
-    local VirtualUser = game:GetService("VirtualUser")
+  accounts.forEach(acc => {
+    let inv = acc.inventory || {};
+    let targetKey = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
+    let targetItems = inv[targetKey] || {};
+    for(let name in targetItems) {
+      let cleanName = name.trim();
+      if(!isValidItemForCategory(targetKey, cleanName)) continue;
+      aggregated[cleanName] = (aggregated[cleanName] || 0) + (Number(targetItems[name]) || 0);
+    }
+  });
 
-    player.Idled:Connect(function()
-        pcall(function()
-            VirtualUser:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            VirtualUser:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
-        end)
-    end)
+  let titleText = (type === 'TotalSeeds') ? 'Total Seed Inventory' : 'Total Pets Inventory';
+  let iconSymbol = (type === 'TotalSeeds') ? '🌱' : '🐾';
+  let iconType = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
 
-    while BotState.Running do
-        task.wait(240)
+  let html = `<div class="dropdown-header">${iconSymbol} ${titleText}</div>`;
 
-        pcall(function()
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:FindFirstChild("HumanoidRootPart")
+  let keys = Object.keys(aggregated);
+  if(keys.length === 0) {
+    html += `<div class='empty'>No items found</div>`;
+  } else {
+    keys.forEach(name => {
+      let iconUrl = getItemIcon(iconType, name);
+      let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
 
-            if hrp then
-                local oldPos = hrp.CFrame
-                hrp.CFrame = oldPos * CFrame.new(0, 0, 0.1)
-                task.wait(0.2)
-                hrp.CFrame = oldPos
-            end
-        end)
-    end
-end)
+      html += `
+        <div class="item">
+          <div class="item-left">
+            ${iconHtml}
+            <div class="item-name">${name}</div>
+          </div>
+          <div class="item-count">x${aggregated[name].toLocaleString()}</div>
+        </div>
+      `;
+    });
+  }
 
--- =====================
--- DISCORD & NOTIFICATIONS
--- =====================
-local function sendDiscordEmbed(username, petName, rarity, price)
-    pcall(function()
-        local info = RARITY_DATA[rarity] or RARITY_DATA["Common"]
-        local embedColor = info.decimal
-        
-        local embed = {
-            ["title"] = "🐾 New Pet Caught!",
-            ["color"] = embedColor,
-            ["fields"] = {
-                {
-                    ["name"] = "Username",
-                    ["value"] = tostring(username),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "Name",
-                    ["value"] = tostring(petName),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "Rarity",
-                    ["value"] = tostring(rarity),
-                    ["inline"] = true
-                },
-                {
-                    ["name"] = "Price",
-                    ["value"] = string.format("**₵ %s**", tostring(price)),
-                    ["inline"] = false
-                }
+  box.innerHTML = html;
+  box.classList.add("open");
+}
+
+function openAccountsTab(){
+currentPage = "accounts";
+currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
+
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">Accounts</div>
+<div class="hero-subtitle">Accounts <span style="color:#22c55e; font-weight:800;">(${accounts.length} roblox account login)</span></div>
+</div>
+</div>
+
+<div class="accounts-wrapper">
+<div class="accounts-scroll-area" id="accountsScrollArea">
+`;
+
+accounts.forEach(acc=>{
+let status = getStatus(acc.updated_at);
+let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
+let settings = acc.settings || {};
+
+let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
+let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
+let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
+
+html += `
+<div class="account-card-container" data-username="${acc.roblox_username}">
+<div class="swipe-actions-left-bg">
+<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+</div>
+<div class="swipe-actions-bg">
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
+<span>Auto Seeds</span>
+<div class="ios-switch ${isAutoSeeds ? 'active' : ''}" id="switch-seeds-${acc.roblox_username}"></div>
+</div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
+<span>Auto Gears</span>
+<div class="ios-switch ${isAutoGear ? 'active' : ''}" id="switch-gears-${acc.roblox_username}"></div>
+</div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
+<span>Auto Pets</span>
+<div class="ios-switch ${isAutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
+</div>
+</div>
+<div class="account-box" id="acc-box-${acc.roblox_username}">
+<div class="account-header-row">
+<div class="account-info-col">
+<div class="user ${status.class}">${acc.roblox_username}</div>
+<div class="status ${status.class}">${status.text}</div>
+</div>
+<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
+</div>
+<div id="slot-${acc.roblox_username}" class="account-dashboard-slot"></div>
+</div>
+</div>
+`;
+});
+
+html += `</div></div>`;
+
+document.getElementById("app").innerHTML = html;
+initSwipeToDelete();
+initScrollReset();
+
+if (currentlySwipedUsername) {
+  let container = document.querySelector(`.account-card-container[data-username="${currentlySwipedUsername}"]`);
+  if (container) {
+    let box = container.querySelector('.account-box');
+    if (box) {
+      box.style.transform = 'translateX(-218px)';
+    }
+  }
+}
+
+for(let username in currentActiveType) {
+  if(currentActiveType[username] !== null) {
+    let acc = accounts.find(a => a.roblox_username === username);
+    if(acc) {
+      showAccountDashboard(acc, acc.inventory || {});
+    }
+  }
+}
+}
+
+function resetSwipedCard(username) {
+  if(!username) return;
+  let container = document.querySelector(`.account-card-container[data-username="${username}"]`);
+  if(container) {
+    let box = container.querySelector('.account-box');
+    if(box) {
+      box.style.transition = 'transform 0.2s ease-out';
+      box.style.transform = 'translateX(0px)';
+    }
+  }
+  if(currentlySwipedUsername === username) {
+    currentlySwipedUsername = null;
+    localStorage.removeItem("norms_swiped_username");
+  }
+}
+
+function initScrollReset() {
+  let scrollArea = document.getElementById("accountsScrollArea");
+  if(scrollArea) {
+    scrollArea.addEventListener('scroll', () => {
+      if(currentlySwipedUsername) {
+        resetSwipedCard(currentlySwipedUsername);
+      }
+    }, {passive: true});
+  }
+}
+
+function initSwipeToDelete(){
+document.querySelectorAll('.account-card-container').forEach(container => {
+let username = container.getAttribute('data-username');
+let box = container.querySelector('.account-box');
+let startX = 0;
+let startY = 0;
+let currentX = 0;
+let isSwiping = false;
+let isHorizontal = false;
+
+box.addEventListener('touchstart', (e) => {
+let slot = document.getElementById("slot-" + username);
+let btn = document.getElementById("btn-" + username);
+let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
+if(isInventoryOpen) {
+isSwiping = false;
+return;
+}
+
+startX = e.touches[0].clientX;
+startY = e.touches[0].clientY;
+currentX = startX;
+isSwiping = true;
+isHorizontal = false;
+box.style.transition = 'none';
+}, {passive: true});
+
+box.addEventListener('touchmove', (e) => {
+if(!isSwiping) return;
+let x = e.touches[0].clientX;
+let y = e.touches[0].clientY;
+let diffX = x - startX;
+let diffY = y - startY;
+
+if(!isHorizontal && Math.abs(diffX) > Math.abs(diffY)) {
+isHorizontal = true;
+}
+
+if(isHorizontal) {
+currentX = x;
+let maxRight = 100;
+let maxLeft = -230;
+
+if (currentlySwipedUsername === username) {
+if (diffX > 0) diffX = 0;
+if (diffX < maxLeft) diffX = maxLeft;
+} else {
+if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
+if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
+}
+
+box.style.transform = `translateX(${diffX}px)`;
+}
+}, {passive: true});
+
+box.addEventListener('touchend', (e) => {
+if(!isSwiping) return;
+isSwiping = false;
+if(!isHorizontal) return;
+
+let diff = currentX - startX;
+box.style.transition = 'transform 0.2s ease-out';
+
+if(diff < -40) {
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+box.style.transform = `translateX(-218px)`;
+currentlySwipedUsername = username;
+localStorage.setItem("norms_swiped_username", username);
+} else if(diff > 40) {
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+box.style.transform = `translateX(90px)`;
+currentlySwipedUsername = username;
+localStorage.setItem("norms_swiped_username", username);
+} else {
+box.style.transform = 'translateX(0px)';
+if(currentlySwipedUsername === username) {
+currentlySwipedUsername = null;
+localStorage.removeItem("norms_swiped_username");
+}
+}
+}, {passive: true});
+
+box.addEventListener('click', (e) => {
+if (currentlySwipedUsername === username) {
+if (!e.target.closest('button')) {
+resetSwipedCard(username);
+e.stopPropagation();
+}
+}
+});
+});
+}
+
+async function toggleAutoFeature(element, username, feature) {
+    const sw = element.querySelector(".ios-switch");
+    const enabled = !sw.classList.contains("active");
+    sw.classList.toggle("active");
+
+    localStorage.setItem(`setting_${username}_${feature}`, enabled);
+
+    try{
+        const res = await fetch(API + "/account/settings",{
+            method:"POST",
+            headers:{
+                "Content-Type":"application/json"
             },
-            ["footer"] = {
-                ["text"] = "Norms Pet Catcher"
+            body:JSON.stringify({
+                secret_key: secretKey,
+                roblox_username: username,
+                feature: feature,
+                enabled: enabled
+            })
+        });
+
+        const data = await res.json();
+
+        if(!data.success){
+            sw.classList.toggle("active");
+            localStorage.setItem(`setting_${username}_${feature}`, !enabled);
+            alert(data.message);
+        } else {
+            let account = accounts.find(acc => acc.roblox_username === username);
+            if(account) {
+                if(!account.settings) account.settings = {};
+                if(feature === 'seeds') account.settings.AutoSeeds = enabled;
+                if(feature === 'gears') account.settings.AutoGear = enabled;
+                if(feature === 'pets') account.settings.AutoPets = enabled;
+                account.settingsVersion = (account.settingsVersion || 0) + 1;
             }
+            dashboardVersion++;
         }
 
-        local data = {
-            ["embeds"] = { embed }
-        }
-        
-        local body = HttpService:JSONEncode(data)
-        request({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = { ["Content-Type"] = "application/json" },
-            Body = body
-        })
-    end)
-end
+    }catch(e){
+        sw.classList.toggle("active");
+        localStorage.setItem(`setting_${username}_${feature}`, !enabled);
+    }
+}
 
-local function showNotification(petName, rarity, price)
-    local message = string.format("%s %s\nfor ₵ %s", tostring(rarity), tostring(petName), tostring(price))
-    
-    pcall(function()
-        StarterGui:SetCore("SendNotification", {
-            Title = "Pet Caught!",
-            Text = message,
-            Duration = 5,
-        })
-    end)
-end
+async function deleteAccount(username){
+if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
+return;
+}
 
--- =====================
--- MAIN AUTOMATION LOOP (PET CATCHING)
--- =====================
-task.spawn(function()
-    local notifiedPets = {}
+showLoading("Deleting account...");
 
-    while BotState.Running do
-        task.wait(0.01)
-        
-        if not BotState.AutoCatchPets then
-            task.wait(1)
-            continue
-        end
-        
-        local character = player.Character
-        if not character or not character:FindFirstChild("HumanoidRootPart") then
-            continue
-        end
-        local humanoidRootPart = character.HumanoidRootPart
+try {
+let endpoints = [
+  API + "/delete-account", 
+  API + "/deleteAccount", 
+  API + "/account/delete",
+  API + "/delete_account"
+];
+let data = null;
 
-        local map = Workspace:FindFirstChild("Map")
-        if not map then continue end
-        
-        local wildPetSpawns = map:FindFirstChild("WildPetSpawns")
-        local wildPetRef = map:FindFirstChild("WildPetRef")
-        if not wildPetSpawns or not wildPetRef then continue end
+for(let ep of endpoints) {
+  try {
+    let res = await fetch(ep, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) {
+        data = json;
+        break;
+      } else if(json.message) {
+        data = json;
+      }
+    }
+  } catch(e) {}
+}
 
-        local spawns = wildPetSpawns:GetChildren()
-        
-        if #spawns == 0 then
-            task.wait(0.1)
-            continue
-        end
+if(!data) {
+  try {
+    let res = await fetch(API + "/delete-account?secret_key=" + encodeURIComponent(secretKey) + "&roblox_username=" + encodeURIComponent(username), {
+      method: "GET"
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) data = json;
+    }
+  } catch(e) {}
+}
 
-        for _, spawnModel in ipairs(spawns) do
-            local spawnName = spawnModel.Name
-            local uuid = spawnName:match("WildPet_[^_]+_WildPet_(.+)") or spawnName:match("_(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") or spawnName
-            local petRef = wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
+if(data && data.success){
+loadAccounts();
+} else {
+alert((data && data.message) || "Failed to delete account");
+loadAccounts();
+}
+} catch(e) {
+alert("Network error occurred");
+loadAccounts();
+}
+}
 
-            if petRef and spawnModel.Parent then
-                local rootPart = spawnModel:FindFirstChild("RootPart") or spawnModel.PrimaryPart or spawnModel:FindFirstChildWhichIsA("BasePart")
-                if not rootPart then continue end
+function openScriptTab(){
+currentPage = "script";
 
-                local currentOwner = petRef:GetAttribute("OwnerUserId")
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}"\n\nloadstring(game:HttpGet("https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/Main"))()`;
 
-                if currentOwner == player.UserId then
-                    if not notifiedPets[spawnModel] then
-                        notifiedPets[spawnModel] = true
-                        
-                        local petName = petRef:GetAttribute("PetName") or "Unknown"
-                        local rarity = petRef:GetAttribute("Rarity") or "Common"
-                        local price = petRef:GetAttribute("Price") or "0"
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
 
-                        task.wait(0.2)
-                        if isPetInInventory(petName) then
-                            showNotification(petName, rarity, price)
-                            sendDiscordEmbed(player.Name, petName, rarity, price)
-                        end
-                    end
-                else
-                    if notifiedPets[spawnModel] then
-                        notifiedPets[spawnModel] = nil
-                    end
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.roblox}" alt="Logo"></div>
+<div>
+<div class="hero-title">Script</div>
+<div class="hero-subtitle">Your Secret Key and Roblox script loader</div>
+</div>
+</div>
 
-                    if humanoidRootPart and humanoidRootPart.Parent then
-                        humanoidRootPart.CFrame = rootPart.CFrame + Vector3.new(3, 0, 3)
-                    end
+<div class="script-box">
+<div class="script-section-title">Your Secret Key</div>
+<div class="key-display-box">
+<input class="key-input" id="scriptKeyInput" readonly value="${secretKey || ""}">
+<button class="copy-btn" onclick="copyKey()">Copy</button>
+</div>
 
-                    pcall(function()
-                        local prompt = rootPart:FindFirstChild("BuyPrompt", true) or spawnModel:FindFirstChildWhichIsA("ProximityPrompt", true)
-                        if prompt then
-                            prompt.HoldDuration = 0
-                            fireproximityprompt(prompt)
-                        end
-                    end)
-                end
-            end
-        end
-        
-        for model, _ in pairs(notifiedPets) do
-            if not model.Parent then
-                notifiedPets[model] = nil
-            end
-        end
-    end
-end)
+<div class="script-section-title">Roblox Execution Script</div>
+<div class="code-block-container">
+<textarea class="script-code-area" readonly id="robloxScriptArea">${robloxScript}</textarea>
+<button class="copy-script-btn" onclick="copyScript()">Copy Script</button>
+</div>
+</div>
+`;
 
--- =====================
--- AUTO-BUY SEEDS LOOP
--- =====================
-task.spawn(function()
-    local seedShopFolder = ReplicatedStorage:WaitForChild("StockValues", 10) and ReplicatedStorage.StockValues:WaitForChild("SeedShop", 5) and ReplicatedStorage.StockValues.SeedShop:WaitForChild("Items", 5)
-    
-    while BotState.Running do
-        if BotState.AutoBuySeeds and seedShopFolder then
-            for _, seedInstance in ipairs(seedShopFolder:GetChildren()) do
-                if not BotState.Running or not BotState.AutoBuySeeds then break end
-                
-                local stock = seedInstance.Value
-                if stock > 0 or stock == -1 then
-                    local seedName = seedInstance.Name
-                    Networking.fire("SeedShop.PurchaseSeed", seedName)
-                    task.wait(0.15)
-                end
-            end
-        end
-        task.wait(1.5)
-    end
-end)
+document.getElementById("app").innerHTML = html;
+}
 
--- =====================
--- AUTO-BUY GEARS LOOP
--- =====================
-task.spawn(function()
-    local gearShopFolder = ReplicatedStorage:WaitForChild("StockValues", 10) and ReplicatedStorage.StockValues:WaitForChild("GearShop", 5) and ReplicatedStorage.StockValues.GearShop:WaitForChild("Items", 5)
-    
-    while BotState.Running do
-        if BotState.AutoBuyGears and gearShopFolder then
-            for _, gearInstance in ipairs(gearShopFolder:GetChildren()) do
-                if not BotState.Running or not BotState.AutoBuyGears then break end
-                
-                local stock = gearInstance.Value
-                if stock > 0 or stock == -1 then
-                    local gearName = gearInstance.Name
-                    Networking.fire("GearShop.PurchaseGear", gearName)
-                    task.wait(0.15)
-                end
-            end
-        end
-        task.wait(2.5)
-    end
-end)
+function openMailTab(){
+currentPage = "mail";
 
--- =====================
--- SETTINGS DOWNLOAD LOOP
--- =====================
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
 
-task.spawn(function()
+<div class="center-message-box">
+<div class="center-message-title">Mail</div>
+<div class="center-message-subtitle">Coming Soon</div>
+<button onclick="renderMain()">Go Back</button>
+</div>
+`;
 
-    while BotState.Running do
+document.getElementById("app").innerHTML = html;
+}
 
-        local success, response = pcall(function()
-            return request({
-                Url = SETTINGS_URL .. "?secret_key=" .. SECRET_KEY,
-                Method = "GET"
-            })
-        end)
+function openSettingsTab(){
+currentPage = "settings";
 
-        if success and response.StatusCode == 200 then
+let currentUsername = userInfo.username || "User";
+let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
+let userRole = userInfo.is_admin ? "Admin" : (userInfo.is_premium ? "Premium User" : "Free User");
 
-            local ok, settings = pcall(function()
-                return HttpService:JSONDecode(response.Body)
-            end)
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
 
-            if ok and settings.success and settings.settings then
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">Setting</div>
+<div class="hero-subtitle">Manage account details and display settings</div>
+</div>
+</div>
 
-                BotState.AutoBuySeeds = settings.settings.AutoBuySeeds == true
-                BotState.AutoBuyGears = settings.settings.AutoBuyGears == true
-                BotState.AutoCatchPets = settings.settings.AutoCatchPets == true
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+<div class="settings-box">
+<div class="script-section-title">Account Details</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Username: <b>${currentUsername}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Account Tier: <b>${userRole}</b></div>
+<div style="font-size:13px; color:var(--subtext-color);">Date Created: <b>${createdDate}</b></div>
+</div>
 
-                print(
-                    "[NORMS SETTINGS]",
-                    BotState.AutoBuySeeds,
-                    BotState.AutoBuyGears,
-                    BotState.AutoCatchPets
-                )
+<div class="settings-box">
+<div class="script-section-title">Change Password</div>
+<div id="passwordMessage"></div>
+<input id="oldPass" type="password" placeholder="Current Password">
+<input id="newPass" type="password" placeholder="New Password">
+<button onclick="changePassword()" style="width:100%; margin-top:4px;">Update Password</button>
+</div>
 
-            end
+<div class="settings-box">
+<div class="script-section-title">Appearance</div>
+<div class="settings-row">
+<div>
+<div style="font-size:13px; font-weight:600;">Dark Mode</div>
+<div style="font-size:11px; color:var(--subtext-color);">${currentTheme === 'dark' ? 'Enabled' : 'Disabled'}</div>
+</div>
+<div class="ios-theme-toggle ${currentTheme === 'dark' ? 'active' : ''}" onclick="toggleTheme()"></div>
+</div>
+</div>
+</div>
+</div>
+`;
 
-        end
+document.getElementById("app").innerHTML = html;
+}
 
-        task.wait(2)
+function openAdminTab() {
+currentPage = "admin";
 
-    end
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
 
-end)
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">Admin Panel</div>
+<div class="hero-subtitle">Manage users, premium tiers, and banned accounts</div>
+</div>
+</div>
 
--- =====================
--- CONTINUOUS SYNC & UPLOAD LOOP
--- =====================
-print("Starting NORMS background continuous sync loop...")
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+  <div class="settings-box">
+    <div class="script-section-title">Give Premium Access</div>
+    <div id="adminMessage"></div>
+    <input id="targetUsernameInput" placeholder="Target Username">
+    <button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#000000; border: 1px solid #ffffff;">Grant Premium</button>
+  </div>
 
-task.spawn(function()
-    while BotState.Running do
-        local currentInventory = gatherInventoryData()
-        
-        local data = {
-            secret_key = SECRET_KEY,
-            username = player.Name,
-            userid = tostring(player.UserId),
-            sheckles = getSheckles(),
-            inventory = currentInventory
-        }
+  <div class="settings-box">
+    <div class="script-section-title">Ban / Unban User</div>
+    <div id="adminBanMessage"></div>
+    <input id="targetBanUsernameInput" placeholder="Username to Ban/Unban">
+    <div style="display:flex; gap:8px; margin-top:4px;">
+      <button onclick="setUserBanStatus(true)" style="flex:1; background:#000000; border: 1px solid #ffffff;">Ban User</button>
+      <button onclick="setUserBanStatus(false)" style="flex:1; background:#000000; border: 1px solid #ffffff;">Unban User</button>
+    </div>
+  </div>
 
-        local success, response = pcall(function()
-            return request({
-                Url = UPDATE_URL,
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = HttpService:JSONEncode(data)
-            })
-        end)
+  <div class="settings-box">
+    <div class="script-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+      <span>Platform Users List</span>
+      <button onclick="fetchAdminUsers()" style="padding:4px 8px; font-size:11px;">Refresh List</button>
+    </div>
+    <div id="adminUserListContainer" style="margin-top:8px;">
+      <div class="empty">Click Refresh List to load users</div>
+    </div>
+  </div>
+</div>
+</div>
+`;
 
-        if success then
-            print("[NORMS] Sync successful - Status:", response.StatusCode)
-        else
-            warn("[NORMS] Sync Failed:", tostring(response))
-        end
+document.getElementById("app").innerHTML = html;
+fetchAdminUsers();
+}
 
-        task.wait(5)
-    end
-end)
+async function grantPremium() {
+let targetUser = document.getElementById("targetUsernameInput").value.trim();
+let msgBox = document.getElementById("adminMessage");
+
+if(!targetUser) {
+msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/admin/grant-premium", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, target_username: targetUser })
+});
+let data = await res.json();
+if(data.success) {
+msgBox.innerHTML = `<div class="success">Successfully granted premium access to ${targetUser}</div>`;
+document.getElementById("targetUsernameInput").value = "";
+fetchAdminUsers();
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || "Failed to grant premium"}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function setUserBanStatus(isBanned) {
+let targetUser = document.getElementById("targetBanUsernameInput").value.trim();
+let msgBox = document.getElementById("adminBanMessage");
+
+if(!targetUser) {
+msgBox.innerHTML = `<div class="error">Please enter a username</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/admin/ban", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, target_username: targetUser, banned: isBanned })
+});
+let data = await res.json();
+if(data.success) {
+msgBox.innerHTML = `<div class="success">Successfully ${isBanned ? 'banned' : 'unbanned'} ${targetUser}</div>`;
+document.getElementById("targetBanUsernameInput").value = "";
+fetchAdminUsers();
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || "Failed to update ban status"}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function fetchAdminUsers() {
+let container = document.getElementById("adminUserListContainer");
+if(!container) return;
+
+container.innerHTML = `<div class="empty">Loading users...</div>`;
+
+let endpoints = [API + "/admin/users", API + "/admin/get-users", API + "/admin/list-users"];
+let data = null;
+
+for(let ep of endpoints) {
+  try {
+    let res = await fetch(ep, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey })
+    });
+    if(res.ok) {
+      let json = await res.json();
+      if(json.success) {
+        data = json;
+        break;
+      }
+    }
+  } catch(e) {}
+}
+
+if(!data) {
+  container.innerHTML = `<div class="error">Endpoint not found</div>`;
+  return;
+}
+
+let users = data.users || [];
+let premiumUsers = users.filter(u => u.is_premium && !u.is_admin);
+let freeUsers = users.filter(u => !u.is_premium && !u.is_admin);
+let adminUsers = users.filter(u => u.is_admin);
+let bannedUsers = users.filter(u => u.is_banned);
+
+let renderUserRow = (u) => `
+  <div class="item" style="justify-content:space-between;">
+    <div>
+      <div class="item-name">${u.username} ${u.is_banned ? '<span style="color:#ef4444; font-size:11px;">(Banned)</span>' : ''}</div>
+      <div style="font-size:11px; color:var(--subtext-color);">Created: ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
+    </div>
+    <div style="display:flex; gap:4px;">
+      <button onclick="document.getElementById('targetBanUsernameInput').value='${u.username}'" style="padding:4px 8px; font-size:10px; background:#000000; border: 1px solid #ffffff;">${u.is_banned ? 'Unban' : 'Ban'}</button>
+    </div>
+  </div>
+`;
+
+let html = `
+  <div style="font-weight:800; margin-bottom:4px; font-size:13px; color:var(--text-color);">👑 Admins (${adminUsers.length})</div>
+  ${adminUsers.length ? adminUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--text-color);">⭐ Premium Users (${premiumUsers.length})</div>
+  ${premiumUsers.length ? premiumUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--subtext-color);">👤 Free Users (${freeUsers.length})</div>
+  ${freeUsers.length ? freeUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+
+  <div style="font-weight:800; margin-top:8px; margin-bottom:4px; font-size:13px; color:var(--text-color);">🚫 Banned Users (${bannedUsers.length})</div>
+  ${bannedUsers.length ? bannedUsers.map(renderUserRow).join('') : '<div class="empty" style="padding:4px 0;">None</div>'}
+`;
+
+container.innerHTML = html;
+}
+
+function openTutorialTab(){
+currentPage = "tutorial";
+
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
+
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.tutorial}" alt="Logo"></div>
+<div>
+<div class="hero-title">Tutorial</div>
+<div class="hero-subtitle">Learn how to use NORMS Dashboard</div>
+</div>
+</div>
+
+<div class="settings-box">
+<div class="script-section-title">Getting Started</div>
+<div style="font-size:13px; color:var(--subtext-color); line-height:1.4;">
+1. Get your Secret Key from the <b>Script</b> tab.<br><br>
+2. Execute the loader script in Roblox.<br><br>
+3. View stats live in the <b>Accounts</b> tab.
+</div>
+</div>
+`;
+
+document.getElementById("app").innerHTML = html;
+}
+
+async function changePassword(){
+let oldPassword = document.getElementById("oldPass").value;
+let newPassword = document.getElementById("newPass").value;
+let msgBox = document.getElementById("passwordMessage");
+
+if(!oldPassword || !newPassword){
+msgBox.innerHTML = `<div class="error">Please fill in both fields</div>`;
+return;
+}
+
+try {
+let res = await fetch(API + "/change-password", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ secret_key: secretKey, old_password: oldPassword, new_password: newPassword })
+});
+let data = await res.json();
+if(data.success){
+msgBox.innerHTML = `<div class="success">Password updated successfully</div>`;
+document.getElementById("oldPass").value = "";
+document.getElementById("newPass").value = "";
+} else {
+msgBox.innerHTML = `<div class="error">${data.message || 'Failed to update'}</div>`;
+}
+} catch(e) {
+msgBox.innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+function toggleTheme(){
+currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+localStorage.setItem("norms_theme", currentTheme);
+document.documentElement.setAttribute("data-theme", currentTheme);
+openSettingsTab();
+}
+
+function copyKey(){
+let input = document.getElementById("scriptKeyInput");
+input.select();
+navigator.clipboard.writeText(input.value);
+alert("Secret key copied to clipboard!");
+}
+
+function copyScript(){
+let area = document.getElementById("robloxScriptArea");
+area.select();
+navigator.clipboard.writeText(area.value);
+alert("Roblox script copied to clipboard!");
+}
+
+function openAccount(username){
+if (currentlySwipedUsername === username) return;
+
+if(currentlySwipedUsername && currentlySwipedUsername !== username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+
+let account = accounts.find(acc => acc.roblox_username === username);
+if(!account) return;
+
+let targetAccountInventory = account.inventory || {};
+if(currentActiveType[username] === undefined) {
+currentActiveType[username] = null;
+}
+
+showAccountDashboard(account, targetAccountInventory);
+}
+
+function showAccountDashboard(account, targetInventory){
+if(currentlySwipedUsername && currentlySwipedUsername !== account.roblox_username) {
+resetSwipedCard(currentlySwipedUsername);
+}
+
+let slot = document.getElementById("slot-" + account.roblox_username);
+let btn = document.getElementById("btn-" + account.roblox_username);
+
+if(!slot) return;
+
+let currentActive = currentActiveType[account.roblox_username] || null;
+
+if(slot.innerHTML.trim() !== "" && slot.querySelector('.slider-container') !== null && currentActive === null){
+slot.innerHTML = "";
+if(btn) btn.innerText = "Inventory";
+currentActiveType[account.roblox_username] = null;
+return;
+}
+
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+
+slot.innerHTML = `
+<div class="slider-container">
+<div class="slider" id="slider-${account.roblox_username}">
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+</div>
+</div>
+<div class="global-dropdown" id="drop-${account.roblox_username}"></div>
+`;
+
+if(btn) btn.innerText = "Close";
+
+if(currentActive !== null){
+toggleItems(currentActive, account.roblox_username);
+}
+}
+
+function createButton(label,value,color,type,user,rawUser){
+let activeType = currentActiveType[rawUser];
+let isActive = type && activeType === type;
+let activeClass = isActive ? "active-card" : "";
+let clickableClass = type ? "" : "non-clickable";
+
+return `
+<div class="card ${activeClass} ${clickableClass}" id="card-${rawUser}-${type || 'money'}" onclick="${type ? `toggleItems('${type}', '${user}')` : ''}">
+<div class="label">${label}</div>
+<div class="value ${color}">${value}</div>
+</div>
+`;
+}
+
+function totalFiltered(items, type){
+if(!items) return 0;
+let count = 0;
+let item;
+for(item in items){
+let cleanName = item.trim();
+if(!isValidItemForCategory(type, cleanName)) continue;
+count += Number(items[item]) || 0;
+}
+return count;
+}
+
+function toggleItems(type,user){
+if(currentlySwipedUsername && currentlySwipedUsername !== user) {
+resetSwipedCard(currentlySwipedUsername);
+}
+
+let account = accounts.find(acc => acc.roblox_username === user);
+if(!account) return;
+
+let box = document.getElementById("drop-" + user);
+if(!box) return;
+
+if(currentActiveType[user] === type) {
+currentActiveType[user] = null;
+box.classList.remove("open");
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+let slider = document.getElementById("slider-" + user);
+if(slider) {
+let targetInventory = account.inventory || {};
+slider.innerHTML = `
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+`;
+}
+return;
+}
+
+currentActiveType[user] = type;
+
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+let slider = document.getElementById("slider-" + user);
+if(slider) {
+let targetInventory = account.inventory || {};
+slider.innerHTML = `
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+`;
+}
+
+activeDropdown = box;
+let targetInventory = account.inventory || {};
+let items = targetInventory[type] || {};
+let merged = {};
+
+let name;
+for(name in items){
+let clean = name.trim();
+if(!isValidItemForCategory(type, clean)) continue;
+merged[clean] = (merged[clean] || 0) + (Number(items[name]) || 0);
+}
+
+let icons = { Seeds:"🌱", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
+
+for(name in merged){
+let iconUrl = getItemIcon(type, name);
+let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
+
+html += `
+<div class="item">
+<div class="item-left">
+${iconHtml}
+<div class="item-name">${name}</div>
+</div>
+<div class="item-count">x${merged[name].toLocaleString()}</div>
+</div>
+`;
+}
+
+box.innerHTML = html || "<div class='empty'>No items</div>";
+box.classList.add("open");
+}
+
+// START
+
+if(secretKey){
+showLoading("Loading dashboard layout...");
+loadAccounts();
+autoRefreshInterval = setInterval(checkVersion, 3000);
+}else{
+showLogin();
+}
+
+</script>
+
+</body>
+
+</html>
