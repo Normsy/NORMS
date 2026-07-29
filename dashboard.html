@@ -281,6 +281,7 @@ margin-top:4px;
 /* STATS */
 
 .stats-container-wrapper {
+position: relative;
 display: flex;
 flex-direction: column;
 gap: 10px;
@@ -656,6 +657,7 @@ border: 1px solid #ffffff;
 
 .account-dashboard-slot{
 margin-top:14px;
+position: relative;
 }
 
 .slider-container{
@@ -734,12 +736,10 @@ background:var(--card-bg);
 border:1px solid var(--border-color);
 border-radius:12px;
 padding:12px;
-margin-top:8px;
 max-height:220px;
 overflow-y:auto;
 width:100%;
 box-shadow:0 8px 20px rgba(0,0,0,0.15);
-position:relative;
 z-index:99999;
 -webkit-overflow-scrolling: touch;
 opacity: 1 !important;
@@ -747,6 +747,24 @@ opacity: 1 !important;
 
 .global-dropdown.open{
 display:block;
+}
+
+/* FLOATING OVERLAY DROPDOWN FOR MAIN STAT CARDS */
+.stats-container-wrapper .global-dropdown {
+position: absolute;
+top: calc(100% + 4px);
+left: 0;
+right: 0;
+margin-top: 0;
+}
+
+/* FLOATING OVERLAY DROPDOWN FOR ACCOUNT CARDS */
+.account-dashboard-slot .global-dropdown {
+position: absolute;
+top: calc(100% + 4px);
+left: 0;
+right: 0;
+margin-top: 0;
 }
 
 .dropdown-header{
@@ -1390,10 +1408,6 @@ ${isUserAdmin ? `
 
 if(mainActiveType) {
   showMainDropdownContent(mainActiveType);
-  let mainScrollArea = document.querySelector('.main-scroll-area');
-  if(mainScrollArea) {
-    mainScrollArea.scrollTop = mainScrollArea.scrollHeight;
-  }
 }
 }
 
@@ -1521,16 +1535,21 @@ function updateCurrentPageData() {
 }
 
 function toggleMainItems(type) {
+  let box = document.getElementById("main-drop");
+  
   if(mainActiveType === type) {
     mainActiveType = null;
-    let box = document.getElementById("main-drop");
     if(box) box.classList.remove("open");
-    renderMain();
+    document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
     return;
   }
 
   mainActiveType = type;
-  renderMain();
+  document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
+  let clickedCard = event ? event.currentTarget : null;
+  if(clickedCard) clickedCard.classList.add('active-card');
+
+  showMainDropdownContent(type);
 }
 
 function showMainDropdownContent(type) {
@@ -2277,7 +2296,7 @@ if(!slot) return;
 
 let currentActive = currentActiveType[account.roblox_username] || null;
 
-if(slot.innerHTML !== "" && currentActive === null){
+if(slot.innerHTML.trim() !== "" && slot.querySelector('.slider-container') !== null && currentActive === null){
 slot.innerHTML = "";
 if(btn) btn.innerText = "Inventory";
 currentActiveType[account.roblox_username] = null;
@@ -2357,12 +2376,30 @@ if(!account) return;
 let box = document.getElementById("drop-" + user);
 if(!box) return;
 
+if(currentActiveType[user] === type) {
+currentActiveType[user] = null;
+box.classList.remove("open");
+let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
+let slider = document.getElementById("slider-" + user);
+if(slider) {
 let targetInventory = account.inventory || {};
-currentActiveType[user] = currentActiveType[user] === type ? null : type;
+slider.innerHTML = `
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
+${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
+${createButton("Gear", totalFiltered(targetInventory.Gear, "Gear").toLocaleString(), "", "Gear", escapedUsername, account.roblox_username)}
+${createButton("Crates", totalFiltered(targetInventory.Crates, "Crates").toLocaleString(), "", "Crates", escapedUsername, account.roblox_username)}
+${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleString(), "", "Pets", escapedUsername, account.roblox_username)}
+`;
+}
+return;
+}
+
+currentActiveType[user] = type;
 
 let escapedUsername = account.roblox_username.replace(/'/g, "\\'");
 let slider = document.getElementById("slider-" + user);
 if(slider) {
+let targetInventory = account.inventory || {};
 slider.innerHTML = `
 ${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, escapedUsername, account.roblox_username)}
 ${createButton("Seeds", totalFiltered(targetInventory.Seeds, "Seeds").toLocaleString(), "", "Seeds", escapedUsername, account.roblox_username)}
@@ -2372,13 +2409,8 @@ ${createButton("Pets", totalFiltered(targetInventory.Pets, "Pets").toLocaleStrin
 `;
 }
 
-if(currentActiveType[user] === null){
-box.classList.remove("open");
-activeDropdown = null;
-return;
-}
-
 activeDropdown = box;
+let targetInventory = account.inventory || {};
 let items = targetInventory[type] || {};
 let merged = {};
 
