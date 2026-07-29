@@ -1095,11 +1095,16 @@ function formatSheckles(num) {
 
 function getItemIcon(type, name) {
   if (!name) return null;
-  let cleanName = name.trim();
+  let cleanName = name.replace(/\s+/g, '');
+  
   if (type === "Seeds" || type === "TotalSeeds") {
-    return `${assetBase}Seed/${cleanName.replace(/\s+/g, '')}Seed.webp`;
-  } else if (type === "Pets") {
-    return `${assetBase}Pet/${cleanName.replace(/\s+/g, '')}.webp`;
+    return `${assetBase}Seed/${cleanName}.webp`;
+  } else if (type === "Pets" || type === "TotalPets") {
+    return `${assetBase}Pet/${cleanName}.webp`;
+  } else if (type === "Gear") {
+    return `${assetBase}Gear/${cleanName}.webp`;
+  } else if (type === "Crates") {
+    return `${assetBase}Crate/${cleanName}.webp`;
   }
   return null;
 }
