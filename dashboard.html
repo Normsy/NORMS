@@ -531,6 +531,15 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
+.swipe-action-btn.ban-btn {
+background: #b91c1c;
+}
+
+[data-theme="dark"] .swipe-action-btn.ban-btn {
+background: #ef4444;
+color: #ffffff;
+}
+
 .toggle-switch-wrapper {
 display: flex;
 flex-direction: column;
@@ -1583,10 +1592,14 @@ let settings = acc.settings || {};
 let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
 let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
 let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
+let isBanned = Boolean(acc.is_banned);
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
-<div class="swipe-actions-left-bg"><button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button></div>
+<div class="swipe-actions-left-bg">
+<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+<button class="swipe-action-btn ban-btn" onclick="toggleBanAccount('${escapedUsername}', ${!isBanned})">${isBanned ? 'Unban' : 'Ban'}</button>
+</div>
 <div class="swipe-actions-bg">
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')"><span>Auto Seeds</span><div class="ios-switch ${isAutoSeeds ? 'active' : ''}"></div></div>
 <div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')"><span>Auto Gears</span><div class="ios-switch ${isAutoGear ? 'active' : ''}"></div></div>
@@ -1595,7 +1608,7 @@ html += `
 <div class="account-box" id="acc-box-${acc.roblox_username}">
 <div class="account-header-row">
 <div class="account-info-col">
-<div class="user ${status.class}">${acc.roblox_username}</div>
+<div class="user ${status.class}">${acc.roblox_username} ${isBanned ? '<span style="color:#ef4444; font-size:11px;">[BANNED]</span>' : ''}</div>
 <div class="status ${status.class}">${status.text}</div>
 </div>
 <button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
@@ -1634,6 +1647,19 @@ await fetch(API + "/delete-account", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+});
+loadAccounts();
+} catch(e) { loadAccounts(); }
+}
+
+async function toggleBanAccount(username, banState) {
+if(!confirm(`${banState ? 'Ban' : 'Unban'} Roblox account ${username}?`)) return;
+showLoading("Updating ban status...");
+try {
+await fetch(API + "/admin/ban-account", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey, roblox_username: username, ban: banState })
 });
 loadAccounts();
 } catch(e) { loadAccounts(); }
@@ -1712,7 +1738,7 @@ document.getElementById("app").innerHTML = `
 ${isUserAdmin ? `
 <div class="settings-box" style="border: 2px solid var(--text-color);">
 <div class="script-section-title">Administration</div>
-<div style="font-size:12px; color:var(--subtext-color); margin-bottom:10px;">Admin-only tools to manage platform members.</div>
+<div style="font-size:12px; color:var(--subtext-color); margin-bottom:10px;">Admin-only tools to manage platform members and bans.</div>
 <button class="action-btn-styled" onclick="openAdminTab()">Open Admin Panel</button>
 </div>
 ` : ''}
@@ -1745,12 +1771,49 @@ document.getElementById("app").innerHTML = `
 <button class="back" onclick="openSettingsTab()">Back to Settings</button>
 <div class="hero-box">
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
-<div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users & premium tiers</div></div>
+<div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users, premium tiers & user bans</div></div>
 </div>
 <div class="settings-wrapper"><div class="settings-scroll-area">
-  <div class="settings-box"><div class="script-section-title">Give Premium Access</div><div id="adminMessage"></div><input id="targetUsernameInput" placeholder="Target Username"><button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button></div>
+  <div class="settings-box">
+    <div class="script-section-title">Give Premium Access</div>
+    <div id="adminMessage"></div>
+    <input id="targetUsernameInput" placeholder="Target Username">
+    <button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button>
+  </div>
+  <div class="settings-box">
+    <div class="script-section-title">User Ban System</div>
+    <div style="font-size:12px; color:var(--subtext-color); margin-bottom:8px;">Ban or unban platform users entirely.</div>
+    <div id="adminBanMessage"></div>
+    <input id="targetUserBanInput" placeholder="Username to Ban/Unban">
+    <div style="display:flex; gap:8px; margin-top:4px;">
+      <button onclick="adminUserAction('ban')" class="swipe-action-btn delete-btn" style="flex:1; height:40px;">Ban User</button>
+      <button onclick="adminUserAction('unban')" class="action-btn-styled" style="flex:1; margin-top:0;">Unban User</button>
+    </div>
+  </div>
 </div></div>
 `;
+}
+
+async function adminUserAction(actionType) {
+  let username = document.getElementById("targetUserBanInput").value.trim();
+  if(!username) {
+    alert("Please enter a username.");
+    return;
+  }
+  showLoading(`${actionType === 'ban' ? 'Banning' : 'Unbanning'} user...`);
+  try {
+    const res = await fetch(API + "/admin/user-ban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, username: username, action: actionType })
+    });
+    const data = await res.json();
+    openAdminTab();
+    document.getElementById("adminBanMessage").innerHTML = `<div class="${data.success ? 'success' : 'error'}">${data.message || 'Done'}</div>`;
+  } catch(e) {
+    openAdminTab();
+    document.getElementById("adminBanMessage").innerHTML = `<div class="error">Network error occurred</div>`;
+  }
 }
 
 function openTutorialTab(){
@@ -1867,7 +1930,7 @@ box.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; curre
 box.addEventListener('touchmove', (e) => {
 if(!isSwiping) return;
 let diffX = e.touches[0].clientX - startX;
-if(diffX < -100) diffX = -100;
+if(diffX < -140) diffX = -140;
 if(diffX > 80) diffX = 80;
 box.style.transform = `translateX(${diffX}px)`;
 }, {passive: true});
