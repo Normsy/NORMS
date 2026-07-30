@@ -1185,18 +1185,13 @@ function getItemIcon(type, name) {
   let cleanName = parsed.name.replace(/['\s]+/g, '');
   
   if (type === "Seeds" || type === "TotalSeeds" || parsed.isCropWithWeight) {
-    let lowerClean = cleanName.toLowerCase();
-    if (lowerClean === "goldseed") {
-      return `${assetBase}Seed/GoldSeed.WEBP`;
-    }
-    if (lowerClean === "rainbowseed") {
-      return `${assetBase}Seed/RainbowSeed.WEBP`;
-    }
-    return `${assetBase}Seed/${cleanName}Seed.webp`;
+    let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
+    return `${assetBase}Seed/${cleanName}Seed.${ext}`;
   } else if (type === "Crops") {
-    return `${assetBase}Crop/${cleanName}.webp`;
+    let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
+    return `${assetBase}Crop/${cleanName}.${ext}`;
   } else if (type === "Pets" || type === "TotalPets") {
-    let basePetName = cleanName.replace(/^(Big|Mega|Rainbow)+/i, '');
+    let basePetName = cleanName.replace(/^(Big|Mega|Rainbow|Gold)+/i, '');
     return `${assetBase}Pet/${basePetName}.webp`;
   } else if (type === "Gear") {
     return `${assetBase}Gear/${cleanName}.webp`;
