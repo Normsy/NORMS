@@ -774,12 +774,13 @@ z-index: 9999;
 font-size:15px;
 font-weight:800;
 margin-bottom:12px;
-padding-bottom: 6px;
+padding: 8px 0 6px 0;
 border-bottom: 1px solid var(--border-color);
 position: sticky;
 top: 0;
-background: var(--card-bg);
-z-index: 2;
+background-color: var(--card-bg);
+opacity: 1 !important;
+z-index: 10;
 }
 
 /* GRID LAYOUT FOR ITEMS */
@@ -1746,7 +1747,6 @@ function openAccountsTab(){
 currentPage = "accounts";
 currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
 
-// Sort accounts to prioritize online users at the top
 let sortedAccounts = [...accounts].sort((a, b) => {
   let statusA = getStatus(a.updated_at).class === "online" ? 0 : 1;
   let statusB = getStatus(b.updated_at).class === "online" ? 0 : 1;
