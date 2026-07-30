@@ -498,7 +498,7 @@ transform: scale(0.96);
 .account-grid-icon {
 width: 48px;
 height: 48px;
-border-radius: 12px;
+border-radius: 50%;
 object-fit: cover;
 background: var(--input-bg);
 border: 1px solid var(--border-color);
@@ -549,7 +549,7 @@ color: #ef4444;
 color: #f87171;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE (Legacy support if detailed view is needed) */
+/* ACCOUNT CARD & SWIPE DELETE */
 
 .account-card-container {
 position: relative;
@@ -557,35 +557,6 @@ overflow: visible;
 border-radius: 16px;
 flex-shrink: 0;
 touch-action: pan-y;
-}
-
-.swipe-actions-bg {
-position: absolute;
-top: 0;
-right: 0;
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: flex-end;
-align-items: center;
-gap: 4px;
-padding-right: 8px;
-border-radius: 16px;
-z-index: 1;
-}
-
-.swipe-actions-left-bg {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: flex-start;
-align-items: center;
-padding-left: 12px;
-border-radius: 16px;
-z-index: 1;
 }
 
 .swipe-action-btn {
@@ -615,156 +586,6 @@ background: #ef4444;
 }
 
 [data-theme="dark"] .swipe-action-btn.delete-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
-}
-
-.swipe-action-btn.ban-btn {
-background: #b91c1c;
-}
-
-[data-theme="dark"] .swipe-action-btn.ban-btn {
-background: #ef4444;
-color: #ffffff;
-}
-
-.toggle-switch-wrapper {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-gap: 3px;
-background: #1e293b;
-padding: 4px 6px;
-border-radius: 8px;
-height: 48px;
-color: white;
-font-size: 9px;
-font-weight: 700;
-cursor: pointer;
-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-user-select: none;
-text-align: center;
-width: 65px;
-}
-
-[data-theme="dark"] .toggle-switch-wrapper {
-background: #ffffff;
-color: #000000;
-border: 1px solid var(--border-color);
-}
-
-.ios-switch {
-position: relative;
-width: 32px;
-height: 18px;
-background: #475569;
-border-radius: 18px;
-transition: background 0.3s;
-display: inline-block;
-flex-shrink: 0;
-}
-
-[data-theme="dark"] .ios-switch {
-background: #d4d4d8;
-}
-
-.ios-switch::after {
-content: "";
-position: absolute;
-top: 2px;
-left: 2px;
-width: 14px;
-height: 14px;
-background: white;
-border-radius: 50%;
-transition: transform 0.3s;
-}
-
-[data-theme="dark"] .ios-switch::after {
-background: #000000;
-}
-
-.ios-switch.active {
-background: #22c55e;
-}
-
-[data-theme="dark"] .ios-switch.active {
-background: #16a34a;
-}
-
-[data-theme="dark"] .ios-switch.active::after {
-background: #ffffff;
-}
-
-.ios-switch.active::after {
-transform: translateX(14px);
-}
-
-.account-box{
-background:var(--card-bg);
-border:1px solid var(--border-color);
-border-radius:16px;
-padding:16px 18px;
-box-shadow:0 2px 6px rgba(0,0,0,.02);
-position: relative;
-z-index: 2;
-will-change: transform;
-user-select: none;
-}
-
-.account-header-row{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-.account-info-col{
-display:flex;
-flex-direction:column;
-}
-
-.user{
-font-size:18px;
-font-weight:800;
-color: #000000 !important;
-}
-
-[data-theme="dark"] .user {
-color: #ffffff !important;
-}
-
-.user::before{
-content:"";
-display:inline-block;
-width:8px;
-height:8px;
-margin-right:6px;
-border-radius:50%;
-background:#ef4444;
-}
-
-.user.online::before{
-background:#22c55e;
-}
-
-.status{
-font-size:13px;
-margin-top:3px;
-}
-
-.open-btn{
-background:#111827;
-padding:10px 18px;
-font-size:14px;
-font-weight:700;
-border-radius:10px;
-color: white;
-border: none;
-}
-
-[data-theme="dark"] .open-btn {
 background: #ffffff;
 color: #000000;
 border: 1px solid #ffffff;
@@ -1207,8 +1028,10 @@ let mainActiveType = null;
 let currentCaptcha = "";
 let autoRefreshInterval = null;
 let currentPage = "main";
-let currentlySwipedUsername = null;
 let dashboardVersion = 0;
+
+// Cache for resolved Roblox avatar thumbnails (username -> image URL)
+let avatarThumbnailCache = {};
 
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
 
@@ -1284,6 +1107,52 @@ function isValidItemForCategory(type, name) {
   return true;
 }
 
+// Function to fetch Roblox avatar headshot dynamically based on username
+async function fetchRobloxAvatarThumbnail(username) {
+  if (!username) return logoAssets.roblox;
+  if (avatarThumbnailCache[username]) {
+    return avatarThumbnailCache[username];
+  }
+  try {
+    // Step 1: Get userId from username using Roblox users API (via a public CORS proxy or direct endpoint if allowed, note that browsers may block direct Roblox API calls due to CORS, so we fall back gracefully or use a proxy if needed. Alternatively, Roblox users API can be queried directly via users.roblox.com)
+    const userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usernames: [username], excludeBannedUsers: false })
+    });
+    const userData = await userRes.json();
+    if (!userData.data || userData.data.length === 0) {
+      return logoAssets.roblox;
+    }
+    const userId = userData.data[0].id;
+
+    // Step 2: Get headshot thumbnail using the provided endpoint structure
+    const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`);
+    const thumbData = await thumbRes.json();
+    if (thumbData.data && thumbData.data.length > 0 && thumbData.data[0].imageUrl) {
+      const imageUrl = thumbData.data[0].imageUrl;
+      avatarThumbnailCache[username] = imageUrl;
+      return imageUrl;
+    }
+  } catch (e) {
+    // Fallback if CORS or network error occurs in the browser environment
+  }
+  return logoAssets.roblox;
+}
+
+// Preload thumbnails for all accounts
+async function preloadAccountThumbnails() {
+  for (let acc of accounts) {
+    if (acc.roblox_username && !avatarThumbnailCache[acc.roblox_username]) {
+      await fetchRobloxAvatarThumbnail(acc.roblox_username);
+    }
+  }
+  // Refresh views if currently looking at accounts list or modal
+  if (currentPage === "accounts") {
+    openAccountsTab();
+  }
+}
+
 function generateCaptcha(){
 let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 let code = "";
@@ -1312,7 +1181,6 @@ if(autoRefreshInterval) clearInterval(autoRefreshInterval);
 showLoading("Logging out...");
 setTimeout(()=>{
 localStorage.removeItem("norms_secret");
-localStorage.removeItem("norms_swiped_username");
 secretKey = null;
 showLogin();
 }, 600);
@@ -1443,7 +1311,10 @@ userInfo = data.user || {};
 if(data.version !== undefined) dashboardVersion = data.version;
 
 if(silent) updateCurrentPageData();
-else renderMain();
+else {
+renderMain();
+preloadAccountThumbnails();
+}
 } catch(e) {
 if(!silent) logout();
 }
@@ -1671,10 +1542,11 @@ sortedAccounts.forEach(acc=>{
 let status = getStatusDetails(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 let isBanned = Boolean(acc.is_banned);
+let avatarUrl = avatarThumbnailCache[acc.roblox_username] || logoAssets.roblox;
 
 html += `
 <div class="account-grid-card" onclick="openAccountModal('${escapedUsername}')">
-<div class="account-grid-icon"><img src="${logoAssets.roblox}" alt="Roblox"></div>
+<div class="account-grid-icon"><img src="${avatarUrl}" onerror="this.src='${logoAssets.roblox}'" alt="Roblox"></div>
 <div class="account-grid-username">${acc.roblox_username}</div>
 <div class="account-grid-status ${status.class}">${status.text}</div>
 ${isBanned ? '<div style="color:#ef4444; font-size:9px; font-weight:800; margin-top:2px;">[BANNED]</div>' : ''}
@@ -1686,20 +1558,19 @@ html += `</div></div></div>`;
 document.getElementById("app").innerHTML = html;
 }
 
-function openAccountModal(username) {
+async function openAccountModal(username) {
 let account = accounts.find(acc => acc.roblox_username === username);
 if(!account) return;
 
-// If they click an account in grid mode, we can show a quick action modal or open the detailed view. Let's redirect to a dedicated detailed account view or open options.
-// Let's create a nice modal or switch view to show the inventory sliders for this specific account.
 let escapedUsername = username.replace(/'/g, "\\'");
 let status = getStatus(account.updated_at);
 let isBanned = Boolean(account.is_banned);
+let avatarUrl = avatarThumbnailCache[username] || logoAssets.roblox;
 
 document.getElementById("app").innerHTML = `
 <button class="back" onclick="openAccountsTab()">Back to Accounts</button>
 <div class="hero-box">
-<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div class="hero-icon" style="border-radius: 50%;"><img src="${avatarUrl}" onerror="this.src='${logoAssets.roblox}'" alt="Logo"></div>
 <div>
 <div class="hero-title">${account.roblox_username}</div>
 <div class="hero-subtitle"><span class="${status.class}">${status.text}</span> ${isBanned ? '<span style="color:#ef4444;">[BANNED]</span>' : ''}</div>
@@ -1731,7 +1602,6 @@ ${createButton("Pets", totalFiltered(account.inventory?.Pets, "Pets").toLocaleSt
 </div>
 </div>
 `;
-// Automatically select Seeds view by default in detail screen
 toggleItems('Seeds', username);
 }
 
@@ -1749,32 +1619,6 @@ loadAccounts();
 }
 
 async function toggleBanAccountFromDetail(username, banState) {
-if(!confirm(`${banState ? 'Ban' : 'Unban'} Roblox account ${username}?`)) return;
-showLoading("Updating ban status...");
-try {
-await fetch(API + "/admin/ban-account", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ secret_key: secretKey, roblox_username: username, ban: banState })
-});
-loadAccounts();
-} catch(e) { loadAccounts(); }
-}
-
-async function deleteAccount(username){
-if(!confirm(`Delete ${username}?`)) return;
-showLoading("Deleting...");
-try {
-await fetch(API + "/delete-account", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
-});
-loadAccounts();
-} catch(e) { loadAccounts(); }
-}
-
-async function toggleBanAccount(username, banState) {
 if(!confirm(`${banState ? 'Ban' : 'Unban'} Roblox account ${username}?`)) return;
 showLoading("Updating ban status...");
 try {
