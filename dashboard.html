@@ -1177,7 +1177,12 @@ function getItemIcon(type, name) {
   let cleanName = parsed.name.replace(/['\s]+/g, '');
   
   if (type === "Seeds" || type === "TotalSeeds" || parsed.isCropWithWeight) {
-    let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
+    if (cleanName === "Gold") {
+      return `${assetBase}Seed/GoldSeed.png`;
+    } else if (cleanName === "Rainbow") {
+      return `${assetBase}Seed/RainbowSeed.png`;
+    }
+    let ext = "webp";
     return `${assetBase}Seed/${cleanName}Seed.${ext}`;
   } else if (type === "Crops") {
     let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
