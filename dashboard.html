@@ -1765,33 +1765,87 @@ ${isUserAdmin ? `
 `;
 }
 
-function openAdminTab() {
+async function openAdminTab() {
 currentPage = "admin";
-document.getElementById("app").innerHTML = `
-<button class="back" onclick="openSettingsTab()">Back to Settings</button>
-<div class="hero-box">
-<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
-<div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users, premium tiers & user bans</div></div>
-</div>
-<div class="settings-wrapper"><div class="settings-scroll-area">
-  <div class="settings-box">
-    <div class="script-section-title">Give Premium Access</div>
-    <div id="adminMessage"></div>
-    <input id="targetUsernameInput" placeholder="Target Username">
-    <button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button>
+showLoading("Loading admin panel...");
+try {
+  const res = await fetch(API + "/admin/users?secret_key=" + encodeURIComponent(secretKey));
+  const data = await res.json();
+  let usersList = data.users || [];
+
+  let usersHtml = "";
+  if(usersList.length === 0) {
+    usersHtml = `<div class="empty">No users found</div>`;
+  } else {
+    usersList.forEach(u => {
+      let isBanned = Boolean(u.is_banned);
+      let isPremium = Boolean(u.is_premium);
+      let isAdmin = Boolean(u.is_admin);
+      let escapedUName = u.username.replace(/'/g, "\\'");
+      usersHtml += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--item-bg); padding:10px 12px; border:1px solid var(--border-color); border-radius:10px; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:800; font-size:14px; color:var(--text-color);">${u.username} ${isBanned ? '<span style="color:#ef4444; font-size:11px;">[BANNED]</span>' : ''}</div>
+            <div style="font-size:11px; color:var(--subtext-color);">${isAdmin ? 'Admin' : (isPremium ? 'Premium' : 'Standard User')} • Created: ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="adminUserActionQuick('${escapedUName}', '${isBanned ? 'unban' : 'ban'}')" style="padding:6px 10px; font-size:11px; background:${isBanned ? '#16a34a' : '#ef4444'};">${isBanned ? 'Unban' : 'Ban'}</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("app").innerHTML = `
+  <button class="back" onclick="openSettingsTab()">Back to Settings</button>
+  <div class="hero-box">
+  <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+  <div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users, premium tiers & user bans</div></div>
   </div>
-  <div class="settings-box">
-    <div class="script-section-title">User Ban System</div>
-    <div style="font-size:12px; color:var(--subtext-color); margin-bottom:8px;">Ban or unban platform users entirely.</div>
-    <div id="adminBanMessage"></div>
-    <input id="targetUserBanInput" placeholder="Username to Ban/Unban">
-    <div style="display:flex; gap:8px; margin-top:4px;">
-      <button onclick="adminUserAction('ban')" class="swipe-action-btn delete-btn" style="flex:1; height:40px;">Ban User</button>
-      <button onclick="adminUserAction('unban')" class="action-btn-styled" style="flex:1; margin-top:0;">Unban User</button>
+  <div class="settings-wrapper"><div class="settings-scroll-area">
+    <div class="settings-box">
+      <div class="script-section-title">Give Premium Access</div>
+      <div id="adminMessage"></div>
+      <input id="targetUsernameInput" placeholder="Target Username">
+      <button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button>
     </div>
-  </div>
-</div></div>
-`;
+    <div class="settings-box">
+      <div class="script-section-title">User Ban System</div>
+      <div style="font-size:12px; color:var(--subtext-color); margin-bottom:8px;">Ban or unban platform users entirely.</div>
+      <div id="adminBanMessage"></div>
+      <input id="targetUserBanInput" placeholder="Username to Ban/Unban">
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button onclick="adminUserAction('ban')" class="swipe-action-btn delete-btn" style="flex:1; height:40px;">Ban User</button>
+        <button onclick="adminUserAction('unban')" class="action-btn-styled" style="flex:1; margin-top:0;">Unban User</button>
+      </div>
+    </div>
+    <div class="settings-box">
+      <div class="script-section-title">All Site Users (${usersList.length})</div>
+      <div style="max-height: 250px; overflow-y: auto; margin-top: 8px;">
+        ${usersHtml}
+      </div>
+    </div>
+  </div></div>
+  `;
+} catch(e) {
+  openSettingsTab();
+}
+}
+
+async function adminUserActionQuick(username, actionType) {
+  if(!confirm(`Are you sure you want to ${actionType} user ${username}?`)) return;
+  showLoading(`${actionType === 'ban' ? 'Banning' : 'Unbanning'} user...`);
+  try {
+    const res = await fetch(API + "/admin/user-ban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, username: username, action: actionType })
+    });
+    const data = await res.json();
+    openAdminTab();
+  } catch(e) {
+    openAdminTab();
+  }
 }
 
 async function adminUserAction(actionType) {
