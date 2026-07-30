@@ -736,7 +736,7 @@ background:var(--card-bg);
 border:1px solid var(--border-color);
 border-radius:12px;
 padding:12px;
-max-height:220px;
+max-height:260px;
 overflow-y:auto;
 width:100%;
 box-shadow:0 8px 20px rgba(0,0,0,0.15);
@@ -778,6 +778,81 @@ background: var(--card-bg);
 z-index: 2;
 }
 
+/* GRID LAYOUT FOR ITEMS */
+.item-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+}
+
+@media (min-width: 480px) {
+.item-grid {
+grid-template-columns: repeat(4, 1fr);
+}
+}
+
+.item-grid-card {
+background: var(--item-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 10px 8px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: space-between;
+position: relative;
+height: 110px;
+}
+
+.item-grid-name {
+font-size: 11px;
+font-weight: 800;
+color: var(--text-color);
+text-align: center;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+width: 100%;
+margin-bottom: 4px;
+}
+
+.item-grid-img-container {
+flex: 1;
+display: flex;
+align-items: center;
+justify-content: center;
+width: 100%;
+position: relative;
+}
+
+.item-grid-icon {
+max-width: 44px;
+max-height: 44px;
+object-fit: contain;
+border-radius: 4px;
+}
+
+.item-grid-badge {
+position: absolute;
+bottom: 0px;
+right: 0px;
+background: #16a34a;
+color: white;
+font-size: 10px;
+font-weight: 900;
+padding: 2px 6px;
+border-radius: 10px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+min-width: 22px;
+text-align: center;
+}
+
+[data-theme="dark"] .item-grid-badge {
+background: #22c55e;
+color: #000000;
+}
+
+/* LEGACY LIST ITEM STYLES FOR OTHER CATEGORIES */
 .item{
 display:flex;
 justify-content:space-between;
@@ -1536,19 +1611,38 @@ function updateInventory(username) {
       let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
       let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
 
-      for(let name in merged){
-        let iconUrl = getItemIcon(activeType, name);
-        let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[activeType] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[activeType] || ""}</span>`;
+      if (activeType === "Seeds" || activeType === "Pets") {
+        html += `<div class="item-grid">`;
+        for(let name in merged){
+          let iconUrl = getItemIcon(activeType, name);
+          let iconHtml = iconUrl ? `<img class="item-grid-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:20px;\\'>${icons[activeType] || ''}</span>';" alt="">` : `<span style="font-size:20px;">${icons[activeType] || ""}</span>`;
 
-        html += `
-          <div class="item">
-            <div class="item-left">
-              ${iconHtml}
-              <div class="item-name">${name}</div>
+          html += `
+            <div class="item-grid-card">
+              <div class="item-grid-name">${name}</div>
+              <div class="item-grid-img-container">
+                ${iconHtml}
+                <div class="item-grid-badge">${merged[name].toLocaleString()}</div>
+              </div>
             </div>
-            <div class="item-count">x${merged[name].toLocaleString()}</div>
-          </div>
-        `;
+          `;
+        }
+        html += `</div>`;
+      } else {
+        for(let name in merged){
+          let iconUrl = getItemIcon(activeType, name);
+          let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[activeType] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[activeType] || ""}</span>`;
+
+          html += `
+            <div class="item">
+              <div class="item-left">
+                ${iconHtml}
+                <div class="item-name">${name}</div>
+              </div>
+              <div class="item-count">x${merged[name].toLocaleString()}</div>
+            </div>
+          `;
+        }
       }
       box.innerHTML = html || "<div class='empty'>No items</div>";
     }
@@ -1620,20 +1714,22 @@ function showMainDropdownContent(type) {
   if(keys.length === 0) {
     html += `<div class='empty'>No items found</div>`;
   } else {
+    html += `<div class="item-grid">`;
     keys.forEach(name => {
       let iconUrl = getItemIcon(iconType, name);
-      let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:16px;">${iconSymbol}</span>`;
+      let iconHtml = iconUrl ? `<img class="item-grid-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:20px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:20px;">${iconSymbol}</span>`;
 
       html += `
-        <div class="item">
-          <div class="item-left">
+        <div class="item-grid-card">
+          <div class="item-grid-name">${name}</div>
+          <div class="item-grid-img-container">
             ${iconHtml}
-            <div class="item-name">${name}</div>
+            <div class="item-grid-badge">${aggregated[name].toLocaleString()}</div>
           </div>
-          <div class="item-count">x${aggregated[name].toLocaleString()}</div>
         </div>
       `;
     });
+    html += `</div>`;
   }
 
   box.innerHTML = html;
@@ -2462,19 +2558,38 @@ merged[keyName] = (merged[keyName] || 0) + (Number(items[name]) || 0);
 let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
 let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
 
-for(name in merged){
-let iconUrl = getItemIcon(type, name);
-let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
+if (type === "Seeds" || type === "Pets") {
+  html += `<div class="item-grid">`;
+  for(name in merged){
+    let iconUrl = getItemIcon(type, name);
+    let iconHtml = iconUrl ? `<img class="item-grid-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:20px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:20px;">${icons[type] || ""}</span>`;
 
-html += `
-<div class="item">
-<div class="item-left">
-${iconHtml}
-<div class="item-name">${name}</div>
-</div>
-<div class="item-count">x${merged[name].toLocaleString()}</div>
-</div>
-`;
+    html += `
+      <div class="item-grid-card">
+        <div class="item-grid-name">${name}</div>
+        <div class="item-grid-img-container">
+          ${iconHtml}
+          <div class="item-grid-badge">${merged[name].toLocaleString()}</div>
+        </div>
+      </div>
+    `;
+  }
+  html += `</div>`;
+} else {
+  for(name in merged){
+    let iconUrl = getItemIcon(type, name);
+    let iconHtml = iconUrl ? `<img class="item-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:16px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:16px;">${icons[type] || ""}</span>`;
+
+    html += `
+      <div class="item">
+        <div class="item-left">
+          ${iconHtml}
+          <div class="item-name">${name}</div>
+        </div>
+        <div class="item-count">x${merged[name].toLocaleString()}</div>
+      </div>
+    `;
+  }
 }
 
 box.innerHTML = html || "<div class='empty'>No items</div>";
