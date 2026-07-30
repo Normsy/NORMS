@@ -344,7 +344,7 @@ color:#d97706 !important;
 color:#f59e0b !important;
 }
 
-/* NAVIGATION CARDS (Updated matching reference design layout) */
+/* NAVIGATION CARDS */
 
 .nav-stack{
 display:flex;
@@ -399,20 +399,43 @@ color: var(--text-color);
 text-align: center;
 }
 
-.logout{
-width:100%;
-background:#ef4444;
-padding:12px;
-font-size:14px;
-font-weight:800;
-border-radius:14px;
-flex-shrink:0;
-box-shadow:0 2px 6px rgba(239,68,68,.2);
+.action-btn-styled {
+width: 100%;
+background: #111827;
+padding: 12px;
+font-size: 14px;
+font-weight: 800;
+border-radius: 14px;
+flex-shrink: 0;
+box-shadow: 0 2px 6px rgba(0,0,0,.05);
 color: white;
 border: none;
+text-align: center;
+cursor: pointer;
 }
 
-[data-theme="dark"] .logout {
+[data-theme="dark"] .action-btn-styled {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.action-btn-danger {
+width: 100%;
+background: #ef4444;
+padding: 12px;
+font-size: 14px;
+font-weight: 800;
+border-radius: 14px;
+flex-shrink: 0;
+box-shadow: 0 2px 6px rgba(239,68,68,.2);
+color: white;
+border: none;
+text-align: center;
+cursor: pointer;
+}
+
+[data-theme="dark"] .action-btn-danger {
 background: #ffffff;
 color: #000000;
 border: 1px solid #ffffff;
@@ -437,7 +460,7 @@ gap:10px;
 padding-right:2px;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE / ACTIONS */
+/* ACCOUNT CARD & SWIPE DELETE */
 
 .account-card-container {
 position: relative;
@@ -508,7 +531,6 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-/* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
 .toggle-switch-wrapper {
 display: flex;
 flex-direction: column;
@@ -666,8 +688,6 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-/* INVENTORY CARDS & SLIDER */
-
 .account-dashboard-slot{
 margin-top:14px;
 position: relative;
@@ -782,7 +802,6 @@ background: var(--card-bg);
 z-index: 9999;
 }
 
-/* GRID LAYOUT FOR ITEMS */
 .item-grid {
 display: grid;
 grid-template-columns: repeat(3, 1fr);
@@ -860,22 +879,6 @@ background: #22c55e;
 color: #000000;
 }
 
-.item{
-display:flex;
-justify-content:space-between;
-align-items: center;
-background:var(--item-bg);
-padding:10px 14px;
-border-radius:8px;
-margin-bottom:8px;
-font-size:14px;
-border: 1px solid var(--border-color);
-}
-
-.item-name{
-font-weight:600;
-}
-
 .empty{
 color:var(--subtext-color);
 padding:16px;
@@ -892,6 +895,7 @@ border-radius:8px;
 flex-shrink:0;
 color: white;
 border: none;
+cursor: pointer;
 }
 
 [data-theme="dark"] .back {
@@ -991,7 +995,6 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-/* SETTINGS & COMING SOON */
 .center-message-box {
 background: var(--card-bg);
 border: 1px solid var(--border-color);
@@ -1048,7 +1051,6 @@ align-items: center;
 margin-top: 8px;
 }
 
-/* IPHONE TOGGLE FOR THEME */
 .ios-theme-toggle {
 position: relative;
 width: 44px;
@@ -1441,7 +1443,7 @@ document.getElementById("app").innerHTML = `
 
 <div class="nav-stack">
 <div class="nav-row-grid">
-<div class="nav-icon-card" onclick="openSettingsTab()">
+<div class="nav-icon-card" onclick="openProfileTab()">
 <div class="nav-icon-box">👤</div>
 <div class="nav-card-title">Profile</div>
 </div>
@@ -1464,9 +1466,7 @@ document.getElementById("app").innerHTML = `
 </div>
 </div>
 
-${isUserAdmin ? `<button class="logout" style="background:#000000; border:1px solid #ffffff; margin-bottom:4px;" onclick="openAdminTab()">Admin Panel</button>` : ''}
-<button class="logout" style="background:#000000; border:1px solid #ffffff; margin-bottom:4px;" onclick="openTutorialTab()">Tutorial</button>
-<button class="logout" onclick="logout()">Log Out</button>
+<button class="action-btn-styled" style="margin-top:4px;" onclick="openTutorialTab()">Tutorial</button>
 </div>
 `;
 
@@ -1665,26 +1665,57 @@ document.getElementById("app").innerHTML = `
 `;
 }
 
-function openSettingsTab(){
-currentPage = "settings";
+function openProfileTab(){
+currentPage = "profile";
 let currentUsername = userInfo.username || "User";
 let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
-let userRole = userInfo.is_admin ? "Admin" : (userInfo.is_premium ? "Premium User" : "Free User");
+let userRole = userInfo.is_admin ? "Administrator" : (userInfo.is_premium ? "Premium User" : "Standard User");
+let totalOnlineAccs = accounts.filter(acc => getStatus(acc.updated_at).class === "online").length;
 
 document.getElementById("app").innerHTML = `
 <button class="back" onclick="renderMain()">Back</button>
 <div class="hero-box">
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
-<div><div class="hero-title">Setting</div><div class="hero-subtitle">Manage account details and display settings</div></div>
+<div><div class="hero-title">Profile</div><div class="hero-subtitle">User identity and account statistics</div></div>
 </div>
 <div class="settings-wrapper">
 <div class="settings-scroll-area">
 <div class="settings-box">
-<div class="script-section-title">Account Details</div>
-<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Username: <b>${currentUsername}</b></div>
-<div style="font-size:13px; color:var(--subtext-color); margin-bottom:4px;">Account Tier: <b>${userRole}</b></div>
-<div style="font-size:13px; color:var(--subtext-color);">Date Created: <b>${createdDate}</b></div>
+<div class="script-section-title">User Information</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Username: <b style="color:var(--text-color);">${currentUsername}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Account Tier: <b style="color:var(--text-color);">${userRole}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Date Created: <b style="color:var(--text-color);">${createdDate}</b></div>
 </div>
+<div class="settings-box">
+<div class="script-section-title">Tracked Roblox Metrics</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Total Logged Accounts: <b style="color:var(--text-color);">${accounts.length}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Currently Online: <b style="color:#22c55e;">${totalOnlineAccs}</b></div>
+<div style="font-size:13px; color:var(--subtext-color);">Storage Limit: <b style="color:var(--text-color);">${userInfo.is_premium || userInfo.is_admin ? 'Unlimited' : '5 Max'}</b></div>
+</div>
+</div>
+</div>
+`;
+}
+
+function openSettingsTab(){
+currentPage = "settings";
+let isUserAdmin = Boolean(userInfo.is_admin);
+
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div><div class="hero-title">Settings</div><div class="hero-subtitle">Preferences, security & administration</div></div>
+</div>
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+${isUserAdmin ? `
+<div class="settings-box" style="border: 2px solid var(--text-color);">
+<div class="script-section-title">Administration</div>
+<div style="font-size:12px; color:var(--subtext-color); margin-bottom:10px;">Admin-only tools to manage platform members.</div>
+<button class="action-btn-styled" onclick="openAdminTab()">Open Admin Panel</button>
+</div>
+` : ''}
 <div class="settings-box">
 <div class="script-section-title">Change Password</div>
 <div id="passwordMessage"></div>
@@ -1699,6 +1730,10 @@ document.getElementById("app").innerHTML = `
 <div class="ios-theme-toggle ${currentTheme === 'dark' ? 'active' : ''}" onclick="toggleTheme()"></div>
 </div>
 </div>
+<div class="settings-box">
+<div class="script-section-title">Session Management</div>
+<button class="action-btn-danger" onclick="logout()">Log Out</button>
+</div>
 </div>
 </div>
 `;
@@ -1707,13 +1742,13 @@ document.getElementById("app").innerHTML = `
 function openAdminTab() {
 currentPage = "admin";
 document.getElementById("app").innerHTML = `
-<button class="back" onclick="renderMain()">Back</button>
+<button class="back" onclick="openSettingsTab()">Back to Settings</button>
 <div class="hero-box">
 <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
 <div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users & premium tiers</div></div>
 </div>
 <div class="settings-wrapper"><div class="settings-scroll-area">
-  <div class="settings-box"><div class="script-section-title">Give Premium Access</div><div id="adminMessage"></div><input id="targetUsernameInput" placeholder="Target Username"><button onclick="grantPremium()" style="width:100%; margin-top:4px; background:#000000; color:#fff;">Grant Premium</button></div>
+  <div class="settings-box"><div class="script-section-title">Give Premium Access</div><div id="adminMessage"></div><input id="targetUsernameInput" placeholder="Target Username"><button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button></div>
 </div></div>
 `;
 }
