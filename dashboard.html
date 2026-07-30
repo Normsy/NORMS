@@ -1188,7 +1188,11 @@ function getItemIcon(type, name) {
     let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
     return `${assetBase}Crop/${cleanName}.${ext}`;
   } else if (type === "Pets" || type === "TotalPets") {
-    let basePetName = cleanName.replace(/^(Big|Mega|Rainbow|Gold)+/i, '');
+    let basePetName = cleanName;
+    const exceptions = ["GoldenDragonfly", "GoldenBee", "Goldfish"];
+    if (!exceptions.includes(cleanName)) {
+      basePetName = cleanName.replace(/^(Big|Mega|Rainbow|Gold)+/i, '');
+    }
     return `${assetBase}Pet/${basePetName}.webp`;
   } else if (type === "Gear") {
     return `${assetBase}Gear/${cleanName}.webp`;
