@@ -751,13 +751,12 @@ opacity: 1 !important;
 display:block;
 }
 
-/* FLOATING OVERLAY DROPDOWN FOR MAIN STAT CARDS */
+/* FLOATING OVERLAY DROPDOWN FOR MAIN STAT CARDS -> REPLACED WITH IN-FLOW ACCOUNT-STYLE SLOT */
 .stats-container-wrapper .global-dropdown {
-position: absolute;
-top: calc(100% + 4px);
+position: relative;
+margin-top: 8px;
 left: 0;
 right: 0;
-margin-top: 0;
 background: var(--card-bg);
 z-index: 9999;
 }
@@ -1659,10 +1658,12 @@ function updateCurrentPageData() {
 
 function toggleMainItems(type) {
   let box = document.getElementById("main-drop");
+  if(!box) return;
   
   if(mainActiveType === type) {
     mainActiveType = null;
-    if(box) box.classList.remove("open");
+    box.classList.remove("open");
+    box.innerHTML = "";
     document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
     return;
   }
@@ -2571,7 +2572,7 @@ box.classList.add("open");
 if(secretKey){
 showLoading("Loading dashboard layout...");
 loadAccounts();
-autoRefreshIdentity = setInterval(checkVersion, 3000);
+autoRefreshInterval = setInterval(checkVersion, 3000);
 }else{
 showLogin();
 }
