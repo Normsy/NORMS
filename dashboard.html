@@ -770,19 +770,6 @@ background: var(--card-bg);
 z-index: 9999;
 }
 
-.dropdown-header{
-font-size:15px;
-font-weight:800;
-margin-bottom:12px;
-padding: 8px 0 6px 0;
-border-bottom: 1px solid var(--border-color);
-position: sticky;
-top: 0;
-background-color: var(--card-bg);
-opacity: 1 !important;
-z-index: 10;
-}
-
 /* GRID LAYOUT FOR ITEMS */
 .item-grid {
 display: grid;
@@ -1616,7 +1603,7 @@ function updateInventory(username) {
       }
 
       let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
-      let html = `<div class="dropdown-header">${icons[activeType] || ""} ${activeType} Inventory</div>`;
+      let html = "";
 
       if (activeType === "Seeds" || activeType === "Pets") {
         html += `<div class="item-grid">`;
@@ -1711,11 +1698,10 @@ function showMainDropdownContent(type) {
     }
   });
 
-  let titleText = (type === 'TotalSeeds') ? 'Total Seed Inventory' : 'Total Pets Inventory';
   let iconSymbol = (type === 'TotalSeeds') ? '🌱' : '🐾';
   let iconType = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
 
-  let html = `<div class="dropdown-header">${iconSymbol} ${titleText}</div>`;
+  let html = "";
 
   let keys = Object.keys(aggregated);
   if(keys.length === 0) {
@@ -2562,7 +2548,7 @@ merged[keyName] = (merged[keyName] || 0) + (Number(items[name]) || 0);
 }
 
 let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
-let html = `<div class="dropdown-header">${icons[type] || ""} ${type} Inventory</div>`;
+let html = "";
 
 if (type === "Seeds" || type === "Pets") {
   html += `<div class="item-grid">`;
