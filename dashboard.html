@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<title>NORMS Dashboard</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+-webkit-tap-highlight-color: transparent;
+}
+
+html, body{
+margin:0;
+padding:0;
+width:100%;
+height:100%;
+font-family:Segoe UI,Arial,sans-serif;
+background:var(--bg-color);
+color:var(--text-color);
+overflow:auto;
+touch-action: manipulation;
+transition: background 0.3s, color 0.3s;
+}
+
+:root {
+--bg-color: #f5f5f7;
+--text-color: #111827;
+--card-bg: #ffffff;
+--border-color: #e5e7eb;
+--subtext-color: #6b7280;
+--input-bg: #f3f4f6;
+--item-bg: #f9fafb;
+--nav-card-bg: #f3f4f6;
+}
+
+[data-theme="dark"] {
+--bg-color: #000000;
+--text-color: #ffffff;
+--card-bg: #000000;
+--border-color: #ffffff;
+--subtext-color: #a1a1aa;
+--input-bg: #121212;
+--item-bg: #121212;
+--nav-card-bg: #121212;
+}
+
+.container{
+width:100%;
+height:100%;
+margin:0;
+padding:12px;
+display:flex;
+flex-direction:column;
+justify-content:stretch;
+}
+
+#app{
+width:100%;
+height:100%;
+display:flex;
+flex-direction:column;
+flex:1;
+overflow-y:auto;
+overflow-x:hidden;
+gap:8px;
+}
+
+.main-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-bottom:20px;
+-webkit-overflow-scrolling:touch;
+}
+
+/* LOGIN / REGISTER */
+
+.auth-box{
+max-width:400px;
+margin:auto;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:24px;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+width:100%;
+}
+
+.auth-title{
+font-size:24px;
+font-weight:900;
+margin-bottom:4px;
+}
+
+.auth-subtitle{
+font-size:13px;
+color:var(--subtext-color);
+margin-bottom:16px;
+}
+
+input{
+width:100%;
+padding:10px 12px;
+border:1px solid var(--border-color);
+background:var(--input-bg);
+color:var(--text-color);
+border-radius:8px;
+margin-bottom:10px;
+font-size:16px;
+}
+
+button{
+border:none;
+background:#111827;
+color:white;
+padding:10px 16px;
+border-radius:8px;
+cursor:pointer;
+font-weight:700;
+}
+
+[data-theme="dark"] button {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.auth-btn{
+width:100%;
+}
+
+.switch{
+margin-top:12px;
+text-align:center;
+font-size:13px;
+color:var(--subtext-color);
+cursor:pointer;
+}
+
+.error{
+color:#ef4444;
+font-size:13px;
+margin-bottom:8px;
+}
+
+.success{
+color:#16a34a;
+font-size:13px;
+margin-bottom:8px;
+}
+
+/* SIMPLE CAPTCHA */
+
+.captcha-box{
+display:flex;
+align-items:center;
+gap:8px;
+margin-bottom:10px;
+}
+
+.captcha-display{
+background:var(--input-bg);
+border:1px solid var(--border-color);
+padding:8px 12px;
+border-radius:8px;
+font-weight:800;
+letter-spacing:2px;
+font-size:14px;
+user-select:none;
+color:var(--text-color);
+min-width:80px;
+text-align:center;
+}
+
+.captcha-box input{
+margin-bottom:0;
+}
+
+/* LOADING SCREEN */
+
+.loading-screen{
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+padding:24px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+max-width:320px;
+margin:auto;
+box-shadow:0 4px 16px rgba(0,0,0,.06);
+text-align:center;
+height:100%;
+width:100%;
+}
+
+.spinner{
+width:36px;
+height:36px;
+border:4px solid var(--border-color);
+border-top:4px solid #111827;
+border-radius:50%;
+animation:spin 0.8s linear infinite;
+margin-bottom:12px;
+}
+
+[data-theme="dark"] .spinner {
+border-color: #27272a;
+border-top-color: #ffffff;
+}
+
+@keyframes spin{
+0%{ transform: rotate(0deg); }
+100%{ transform: rotate(360deg); }
+}
+
+.loading-text{
+font-weight:700;
+font-size:14px;
+color:var(--subtext-color);
+}
+
+/* HERO */
+
+.hero-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:18px;
+padding:26px 24px;
+box-shadow:0 2px 8px rgba(0,0,0,.03);
+display:flex;
+align-items:center;
+gap:18px;
+flex-shrink:0;
+margin-bottom:4px;
+}
+
+.hero-icon{
+width:64px;
+height:64px;
+border-radius:16px;
+object-fit:cover;
+background:var(--input-bg);
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:15px;
+font-weight:700;
+color:var(--subtext-color);
+text-align:center;
+flex-shrink:0;
+overflow:hidden;
+border:1px solid var(--border-color);
+}
+
+.hero-icon img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.hero-title{
+font-size:26px;
+font-weight:900;
+line-height:1.1;
+}
+
+.hero-subtitle{
+font-size:15px;
+color:var(--subtext-color);
+margin-top:4px;
+}
+
+/* STATS */
+
+.stats-container-wrapper {
+position: relative;
+display: flex;
+flex-direction: column;
+gap: 10px;
+flex-shrink: 0;
+margin-bottom: 4px;
+}
+
+.stats-grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+}
+
+.stat-card{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:18px 16px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+position: relative;
+}
+
+.stat-card.clickable {
+cursor: pointer;
+transition: border-color 0.2s;
+}
+
+.stat-card.clickable.active-card {
+border: 2px solid #111827;
+}
+
+[data-theme="dark"] .stat-card.clickable.active-card {
+border: 2px solid #ffffff;
+}
+
+.stat-label{
+font-size:11px;
+font-weight:800;
+color:var(--subtext-color);
+}
+
+.stat-value{
+font-size:26px;
+font-weight:900;
+color:#16a34a;
+margin-top:6px;
+}
+
+[data-theme="dark"] .stat-value {
+color: #ffffff;
+}
+
+.stat-value.money{
+color:#d97706 !important;
+}
+
+[data-theme="dark"] .stat-value.money {
+color:#f59e0b !important;
+}
+
+/* NAVIGATION CARDS */
+
+.nav-stack{
+display:flex;
+flex-direction:column;
+gap:8px;
+flex-shrink:0;
+margin-top:4px;
+}
+
+.nav-row-grid{
+display:grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 6px;
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 18px;
+padding: 12px 8px;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+}
+
+.nav-icon-card {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+gap: 6px;
+user-select: none;
+}
+
+.nav-icon-box {
+width: 46px;
+height: 46px;
+border-radius: 14px;
+background: var(--nav-card-bg);
+border: 1px solid var(--border-color);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 20px;
+transition: transform 0.15s ease;
+}
+
+.nav-icon-card:active .nav-icon-box {
+transform: scale(0.92);
+}
+
+.nav-card-title {
+font-size: 12px;
+font-weight: 700;
+color: var(--text-color);
+text-align: center;
+}
+
+.action-btn-styled {
+width: 100%;
+background: #111827;
+padding: 12px;
+font-size: 14px;
+font-weight: 800;
+border-radius: 14px;
+flex-shrink: 0;
+box-shadow: 0 2px 6px rgba(0,0,0,.05);
+color: white;
+border: none;
+text-align: center;
+cursor: pointer;
+}
+
+[data-theme="dark"] .action-btn-styled {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.action-btn-danger {
+width: 100%;
+background: #ef4444;
+padding: 12px;
+font-size: 14px;
+font-weight: 800;
+border-radius: 14px;
+flex-shrink: 0;
+box-shadow: 0 2px 6px rgba(239,68,68,.2);
+color: white;
+border: none;
+text-align: center;
+cursor: pointer;
+}
+
+[data-theme="dark"] .action-btn-danger {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* ACCOUNTS CONTAINER VIEW */
+
+.accounts-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.accounts-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-right:2px;
+}
+
+/* ACCOUNT CARD & SWIPE DELETE */
+
+.account-card-container {
+position: relative;
+overflow: visible;
+border-radius: 16px;
+flex-shrink: 0;
+touch-action: pan-y;
+}
+
+.swipe-actions-bg {
+position: absolute;
+top: 0;
+right: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: flex-end;
+align-items: center;
+gap: 4px;
+padding-right: 8px;
+border-radius: 16px;
+z-index: 1;
+}
+
+.swipe-actions-left-bg {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+display: flex;
+justify-content: flex-start;
+align-items: center;
+padding-left: 12px;
+border-radius: 16px;
+z-index: 1;
+}
+
+.swipe-action-btn {
+background: #334155;
+color: white;
+border: none;
+border-radius: 8px;
+padding: 8px 10px;
+font-size: 11px;
+font-weight: 800;
+cursor: pointer;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] .swipe-action-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.swipe-action-btn.delete-btn {
+background: #ef4444;
+}
+
+[data-theme="dark"] .swipe-action-btn.delete-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.swipe-action-btn.ban-btn {
+background: #b91c1c;
+}
+
+[data-theme="dark"] .swipe-action-btn.ban-btn {
+background: #ef4444;
+color: #ffffff;
+}
+
+.toggle-switch-wrapper {
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 3px;
+background: #1e293b;
+padding: 4px 6px;
+border-radius: 8px;
+height: 48px;
+color: white;
+font-size: 9px;
+font-weight: 700;
+cursor: pointer;
+box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+user-select: none;
+text-align: center;
+width: 65px;
+}
+
+[data-theme="dark"] .toggle-switch-wrapper {
+background: #ffffff;
+color: #000000;
+border: 1px solid var(--border-color);
+}
+
+.ios-switch {
+position: relative;
+width: 32px;
+height: 18px;
+background: #475569;
+border-radius: 18px;
+transition: background 0.3s;
+display: inline-block;
+flex-shrink: 0;
+}
+
+[data-theme="dark"] .ios-switch {
+background: #d4d4d8;
+}
+
+.ios-switch::after {
+content: "";
+position: absolute;
+top: 2px;
+left: 2px;
+width: 14px;
+height: 14px;
+background: white;
+border-radius: 50%;
+transition: transform 0.3s;
+}
+
+[data-theme="dark"] .ios-switch::after {
+background: #000000;
+}
+
+.ios-switch.active {
+background: #22c55e;
+}
+
+[data-theme="dark"] .ios-switch.active {
+background: #16a34a;
+}
+
+[data-theme="dark"] .ios-switch.active::after {
+background: #ffffff;
+}
+
+.ios-switch.active::after {
+transform: translateX(14px);
+}
+
+.account-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:16px 18px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+position: relative;
+z-index: 2;
+will-change: transform;
+user-select: none;
+}
+
+.account-header-row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.account-info-col{
+display:flex;
+flex-direction:column;
+}
+
+.user{
+font-size:18px;
+font-weight:800;
+color: #000000 !important;
+}
+
+[data-theme="dark"] .user {
+color: #ffffff !important;
+}
+
+.user::before{
+content:"";
+display:inline-block;
+width:8px;
+height:8px;
+margin-right:6px;
+border-radius:50%;
+background:#ef4444;
+}
+
+.user.online::before{
+background:#22c55e;
+}
+
+.status{
+font-size:13px;
+margin-top:3px;
+}
+
+.online{
+color:#16a34a;
+}
+
+[data-theme="dark"] .online {
+color: #ffffff;
+}
+
+.offline{
+color:#ef4444;
+}
+
+[data-theme="dark"] .offline {
+color: #a1a1aa;
+}
+
+.open-btn{
+background:#111827;
+padding:10px 18px;
+font-size:14px;
+font-weight:700;
+border-radius:10px;
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .open-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.account-dashboard-slot{
+margin-top:14px;
+position: relative;
+}
+
+.slider-container{
+width: 100%;
+overflow-x: auto;
+overflow-y: hidden;
+white-space: nowrap;
+-webkit-overflow-scrolling: touch;
+scrollbar-width: none;
+padding-bottom: 4px;
+}
+
+.slider-container::-webkit-scrollbar{
+display:none;
+}
+
+.slider{
+display:inline-flex;
+gap:10px;
+}
+
+.card{
+display: inline-block;
+min-width:135px;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:12px;
+padding:12px 14px;
+cursor:pointer;
+box-shadow:0 1px 4px rgba(0,0,0,.02);
+vertical-align: top;
+}
+
+.card.active-card {
+border: 2px solid #111827;
+}
+
+[data-theme="dark"] .card.active-card {
+border: 2px solid #ffffff;
+}
+
+.card.non-clickable {
+cursor: default;
+}
+
+.label{
+font-size:12px;
+font-weight:800;
+color:var(--subtext-color);
+}
+
+.value{
+margin-top:6px;
+font-size:20px;
+font-weight:900;
+color:#16a34a;
+}
+
+[data-theme="dark"] .value {
+color: #ffffff;
+}
+
+.money{
+color:#d97706 !important;
+}
+
+[data-theme="dark"] .money {
+color:#f59e0b !important;
+}
+
+/* DROPDOWN */
+
+.global-dropdown{
+display:none;
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:12px;
+padding:12px;
+max-height:260px;
+overflow-y:auto;
+overflow-x:hidden;
+width:100%;
+max-width:100%;
+box-shadow:0 8px 20px rgba(0,0,0,0.15);
+z-index:99999;
+-webkit-overflow-scrolling: touch;
+opacity: 1 !important;
+}
+
+.global-dropdown.open{
+display:block;
+}
+
+.stats-container-wrapper .global-dropdown {
+position: relative;
+margin-top: 8px;
+left: 0;
+right: 0;
+background: var(--card-bg);
+z-index: 9999;
+}
+
+.account-dashboard-slot .global-dropdown {
+position: relative;
+margin-top: 8px;
+left: 0;
+right: 0;
+background: var(--card-bg);
+z-index: 9999;
+}
+
+.item-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+}
+
+@media (min-width: 480px) {
+.item-grid {
+grid-template-columns: repeat(4, 1fr);
+}
+}
+
+.item-grid-card {
+background: var(--item-bg);
+border: 1px solid var(--border-color);
+border-radius: 12px;
+padding: 10px 8px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: space-between;
+position: relative;
+height: 110px;
+}
+
+.item-grid-name {
+font-size: 11px;
+font-weight: 800;
+color: var(--text-color);
+text-align: center;
+display: -webkit-box;
+-webkit-line-clamp: 2;
+-webkit-box-orient: vertical;
+overflow: hidden;
+text-overflow: ellipsis;
+width: 100%;
+line-height: 1.2;
+margin-bottom: 4px;
+word-break: break-word;
+}
+
+.item-grid-img-container {
+flex: 1;
+display: flex;
+align-items: center;
+justify-content: center;
+width: 100%;
+position: relative;
+}
+
+.item-grid-icon {
+max-width: 44px;
+max-height: 44px;
+object-fit: contain;
+border-radius: 4px;
+}
+
+.item-grid-badge {
+position: absolute;
+bottom: 0px;
+right: 0px;
+background: #16a34a;
+color: white;
+font-size: 10px;
+font-weight: 900;
+padding: 2px 6px;
+border-radius: 10px;
+box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+min-width: 22px;
+text-align: center;
+}
+
+[data-theme="dark"] .item-grid-badge {
+background: #22c55e;
+color: #000000;
+}
+
+.empty{
+color:var(--subtext-color);
+padding:16px;
+font-size:14px;
+text-align: center;
+}
+
+.back{
+background:#111827;
+margin-bottom:8px;
+padding:8px 14px;
+font-size:13px;
+border-radius:8px;
+flex-shrink:0;
+color: white;
+border: none;
+cursor: pointer;
+}
+
+[data-theme="dark"] .back {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+/* SCRIPT DASHBOARD STYLES */
+
+.script-box{
+background:var(--card-bg);
+border:1px solid var(--border-color);
+border-radius:16px;
+padding:18px;
+margin-top:6px;
+box-shadow:0 2px 6px rgba(0,0,0,.02);
+}
+
+.script-section-title{
+font-size:14px;
+font-weight:800;
+margin-bottom:8px;
+}
+
+.key-display-box{
+display:flex;
+gap:8px;
+margin-bottom:16px;
+}
+
+.key-input{
+flex:1;
+background:var(--input-bg);
+font-family:monospace;
+font-weight:700;
+color:var(--text-color);
+margin-bottom:0;
+padding:10px 12px;
+font-size:14px;
+}
+
+.copy-btn{
+background:#111827;
+padding:0 16px;
+border-radius:8px;
+font-size:13px;
+color: white;
+border: none;
+}
+
+[data-theme="dark"] .copy-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.code-block-container{
+position:relative;
+}
+
+.script-code-area{
+width:100%;
+height:160px;
+background:#000000;
+color:#ffffff;
+border:1px solid var(--border-color);
+font-family:monospace;
+font-size:13px;
+padding:12px;
+border-radius:10px;
+resize:none;
+outline:none;
+line-height:1.4;
+}
+
+[data-theme="dark"] .script-code-area {
+background: #121212;
+border: 1px solid #ffffff;
+}
+
+.copy-script-btn{
+position:absolute;
+top:10px;
+right:10px;
+background:#27272a;
+color:white;
+padding:6px 12px;
+font-size:12px;
+border-radius:6px;
+border: none;
+}
+
+[data-theme="dark"] .copy-script-btn {
+background: #ffffff;
+color: #000000;
+border: 1px solid #ffffff;
+}
+
+.center-message-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius:16px;
+padding: 30px;
+text-align: center;
+margin: auto;
+max-width: 350px;
+box-shadow: 0 2px 8px rgba(0,0,0,.03);
+}
+
+.center-message-title {
+font-size: 20px;
+font-weight: 800;
+margin-bottom: 8px;
+}
+
+.center-message-subtitle {
+font-size: 13px;
+color: var(--subtext-color);
+margin-bottom: 16px;
+}
+
+.settings-wrapper{
+display:flex;
+flex-direction:column;
+flex:1;
+overflow:hidden;
+width:100%;
+}
+
+.settings-scroll-area{
+flex:1;
+overflow-y:auto;
+display:flex;
+flex-direction:column;
+gap:10px;
+padding-right:2px;
+}
+
+.settings-box {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 14px;
+padding: 16px;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+flex-shrink: 0;
+}
+
+.settings-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-top: 8px;
+}
+
+.ios-theme-toggle {
+position: relative;
+width: 44px;
+height: 24px;
+background: #e9e9ea;
+border-radius: 24px;
+cursor: pointer;
+transition: background 0.3s ease;
+display: inline-block;
+border: 1px solid var(--border-color);
+flex-shrink: 0;
+}
+
+.ios-theme-toggle::after {
+content: "";
+position: absolute;
+top: 2px;
+left: 2px;
+width: 18px;
+height: 18px;
+background: #ffffff;
+border-radius: 50%;
+transition: transform 0.3s ease;
+box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.ios-theme-toggle.active {
+background: #22c55e;
+}
+
+[data-theme="dark"] .ios-theme-toggle {
+background: #121212;
+border: 1px solid #ffffff;
+}
+
+[data-theme="dark"] .ios-theme-toggle.active {
+background: #16a34a;
+}
+
+[data-theme="dark"] .ios-theme-toggle.active::after {
+background: #ffffff;
+}
+
+.ios-theme-toggle.active::after {
+transform: translateX(20px);
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+<div id="app">Loading NORMS...</div>
+</div>
+
+<script>
+
+const API = "https://norms-api-v2.bazarte-clarkjohn06.workers.dev";
+
+let secretKey = localStorage.getItem("norms_secret");
+let currentTheme = localStorage.getItem("norms_theme") || "light";
+document.documentElement.setAttribute("data-theme", currentTheme);
+
+let accounts = [];
+let userInfo = {};
+let currentInventory = {};
+let activeDropdown = null;
+let currentActiveType = {};
+let mainActiveType = null;
+let currentCaptcha = "";
+let autoRefreshInterval = null;
+let currentPage = "main";
+let currentlySwipedUsername = null;
+let dashboardVersion = 0;
+
+const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
+
+const logoAssets = {
+  account: assetBase + "icon/RobloxLogo.webp",
+  garden: assetBase + "icon/GrowAGarden2Logo.webp",
+  roblox: assetBase + "icon/RobloxLogo.webp",
+  tutorial: assetBase + "icon/TutorialLogo.webp"
+};
+
+const ignoredGearList = ["sign", "lantern", "megaphone", "teleporter", "wheelbarrow", "playermagnet", "strawberrysniper"];
+
+function formatSheckles(num) {
+  if (num >= 1e12) return (num / 1e12).toFixed(1).replace(/\.0$/, '') + 'T';
+  if (num >= 1e9) return (num / 1e9).toFixed(1).replace(/\.0$/, '') + 'B';
+  if (num >= 1e6) return (num / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1e3) return (num / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toLocaleString();
+}
+
+function parseItemNameAndWeight(rawName) {
+  if (!rawName) return { name: "", isCropWithWeight: false };
+  let trimmed = rawName.trim();
+  let weightMatch = trimmed.match(/^(.*?)\s*\[\d+(\.\d+)?kg\]$/i);
+  if (weightMatch) {
+    let cleanItemName = weightMatch[1].trim();
+    return { name: cleanItemName, isCropWithWeight: true };
+  }
+  return { name: trimmed, isCropWithWeight: false };
+}
+
+function getItemIcon(type, name) {
+  if (!name) return null;
+  let parsed = parseItemNameAndWeight(name);
+  let cleanName = parsed.name.replace(/['\s]+/g, '');
+  
+  if (type === "Seeds" || type === "TotalSeeds" || parsed.isCropWithWeight) {
+    if (cleanName === "Gold") return `${assetBase}Seed/GoldSeed.png`;
+    if (cleanName === "Rainbow") return `${assetBase}Seed/RainbowSeed.png`;
+    return `${assetBase}Seed/${cleanName}Seed.webp`;
+  } else if (type === "Crops") {
+    let ext = (cleanName === "Gold" || cleanName === "Rainbow") ? "WEBP" : "webp";
+    return `${assetBase}Crop/${cleanName}.${ext}`;
+  } else if (type === "Pets" || type === "TotalPets") {
+    let basePetName = cleanName;
+    const exceptions = ["GoldenDragonfly", "GoldenBee", "Goldfish"];
+    if (!exceptions.includes(cleanName)) {
+      basePetName = cleanName.replace(/^(Big|Mega|Rainbow|Gold)+/i, '');
+    }
+    return `${assetBase}Pet/${basePetName}.webp`;
+  } else if (type === "Gear") {
+    return `${assetBase}Gear/${cleanName}.webp`;
+  } else if (type === "Crates") {
+    return `${assetBase}Crate/${cleanName}.webp`;
+  }
+  return null;
+}
+
+function isValidItemForCategory(type, name) {
+  if (!name) return false;
+  let parsed = parseItemNameAndWeight(name);
+  let cleanLower = parsed.name.trim().toLowerCase();
+  
+  if (type === "Seeds" || type === "TotalSeeds") {
+    if (cleanLower === "build" || cleanLower === "shovel" || cleanLower.includes("gnome")) return false;
+  } else if (type === "Crops") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+  } else if (type === "Pets" || type === "TotalPets") {
+    if (cleanLower === "build" || cleanLower === "shovel") return false;
+  } else if (type === "Gear") {
+    if (ignoredGearList.includes(cleanLower)) return false;
+  }
+  return true;
+}
+
+function generateCaptcha(){
+let chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let code = "";
+for(let i=0; i<4; i++){
+code += chars[Math.floor(Math.random() * chars.length)];
+}
+currentCaptcha = code;
+}
+
+function saveSecret(key){
+secretKey = key;
+localStorage.setItem("norms_secret", key);
+}
+
+function showLoading(text){
+document.getElementById("app").innerHTML = `
+<div class="loading-screen">
+<div class="spinner"></div>
+<div class="loading-text">${text}</div>
+</div>
+`;
+}
+
+function logout(){
+if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+showLoading("Logging out...");
+setTimeout(()=>{
+localStorage.removeItem("norms_secret");
+localStorage.removeItem("norms_swiped_username");
+secretKey = null;
+showLogin();
+}, 600);
+}
+
+function showLogin(){
+currentPage = "login";
+generateCaptcha();
+document.getElementById("app").innerHTML = `
+<div class="auth-box" style="margin: auto;">
+<div class="auth-title">NORMS</div>
+<div class="auth-subtitle">Login to your dashboard</div>
+<div id="message"></div>
+<input id="loginUser" placeholder="Username">
+<input id="loginPass" type="password" placeholder="Password">
+<div class="captcha-box">
+<div class="captcha-display" id="loginCaptchaText">${currentCaptcha}</div>
+<input id="loginCaptchaInput" placeholder="Enter code">
+</div>
+<button class="auth-btn" onclick="login()">Login</button>
+<div class="switch" onclick="showRegister()">Create account</div>
+</div>
+`;
+}
+
+function showRegister(){
+currentPage = "register";
+generateCaptcha();
+document.getElementById("app").innerHTML = `
+<div class="auth-box" style="margin: auto;">
+<div class="auth-title">NORMS</div>
+<div class="auth-subtitle">Create your account</div>
+<div id="message"></div>
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
+<div class="captcha-box">
+<div class="captcha-display" id="regCaptchaText">${currentCaptcha}</div>
+<input id="regCaptchaInput" placeholder="Enter code">
+</div>
+<button class="auth-btn" onclick="register()">Register</button>
+<div class="switch" onclick="showLogin()">Already have account</div>
+</div>
+`;
+}
+
+async function login(){
+const username = document.getElementById("loginUser").value.trim();
+const password = document.getElementById("loginPass").value;
+const captchaInput = document.getElementById("loginCaptchaInput").value.trim().toUpperCase();
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML = `<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("loginCaptchaText").innerText = currentCaptcha;
+document.getElementById("loginCaptchaInput").value = "";
+return;
+}
+
+showLoading("Signing in...");
+try {
+const res = await fetch(API + "/login",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ username, password })
+});
+const data = await res.json();
+if(!data.success){
+showLogin();
+document.getElementById("message").innerHTML = `<div class="error">${data.message}</div>`;
+return;
+}
+saveSecret(data.secret_key);
+loadAccounts();
+} catch(e) {
+showLogin();
+document.getElementById("message").innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function register(){
+const username = document.getElementById("regUser").value.trim();
+const password = document.getElementById("regPass").value;
+const captchaInput = document.getElementById("regCaptchaInput").value.trim().toUpperCase();
+
+if(captchaInput !== currentCaptcha){
+document.getElementById("message").innerHTML = `<div class="error">Incorrect verification code</div>`;
+generateCaptcha();
+document.getElementById("regCaptchaText").innerText = currentCaptcha;
+document.getElementById("regCaptchaInput").value = "";
+return;
+}
+
+showLoading("Creating account...");
+try {
+const res = await fetch(API + "/register",{
+method:"POST",
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ username, password })
+});
+const data = await res.json();
+if(!data.success){
+showRegister();
+document.getElementById("message").innerHTML = `<div class="error">${data.message}</div>`;
+return;
+}
+saveSecret(data.secret_key);
+setTimeout(()=>{ loadAccounts(); }, 1000);
+} catch(e) {
+showRegister();
+document.getElementById("message").innerHTML = `<div class="error">Network error occurred</div>`;
+}
+}
+
+async function loadAccounts(silent = false){
+if(!secretKey){
+showLogin();
+return;
+}
+try {
+const res = await fetch(API + "/accounts?secret_key=" + encodeURIComponent(secretKey));
+const data = await res.json();
+if(!data.success){
+logout();
+return;
+}
+accounts = data.accounts || [];
+userInfo = data.user || {};
+if(data.version !== undefined) dashboardVersion = data.version;
+
+if(silent) updateCurrentPageData();
+else renderMain();
+} catch(e) {
+if(!silent) logout();
+}
+}
+
+async function checkVersion() {
+    if(!secretKey) return;
+    try {
+        const res = await fetch(API + "/sync?secret_key=" + encodeURIComponent(secretKey));
+        const data = await res.json();
+        if(data.success && data.version !== dashboardVersion) {
+            dashboardVersion = data.version;
+            loadAccounts(true);
+        }
+    } catch(e) {}
+}
+
+function getStatus(time){
+if(!time) return { text:"Roblox • Offline", class:"offline" };
+let minutes = (Date.now() - new Date(time).getTime()) / 1000 / 60;
+if(minutes <= 10) return { text:"Roblox • Online", class:"online" };
+return { text:"Roblox • Offline (" + Math.floor(minutes) + " min ago)", class:"offline" };
+}
+
+function renderMain(silent = false){
+currentPage = "main";
+let online = 0;
+let totalSheckles = 0;
+let totalSeedsCount = 0;
+let totalPets = 0;
+
+accounts.forEach(acc=>{
+if(getStatus(acc.updated_at).class=="online") online++;
+totalSheckles += Number(acc.sheckles || 0);
+let inv = acc.inventory || {};
+totalSeedsCount += totalFiltered(inv.Seeds, "Seeds");
+totalPets += totalFiltered(inv.Pets, "Pets");
+});
+
+let isUserAdmin = Boolean(userInfo.is_admin);
+let isUserPremium = Boolean(userInfo.is_premium) || isUserAdmin;
+let maxLimit = isUserPremium ? "Unlimited" : "5 max";
+
+document.getElementById("app").innerHTML = `
+<div class="main-scroll-area">
+
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.garden}" alt="Logo"></div>
+<div>
+<div class="hero-title">Grow A Garden 2</div>
+<div class="hero-subtitle">Overview of your tracked accounts (${accounts.length}/${maxLimit})</div>
+</div>
+</div>
+
+<div class="stats-container-wrapper">
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-label">ONLINE / TOTAL</div>
+<div class="stat-value" id="stat-online">${online}/${accounts.length}</div>
+</div>
+
+<div class="stat-card">
+<div class="stat-label">TOTAL SHECKLES</div>
+<div class="stat-value money" id="stat-sheckles">${formatSheckles(totalSheckles)}</div>
+</div>
+
+<div class="stat-card clickable ${mainActiveType === 'TotalSeeds' ? 'active-card' : ''}" onclick="toggleMainItems('TotalSeeds')">
+<div class="stat-label">TOTAL SEED</div>
+<div class="stat-value" id="stat-items">${totalSeedsCount.toLocaleString()}</div>
+</div>
+
+<div class="stat-card clickable ${mainActiveType === 'TotalPets' ? 'active-card' : ''}" onclick="toggleMainItems('TotalPets')">
+<div class="stat-label">TOTAL PETS</div>
+<div class="stat-value" id="stat-pets">${totalPets.toLocaleString()}</div>
+</div>
+</div>
+<div class="global-dropdown" id="main-drop"></div>
+</div>
+
+<div class="nav-stack">
+<div class="nav-row-grid">
+<div class="nav-icon-card" onclick="openProfileTab()">
+<div class="nav-icon-box">👤</div>
+<div class="nav-card-title">Profile</div>
+</div>
+<div class="nav-icon-card" onclick="openAccountsTab()">
+<div class="nav-icon-box">📋</div>
+<div class="nav-card-title">Accounts</div>
+</div>
+<div class="nav-icon-card" onclick="openMailTab()">
+<div class="nav-icon-box">✉️</div>
+<div class="nav-card-title">Mail</div>
+</div>
+<div class="nav-icon-card" onclick="openScriptTab()">
+<div class="nav-icon-box">💻</div>
+<div class="nav-card-title">Script</div>
+</div>
+<div class="nav-icon-card" onclick="openSettingsTab()">
+<div class="nav-icon-box">⚙️</div>
+<div class="nav-card-title">Settings</div>
+</div>
+</div>
+</div>
+
+<button class="action-btn-styled" style="margin-top:4px;" onclick="openTutorialTab()">Tutorial</button>
+</div>
+`;
+
+if(mainActiveType) showMainDropdownContent(mainActiveType);
+}
+
+function updateDashboardStats() {
+  let online = 0;
+  let totalSheckles = 0;
+  let totalSeedsCount = 0;
+  let totalPets = 0;
+
+  accounts.forEach(acc=>{
+    if(getStatus(acc.updated_at).class=="online") online++;
+    totalSheckles += Number(acc.sheckles || 0);
+    let inv = acc.inventory || {};
+    totalSeedsCount += totalFiltered(inv.Seeds, "Seeds");
+    totalPets += totalFiltered(inv.Pets, "Pets");
+  });
+
+  if(document.getElementById("stat-online")) document.getElementById("stat-online").innerText = `${online}/${accounts.length}`;
+  if(document.getElementById("stat-sheckles")) document.getElementById("stat-sheckles").innerText = formatSheckles(totalSheckles);
+  if(document.getElementById("stat-items")) document.getElementById("stat-items").innerText = totalSeedsCount.toLocaleString();
+  if(document.getElementById("stat-pets")) document.getElementById("stat-pets").innerText = totalPets.toLocaleString();
+
+  if(mainActiveType) showMainDropdownContent(mainActiveType);
+}
+
+function updateCurrentPageData() {
+  if(currentPage === "main") updateDashboardStats();
+}
+
+function toggleMainItems(type) {
+  let box = document.getElementById("main-drop");
+  if(!box) return;
+  if(mainActiveType === type) {
+    mainActiveType = null;
+    box.classList.remove("open");
+    box.innerHTML = "";
+    document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
+    return;
+  }
+  mainActiveType = type;
+  document.querySelectorAll('.stats-grid .stat-card.clickable').forEach(c => c.classList.remove('active-card'));
+  if(event && event.currentTarget) event.currentTarget.classList.add('active-card');
+  showMainDropdownContent(type);
+}
+
+function showMainDropdownContent(type) {
+  let box = document.getElementById("main-drop");
+  if(!box) return;
+  let aggregated = {};
+  accounts.forEach(acc => {
+    let inv = acc.inventory || {};
+    let targetKey = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
+    let targetItems = inv[targetKey] || {};
+    for(let name in targetItems) {
+      let cleanName = name.trim();
+      if(!isValidItemForCategory(targetKey, cleanName)) continue;
+      let parsed = parseItemNameAndWeight(cleanName);
+      aggregated[parsed.name] = (aggregated[parsed.name] || 0) + (Number(targetItems[name]) || 0);
+    }
+  });
+
+  let iconSymbol = (type === 'TotalSeeds') ? '🌱' : '🐾';
+  let iconType = (type === 'TotalSeeds') ? 'Seeds' : 'Pets';
+  let html = "";
+  let keys = Object.keys(aggregated);
+  if(keys.length === 0) {
+    html += `<div class='empty'>No items found</div>`;
+  } else {
+    html += `<div class="item-grid">`;
+    keys.forEach(name => {
+      let iconUrl = getItemIcon(iconType, name);
+      let iconHtml = iconUrl ? `<img class="item-grid-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:20px;\\'>${iconSymbol}</span>';" alt="">` : `<span style="font-size:20px;">${iconSymbol}</span>`;
+      html += `
+        <div class="item-grid-card">
+          <div class="item-grid-name">${name}</div>
+          <div class="item-grid-img-container">
+            ${iconHtml}
+            <div class="item-grid-badge">${aggregated[name].toLocaleString()}</div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+  box.innerHTML = html;
+  box.classList.add("open");
+}
+
+function openAccountsTab(){
+currentPage = "accounts";
+currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
+let sortedAccounts = [...accounts].sort((a, b) => (getStatus(a.updated_at).class === "online" ? 0 : 1) - (getStatus(b.updated_at).class === "online" ? 0 : 1));
+
+let html = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">Accounts</div>
+<div class="hero-subtitle">Accounts <span style="color:#22c55e; font-weight:800;">(${accounts.length} roblox account login)</span></div>
+</div>
+</div>
+<div class="accounts-wrapper">
+<div class="accounts-scroll-area" id="accountsScrollArea">
+`;
+
+sortedAccounts.forEach(acc=>{
+let status = getStatus(acc.updated_at);
+let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
+let settings = acc.settings || {};
+let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
+let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
+let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
+let isBanned = Boolean(acc.is_banned);
+
+html += `
+<div class="account-card-container" data-username="${acc.roblox_username}">
+<div class="swipe-actions-left-bg">
+<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
+<button class="swipe-action-btn ban-btn" onclick="toggleBanAccount('${escapedUsername}', ${!isBanned})">${isBanned ? 'Unban' : 'Ban'}</button>
+</div>
+<div class="swipe-actions-bg">
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')"><span>Auto Seeds</span><div class="ios-switch ${isAutoSeeds ? 'active' : ''}"></div></div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')"><span>Auto Gears</span><div class="ios-switch ${isAutoGear ? 'active' : ''}"></div></div>
+<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')"><span>Auto Pets</span><div class="ios-switch ${isAutoPets ? 'active' : ''}"></div></div>
+</div>
+<div class="account-box" id="acc-box-${acc.roblox_username}">
+<div class="account-header-row">
+<div class="account-info-col">
+<div class="user ${status.class}">${acc.roblox_username} ${isBanned ? '<span style="color:#ef4444; font-size:11px;">[BANNED]</span>' : ''}</div>
+<div class="status ${status.class}">${status.text}</div>
+</div>
+<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
+</div>
+<div id="slot-${acc.roblox_username}" class="account-dashboard-slot"></div>
+</div>
+</div>
+`;
+});
+html += `</div></div>`;
+document.getElementById("app").innerHTML = html;
+initSwipeToDelete();
+}
+
+async function toggleAutoFeature(element, username, feature) {
+    const sw = element.querySelector(".ios-switch");
+    const enabled = !sw.classList.contains("active");
+    sw.classList.toggle("active");
+    localStorage.setItem(`setting_${username}_${feature}`, enabled);
+    try{
+        await fetch(API + "/account/settings",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body:JSON.stringify({ secret_key: secretKey, roblox_username: username, feature: feature, enabled: enabled })
+        });
+    }catch(e){
+        sw.classList.toggle("active");
+    }
+}
+
+async function deleteAccount(username){
+if(!confirm(`Delete ${username}?`)) return;
+showLoading("Deleting...");
+try {
+await fetch(API + "/delete-account", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+});
+loadAccounts();
+} catch(e) { loadAccounts(); }
+}
+
+async function toggleBanAccount(username, banState) {
+if(!confirm(`${banState ? 'Ban' : 'Unban'} Roblox account ${username}?`)) return;
+showLoading("Updating ban status...");
+try {
+await fetch(API + "/admin/ban-account", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey, roblox_username: username, ban: banState })
+});
+loadAccounts();
+} catch(e) { loadAccounts(); }
+}
+
+function openScriptTab(){
+currentPage = "script";
+let robloxScript = `getgenv().SecretKey = "${secretKey || ""}"\n\nloadstring(game:HttpGet("https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/Main"))()`;
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.roblox}" alt="Logo"></div>
+<div><div class="hero-title">Script</div><div class="hero-subtitle">Your Secret Key and script loader</div></div>
+</div>
+<div class="script-box">
+<div class="script-section-title">Your Secret Key</div>
+<div class="key-display-box"><input class="key-input" id="scriptKeyInput" readonly value="${secretKey || ""}"><button class="copy-btn" onclick="copyKey()">Copy</button></div>
+<div class="script-section-title">Roblox Execution Script</div>
+<div class="code-block-container"><textarea class="script-code-area" readonly id="robloxScriptArea">${robloxScript}</textarea><button class="copy-script-btn" onclick="copyScript()">Copy Script</button></div>
+</div>
+`;
+}
+
+function openMailTab(){
+currentPage = "mail";
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="center-message-box"><div class="center-message-title">Mail</div><div class="center-message-subtitle">Coming Soon</div><button onclick="renderMain()">Go Back</button></div>
+`;
+}
+
+function openProfileTab(){
+currentPage = "profile";
+let currentUsername = userInfo.username || "User";
+let createdDate = userInfo.created_at ? new Date(userInfo.created_at).toLocaleDateString() : "N/A";
+let userRole = userInfo.is_admin ? "Administrator" : (userInfo.is_premium ? "Premium User" : "Standard User");
+let totalOnlineAccs = accounts.filter(acc => getStatus(acc.updated_at).class === "online").length;
+
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div><div class="hero-title">Profile</div><div class="hero-subtitle">User identity and account statistics</div></div>
+</div>
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+<div class="settings-box">
+<div class="script-section-title">User Information</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Username: <b style="color:var(--text-color);">${currentUsername}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Account Tier: <b style="color:var(--text-color);">${userRole}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Date Created: <b style="color:var(--text-color);">${createdDate}</b></div>
+</div>
+<div class="settings-box">
+<div class="script-section-title">Tracked Roblox Metrics</div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Total Logged Accounts: <b style="color:var(--text-color);">${accounts.length}</b></div>
+<div style="font-size:13px; color:var(--subtext-color); margin-bottom:6px;">Currently Online: <b style="color:#22c55e;">${totalOnlineAccs}</b></div>
+<div style="font-size:13px; color:var(--subtext-color);">Storage Limit: <b style="color:var(--text-color);">${userInfo.is_premium || userInfo.is_admin ? 'Unlimited' : '5 Max'}</b></div>
+</div>
+</div>
+</div>
+`;
+}
+
+function openSettingsTab(){
+currentPage = "settings";
+let isUserAdmin = Boolean(userInfo.is_admin);
+
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div><div class="hero-title">Settings</div><div class="hero-subtitle">Preferences, security & administration</div></div>
+</div>
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+${isUserAdmin ? `
+<div class="settings-box" style="border: 2px solid var(--text-color);">
+<div class="script-section-title">Administration</div>
+<div style="font-size:12px; color:var(--subtext-color); margin-bottom:10px;">Admin-only tools to manage platform members and bans.</div>
+<button class="action-btn-styled" onclick="openAdminTab()">Open Admin Panel</button>
+</div>
+` : ''}
+<div class="settings-box">
+<div class="script-section-title">Change Password</div>
+<div id="passwordMessage"></div>
+<input id="oldPass" type="password" placeholder="Current Password">
+<input id="newPass" type="password" placeholder="New Password">
+<button onclick="changePassword()" style="width:100%; margin-top:4px;">Update Password</button>
+</div>
+<div class="settings-box">
+<div class="script-section-title">Appearance</div>
+<div class="settings-row">
+<div><div style="font-size:13px; font-weight:600;">Dark Mode</div><div style="font-size:11px; color:var(--subtext-color);">${currentTheme === 'dark' ? 'Enabled' : 'Disabled'}</div></div>
+<div class="ios-theme-toggle ${currentTheme === 'dark' ? 'active' : ''}" onclick="toggleTheme()"></div>
+</div>
+</div>
+<div class="settings-box">
+<div class="script-section-title">Session Management</div>
+<button class="action-btn-danger" onclick="logout()">Log Out</button>
+</div>
+</div>
+</div>
+`;
+}
+
+async function openAdminTab() {
+currentPage = "admin";
+showLoading("Loading admin panel...");
+try {
+  const res = await fetch(API + "/admin/users?secret_key=" + encodeURIComponent(secretKey));
+  const data = await res.json();
+  let usersList = data.users || [];
+
+  let usersHtml = "";
+  if(usersList.length === 0) {
+    usersHtml = `<div class="empty">No users found</div>`;
+  } else {
+    usersList.forEach(u => {
+      let isBanned = Boolean(u.is_banned);
+      let isPremium = Boolean(u.is_premium);
+      let isAdmin = Boolean(u.is_admin);
+      let escapedUName = u.username.replace(/'/g, "\\'");
+      usersHtml += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--item-bg); padding:10px 12px; border:1px solid var(--border-color); border-radius:10px; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:800; font-size:14px; color:var(--text-color);">${u.username} ${isBanned ? '<span style="color:#ef4444; font-size:11px;">[BANNED]</span>' : ''}</div>
+            <div style="font-size:11px; color:var(--subtext-color);">${isAdmin ? 'Admin' : (isPremium ? 'Premium' : 'Standard User')} • Created: ${u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A'}</div>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="adminUserActionQuick('${escapedUName}', '${isBanned ? 'unban' : 'ban'}')" style="padding:6px 10px; font-size:11px; background:${isBanned ? '#16a34a' : '#ef4444'};">${isBanned ? 'Unban' : 'Ban'}</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("app").innerHTML = `
+  <button class="back" onclick="openSettingsTab()">Back to Settings</button>
+  <div class="hero-box">
+  <div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+  <div><div class="hero-title">Admin Panel</div><div class="hero-subtitle">Manage users, premium tiers & user bans</div></div>
+  </div>
+  <div class="settings-wrapper"><div class="settings-scroll-area">
+    <div class="settings-box">
+      <div class="script-section-title">Give Premium Access</div>
+      <div id="adminMessage"></div>
+      <input id="targetUsernameInput" placeholder="Target Username">
+      <button onclick="grantPremium()" style="width:100%; margin-top:4px;">Grant Premium</button>
+    </div>
+    <div class="settings-box">
+      <div class="script-section-title">User Ban System</div>
+      <div style="font-size:12px; color:var(--subtext-color); margin-bottom:8px;">Ban or unban platform users entirely.</div>
+      <div id="adminBanMessage"></div>
+      <input id="targetUserBanInput" placeholder="Username to Ban/Unban">
+      <div style="display:flex; gap:8px; margin-top:4px;">
+        <button onclick="adminUserAction('ban')" class="swipe-action-btn delete-btn" style="flex:1; height:40px;">Ban User</button>
+        <button onclick="adminUserAction('unban')" class="action-btn-styled" style="flex:1; margin-top:0;">Unban User</button>
+      </div>
+    </div>
+    <div class="settings-box">
+      <div class="script-section-title">All Site Users (${usersList.length})</div>
+      <div style="max-height: 250px; overflow-y: auto; margin-top: 8px;">
+        ${usersHtml}
+      </div>
+    </div>
+  </div></div>
+  `;
+} catch(e) {
+  openSettingsTab();
+}
+}
+
+async function adminUserActionQuick(username, actionType) {
+  if(!confirm(`Are you sure you want to ${actionType} user ${username}?`)) return;
+  showLoading(`${actionType === 'ban' ? 'Banning' : 'Unbanning'} user...`);
+  try {
+    const res = await fetch(API + "/admin/user-ban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, username: username, action: actionType })
+    });
+    const data = await res.json();
+    openAdminTab();
+  } catch(e) {
+    openAdminTab();
+  }
+}
+
+async function adminUserAction(actionType) {
+  let username = document.getElementById("targetUserBanInput").value.trim();
+  if(!username) {
+    alert("Please enter a username.");
+    return;
+  }
+  showLoading(`${actionType === 'ban' ? 'Banning' : 'Unbanning'} user...`);
+  try {
+    const res = await fetch(API + "/admin/user-ban", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret_key: secretKey, username: username, action: actionType })
+    });
+    const data = await res.json();
+    openAdminTab();
+    document.getElementById("adminBanMessage").innerHTML = `<div class="${data.success ? 'success' : 'error'}">${data.message || 'Done'}</div>`;
+  } catch(e) {
+    openAdminTab();
+    document.getElementById("adminBanMessage").innerHTML = `<div class="error">Network error occurred</div>`;
+  }
+}
+
+function openTutorialTab(){
+currentPage = "tutorial";
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="renderMain()">Back</button>
+<div class="hero-box"><div class="hero-icon"><img src="${logoAssets.tutorial}" alt="Logo"></div><div><div class="hero-title">Tutorial</div><div class="hero-subtitle">Learn how to use NORMS Dashboard</div></div></div>
+<div class="settings-box"><div class="script-section-title">Getting Started</div><div style="font-size:13px; color:var(--subtext-color);">1. Copy Secret Key from Script tab.<br>2. Execute Roblox loader.<br>3. Monitor stats live.</div></div>
+`;
+}
+
+function toggleTheme(){
+currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+localStorage.setItem("norms_theme", currentTheme);
+document.documentElement.setAttribute("data-theme", currentTheme);
+openSettingsTab();
+}
+
+function copyKey(){
+navigator.clipboard.writeText(document.getElementById("scriptKeyInput").value);
+alert("Copied!");
+}
+
+function copyScript(){
+navigator.clipboard.writeText(document.getElementById("robloxScriptArea").value);
+alert("Copied!");
+}
+
+function openAccount(username){
+let account = accounts.find(acc => acc.roblox_username === username);
+if(!account) return;
+let slot = document.getElementById("slot-" + username);
+let btn = document.getElementById("btn-" + username);
+if(!slot) return;
+
+if(slot.innerHTML.trim() !== ""){
+slot.innerHTML = "";
+if(btn) btn.innerText = "Inventory";
+currentActiveType[username] = null;
+return;
+}
+
+slot.innerHTML = `
+<div class="slider-container"><div class="slider" id="slider-${username}">
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, username, username)}
+${createButton("Seeds", totalFiltered(account.inventory?.Seeds, "Seeds").toLocaleString(), "", "Seeds", username, username)}
+${createButton("Crops", totalFiltered(account.inventory?.Crops, "Crops").toLocaleString(), "", "Crops", username, username)}
+${createButton("Gear", totalFiltered(account.inventory?.Gear, "Gear").toLocaleString(), "", "Gear", username, username)}
+${createButton("Crates", totalFiltered(account.inventory?.Crates, "Crates").toLocaleString(), "", "Crates", username, username)}
+${createButton("Pets", totalFiltered(account.inventory?.Pets, "Pets").toLocaleString(), "", "Pets", username, username)}
+</div></div>
+<div class="global-dropdown" id="drop-${username}"></div>
+`;
+if(btn) btn.innerText = "Close";
+}
+
+function createButton(label, value, color, type, user, rawUser){
+return `
+<div class="card ${type && currentActiveType[rawUser] === type ? 'active-card' : ''} ${type ? '' : 'non-clickable'}" onclick="${type ? `toggleItems('${type}', '${user}')` : ''}">
+<div class="label">${label}</div>
+<div class="value ${color}">${value}</div>
+</div>
+`;
+}
+
+function totalFiltered(items, type){
+if(!items) return 0;
+let count = 0;
+for(let item in items){
+if(isValidItemForCategory(type, item.trim())) count += Number(items[item]) || 0;
+}
+return count;
+}
+
+function toggleItems(type, user){
+let account = accounts.find(acc => acc.roblox_username === user);
+if(!account) return;
+let box = document.getElementById("drop-" + user);
+if(!box) return;
+
+if(currentActiveType[user] === type) {
+currentActiveType[user] = null;
+box.classList.remove("open");
+return;
+}
+
+currentActiveType[user] = type;
+let items = (account.inventory || {})[type] || {};
+let merged = {};
+for(let name in items){
+let clean = name.trim();
+if(!isValidItemForCategory(type, clean)) continue;
+let parsed = parseItemNameAndWeight(clean);
+merged[parsed.name] = (merged[parsed.name] || 0) + (Number(items[name]) || 0);
+}
+
+let icons = { Seeds:"🌱", Crops:"🌽", Gear:"⚙️", Crates:"📦", Pets:"🐾" };
+let html = `<div class="item-grid">`;
+for(let name in merged){
+  let iconUrl = getItemIcon(type, name);
+  let iconHtml = iconUrl ? `<img class="item-grid-icon" src="${iconUrl}" onerror="this.onerror=null; this.parentNode.innerHTML='<span style=\\'font-size:20px;\\'>${icons[type] || ''}</span>';" alt="">` : `<span style="font-size:20px;">${icons[type] || ""}</span>`;
+  html += `<div class="item-grid-card"><div class="item-grid-name">${name}</div><div class="item-grid-img-container">${iconHtml}<div class="item-grid-badge">${merged[name].toLocaleString()}</div></div></div>`;
+}
+html += `</div>`;
+box.innerHTML = html || "<div class='empty'>No items</div>";
+box.classList.add("open");
+}
+
+function initSwipeToDelete(){
+document.querySelectorAll('.account-card-container').forEach(container => {
+let box = container.querySelector('.account-box');
+let startX = 0, currentX = 0, isSwiping = false;
+box.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; currentX = startX; isSwiping = true; box.style.transition = 'none'; }, {passive: true});
+box.addEventListener('touchmove', (e) => {
+if(!isSwiping) return;
+let diffX = e.touches[0].clientX - startX;
+if(diffX < -140) diffX = -140;
+if(diffX > 80) diffX = 80;
+box.style.transform = `translateX(${diffX}px)`;
+}, {passive: true});
+box.addEventListener('touchend', (e) => {
+if(!isSwiping) return;
+isSwiping = false;
+box.style.transition = 'transform 0.2s ease-out';
+box.style.transform = 'translateX(0px)';
+}, {passive: true});
+});
+}
+
+if(secretKey){
+showLoading("Loading...");
+loadAccounts();
+autoRefreshInterval = setInterval(checkVersion, 3000);
+}else{
+showLogin();
+}
+
+</script>
+
+</body>
+</html>
