@@ -441,7 +441,7 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-/* ACCOUNTS CONTAINER VIEW */
+/* ACCOUNTS CONTAINER VIEW (GRID STYLE) */
 
 .accounts-wrapper{
 display:flex;
@@ -460,7 +460,96 @@ gap:10px;
 padding-right:2px;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE */
+.accounts-grid {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 10px;
+width: 100%;
+}
+
+@media (max-width: 480px) {
+.accounts-grid {
+grid-template-columns: repeat(3, 1fr);
+gap: 8px;
+}
+}
+
+.account-grid-card {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 16px;
+padding: 14px 8px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+text-align: center;
+cursor: pointer;
+box-shadow: 0 2px 6px rgba(0,0,0,.02);
+position: relative;
+transition: transform 0.1s ease;
+user-select: none;
+}
+
+.account-grid-card:active {
+transform: scale(0.96);
+}
+
+.account-grid-icon {
+width: 48px;
+height: 48px;
+border-radius: 12px;
+object-fit: cover;
+background: var(--input-bg);
+border: 1px solid var(--border-color);
+margin-bottom: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+}
+
+.account-grid-icon img {
+width: 100%;
+height: 100%;
+object-fit: cover;
+}
+
+.account-grid-username {
+font-size: 13px;
+font-weight: 800;
+color: var(--text-color);
+width: 100%;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+margin-bottom: 2px;
+}
+
+.account-grid-status {
+font-size: 10px;
+font-weight: 700;
+line-height: 1.2;
+word-break: break-word;
+}
+
+.online {
+color: #16a34a;
+}
+
+[data-theme="dark"] .online {
+color: #22c55e;
+}
+
+.offline {
+color: #ef4444;
+}
+
+[data-theme="dark"] .offline {
+color: #f87171;
+}
+
+/* ACCOUNT CARD & SWIPE DELETE (Legacy support if detailed view is needed) */
 
 .account-card-container {
 position: relative;
@@ -663,22 +752,6 @@ background:#22c55e;
 .status{
 font-size:13px;
 margin-top:3px;
-}
-
-.online{
-color:#16a34a;
-}
-
-[data-theme="dark"] .online {
-color: #ffffff;
-}
-
-.offline{
-color:#ef4444;
-}
-
-[data-theme="dark"] .offline {
-color: #a1a1aa;
 }
 
 .open-btn{
@@ -1388,6 +1461,15 @@ async function checkVersion() {
     } catch(e) {}
 }
 
+function getStatusDetails(time){
+if(!time) return { text:"Roblox • Offline", class:"offline" };
+let diffMs = Date.now() - new Date(time).getTime();
+let minutes = diffMs / 1000 / 60;
+if(minutes <= 10) return { text:"Roblox • Online", class:"online" };
+let minsFloored = Math.floor(minutes);
+return { text:`Roblox • Offline<br>(${minsFloored} min ago)`, class:"offline" };
+}
+
 function getStatus(time){
 if(!time) return { text:"Roblox • Offline", class:"offline" };
 let minutes = (Date.now() - new Date(time).getTime()) / 1000 / 60;
@@ -1569,7 +1651,6 @@ function showMainDropdownContent(type) {
 
 function openAccountsTab(){
 currentPage = "accounts";
-currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
 let sortedAccounts = [...accounts].sort((a, b) => (getStatus(a.updated_at).class === "online" ? 0 : 1) - (getStatus(b.updated_at).class === "online" ? 0 : 1));
 
 let html = `
@@ -1583,60 +1664,101 @@ let html = `
 </div>
 <div class="accounts-wrapper">
 <div class="accounts-scroll-area" id="accountsScrollArea">
+<div class="accounts-grid">
 `;
 
 sortedAccounts.forEach(acc=>{
-let status = getStatus(acc.updated_at);
+let status = getStatusDetails(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
-let settings = acc.settings || {};
-let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
-let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
-let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
 let isBanned = Boolean(acc.is_banned);
 
 html += `
-<div class="account-card-container" data-username="${acc.roblox_username}">
-<div class="swipe-actions-left-bg">
-<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
-<button class="swipe-action-btn ban-btn" onclick="toggleBanAccount('${escapedUsername}', ${!isBanned})">${isBanned ? 'Unban' : 'Ban'}</button>
-</div>
-<div class="swipe-actions-bg">
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')"><span>Auto Seeds</span><div class="ios-switch ${isAutoSeeds ? 'active' : ''}"></div></div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')"><span>Auto Gears</span><div class="ios-switch ${isAutoGear ? 'active' : ''}"></div></div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')"><span>Auto Pets</span><div class="ios-switch ${isAutoPets ? 'active' : ''}"></div></div>
-</div>
-<div class="account-box" id="acc-box-${acc.roblox_username}">
-<div class="account-header-row">
-<div class="account-info-col">
-<div class="user ${status.class}">${acc.roblox_username} ${isBanned ? '<span style="color:#ef4444; font-size:11px;">[BANNED]</span>' : ''}</div>
-<div class="status ${status.class}">${status.text}</div>
-</div>
-<button class="open-btn" id="btn-${acc.roblox_username}" onclick="openAccount('${escapedUsername}')">Inventory</button>
-</div>
-<div id="slot-${acc.roblox_username}" class="account-dashboard-slot"></div>
-</div>
+<div class="account-grid-card" onclick="openAccountModal('${escapedUsername}')">
+<div class="account-grid-icon"><img src="${logoAssets.roblox}" alt="Roblox"></div>
+<div class="account-grid-username">${acc.roblox_username}</div>
+<div class="account-grid-status ${status.class}">${status.text}</div>
+${isBanned ? '<div style="color:#ef4444; font-size:9px; font-weight:800; margin-top:2px;">[BANNED]</div>' : ''}
 </div>
 `;
 });
-html += `</div></div>`;
+
+html += `</div></div></div>`;
 document.getElementById("app").innerHTML = html;
-initSwipeToDelete();
 }
 
-async function toggleAutoFeature(element, username, feature) {
-    const sw = element.querySelector(".ios-switch");
-    const enabled = !sw.classList.contains("active");
-    sw.classList.toggle("active");
-    localStorage.setItem(`setting_${username}_${feature}`, enabled);
-    try{
-        await fetch(API + "/account/settings",{
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body:JSON.stringify({ secret_key: secretKey, roblox_username: username, feature: feature, enabled: enabled })
-        });
-    }catch(e){
-        sw.classList.toggle("active");
-    }
+function openAccountModal(username) {
+let account = accounts.find(acc => acc.roblox_username === username);
+if(!account) return;
+
+// If they click an account in grid mode, we can show a quick action modal or open the detailed view. Let's redirect to a dedicated detailed account view or open options.
+// Let's create a nice modal or switch view to show the inventory sliders for this specific account.
+let escapedUsername = username.replace(/'/g, "\\'");
+let status = getStatus(account.updated_at);
+let isBanned = Boolean(account.is_banned);
+
+document.getElementById("app").innerHTML = `
+<button class="back" onclick="openAccountsTab()">Back to Accounts</button>
+<div class="hero-box">
+<div class="hero-icon"><img src="${logoAssets.account}" alt="Logo"></div>
+<div>
+<div class="hero-title">${account.roblox_username}</div>
+<div class="hero-subtitle"><span class="${status.class}">${status.text}</span> ${isBanned ? '<span style="color:#ef4444;">[BANNED]</span>' : ''}</div>
+</div>
+</div>
+<div class="settings-wrapper">
+<div class="settings-scroll-area">
+<div class="settings-box">
+<div class="script-section-title">Inventory & Stats</div>
+<div class="account-dashboard-slot" style="margin-top:0;">
+<div class="slider-container"><div class="slider" id="slider-${username}">
+${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, username, username)}
+${createButton("Seeds", totalFiltered(account.inventory?.Seeds, "Seeds").toLocaleString(), "", "Seeds", username, username)}
+${createButton("Crops", totalFiltered(account.inventory?.Crops, "Crops").toLocaleString(), "", "Crops", username, username)}
+${createButton("Gear", totalFiltered(account.inventory?.Gear, "Gear").toLocaleString(), "", "Gear", username, username)}
+${createButton("Crates", totalFiltered(account.inventory?.Crates, "Crates").toLocaleString(), "", "Crates", username, username)}
+${createButton("Pets", totalFiltered(account.inventory?.Pets, "Pets").toLocaleString(), "", "Pets", username, username)}
+</div></div>
+<div class="global-dropdown open" id="drop-${username}" style="margin-top:10px;"></div>
+</div>
+</div>
+<div class="settings-box">
+<div class="script-section-title">Account Actions</div>
+<div style="display:flex; gap:8px; margin-top:8px;">
+<button onclick="toggleBanAccountFromDetail('${escapedUsername}', ${!isBanned})" class="swipe-action-btn delete-btn" style="flex:1; height:40px; font-size:13px;">${isBanned ? 'Unban Account' : 'Ban Account'}</button>
+<button onclick="deleteAccountFromDetail('${escapedUsername}')" class="swipe-action-btn delete-btn" style="flex:1; height:40px; font-size:13px; background:#b91c1c;">Delete Account</button>
+</div>
+</div>
+</div>
+</div>
+`;
+// Automatically select Seeds view by default in detail screen
+toggleItems('Seeds', username);
+}
+
+async function deleteAccountFromDetail(username){
+if(!confirm(`Delete ${username}?`)) return;
+showLoading("Deleting...");
+try {
+await fetch(API + "/delete-account", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
+});
+loadAccounts();
+} catch(e) { loadAccounts(); }
+}
+
+async function toggleBanAccountFromDetail(username, banState) {
+if(!confirm(`${banState ? 'Ban' : 'Unban'} Roblox account ${username}?`)) return;
+showLoading("Updating ban status...");
+try {
+await fetch(API + "/admin/ban-account", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ secret_key: secretKey, roblox_username: username, ban: banState })
+});
+loadAccounts();
+} catch(e) { loadAccounts(); }
 }
 
 async function deleteAccount(username){
@@ -1896,34 +2018,6 @@ navigator.clipboard.writeText(document.getElementById("robloxScriptArea").value)
 alert("Copied!");
 }
 
-function openAccount(username){
-let account = accounts.find(acc => acc.roblox_username === username);
-if(!account) return;
-let slot = document.getElementById("slot-" + username);
-let btn = document.getElementById("btn-" + username);
-if(!slot) return;
-
-if(slot.innerHTML.trim() !== ""){
-slot.innerHTML = "";
-if(btn) btn.innerText = "Inventory";
-currentActiveType[username] = null;
-return;
-}
-
-slot.innerHTML = `
-<div class="slider-container"><div class="slider" id="slider-${username}">
-${createButton("Sheckles", formatSheckles(Number(account.sheckles || 0)), "money", null, username, username)}
-${createButton("Seeds", totalFiltered(account.inventory?.Seeds, "Seeds").toLocaleString(), "", "Seeds", username, username)}
-${createButton("Crops", totalFiltered(account.inventory?.Crops, "Crops").toLocaleString(), "", "Crops", username, username)}
-${createButton("Gear", totalFiltered(account.inventory?.Gear, "Gear").toLocaleString(), "", "Gear", username, username)}
-${createButton("Crates", totalFiltered(account.inventory?.Crates, "Crates").toLocaleString(), "", "Crates", username, username)}
-${createButton("Pets", totalFiltered(account.inventory?.Pets, "Pets").toLocaleString(), "", "Pets", username, username)}
-</div></div>
-<div class="global-dropdown" id="drop-${username}"></div>
-`;
-if(btn) btn.innerText = "Close";
-}
-
 function createButton(label, value, color, type, user, rawUser){
 return `
 <div class="card ${type && currentActiveType[rawUser] === type ? 'active-card' : ''} ${type ? '' : 'non-clickable'}" onclick="${type ? `toggleItems('${type}', '${user}')` : ''}">
@@ -1974,27 +2068,6 @@ for(let name in merged){
 html += `</div>`;
 box.innerHTML = html || "<div class='empty'>No items</div>";
 box.classList.add("open");
-}
-
-function initSwipeToDelete(){
-document.querySelectorAll('.account-card-container').forEach(container => {
-let box = container.querySelector('.account-box');
-let startX = 0, currentX = 0, isSwiping = false;
-box.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; currentX = startX; isSwiping = true; box.style.transition = 'none'; }, {passive: true});
-box.addEventListener('touchmove', (e) => {
-if(!isSwiping) return;
-let diffX = e.touches[0].clientX - startX;
-if(diffX < -140) diffX = -140;
-if(diffX > 80) diffX = 80;
-box.style.transform = `translateX(${diffX}px)`;
-}, {passive: true});
-box.addEventListener('touchend', (e) => {
-if(!isSwiping) return;
-isSwiping = false;
-box.style.transition = 'transform 0.2s ease-out';
-box.style.transform = 'translateX(0px)';
-}, {passive: true});
-});
 }
 
 if(secretKey){
