@@ -1030,7 +1030,6 @@ let autoRefreshInterval = null;
 let currentPage = "main";
 let dashboardVersion = 0;
 
-// Cache for resolved Roblox avatar thumbnails (username -> image URL)
 let avatarThumbnailCache = {};
 
 const assetBase = "https://raw.githubusercontent.com/Normsy/NORMS/refs/heads/main/asset/";
@@ -1107,14 +1106,12 @@ function isValidItemForCategory(type, name) {
   return true;
 }
 
-// Function to fetch Roblox avatar headshot dynamically based on username
 async function fetchRobloxAvatarThumbnail(username) {
   if (!username) return logoAssets.roblox;
   if (avatarThumbnailCache[username]) {
     return avatarThumbnailCache[username];
   }
   try {
-    // Step 1: Get userId from username using Roblox users API (via a public CORS proxy or direct endpoint if allowed, note that browsers may block direct Roblox API calls due to CORS, so we fall back gracefully or use a proxy if needed. Alternatively, Roblox users API can be queried directly via users.roblox.com)
     const userRes = await fetch(`https://users.roblox.com/v1/usernames/users`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1126,7 +1123,6 @@ async function fetchRobloxAvatarThumbnail(username) {
     }
     const userId = userData.data[0].id;
 
-    // Step 2: Get headshot thumbnail using the provided endpoint structure
     const thumbRes = await fetch(`https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=150x150&format=Png&isCircular=true`);
     const thumbData = await thumbRes.json();
     if (thumbData.data && thumbData.data.length > 0 && thumbData.data[0].imageUrl) {
@@ -1134,20 +1130,16 @@ async function fetchRobloxAvatarThumbnail(username) {
       avatarThumbnailCache[username] = imageUrl;
       return imageUrl;
     }
-  } catch (e) {
-    // Fallback if CORS or network error occurs in the browser environment
-  }
+  } catch (e) {}
   return logoAssets.roblox;
 }
 
-// Preload thumbnails for all accounts
 async function preloadAccountThumbnails() {
   for (let acc of accounts) {
     if (acc.roblox_username && !avatarThumbnailCache[acc.roblox_username]) {
       await fetchRobloxAvatarThumbnail(acc.roblox_username);
     }
   }
-  // Refresh views if currently looking at accounts list or modal
   if (currentPage === "accounts") {
     openAccountsTab();
   }
