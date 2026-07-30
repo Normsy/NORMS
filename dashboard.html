@@ -1185,6 +1185,13 @@ function getItemIcon(type, name) {
   let cleanName = parsed.name.replace(/['\s]+/g, '');
   
   if (type === "Seeds" || type === "TotalSeeds" || parsed.isCropWithWeight) {
+    let lowerClean = cleanName.toLowerCase();
+    if (lowerClean === "goldseed") {
+      return `${assetBase}Seed/GoldSeed.WEBP`;
+    }
+    if (lowerClean === "rainbowseed") {
+      return `${assetBase}Seed/RainbowSeed.WEBP`;
+    }
     return `${assetBase}Seed/${cleanName}Seed.webp`;
   } else if (type === "Crops") {
     return `${assetBase}Crop/${cleanName}.webp`;
