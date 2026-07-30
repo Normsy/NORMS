@@ -47,3 +47,48 @@ window.addEventListener("scroll", () => {
         nav.style.boxShadow = "none";
     }
 });
+
+// =======================
+// NORMS Auth Handler (Login / Register)
+// =======================
+
+const registerForm = document.querySelector("#register-form") || document.querySelector("form"); 
+if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        // Adjust these selectors or fallback queries based on your form inputs
+        const usernameInput = document.querySelector("input[type='text']") || document.querySelector("#username");
+        const passwordInput = document.querySelector("input[type='password']") || document.querySelector("#password");
+
+        if (!usernameInput || !passwordInput) {
+            console.error("Username or password input fields not found.");
+            return;
+        }
+
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        try {
+            const response = await fetch("/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Account created successfully!");
+                window.location.href = "/dashboard.html"; 
+            } else {
+                alert(data.message || "Registration failed.");
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+            alert("Network error occurred");
+        }
+    });
+}
