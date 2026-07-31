@@ -499,80 +499,6 @@ color: #000000;
 border: 1px solid #ffffff;
 }
 
-/* IOS STYLE TOGGLE SWITCH IN SWIPE MENU */
-.toggle-switch-wrapper {
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-gap: 3px;
-background: #1e293b;
-padding: 4px 6px;
-border-radius: 8px;
-height: 48px;
-color: white;
-font-size: 9px;
-font-weight: 700;
-cursor: pointer;
-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-user-select: none;
-text-align: center;
-width: 65px;
-}
-
-[data-theme="dark"] .toggle-switch-wrapper {
-background: #ffffff;
-color: #000000;
-border: 1px solid var(--border-color);
-}
-
-.ios-switch {
-position: relative;
-width: 32px;
-height: 18px;
-background: #475569;
-border-radius: 18px;
-transition: background 0.3s;
-display: inline-block;
-flex-shrink: 0;
-}
-
-[data-theme="dark"] .ios-switch {
-background: #d4d4d8;
-}
-
-.ios-switch::after {
-content: "";
-position: absolute;
-top: 2px;
-left: 2px;
-width: 14px;
-height: 14px;
-background: white;
-border-radius: 50%;
-transition: transform 0.3s;
-}
-
-[data-theme="dark"] .ios-switch::after {
-background: #000000;
-}
-
-.ios-switch.active {
-background: #22c55e;
-}
-
-[data-theme="dark"] .ios-switch.active {
-background: #16a34a;
-}
-
-[data-theme="dark"] .ios-switch.active::after {
-background: #ffffff;
-}
-
-.ios-switch.active::after {
-transform: translateX(14px);
-}
-
 .account-box{
 background:var(--card-bg);
 border:1px solid var(--border-color);
@@ -1754,30 +1680,11 @@ let html = `
 sortedAccounts.forEach(acc=>{
 let status = getStatus(acc.updated_at);
 let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
-let settings = acc.settings || {};
-
-let isAutoSeeds = settings.AutoSeeds !== undefined ? settings.AutoSeeds : (localStorage.getItem(`setting_${acc.roblox_username}_seeds`) === 'true');
-let isAutoGear = settings.AutoGear !== undefined ? settings.AutoGear : (localStorage.getItem(`setting_${acc.roblox_username}_gears`) === 'true');
-let isAutoPets = settings.AutoPets !== undefined ? settings.AutoPets : (localStorage.getItem(`setting_${acc.roblox_username}_pets`) === 'true');
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
 <div class="swipe-actions-left-bg">
 <button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
-</div>
-<div class="swipe-actions-bg">
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'seeds')">
-<span>Auto Seeds</span>
-<div class="ios-switch ${isAutoSeeds ? 'active' : ''}" id="switch-seeds-${acc.roblox_username}"></div>
-</div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'gears')">
-<span>Auto Gears</span>
-<div class="ios-switch ${isAutoGear ? 'active' : ''}" id="switch-gears-${acc.roblox_username}"></div>
-</div>
-<div class="toggle-switch-wrapper" onclick="toggleAutoFeature(this, '${escapedUsername}', 'pets')">
-<span>Auto Pets</span>
-<div class="ios-switch ${isAutoPets ? 'active' : ''}" id="switch-pets-${acc.roblox_username}"></div>
-</div>
 </div>
 <div class="account-box" id="acc-box-${acc.roblox_username}">
 <div class="account-header-row">
@@ -1804,7 +1711,7 @@ if (currentlySwipedUsername) {
   if (container) {
     let box = container.querySelector('.account-box');
     if (box) {
-      box.style.transform = 'translateX(-218px)';
+      box.style.transform = 'translateX(-90px)';
     }
   }
 }
@@ -1887,7 +1794,7 @@ isHorizontal = true;
 if(isHorizontal) {
 currentX = x;
 let maxRight = 100;
-let maxLeft = -230;
+let maxLeft = -100;
 
 if (currentlySwipedUsername === username) {
 if (diffX > 0) diffX = 0;
@@ -1913,7 +1820,7 @@ if(diff < -40) {
 if(currentlySwipedUsername && currentlySwipedUsername !== username) {
 resetSwipedCard(currentlySwipedUsername);
 }
-box.style.transform = `translateX(-218px)`;
+box.style.transform = `translateX(-90px)`;
 currentlySwipedUsername = username;
 localStorage.setItem("norms_swiped_username", username);
 } else if(diff > 40) {
@@ -1941,51 +1848,6 @@ e.stopPropagation();
 }
 });
 });
-}
-
-async function toggleAutoFeature(element, username, feature) {
-    const sw = element.querySelector(".ios-switch");
-    const enabled = !sw.classList.contains("active");
-    sw.classList.toggle("active");
-
-    localStorage.setItem(`setting_${username}_${feature}`, enabled);
-
-    try{
-        const res = await fetch(API + "/account/settings",{
-            method:"POST",
-            headers:{
-                "Content-Type":"application/json"
-            },
-            body:JSON.stringify({
-                secret_key: secretKey,
-                roblox_username: username,
-                feature: feature,
-                enabled: enabled
-            })
-        });
-
-        const data = await res.json();
-
-        if(!data.success){
-            sw.classList.toggle("active");
-            localStorage.setItem(`setting_${username}_${feature}`, !enabled);
-            alert(data.message);
-        } else {
-            let account = accounts.find(acc => acc.roblox_username === username);
-            if(account) {
-                if(!account.settings) account.settings = {};
-                if(feature === 'seeds') account.settings.AutoSeeds = enabled;
-                if(feature === 'gears') account.settings.AutoGear = enabled;
-                if(feature === 'pets') account.settings.AutoPets = enabled;
-                account.settingsVersion = (account.settingsVersion || 0) + 1;
-            }
-            dashboardVersion++;
-        }
-
-    }catch(e){
-        sw.classList.toggle("active");
-        localStorage.setItem(`setting_${username}_${feature}`, !enabled);
-    }
 }
 
 async function deleteAccount(username){
