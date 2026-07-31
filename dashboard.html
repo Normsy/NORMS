@@ -428,75 +428,13 @@ gap:10px;
 padding-right:2px;
 }
 
-/* ACCOUNT CARD & SWIPE DELETE / ACTIONS */
+/* ACCOUNT CARD NON-SWIPEABLE */
 
 .account-card-container {
 position: relative;
 overflow: visible;
 border-radius: 16px;
 flex-shrink: 0;
-touch-action: pan-y;
-}
-
-.swipe-actions-bg {
-position: absolute;
-top: 0;
-right: 0;
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: flex-end;
-align-items: center;
-gap: 4px;
-padding-right: 8px;
-border-radius: 16px;
-z-index: 1;
-}
-
-.swipe-actions-left-bg {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-display: flex;
-justify-content: flex-start;
-align-items: center;
-padding-left: 12px;
-border-radius: 16px;
-z-index: 1;
-}
-
-.swipe-action-btn {
-background: #334155;
-color: white;
-border: none;
-border-radius: 8px;
-padding: 8px 10px;
-font-size: 11px;
-font-weight: 800;
-cursor: pointer;
-height: 38px;
-display: flex;
-align-items: center;
-justify-content: center;
-box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-[data-theme="dark"] .swipe-action-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
-}
-
-.swipe-action-btn.delete-btn {
-background: #ef4444;
-}
-
-[data-theme="dark"] .swipe-action-btn.delete-btn {
-background: #ffffff;
-color: #000000;
-border: 1px solid #ffffff;
 }
 
 .account-box{
@@ -507,7 +445,6 @@ padding:16px 18px;
 box-shadow:0 2px 6px rgba(0,0,0,.02);
 position: relative;
 z-index: 2;
-will-change: transform;
 user-select: none;
 }
 
@@ -677,7 +614,6 @@ opacity: 1 !important;
 display:block;
 }
 
-/* FLOATING OVERLAY DROPDOWN FOR MAIN STAT CARDS -> REPLACED WITH IN-FLOW ACCOUNT-STYLE SLOT */
 .stats-container-wrapper .global-dropdown {
 position: relative;
 margin-top: 8px;
@@ -687,7 +623,6 @@ background: var(--card-bg);
 z-index: 9999;
 }
 
-/* FLOATING OVERLAY DROPDOWN FOR ACCOUNT CARDS */
 .account-dashboard-slot .global-dropdown {
 position: relative;
 margin-top: 8px;
@@ -775,7 +710,6 @@ background: #22c55e;
 color: #000000;
 }
 
-/* LEGACY LIST ITEM STYLES FOR OTHER CATEGORIES */
 .item{
 display:flex;
 justify-content:space-between;
@@ -1068,7 +1002,6 @@ let mainActiveType = null;
 let currentCaptcha = "";
 let autoRefreshInterval = null;
 let currentPage = "main";
-let currentlySwipedUsername = null;
 let dashboardVersion = 0;
 
 // ASSET MAPPINGS
@@ -1180,7 +1113,6 @@ showLoading("Logging out...");
 
 setTimeout(()=>{
 localStorage.removeItem("norms_secret");
-localStorage.removeItem("norms_swiped_username");
 secretKey = null;
 showLogin();
 }, 600);
@@ -1654,7 +1586,6 @@ function showMainDropdownContent(type) {
 
 function openAccountsTab(){
 currentPage = "accounts";
-currentlySwipedUsername = localStorage.getItem("norms_swiped_username") || null;
 
 let sortedAccounts = [...accounts].sort((a, b) => {
   let statusA = getStatus(a.updated_at).class === "online" ? 0 : 1;
@@ -1683,9 +1614,6 @@ let escapedUsername = acc.roblox_username.replace(/'/g, "\\'");
 
 html += `
 <div class="account-card-container" data-username="${acc.roblox_username}">
-<div class="swipe-actions-left-bg">
-<button class="swipe-action-btn delete-btn" onclick="deleteAccount('${escapedUsername}')">Delete</button>
-</div>
 <div class="account-box" id="acc-box-${acc.roblox_username}">
 <div class="account-header-row">
 <div class="account-info-col">
@@ -1703,18 +1631,6 @@ html += `
 html += `</div></div>`;
 
 document.getElementById("app").innerHTML = html;
-initSwipeToDelete();
-initScrollReset();
-
-if (currentlySwipedUsername) {
-  let container = document.querySelector(`.account-card-container[data-username="${currentlySwipedUsername}"]`);
-  if (container) {
-    let box = container.querySelector('.account-box');
-    if (box) {
-      box.style.transform = 'translateX(-90px)';
-    }
-  }
-}
 
 for(let username in currentActiveType) {
   if(currentActiveType[username] !== null) {
@@ -1723,189 +1639,6 @@ for(let username in currentActiveType) {
       showAccountDashboard(acc, acc.inventory || {});
     }
   }
-}
-}
-
-function resetSwipedCard(username) {
-  if(!username) return;
-  let container = document.querySelector(`.account-card-container[data-username="${username}"]`);
-  if(container) {
-    let box = container.querySelector('.account-box');
-    if(box) {
-      box.style.transition = 'transform 0.2s ease-out';
-      box.style.transform = 'translateX(0px)';
-    }
-  }
-  if(currentlySwipedUsername === username) {
-    currentlySwipedUsername = null;
-    localStorage.removeItem("norms_swiped_username");
-  }
-}
-
-function initScrollReset() {
-  let scrollArea = document.getElementById("accountsScrollArea");
-  if(scrollArea) {
-    scrollArea.addEventListener('scroll', () => {
-      if(currentlySwipedUsername) {
-        resetSwipedCard(currentlySwipedUsername);
-      }
-    }, {passive: true});
-  }
-}
-
-function initSwipeToDelete(){
-document.querySelectorAll('.account-card-container').forEach(container => {
-let username = container.getAttribute('data-username');
-let box = container.querySelector('.account-box');
-let startX = 0;
-let startY = 0;
-let currentX = 0;
-let isSwiping = false;
-let isHorizontal = false;
-
-box.addEventListener('touchstart', (e) => {
-let slot = document.getElementById("slot-" + username);
-let btn = document.getElementById("btn-" + username);
-let isInventoryOpen = (slot && slot.innerHTML.trim() !== "") || (btn && btn.innerText === "Close");
-if(isInventoryOpen) {
-isSwiping = false;
-return;
-}
-
-startX = e.touches[0].clientX;
-startY = e.touches[0].clientY;
-currentX = startX;
-isSwiping = true;
-isHorizontal = false;
-box.style.transition = 'none';
-}, {passive: true});
-
-box.addEventListener('touchmove', (e) => {
-if(!isSwiping) return;
-let x = e.touches[0].clientX;
-let y = e.touches[0].clientY;
-let diffX = x - startX;
-let diffY = y - startY;
-
-if(!isHorizontal && Math.abs(diffX) > Math.abs(diffY)) {
-isHorizontal = true;
-}
-
-if(isHorizontal) {
-currentX = x;
-let maxRight = 100;
-let maxLeft = -100;
-
-if (currentlySwipedUsername === username) {
-if (diffX > 0) diffX = 0;
-if (diffX < maxLeft) diffX = maxLeft;
-} else {
-if (diffX > maxRight) diffX = maxRight + (diffX - maxRight) * 0.2;
-if (diffX < maxLeft) diffX = maxLeft + (diffX - maxLeft) * 0.2;
-}
-
-box.style.transform = `translateX(${diffX}px)`;
-}
-}, {passive: true});
-
-box.addEventListener('touchend', (e) => {
-if(!isSwiping) return;
-isSwiping = false;
-if(!isHorizontal) return;
-
-let diff = currentX - startX;
-box.style.transition = 'transform 0.2s ease-out';
-
-if(diff < -40) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(-90px)`;
-currentlySwipedUsername = username;
-localStorage.setItem("norms_swiped_username", username);
-} else if(diff > 40) {
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-box.style.transform = `translateX(90px)`;
-currentlySwipedUsername = username;
-localStorage.setItem("norms_swiped_username", username);
-} else {
-box.style.transform = 'translateX(0px)';
-if(currentlySwipedUsername === username) {
-currentlySwipedUsername = null;
-localStorage.removeItem("norms_swiped_username");
-}
-}
-}, {passive: true});
-
-box.addEventListener('click', (e) => {
-if (currentlySwipedUsername === username) {
-if (!e.target.closest('button')) {
-resetSwipedCard(username);
-e.stopPropagation();
-}
-}
-});
-});
-}
-
-async function deleteAccount(username){
-if(!confirm(`Are you sure you want to delete ${username} and all its data?`)) {
-return;
-}
-
-showLoading("Deleting account...");
-
-try {
-let endpoints = [
-  API + "/delete-account", 
-  API + "/deleteAccount", 
-  API + "/account/delete",
-  API + "/delete_account"
-];
-let data = null;
-
-for(let ep of endpoints) {
-  try {
-    let res = await fetch(ep, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ secret_key: secretKey, roblox_username: username })
-    });
-    if(res.ok) {
-      let json = await res.json();
-      if(json.success) {
-        data = json;
-        break;
-      } else if(json.message) {
-        data = json;
-      }
-    }
-  } catch(e) {}
-}
-
-if(!data) {
-  try {
-    let res = await fetch(API + "/delete-account?secret_key=" + encodeURIComponent(secretKey) + "&roblox_username=" + encodeURIComponent(username), {
-      method: "GET"
-    });
-    if(res.ok) {
-      let json = await res.json();
-      if(json.success) data = json;
-    }
-  } catch(e) {}
-}
-
-if(data && data.success){
-loadAccounts();
-} else {
-alert((data && data.message) || "Failed to delete account");
-loadAccounts();
-}
-} catch(e) {
-alert("Network error occurred");
-loadAccounts();
 }
 }
 
@@ -2261,12 +1994,6 @@ alert("Roblox script copied to clipboard!");
 }
 
 function openAccount(username){
-if (currentlySwipedUsername === username) return;
-
-if(currentlySwipedUsername && currentlySwipedUsername !== username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let account = accounts.find(acc => acc.roblox_username === username);
 if(!account) return;
 
@@ -2279,10 +2006,6 @@ showAccountDashboard(account, targetAccountInventory);
 }
 
 function showAccountDashboard(account, targetInventory){
-if(currentlySwipedUsername && currentlySwipedUsername !== account.roblox_username) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let slot = document.getElementById("slot-" + account.roblox_username);
 let btn = document.getElementById("btn-" + account.roblox_username);
 
@@ -2347,10 +2070,6 @@ return count;
 }
 
 function toggleItems(type,user){
-if(currentlySwipedUsername && currentlySwipedUsername !== user) {
-resetSwipedCard(currentlySwipedUsername);
-}
-
 let account = accounts.find(acc => acc.roblox_username === user);
 if(!account) return;
 
