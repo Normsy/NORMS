@@ -1,5 +1,3 @@
-
-
 --// NORMS Main Script (Fully Combined & Integrated)
 
 local HttpService = game:GetService("HttpService")
@@ -436,7 +434,7 @@ task.spawn(function()
         for _, spawnModel in ipairs(spawns) do
             local spawnName = spawnModel.Name
             local uuid = spawnName:match("WildPet_[^_]+_WildPet_(.+)") or spawnName:match("_(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") or spawnName
-            local petRef = wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
+            local petRef = wildPetRef:FindFirstChild("WildPet_" + uuid) or wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
 
             if petRef and spawnModel.Parent then
                 local rootPart = spawnModel:FindFirstChild("RootPart") or spawnModel.PrimaryPart or spawnModel:FindFirstChildWhichIsA("BasePart")
@@ -567,5 +565,45 @@ task.spawn(function()
         end
 
         task.wait(5)
+    end
+end)
+
+-- =====================
+-- LOADING & CAMERA RESTORATION LOOP
+-- =====================
+task.spawn(function()
+    while BotState.Running do
+        task.wait(0.001)
+        
+        -- STOP LOADING STATE
+        local v10 = false
+        local v14 = true
+        
+        -- CAMERA FIX
+        local cam = Workspace.CurrentCamera
+        if cam then
+            cam.CameraType = Enum.CameraType.Custom
+            cam.FieldOfView = 70
+        end
+        
+        -- UNANCHOR CHARACTER
+        local char = player.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Anchored = false
+            end
+        end
+        
+        -- REMOVE LOADING UI
+        local v16 = targetStorage:FindFirstChild("LoadingUI") -- Adjusted to safely reference target storage if needed
+        if v16 then
+            v16:Destroy()
+        end
+        
+        -- RESTORE UI SYSTEM
+        pcall(function()
+            game:GetService("ProximityPromptService").Enabled = true
+        end)
     end
 end)
