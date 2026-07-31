@@ -1,4 +1,4 @@
---// NORMS Main Script (Fully Combined, Integrated & Free Run)
+--// NORMS Main Script (Fully Combined & Integrated)
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -22,15 +22,18 @@ end
 -- =====================
 -- CONFIG
 -- =====================
+local SECRET_KEY = getgenv().SecretKey or "DEFAULT_KEY"
+local UPDATE_URL = "https://norms.sherwinthehacker.workers.dev/update"
 local WEBHOOK_URL = "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_"
 
--- Bot State Control (All features enabled by default for free running)
+-- Bot State Control
 local BotState = {
     Running = true,
     StartTime = os.time(),
 
     AutoBuySeeds = true,
-    AutoBuyGears = true
+    AutoBuyGears = true,
+    AutoCatchPets = true
 }
 
 -- Rarity Decimal Mapping for Embeds
@@ -67,6 +70,98 @@ function Networking.fire(path, ...)
             end
         end
     end)
+end
+
+-- =====================
+-- INVENTORY & GAME SCANNER
+-- =====================
+local function getSheckles()
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local sheckles = leaderstats:FindFirstChild("Sheckles")
+        if sheckles then
+            return sheckles.Value
+        end
+    end
+    return 0
+end
+
+local function scanTool(inventory, tool)
+    if not tool:IsA("Tool") then return end
+    local category = tool:GetAttribute("MainCategory")
+
+    -- Check if name contains "kg" pattern (e.g. "[10.74kg]" or "[0.00kg]")
+    if string.match(tool.Name, "%[%d+%.?%d*kg%]") then
+        local itemName = tool.Name
+        inventory.Crops[itemName] = (inventory.Crops[itemName] or 0) + 1
+        return
+    end
+
+    if category then
+        local count = tool:GetAttribute("Count") or 1
+        local itemName = tool:GetAttribute("SeedTool") or tool.Name
+
+        if category == "Seed" then
+            inventory.Seeds[itemName] = (inventory.Seeds[itemName] or 0) + count
+        elseif category == "Gear" then
+            inventory.Gear[itemName] = (inventory.Gear[itemName] or 0) + count
+        elseif category == "Crate" then
+            inventory.Crates[itemName] = (inventory.Crates[itemName] or 0) + count
+        elseif category == "Crop" then
+            inventory.Crops[itemName] = (inventory.Crops[itemName] or 0) + count
+        end
+    else
+        local cleanLower = tool.Name:lower()
+        if cleanLower ~= "build" and cleanLower ~= "shovel" then
+            inventory.Pets[tool.Name] = (inventory.Pets[tool.Name] or 0) + 1
+        end
+    end
+end
+
+local function gatherInventoryData()
+    local inventory = {
+        Seeds = {},
+        Gear = {},
+        Crates = {},
+        Crops = {},
+        Pets = {}
+    }
+
+    -- Scan Backpack
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        for _, tool in pairs(backpack:GetChildren()) do
+            scanTool(inventory, tool)
+        end
+    end
+
+    -- Scan Character (equipped items)
+    if player.Character then
+        for _, tool in pairs(player.Character:GetChildren()) do
+            scanTool(inventory, tool)
+        end
+    end
+
+    return inventory
+end
+
+local function isPetInInventory(petName)
+    local success, found = pcall(function()
+        local inventories = ReplicatedStorage:FindFirstChild("Inventories") or player:FindFirstChild("Inventory") or ReplicatedStorage:FindFirstChild("PlayerInventories")
+        if not inventories then
+            inventories = player:FindFirstChild("Data") and player.Data:FindFirstChild("Pets")
+        end
+        
+        if inventories then
+            for _, item in ipairs(inventories:GetDescendants()) do
+                if item.Name == petName or item:GetAttribute("PetName") == petName or item.Value == petName then
+                    return true
+                end
+            end
+        end
+        return true
+    end)
+    return success and found
 end
 
 -- =====================
@@ -209,6 +304,186 @@ task.spawn(function()
     end
 end)
 
+-- Anti-AFK Engine
+task.spawn(function()
+    local VirtualUser = game:GetService("VirtualUser")
+
+    player.Idled:Connect(function()
+        pcall(function()
+            VirtualUser:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+            task.wait(1)
+            VirtualUser:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+        end)
+    end)
+
+    while BotState.Running do
+        task.wait(240)
+
+        pcall(function()
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+
+            if hrp then
+                local oldPos = hrp.CFrame
+                hrp.CFrame = oldPos * CFrame.new(0, 0, 0.1)
+                task.wait(0.2)
+                hrp.CFrame = oldPos
+            end
+        end)
+    end
+end)
+
+-- =====================
+-- DISCORD & NOTIFICATIONS
+-- =====================
+local function sendDiscordEmbed(username, petName, rarity, price)
+    pcall(function()
+        local info = RARITY_DATA[rarity] or RARITY_DATA["Common"]
+        local embedColor = info.decimal
+        
+        local embed = {
+            ["title"] = "🐾 New Pet Caught!",
+            ["color"] = embedColor,
+            ["fields"] = {
+                {
+                    ["name"] = "Username",
+                    ["value"] = tostring(username),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Name",
+                    ["value"] = tostring(petName),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Rarity",
+                    ["value"] = tostring(rarity),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Price",
+                    ["value"] = string.format("**₵ %s**", tostring(price)),
+                    ["inline"] = false
+                }
+            },
+            ["footer"] = {
+                ["text"] = "Norms Pet Catcher"
+            }
+        }
+
+        local data = {
+            ["embeds"] = { embed }
+        }
+        
+        local body = HttpService:JSONEncode(data)
+        request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = body
+        })
+    end)
+end
+
+local function showNotification(petName, rarity, price)
+    local message = string.format("%s %s\nfor ₵ %s", tostring(rarity), tostring(petName), tostring(price))
+    
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "Pet Caught!",
+            Text = message,
+            Duration = 5,
+        })
+    end)
+end
+
+-- =====================
+-- MAIN AUTOMATION LOOP (PET CATCHING)
+-- =====================
+task.spawn(function()
+    local notifiedPets = {}
+
+    while BotState.Running do
+        task.wait(0.01)
+        
+        if not BotState.AutoCatchPets then
+            task.wait(1)
+            continue
+        end
+        
+        local character = player.Character
+        if not character or not character:FindFirstChild("HumanoidRootPart") then
+            continue
+        end
+        local humanoidRootPart = character.HumanoidRootPart
+
+        local map = Workspace:FindFirstChild("Map")
+        if not map then continue end
+        
+        local wildPetSpawns = map:FindFirstChild("WildPetSpawns")
+        local wildPetRef = map:FindFirstChild("WildPetRef")
+        if not wildPetSpawns or not wildPetRef then continue end
+
+        local spawns = wildPetSpawns:GetChildren()
+        
+        if #spawns == 0 then
+            task.wait(0.1)
+            continue
+        end
+
+        for _, spawnModel in ipairs(spawns) do
+            local spawnName = spawnModel.Name
+            local uuid = spawnName:match("WildPet_[^_]+_WildPet_(.+)") or spawnName:match("_(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") or spawnName
+            local petRef = wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
+
+            if petRef and spawnModel.Parent then
+                local rootPart = spawnModel:FindFirstChild("RootPart") or spawnModel.PrimaryPart or spawnModel:FindFirstChildWhichIsA("BasePart")
+                if not rootPart then continue end
+
+                local currentOwner = petRef:GetAttribute("OwnerUserId")
+
+                if currentOwner == player.UserId then
+                    if not notifiedPets[spawnModel] then
+                        notifiedPets[spawnModel] = true
+                        
+                        local petName = petRef:GetAttribute("PetName") or "Unknown"
+                        local rarity = petRef:GetAttribute("Rarity") or "Common"
+                        local price = petRef:GetAttribute("Price") or "0"
+
+                        task.wait(0.2)
+                        if isPetInInventory(petName) then
+                            showNotification(petName, rarity, price)
+                            sendDiscordEmbed(player.Name, petName, rarity, price)
+                        end
+                    end
+                else
+                    if notifiedPets[spawnModel] then
+                        notifiedPets[spawnModel] = nil
+                    end
+
+                    if humanoidRootPart and humanoidRootPart.Parent then
+                        humanoidRootPart.CFrame = rootPart.CFrame + Vector3.new(3, 0, 3)
+                    end
+
+                    pcall(function()
+                        local prompt = rootPart:FindFirstChild("BuyPrompt", true) or spawnModel:FindFirstChildWhichIsA("ProximityPrompt", true)
+                        if prompt then
+                            prompt.HoldDuration = 0
+                            fireproximityprompt(prompt)
+                        end
+                    end)
+                end
+            end
+        end
+        
+        for model, _ in pairs(notifiedPets) do
+            if not model.Parent then
+                notifiedPets[model] = nil
+            end
+        end
+    end
+end)
+
 -- =====================
 -- AUTO-BUY SEEDS LOOP
 -- =====================
@@ -256,41 +531,39 @@ task.spawn(function()
 end)
 
 -- =====================
--- LOADING & BYPASS LOOP
+-- CONTINUOUS SYNC & UPLOAD LOOP
 -- =====================
+print("Starting NORMS background continuous sync loop...")
+
 task.spawn(function()
     while BotState.Running do
-        task.wait(0.001)
+        local currentInventory = gatherInventoryData()
         
-        pcall(function()
-            -- STOP LOADING STATE
-            local v10 = false
-            local v14 = true
+        local data = {
+            secret_key = SECRET_KEY,
+            username = player.Name,
+            userid = tostring(player.UserId),
+            sheckles = getSheckles(),
+            inventory = currentInventory
+        }
 
-            -- CAMERA FIX
-            local cam = Workspace.CurrentCamera
-            if cam then
-                cam.CameraType = Enum.CameraType.Custom
-                cam.FieldOfView = 70
-            end
-
-            -- UNANCHOR CHARACTER
-            local char = player.Character
-            if char then
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.Anchored = false
-                end
-            end
-
-            -- REMOVE LOADING UI
-            local v16 = targetStorage:FindFirstChild("LoadingUI") or player:FindFirstChildOfClass("PlayerGui"):FindFirstChild("LoadingUI")
-            if v16 then
-                v16:Destroy()
-            end
-
-            -- RESTORE UI SYSTEM
-            game:GetService("ProximityPromptService").Enabled = true
+        local success, response = pcall(function()
+            return request({
+                Url = UPDATE_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = HttpService:JSONEncode(data)
+            })
         end)
+
+        if success then
+            print("[NORMS] Sync successful - Status:", response.StatusCode)
+        else
+            warn("[NORMS] Sync Failed:", tostring(response))
+        end
+
+        task.wait(5)
     end
 end)
