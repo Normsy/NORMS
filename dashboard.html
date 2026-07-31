@@ -1284,7 +1284,7 @@ function getStatus(time){
 if(!time) return { text:"Roblox • Offline", class:"offline" };
 let minutes = (Date.now() - new Date(time).getTime()) / 1000 / 60;
 
-if(minutes <= 10){
+if(minutes <= 1){
 return { text:"Roblox • Online", class:"online" };
 }
 
