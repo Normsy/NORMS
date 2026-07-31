@@ -7,6 +7,9 @@ local CoreGui = game:GetService("CoreGui")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 local Lighting = game:GetService("Lighting")
+local SoundService = game:GetService("SoundService")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
 
 local player = Players.LocalPlayer
 
@@ -247,6 +250,53 @@ task.spawn(function()
 end)
 
 -- =====================
+-- CPU REDUCER / ANTI-LAG SCRIPT
+-- =====================
+pcall(function()
+    settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+end)
+
+for _, v in ipairs(Lighting:GetChildren()) do
+    if v:IsA("BloomEffect")
+    or v:IsA("BlurEffect")
+    or v:IsA("SunRaysEffect")
+    or v:IsA("ColorCorrectionEffect")
+    or v:IsA("DepthOfFieldEffect") then
+        v.Enabled = false
+    end
+end
+
+Lighting.GlobalShadows = false
+Lighting.FogEnd = 100000
+
+for _, obj in ipairs(Workspace:GetDescendants()) do
+    if obj:IsA("ParticleEmitter")
+    or obj:IsA("Trail")
+    or obj:IsA("Beam")
+    or obj:IsA("Smoke")
+    or obj:IsA("Fire")
+    or obj:IsA("Sparkles") then
+        obj.Enabled = false
+    end
+end
+
+for _, sound in ipairs(game:GetDescendants()) do
+    if sound:IsA("Sound") then
+        sound.Volume = 0
+    end
+end
+
+local oldTick = tick()
+RunService.Heartbeat:Connect(function()
+    if tick() - oldTick > 5 then
+        oldTick = tick()
+        collectgarbage("collect")
+    end
+end)
+
+print("CPU Reducer Enabled")
+
+-- =====================
 -- OPTIMIZERS & PERFORMANCE
 -- =====================
 pcall(function()
@@ -254,14 +304,7 @@ pcall(function()
 end)
 
 pcall(function()
-    Lighting.GlobalShadows = false
-    Lighting.FogEnd = 9e9
     Lighting.Brightness = 2
-    for _, v in ipairs(Lighting:GetChildren()) do
-        if v:IsA("PostEffect") or v:IsA("Sky") then
-            v:Destroy()
-        end
-    end
 end)
 
 -- Continuous Low-Lag Booster (Clearing particles, textures, and heavy assets)
@@ -304,34 +347,61 @@ task.spawn(function()
     end
 end)
 
--- Anti-AFK Engine
-task.spawn(function()
-    local VirtualUser = game:GetService("VirtualUser")
+-- =====================
+-- ANTI-AFK ENGINE
+-- =====================
+local AntiAfk = {}
+local LP = player
 
-    player.Idled:Connect(function()
+AntiAfk._running = false
+AntiAfk._thread  = nil
+AntiAfk._stats   = { actions = 0, lastAction = 0 }
+
+function AntiAfk.start(interval)
+    if AntiAfk._running then return end
+    AntiAfk._running = true
+
+    local intervalSeconds = interval or 60
+
+    AntiAfk._thread = task.spawn(function()
+        while AntiAfk._running and BotState.Running do
+            pcall(function()
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new())
+            end)
+
+            pcall(function()
+                local humanoid = LP.Character and LP.Character:FindFirstChildWhichIsA("Humanoid")
+                if humanoid then
+                    humanoid.Jump = true
+                end
+            end)
+
+            AntiAfk._stats.actions += 1
+            AntiAfk._stats.lastAction = os.time()
+            task.wait(intervalSeconds)
+        end
+    end)
+
+    LP.Idled:Connect(function()
         pcall(function()
-            VirtualUser:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
-            task.wait(1)
-            VirtualUser:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame)
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
         end)
     end)
 
-    while BotState.Running do
-        task.wait(240)
+    print("[NORMS] Anti-AFK started successfully!")
+end
 
-        pcall(function()
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-
-            if hrp then
-                local oldPos = hrp.CFrame
-                hrp.CFrame = oldPos * CFrame.new(0, 0, 0.1)
-                task.wait(0.2)
-                hrp.CFrame = oldPos
-            end
-        end)
+function AntiAfk.stop()
+    AntiAfk._running = false
+    if AntiAfk._thread then
+        task.cancel(AntiAfk._thread)
+        AntiAfk._thread = nil
     end
-end)
+end
+
+AntiAfk.start(60)
 
 -- =====================
 -- DISCORD & NOTIFICATIONS
@@ -434,7 +504,7 @@ task.spawn(function()
         for _, spawnModel in ipairs(spawns) do
             local spawnName = spawnModel.Name
             local uuid = spawnName:match("WildPet_[^_]+_WildPet_(.+)") or spawnName:match("_(%x%x%x%x%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%-%x%x%x%x%x%x%x%x%x%x%x%x)") or spawnName
-            local petRef = wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
+            local petRef = wildPetRef:FindFirstChild("WildPet_" + uuid) or wildPetRef:FindFirstChild("WildPet_" .. uuid) or wildPetRef:FindFirstChild(uuid)
 
             if petRef and spawnModel.Parent then
                 local rootPart = spawnModel:FindFirstChild("RootPart") or spawnModel.PrimaryPart or spawnModel:FindFirstChildWhichIsA("BasePart")
@@ -565,5 +635,45 @@ task.spawn(function()
         end
 
         task.wait(5)
+    end
+end)
+
+-- =====================
+-- LOADING & CAMERA RESTORATION LOOP
+-- =====================
+task.spawn(function()
+    while BotState.Running do
+        task.wait(0.001)
+        
+        -- STOP LOADING STATE
+        local v10 = false
+        local v14 = true
+        
+        -- CAMERA FIX
+        local cam = Workspace.CurrentCamera
+        if cam then
+            cam.CameraType = Enum.CameraType.Custom
+            cam.FieldOfView = 70
+        end
+        
+        -- UNANCHOR CHARACTER
+        local char = player.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                hrp.Anchored = false
+            end
+        end
+        
+        -- REMOVE LOADING UI
+        local v16 = targetStorage:FindFirstChild("LoadingUI")
+        if v16 then
+            v16:Destroy()
+        end
+        
+        -- RESTORE UI SYSTEM
+        pcall(function()
+            game:GetService("ProximityPromptService").Enabled = true
+        end)
     end
 end)
