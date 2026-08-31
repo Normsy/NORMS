@@ -1198,145 +1198,8 @@ RemoteSpyBtn.MouseButton1Click:Connect(function()
     SavePersistentConfig()
 end)
 
---// ANTI AFK CARD
-local AntiAfkCard = Instance.new("Frame")
-AntiAfkCard.Name = "AntiAfkCard"
-AntiAfkCard.Size = UDim2.new(1, 0, 0, 42)
-AntiAfkCard.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
-AntiAfkCard.BorderSizePixel = 0
-AntiAfkCard.LayoutOrder = 3
-AntiAfkCard.Parent = SettingsPanel
-
-local AntiAfkCorner = Instance.new("UICorner")
-AntiAfkCorner.CornerRadius = UDim.new(0, 6)
-AntiAfkCorner.Parent = AntiAfkCard
-
-local AntiAfkTitle = Instance.new("TextLabel")
-AntiAfkTitle.Size = UDim2.new(1, -12, 0, 12)
-AntiAfkTitle.Position = UDim2.new(0, 6, 0, 3)
-AntiAfkTitle.BackgroundTransparency = 1
-AntiAfkTitle.Text = "Anti AFK"
-AntiAfkTitle.TextColor3 = Color3.fromRGB(120, 130, 150)
-AntiAfkTitle.TextSize = 5
-AntiAfkTitle.Font = Enum.Font.GothamBold
-AntiAfkTitle.TextXAlignment = Enum.TextXAlignment.Left
-AntiAfkTitle.Parent = AntiAfkCard
-
-local AntiAfkBtn = Instance.new("TextButton")
-AntiAfkBtn.Name = "AntiAfkToggleBtn"
-AntiAfkBtn.Size = UDim2.new(1, -12, 0, 20)
-AntiAfkBtn.Position = UDim2.new(0, 6, 0, 17)
-AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-AntiAfkBtn.BorderSizePixel = 0
-AntiAfkBtn.Text = "Anti AFK: OFF"
-AntiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AntiAfkBtn.TextSize = 6
-AntiAfkBtn.Font = Enum.Font.GothamBold
-AntiAfkBtn.Parent = AntiAfkCard
-
-local AntiAfkBtnCorner = Instance.new("UICorner")
-AntiAfkBtnCorner.CornerRadius = UDim.new(0, 3)
-AntiAfkBtnCorner.Parent = AntiAfkBtn
-
-local antiAfkEnabled = false
-local antiAfkGui = nil
-local antiAfkConnection = nil
-
-local function EnableAntiAfk()
-    if antiAfkGui then pcall(function() antiAfkGui:Destroy() end) end
-    if antiAfkConnection then pcall(function() antiAfkConnection:Disconnect() end) end
-
-    task.spawn(function()
-        task.wait(0.5)
-
-        local ba = Instance.new("ScreenGui")
-        local ca = Instance.new("TextLabel")
-        local da = Instance.new("Frame")
-        local _b = Instance.new("TextLabel")
-        local ab = Instance.new("TextLabel")
-
-        ba.Name = "AntiAfkGui"
-        ba.Parent = game.CoreGui
-        ba.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-        ca.Parent = ba
-        ca.Active = true
-        ca.BackgroundColor3 = Color3.new(0.176471, 0.176471, 0.176471)
-        ca.Draggable = true
-        ca.Position = UDim2.new(0.698610067, 0, 0.098096624, 0)
-        ca.Size = UDim2.new(0, 370, 0, 52)
-        ca.Font = Enum.Font.SourceSansSemibold
-        ca.Text = "Anti AFK Script"
-        ca.TextColor3 = Color3.new(0, 1, 1)
-        ca.TextSize = 22
-
-        da.Parent = ca
-        da.BackgroundColor3 = Color3.new(0.196078, 0.196078, 0.196078)
-        da.Position = UDim2.new(0, 0, 1.0192306, 0)
-        da.Size = UDim2.new(0, 370, 0, 107)
-
-        _b.Parent = da
-        _b.BackgroundColor3 = Color3.new(0.176471, 0.176471, 0.176471)
-        _b.Position = UDim2.new(0, 0, 0.800455689, 0)
-        _b.Size = UDim2.new(0, 370, 0, 21)
-        _b.Font = Enum.Font.Arial
-        _b.Text = "Made by Norms/Clark"
-        _b.TextColor3 = Color3.new(0, 1, 1)
-        _b.TextSize = 20
-
-        ab.Parent = da
-        ab.BackgroundColor3 = Color3.new(0.176471, 0.176471, 0.176471)
-        ab.Position = UDim2.new(0, 0, 0.158377, 0)
-        ab.Size = UDim2.new(0, 370, 0, 44)
-        ab.Font = Enum.Font.ArialBold
-        ab.Text = "Status: Active"
-        ab.TextColor3 = Color3.new(0, 1, 1)
-        ab.TextSize = 20
-
-        antiAfkGui = ba
-
-        local bb = game:GetService("VirtualUser")
-
-        antiAfkConnection = game:GetService("Players").LocalPlayer.Idled:Connect(function()
-            bb:CaptureController()
-            bb:ClickButton2(Vector2.new())
-
-            ab.Text = "go join wearedevs discord server"
-            task.wait(2)
-            ab.Text = "Status : Active"
-        end)
-    end)
-end
-
-local function DisableAntiAfk()
-    if antiAfkConnection then
-        pcall(function() antiAfkConnection:Disconnect() end)
-        antiAfkConnection = nil
-    end
-    if antiAfkGui then
-        pcall(function() antiAfkGui:Destroy() end)
-        antiAfkGui = nil
-    end
-end
-
-AntiAfkBtn.MouseButton1Click:Connect(function()
-    antiAfkEnabled = not antiAfkEnabled
-    if antiAfkEnabled then
-        AntiAfkBtn.Text = "Anti AFK: ON"
-        AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
-        AntiAfkBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        EnableAntiAfk()
-    else
-        AntiAfkBtn.Text = "Anti AFK: OFF"
-        AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-        AntiAfkBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        DisableAntiAfk()
-    end
-    SavePersistentConfig()
-end)
-
 -- 1. Lasso Configuration
-local LassoConfigCard = CreateSettingsGroup("Lasso Configuration", 4, 70)
+local LassoConfigCard = CreateSettingsGroup("Lasso Configuration", 3, 70)
 local LassoNameBox = CreateInputRow(LassoConfigCard, "Lasso Type", 18, true, SelectedLasso)
 
 local LassoSideDropdownBtn = Instance.new("TextButton")
@@ -1477,7 +1340,7 @@ LassoGenBtn.MouseButton1Click:Connect(function()
 end)
 
 -- 2. Catch Remote Configuration (Dropdown pops ABOVE)
-local CatchConfigCard = CreateSettingsGroup("Catch Remote", 5, 56)
+local CatchConfigCard = CreateSettingsGroup("Catch Remote", 4, 56)
 local CatchRemoteBox = CreateInputRow(CatchConfigCard, "Catch Remote", 16, true, "", "Select Event...")
 CatchRemoteBox.Size = UDim2.new(0.65, -50, 0, 16)
 
@@ -1569,7 +1432,7 @@ SaveCatchBtn.MouseButton1Click:Connect(function()
 end)
 
 -- 3. Travel Remote Configuration (Dropdown pops ABOVE)
-local TravelConfigCard = CreateSettingsGroup("Travel Remote", 6, 56)
+local TravelConfigCard = CreateSettingsGroup("Travel Remote", 5, 56)
 local TravelRemoteBox = CreateInputRow(TravelConfigCard, "Travel Remote", 16, true, "", "Select Function...")
 TravelRemoteBox.Size = UDim2.new(0.65, -50, 0, 16)
 
@@ -2193,8 +2056,7 @@ SavePersistentConfig = function()
                 AutoFarmEnabled = AutoFarmEnabled,
                 AutoHopEnabled = autoHopEnabled,
                 HopIntervalSeconds = hopIntervalSeconds,
-                RemoteSpyEnabled = remoteSpyEnabled,
-                AntiAfkEnabled = antiAfkEnabled
+                RemoteSpyEnabled = remoteSpyEnabled
             }
             writefile(CONFIG_FILE_NAME, HttpService:JSONEncode(configData))
         end
@@ -2315,13 +2177,6 @@ LoadPersistentConfig = function()
                     pcall(function()
                         loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-SimpleSpy-PLUS-204560"))()
                     end)
-                end
-                if decoded.AntiAfkEnabled ~= nil and decoded.AntiAfkEnabled then
-                    antiAfkEnabled = true
-                    AntiAfkBtn.Text = "Anti AFK: ON"
-                    AntiAfkBtn.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
-                    AntiAfkBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                    EnableAntiAfk()
                 end
             end
         end
@@ -2549,7 +2404,91 @@ task.spawn(function()
             ActiveTargetIsland = nil
             TargetUID = nil
         else
-            task.wait(0.5)
+            if not AutoFarmEnabled then
+                StatusText.Text = "STATUS: Idle"
+                StatusText.TextColor3 = Color3.fromRGB(148, 163, 184)
+            else
+                StatusText.Text = "STATUS: Searching on " .. SelectedMainIsland .. "..."
+                StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
+            end
         end
+
+        if CurrentTab == "Main" then
+            RefreshList()
+        end
+        task.wait(0.03)
+    end
+end)
+
+
+
+-- Delta Executor Anti-AFK Script (Integrated with PlayerAdded & Custom Handler)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VirtualUser = game:GetService("VirtualUser")
+
+-- Global reference for cross-scope access
+_G.AFKHandlerInstance = nil
+
+-- Handle native Roblox 20-minute inactivity kick
+local function setupIdled(player)
+    if player == LocalPlayer then
+        player.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+            
+            -- Trigger custom AFK state reset instantly on idle signal
+            if _G.AFKHandlerInstance then
+                pcall(function()
+                    _G.AFKHandlerInstance.Reset()
+                    _G.AFKHandlerInstance.isAfk = false
+                    _G.AFKHandlerInstance.isHardAfk = false
+                end)
+            end
+        end)
+    end
+end
+
+Players.PlayerAdded:Connect(setupIdled)
+if LocalPlayer then
+    setupIdled(LocalPlayer)
+end
+
+-- Bypass the game's custom AFKHandler module
+task.spawn(function()
+    local afkHandler = nil
+    
+    pcall(function()
+        for _, mod in ipairs(getloadedmodules()) do
+            if mod.Name == "AFKHandler" then
+                afkHandler = require(mod)
+                break
+            end
+        end
+    end)
+    
+    if not afkHandler then
+        pcall(function()
+            local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts") or LocalPlayer:WaitForChild("PlayerScripts", 5)
+            local secondary = playerScripts and playerScripts:FindFirstChild("Secondary")
+            local mod = secondary and secondary:FindFirstChild("AFKHandler")
+            if mod then
+                afkHandler = require(mod)
+            end
+        end)
+    end
+    
+    if afkHandler then
+        _G.AFKHandlerInstance = afkHandler
+        print("[Anti-AFK] Successfully hooked game AFKHandler!")
+        while task.wait(15) do
+            pcall(function()
+                afkHandler.Reset()
+                afkHandler.isAfk = false
+                afkHandler.isHardAfk = false
+            end)
+        end
+    else
+        warn("[Anti-AFK] AFKHandler module not found automatically; native Idled bypass active.")
     end
 end)
