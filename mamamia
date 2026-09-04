@@ -11368,6 +11368,9 @@ CreateLassoOption("Ice Lasso")
 CreateLassoOption("Diamond Lasso")
 CreateLassoOption("Obsidian Lasso")
 CreateLassoOption("Moonstone Lasso")
+CreateLassoOption("Topaz Lasso")
+CreateLassoOption("Emerald Lasso")
+CreateLassoOption("Amethyst Lasso")
 
 local IsLassoSideOpen = false
 LassoSideDropdownBtn.MouseButton1Click:Connect(function()
