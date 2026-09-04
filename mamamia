@@ -10224,6 +10224,35 @@ local function GetHorseInfo(rawName)
     return cleaned, "Low", Color3.fromRGB(57, 255, 20)
 end
 
+--// VOLCANO ISLAND - REMOVE LAVAPARTS ON EXECUTION
+-- Removes Workspace.Islands["Volcano Island"].LavaParts when the script starts.
+local function RemoveVolcanoLavaParts()
+    pcall(function()
+        local islands = Workspace:FindFirstChild("Islands")
+        if not islands then return end
+
+        local volcano = islands:FindFirstChild("Volcano Island")
+        if not volcano then return end
+
+        local lavaParts = volcano:FindFirstChild("LavaParts")
+        if lavaParts then
+            lavaParts:Destroy()
+            print("[Volcano] LavaParts removed.")
+        end
+    end)
+end
+
+RemoveVolcanoLavaParts()
+
+--// VOLCANO ISLAND - CONTINUOUS LAVAPARTS CLEANUP
+-- Re-checks periodically so LavaParts is removed again if the game recreates it.
+task.spawn(function()
+    while true do
+        RemoveVolcanoLavaParts()
+        task.wait(0.5)
+    end
+end)
+
 --// SETTINGS & STATE
 local AutoFarmEnabled = false
 local CurrentTab = "Main"
@@ -19325,4 +19354,3 @@ end)
 --// THIS IS PHILIPPINES SOFTWARE MALWARE
 --// THIS IS PHILIPPINES SOFTWARE MALWARE
 --// THIS IS PH
-
