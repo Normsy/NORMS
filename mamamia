@@ -10087,6 +10087,7 @@ local LocalPlayer = Players.LocalPlayer
 local ActiveWalkTarget = nil
 local ActiveTargetIsland = nil
 local TargetUID = nil
+local StopRoving
 
 --// GLOBAL CONFIGURATION VARIABLES (PERSISTENT SESSION)
 local ConfiguredLassoUID = nil
@@ -10564,6 +10565,7 @@ AutoToggleBtn.MouseButton1Click:Connect(function()
         ActiveWalkTarget = nil
         ActiveTargetIsland = nil
         TargetUID = nil
+        StopRoving()
     end
     SavePersistentConfig()
 end)
@@ -10790,13 +10792,109 @@ end
 
 ServerHopBtn.MouseButton1Click:Connect(executeServerHop)
 
+--// GOLDEN APPLE BASKET TELEPORT
+local GoldenAppleBasketBtn = Instance.new("TextButton")
+GoldenAppleBasketBtn.Name = "GoldenAppleBasketBtn"
+GoldenAppleBasketBtn.Size = UDim2.new(1, 0, 0, 26)
+GoldenAppleBasketBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+GoldenAppleBasketBtn.BorderSizePixel = 0
+GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+GoldenAppleBasketBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+GoldenAppleBasketBtn.TextSize = 6
+GoldenAppleBasketBtn.Font = Enum.Font.GothamBold
+GoldenAppleBasketBtn.LayoutOrder = 6
+GoldenAppleBasketBtn.Parent = LeftPanel
+
+local GoldenAppleBasketCorner = Instance.new("UICorner")
+GoldenAppleBasketCorner.CornerRadius = UDim.new(0, 6)
+GoldenAppleBasketCorner.Parent = GoldenAppleBasketBtn
+
+local function TeleportToGoldenAppleBasket()
+    local char = LocalPlayer.Character
+    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        return
+    end
+
+    local basket = Workspace:FindFirstChild("Golden Apple Basket", true)
+    if not basket then
+        GoldenAppleBasketBtn.Text = "Basket Not Found"
+        if StatusText then
+            StatusText.Text = "STATUS: Golden Apple Basket not found"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+        task.delay(1.5, function()
+            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
+                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+            end
+        end)
+        return
+    end
+
+    -- Stop any automatic horse/roving target before teleporting.
+    ActiveWalkTarget = nil
+    ActiveTargetIsland = nil
+    TargetUID = nil
+
+    local targetCFrame
+    pcall(function()
+        if basket:IsA("Model") then
+            targetCFrame = basket:GetPivot()
+        elseif basket:IsA("BasePart") then
+            targetCFrame = basket.CFrame
+        end
+    end)
+
+    if not targetCFrame then
+        GoldenAppleBasketBtn.Text = "Invalid Basket"
+        if StatusText then
+            StatusText.Text = "STATUS: Basket has no valid position"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+        task.delay(1.5, function()
+            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
+                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+            end
+        end)
+        return
+    end
+
+    local success = pcall(function()
+        char:PivotTo(targetCFrame + Vector3.new(0, 3, 0))
+        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end)
+
+    if success then
+        GoldenAppleBasketBtn.Text = "Teleported!"
+        if StatusText then
+            StatusText.Text = "STATUS: Teleported to Golden Apple Basket"
+            StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
+        end
+    else
+        GoldenAppleBasketBtn.Text = "Teleport Failed"
+        if StatusText then
+            StatusText.Text = "STATUS: Basket teleport failed"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+    end
+
+    task.delay(1.5, function()
+        if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
+            GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+        end
+    end)
+end
+
+GoldenAppleBasketBtn.MouseButton1Click:Connect(TeleportToGoldenAppleBasket)
+
 --// SERVER HOP INTERVAL CARD & AUTO-HOP
 local ServerHopIntervalCard = Instance.new("Frame")
 ServerHopIntervalCard.Name = "ServerHopIntervalCard"
 ServerHopIntervalCard.Size = UDim2.new(1, 0, 0, 42)
 ServerHopIntervalCard.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
 ServerHopIntervalCard.BorderSizePixel = 0
-ServerHopIntervalCard.LayoutOrder = 6
+ServerHopIntervalCard.LayoutOrder = 7
 ServerHopIntervalCard.Parent = LeftPanel
 
 local ServerHopIntervalCorner = Instance.new("UICorner")
@@ -12111,6 +12209,7 @@ local function CreateHorseEntry(data)
             ActiveWalkTarget = data.Model
             ActiveTargetIsland = data.Island
             TargetUID = data.UID
+            StopRoving()
         end
     end)
     return Entry
@@ -12192,6 +12291,207 @@ local function GetCurrentPlayerIsland()
         end
     end
     return nil
+end
+
+--// AUTO ROVING / ISLAND SEARCH
+-- When AutoFarm is enabled and the tracker has no horses, the player
+-- wanders around the current island. If no horse appears for a while,
+-- the engine travels to another island that exists in Workspace.Islands.
+local RovingTarget = nil
+local RovingTargetIsland = nil
+local RovingStartedAt = 0
+local RovingTargetStartedAt = 0
+local RovingTraveling = false
+local RovingIslandIndex = 0
+
+local ROVING_POINT_TIMEOUT = 8
+local ROVING_TRAVEL_AFTER = 20
+local ROVING_RADIUS = 120
+
+StopRoving = function()
+    RovingTarget = nil
+    RovingTargetIsland = nil
+    RovingStartedAt = 0
+    RovingTargetStartedAt = 0
+    RovingTraveling = false
+end
+
+local function GetIslandAnchor(islandObj)
+    if not islandObj then return nil end
+
+    local ok, pivot = pcall(function()
+        if islandObj:IsA("Model") then
+            return islandObj:GetPivot()
+        end
+
+        local part = islandObj:FindFirstChildWhichIsA("BasePart", true)
+        return part and part.CFrame or nil
+    end)
+
+    if ok and pivot then
+        return pivot.Position
+    end
+
+    return nil
+end
+
+local function GetRovingPoint(islandObj, rootPart)
+    local anchor = GetIslandAnchor(islandObj) or rootPart.Position
+
+    -- Pick several random points around the island anchor instead of
+    -- repeatedly walking to the exact same location.
+    local angle = math.random() * math.pi * 2
+    local radius = math.random(45, ROVING_RADIUS)
+    local point = anchor + Vector3.new(math.cos(angle) * radius, 0, math.sin(angle) * radius)
+
+    -- Keep the player's current height so MoveTo follows the terrain more naturally.
+    return Vector3.new(point.X, rootPart.Position.Y, point.Z)
+end
+
+local function GetOtherAvailableIslands(currentIslandName)
+    local islandsFolder = Workspace:FindFirstChild("Islands")
+    if not islandsFolder then return {} end
+
+    local result = {}
+    for _, islandObj in ipairs(islandsFolder:GetChildren()) do
+        if (islandObj:IsA("Model") or islandObj:IsA("Folder")) and islandObj.Name ~= currentIslandName then
+            if GetIslandAnchor(islandObj) then
+                table.insert(result, islandObj)
+            end
+        end
+    end
+
+    table.sort(result, function(a, b)
+        return a.Name < b.Name
+    end)
+
+    return result
+end
+
+local function TravelToNextRovingIsland()
+    if RovingTraveling or not AutoFarmEnabled then return false end
+
+    local currentIsland = GetCurrentPlayerIsland()
+    local available = GetOtherAvailableIslands(currentIsland)
+    if #available == 0 then
+        return false
+    end
+
+    RovingIslandIndex = (RovingIslandIndex % #available) + 1
+    local islandObj = available[RovingIslandIndex]
+    local targetIslandName = islandObj.Name
+    local manualTravelRemote = TravelRemoteBox and TravelRemoteBox.Text or ""
+
+    if manualTravelRemote == "" then
+        if StatusText then
+            StatusText.Text = "STATUS: Roving - set Travel Remote to change islands"
+            StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
+        end
+        return false
+    end
+
+    local travelFunc = Functions:FindFirstChild(manualTravelRemote)
+    if not travelFunc or not travelFunc:IsA("RemoteFunction") then
+        if StatusText then
+            StatusText.Text = "STATUS: Roving - Travel Remote not found"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+        return false
+    end
+
+    RovingTraveling = true
+    RovingTarget = nil
+    RovingTargetIsland = nil
+
+    if StatusText then
+        StatusText.Text = "STATUS: No horses - traveling to " .. targetIslandName .. "..."
+        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
+    end
+
+    local invokeSuccess = pcall(function()
+        travelFunc:InvokeServer("Travel", targetIslandName, 1)
+    end)
+
+    if not invokeSuccess then
+        RovingTraveling = false
+        return false
+    end
+
+    task.spawn(function()
+        local started = tick()
+        while AutoFarmEnabled and RovingTraveling and tick() - started < 15 do
+            local horses = GetWorldHorses()
+            if #horses > 0 then
+                RovingTraveling = false
+                RovingStartedAt = tick()
+                return
+            end
+
+            local arrivedIsland = GetCurrentPlayerIsland()
+            if arrivedIsland == targetIslandName then
+                break
+            end
+            task.wait(0.25)
+        end
+
+        RovingTraveling = false
+        RovingStartedAt = tick()
+        RovingTarget = nil
+        RovingTargetIsland = nil
+    end)
+
+    return true
+end
+
+local function RunRovingStep(rootPart, humanoid)
+    if not AutoFarmEnabled or not rootPart or not humanoid or humanoid.Health <= 0 then
+        StopRoving()
+        return
+    end
+
+    if RovingStartedAt == 0 then
+        RovingStartedAt = tick()
+    end
+
+    if RovingTraveling then
+        return
+    end
+
+    -- A horse appeared while we were roaming; the main engine will take over.
+    local horses = GetWorldHorses()
+    if #horses > 0 then
+        pcall(function() humanoid:MoveTo(rootPart.Position) end)
+        StopRoving()
+        return
+    end
+
+    if tick() - RovingStartedAt >= ROVING_TRAVEL_AFTER then
+        if TravelToNextRovingIsland() then
+            return
+        end
+        -- If travel cannot be performed, keep wandering instead of getting stuck.
+        RovingStartedAt = tick()
+    end
+
+    if not RovingTarget or tick() - RovingTargetStartedAt >= ROVING_POINT_TIMEOUT then
+        local currentIslandName = GetCurrentPlayerIsland()
+        local islandsFolder = Workspace:FindFirstChild("Islands")
+        local islandObj = islandsFolder and currentIslandName and islandsFolder:FindFirstChild(currentIslandName)
+        RovingTarget = GetRovingPoint(islandObj, rootPart)
+        RovingTargetIsland = currentIslandName
+        RovingTargetStartedAt = tick()
+
+        if StatusText then
+            StatusText.Text = "STATUS: No horses - roving on " .. tostring(currentIslandName or "current island")
+            StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
+        end
+    end
+
+    if RovingTarget then
+        pcall(function()
+            humanoid:MoveTo(RovingTarget)
+        end)
+    end
 end
 
 --// CENTRALIZED PERSISTENT CONFIG FUNCTIONS
@@ -12349,6 +12649,10 @@ task.spawn(function()
         if AutoFarmEnabled and not ActiveWalkTarget and rootPart and humanoid and humanoid.Health > 0 then
             local horses = GetWorldHorses()
             if #horses > 0 then
+                -- Horse found: immediately stop roving and let the normal catch routine take over.
+                pcall(function() humanoid:MoveTo(rootPart.Position) end)
+                StopRoving()
+
                 table.sort(horses, function(a, b)
                     local uniqueA = (a.UniqueHairText == "â")
                     local uniqueB = (b.UniqueHairText == "â")
@@ -12365,7 +12669,12 @@ task.spawn(function()
                 ActiveWalkTarget = horses[1].Model
                 ActiveTargetIsland = horses[1].Island
                 TargetUID = horses[1].UID
+            else
+                -- No horse is currently shown in the tracker: roam, then move to another island.
+                RunRovingStep(rootPart, humanoid)
             end
+        elseif not AutoFarmEnabled then
+            StopRoving()
         end
 
         if ActiveWalkTarget and rootPart and humanoid and humanoid.Health > 0 then
@@ -12564,7 +12873,7 @@ task.spawn(function()
             if not AutoFarmEnabled then
                 StatusText.Text = "STATUS: Idle"
                 StatusText.TextColor3 = Color3.fromRGB(148, 163, 184)
-            else
+            elseif not RovingTarget and not RovingTraveling then
                 StatusText.Text = "STATUS: Searching on " .. SelectedMainIsland .. "..."
                 StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
             end
