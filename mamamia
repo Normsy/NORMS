@@ -10094,18 +10094,6 @@ local ConfiguredLassoUID = nil
 --// TWEEN SPEED & SMOOTHNESS
 local TWEEN_SPEED = 90
 
---// AUTO WANDER / ISLAND ROVER STATE
-local WANDER_POINTS_BEFORE_TRAVEL = 5
-local WANDER_RADIUS = 550
-local WANDER_MIN_DISTANCE = 140
-local WANDER_HEIGHT_OFFSET = 6
-local WANDER_RESCAN_DELAY = 0.15
-
-local WanderPointCount = 0
-local WanderIslandIndex = 0
-local WanderTween = nil
-local WanderBusy = false
-
 --// STATUS TEXT REFERENCE
 local StatusText
 local TrackerTextLabel
@@ -10560,14 +10548,6 @@ CircleCorner.Parent = SwitchCircle
 
 AutoToggleBtn.MouseButton1Click:Connect(function()
     AutoFarmEnabled = not AutoFarmEnabled
-    if not AutoFarmEnabled then
-        WanderBusy = false
-        WanderPointCount = 0
-        if WanderTween then
-            pcall(function() WanderTween:Cancel() end)
-            WanderTween = nil
-        end
-    end
     if AutoFarmEnabled then
         AutoToggleBtn.Text = " Auto ON"
         local themeCol = Color3.fromRGB(57, 255, 20)
@@ -10810,13 +10790,135 @@ end
 
 ServerHopBtn.MouseButton1Click:Connect(executeServerHop)
 
+--// GOLDEN APPLE BASKET TELEPORT
+local GoldenAppleBasketBtn = Instance.new("TextButton")
+GoldenAppleBasketBtn.Name = "GoldenAppleBasketBtn"
+GoldenAppleBasketBtn.Size = UDim2.new(1, 0, 0, 26)
+GoldenAppleBasketBtn.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+GoldenAppleBasketBtn.BorderSizePixel = 0
+GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+GoldenAppleBasketBtn.TextColor3 = Color3.fromRGB(200, 200, 220)
+GoldenAppleBasketBtn.TextSize = 6
+GoldenAppleBasketBtn.Font = Enum.Font.GothamBold
+GoldenAppleBasketBtn.LayoutOrder = 6
+GoldenAppleBasketBtn.Parent = LeftPanel
+
+local GoldenAppleBasketCorner = Instance.new("UICorner")
+GoldenAppleBasketCorner.CornerRadius = UDim.new(0, 6)
+GoldenAppleBasketCorner.Parent = GoldenAppleBasketBtn
+
+local goldenAppleBasketTween = nil
+
+local function tweenToGoldenAppleBasket()
+    if goldenAppleBasketTween then
+        goldenAppleBasketTween:Cancel()
+        goldenAppleBasketTween = nil
+    end
+
+    local basket = Workspace:FindFirstChild("Golden Apple Basket", true)
+
+    if not basket then
+        GoldenAppleBasketBtn.Text = "Basket Not Found"
+        if StatusText then
+            StatusText.Text = "STATUS: Golden Apple Basket not found"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+        task.delay(1.5, function()
+            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
+                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+            end
+        end)
+        return
+    end
+
+    local character = LocalPlayer.Character
+    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+    if not rootPart or not humanoid then
+        return
+    end
+
+    local targetCFrame
+
+    if basket:IsA("Model") then
+        targetCFrame = basket:GetPivot() * CFrame.new(0, 3, 0)
+    elseif basket:IsA("BasePart") then
+        targetCFrame = basket.CFrame * CFrame.new(0, 3, 0)
+    else
+        local basketPart = basket:FindFirstChildWhichIsA("BasePart", true)
+        if basketPart then
+            targetCFrame = basketPart.CFrame * CFrame.new(0, 3, 0)
+        end
+    end
+
+    if not targetCFrame then
+        GoldenAppleBasketBtn.Text = "Invalid Basket"
+        if StatusText then
+            StatusText.Text = "STATUS: Golden Apple Basket has no usable position"
+            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
+        end
+        task.delay(1.5, function()
+            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
+                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+            end
+        end)
+        return
+    end
+
+    local distance = (rootPart.Position - targetCFrame.Position).Magnitude
+    local tweenTime = math.max(distance / TWEEN_SPEED, 0.1)
+
+    GoldenAppleBasketBtn.Text = "GOING..."
+    if StatusText then
+        StatusText.Text = "STATUS: Tweening to Golden Apple Basket..."
+        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
+    end
+
+    rootPart.Anchored = true
+    humanoid.PlatformStand = true
+    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+    goldenAppleBasketTween = TweenService:Create(
+        rootPart,
+        TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+        {CFrame = targetCFrame}
+    )
+
+    goldenAppleBasketTween:Play()
+
+    goldenAppleBasketTween.Completed:Connect(function()
+        if rootPart and rootPart.Parent then
+            rootPart.CFrame = targetCFrame
+            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            rootPart.Anchored = false
+        end
+
+        if humanoid and humanoid.Parent and humanoid.Health > 0 then
+            humanoid.PlatformStand = false
+        end
+
+        goldenAppleBasketTween = nil
+        GoldenAppleBasketBtn.Text = "Golden Apple Basket"
+
+        if StatusText then
+            StatusText.Text = "STATUS: At Golden Apple Basket"
+            StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
+        end
+    end)
+end
+
+GoldenAppleBasketBtn.MouseButton1Click:Connect(tweenToGoldenAppleBasket)
+
 --// SERVER HOP INTERVAL CARD & AUTO-HOP
 local ServerHopIntervalCard = Instance.new("Frame")
 ServerHopIntervalCard.Name = "ServerHopIntervalCard"
 ServerHopIntervalCard.Size = UDim2.new(1, 0, 0, 42)
 ServerHopIntervalCard.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
 ServerHopIntervalCard.BorderSizePixel = 0
-ServerHopIntervalCard.LayoutOrder = 6
+ServerHopIntervalCard.LayoutOrder = 7
 ServerHopIntervalCard.Parent = LeftPanel
 
 local ServerHopIntervalCorner = Instance.new("UICorner")
@@ -12214,311 +12316,6 @@ local function GetCurrentPlayerIsland()
     return nil
 end
 
-
---// AUTO WANDER / ISLAND ROVER FALLBACK HELPERS
--- If the tracker has no horse on the island the player is currently on,
--- the bot makes several random tween sweeps around that island. If the
--- tracker is still empty after the sweep limit, it travels to the next
--- available island and repeats the same cycle.
-
-local function GetIslandFolderByName(islandName)
-    local islandsFolder = Workspace:FindFirstChild("Islands")
-    if not islandsFolder or not islandName then return nil end
-    return islandsFolder:FindFirstChild(islandName)
-end
-
-local function GetAvailableIslandNames()
-    local islandsFolder = Workspace:FindFirstChild("Islands")
-    if not islandsFolder then return {} end
-
-    local result = {}
-    local seen = {}
-
-    -- Prefer the known island order so the travel cycle is predictable.
-    for _, islandName in ipairs(ManualIslandList) do
-        local island = islandsFolder:FindFirstChild(islandName)
-        if island and (island:IsA("Folder") or island:IsA("Model")) then
-            table.insert(result, islandName)
-            seen[islandName] = true
-        end
-    end
-
-    -- Also include newly added islands automatically.
-    for _, island in ipairs(islandsFolder:GetChildren()) do
-        if (island:IsA("Folder") or island:IsA("Model")) and not seen[island.Name] then
-            table.insert(result, island.Name)
-        end
-    end
-
-    return result
-end
-
-local function GetHorsesOnCurrentIsland()
-    local currentIsland = GetCurrentPlayerIsland()
-    if not currentIsland then return {} end
-
-    local allHorses = GetWorldHorses()
-    local localHorses = {}
-
-    for _, horse in ipairs(allHorses) do
-        if horse.Island == currentIsland then
-            table.insert(localHorses, horse)
-        end
-    end
-
-    return localHorses
-end
-
-local function GetRandomWanderPosition(islandName, rootPart)
-    local island = GetIslandFolderByName(islandName)
-    if not island or not rootPart then return nil end
-
-    local baseParts = {}
-    for _, obj in ipairs(island:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Transparency < 1 and not IsInShop(obj) then
-            -- Favor reasonably large pieces that are more likely to be ground.
-            if obj.Size.X >= 8 and obj.Size.Z >= 8 and obj.Size.Y <= 35 then
-                table.insert(baseParts, obj)
-            end
-        end
-    end
-
-    if #baseParts == 0 then return nil end
-
-    -- Try several pieces and keep the first point that is a useful distance
-    -- from the player's current position.
-    for _ = 1, 30 do
-        local part = baseParts[math.random(1, #baseParts)]
-        local halfX = math.max(2, math.min(part.Size.X * 0.45, WANDER_RADIUS))
-        local halfZ = math.max(2, math.min(part.Size.Z * 0.45, WANDER_RADIUS))
-
-        local candidate = part.Position + Vector3.new(
-            (math.random() * 2 - 1) * halfX,
-            part.Size.Y * 0.5 + WANDER_HEIGHT_OFFSET,
-            (math.random() * 2 - 1) * halfZ
-        )
-
-        local horizontalDistance = (
-            Vector3.new(rootPart.Position.X, 0, rootPart.Position.Z) -
-            Vector3.new(candidate.X, 0, candidate.Z)
-        ).Magnitude
-
-        if horizontalDistance >= WANDER_MIN_DISTANCE then
-            return candidate
-        end
-    end
-
-    return nil
-end
-
-local function TweenWanderTo(position)
-    local char = LocalPlayer.Character
-    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-    if not rootPart or not humanoid or humanoid.Health <= 0 or not position then
-        return false
-    end
-
-    EnableNoClip(char)
-    humanoid.PlatformStand = true
-    rootPart.Anchored = true
-    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-
-    local distance = (rootPart.Position - position).Magnitude
-    local tweenTime = math.max(0.35, distance / TWEEN_SPEED)
-
-    if StatusText then
-        StatusText.Text = "STATUS: Roving (" .. tostring(math.floor(distance)) .. " studs)..."
-        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-    end
-
-    WanderTween = TweenService:Create(
-        rootPart,
-        TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
-        {CFrame = CFrame.new(position)}
-    )
-    WanderTween:Play()
-
-    while WanderTween and WanderTween.PlaybackState == Enum.PlaybackState.Playing do
-        if not AutoFarmEnabled or ActiveWalkTarget then
-            WanderTween:Cancel()
-            break
-        end
-
-        if humanoid.Health <= 0 then
-            WanderTween:Cancel()
-            break
-        end
-
-        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        task.wait(0.03)
-    end
-
-    if WanderTween then
-        pcall(function() WanderTween:Cancel() end)
-    end
-    WanderTween = nil
-
-    pcall(function()
-        rootPart.Anchored = false
-        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        humanoid.PlatformStand = false
-    end)
-    DisableNoClip(char)
-
-    return AutoFarmEnabled and not ActiveWalkTarget and humanoid.Health > 0
-end
-
-local function TravelToIslandAuto(targetIslandName)
-    if not targetIslandName then return false end
-
-    local currentIsland = GetCurrentPlayerIsland()
-    if currentIsland == targetIslandName then
-        return true
-    end
-
-    local manualTravelRemote = TravelRemoteBox.Text
-    if manualTravelRemote == "" then
-        if StatusText then
-            StatusText.Text = "STATUS: Enter Travel Remote first"
-            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-        end
-        return false
-    end
-
-    local travelFunc = Functions:FindFirstChild(manualTravelRemote)
-    if not travelFunc then
-        if StatusText then
-            StatusText.Text = "STATUS: Travel Remote not found"
-            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-        end
-        return false
-    end
-
-    if StatusText then
-        StatusText.Text = "STATUS: Roving -> " .. targetIslandName
-        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-    end
-
-    local ok = pcall(function()
-        travelFunc:InvokeServer("Travel", targetIslandName, 1)
-    end)
-
-    if not ok then
-        if StatusText then
-            StatusText.Text = "STATUS: Travel Failed"
-            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-        end
-        return false
-    end
-
-    local start = tick()
-    while AutoFarmEnabled and tick() - start < 15 do
-        local arrived = GetCurrentPlayerIsland()
-        if arrived == targetIslandName then
-            ClearCache()
-            return true
-        end
-        task.wait(0.2)
-    end
-
-    -- Some games rebuild the character/island a little after the remote returns.
-    -- Give it a short grace period, then let the normal scan decide what to do.
-    task.wait(0.5)
-    ClearCache()
-    return GetCurrentPlayerIsland() == targetIslandName
-end
-
-local function GetNextRoverIsland(currentIslandName)
-    local islands = GetAvailableIslandNames()
-    if #islands == 0 then return nil end
-
-    local currentIndex = 1
-    for i, islandName in ipairs(islands) do
-        if islandName == currentIslandName then
-            currentIndex = i
-            break
-        end
-    end
-
-    for offset = 1, #islands do
-        local idx = ((currentIndex + offset - 1) % #islands) + 1
-        if islands[idx] ~= currentIslandName then
-            return islands[idx]
-        end
-    end
-
-    return nil
-end
-
-local function RunRoverFallback()
-    if WanderBusy or not AutoFarmEnabled or ActiveWalkTarget then
-        return false
-    end
-
-    WanderBusy = true
-
-    local currentIsland = GetCurrentPlayerIsland()
-    if not currentIsland then
-        WanderBusy = false
-        return false
-    end
-
-    if StatusText then
-        StatusText.Text = "STATUS: No horses on " .. currentIsland .. " - roving..."
-        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-    end
-
-    -- Make a small sweep of the current island. Re-scan after every point so
-    -- a newly spawned horse immediately interrupts the rover.
-    for _ = 1, WANDER_POINTS_BEFORE_TRAVEL do
-        if not AutoFarmEnabled or ActiveWalkTarget then break end
-
-        ClearCache()
-        local horses = GetHorsesOnCurrentIsland()
-        if #horses > 0 then
-            break
-        end
-
-        local char = LocalPlayer.Character
-        local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-        local point = GetRandomWanderPosition(currentIsland, rootPart)
-
-        if point then
-            WanderPointCount += 1
-            TweenWanderTo(point)
-        else
-            task.wait(0.25)
-        end
-
-        ClearCache()
-        task.wait(WANDER_RESCAN_DELAY)
-
-        horses = GetHorsesOnCurrentIsland()
-        if #horses > 0 then
-            break
-        end
-    end
-
-    if AutoFarmEnabled and not ActiveWalkTarget then
-        ClearCache()
-        local horses = GetHorsesOnCurrentIsland()
-
-        if #horses == 0 then
-            local nextIsland = GetNextRoverIsland(currentIsland)
-            if nextIsland then
-                TravelToIslandAuto(nextIsland)
-            end
-        end
-    end
-
-    WanderBusy = false
-    return true
-end
-
 --// CENTRALIZED PERSISTENT CONFIG FUNCTIONS
 SavePersistentConfig = function()
     pcall(function()
@@ -12671,14 +12468,10 @@ task.spawn(function()
         local rootPart = char and char:FindFirstChild("HumanoidRootPart")
         local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 
-        if AutoFarmEnabled and not ActiveWalkTarget and not WanderBusy and rootPart and humanoid and humanoid.Health > 0 then
-            -- IMPORTANT: when "All Islands" is selected, only use horses on the
-            -- island the player is physically standing on. This allows the rover
-            -- to search the current island before changing maps.
-            local currentIslandHorses = GetHorsesOnCurrentIsland()
-
-            if #currentIslandHorses > 0 then
-                table.sort(currentIslandHorses, function(a, b)
+        if AutoFarmEnabled and not ActiveWalkTarget and rootPart and humanoid and humanoid.Health > 0 then
+            local horses = GetWorldHorses()
+            if #horses > 0 then
+                table.sort(horses, function(a, b)
                     local uniqueA = (a.UniqueHairText == "â")
                     local uniqueB = (b.UniqueHairText == "â")
                     if uniqueA ~= uniqueB then
@@ -12691,15 +12484,9 @@ task.spawn(function()
                     end
                     return a.Distance < b.Distance
                 end)
-
-                ActiveWalkTarget = currentIslandHorses[1].Model
-                ActiveTargetIsland = currentIslandHorses[1].Island
-                TargetUID = currentIslandHorses[1].UID
-                WanderPointCount = 0
-            else
-                -- No tracked/scanned horse on this map: roam it first, then
-                -- automatically move to the next available island.
-                RunRoverFallback()
+                ActiveWalkTarget = horses[1].Model
+                ActiveTargetIsland = horses[1].Island
+                TargetUID = horses[1].UID
             end
         end
 
