@@ -10738,7 +10738,8 @@ local function executeServerHop()
 
             -- Search several pages and collect available servers.
             for page = 1, 5 do
-                local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/public?sortOrder=Asc&limit=100"
+                -- Descending order helps find fuller servers first.
+                local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/public?sortOrder=Desc&limit=100"
                 if cursor then
                     url = url .. "&cursor=" .. HttpService:UrlEncode(cursor)
                 end
@@ -10753,7 +10754,11 @@ local function executeServerHop()
                 if not decodeSuccess or not data or not data.data then break end
 
                 for _, s in ipairs(data.data) do
-                    if type(s) == "table" and s.id ~= game.JobId and s.playing and s.maxPlayers and s.playing < s.maxPlayers then
+                    if type(s) == "table"
+                        and s.id ~= game.JobId
+                        and s.playing
+                        and s.maxPlayers
+                        and s.playing < s.maxPlayers then
                         table.insert(servers, s)
                     end
                 end
@@ -10762,10 +10767,10 @@ local function executeServerHop()
                 if not cursor then break end
             end
 
-            -- Pick the server with the fewest players.
+            -- Pick the server with the MOST players while still having room.
             local targetServer = nil
             for _, s in ipairs(servers) do
-                if not targetServer or s.playing < targetServer.playing then
+                if not targetServer or s.playing > targetServer.playing then
                     targetServer = s
                 end
             end
