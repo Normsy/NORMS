@@ -1,3 +1,4 @@
+
 --// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Communication = ReplicatedStorage:WaitForChild("Communication")
@@ -2414,7 +2415,6 @@ end
 -- Load persistent configuration upon script startup
 LoadPersistentConfig()
 
-
 --// AUTO ROVING / CHECKPOINT SEARCH
 -- When Auto Farm has no tracked horse, scan the configured checkpoint route.
 -- Route order is Volcano Island -> Lunar Island -> Jungle Island -> repeat.
@@ -2491,8 +2491,8 @@ local function GetBestTrackedHorse(horses)
     if not horses or #horses == 0 then return nil end
 
     table.sort(horses, function(a, b)
-        local uniqueA = (a.UniqueHairText == "â")
-        local uniqueB = (b.UniqueHairText == "â")
+        local uniqueA = (a.UniqueHairText ~= nil and a.UniqueHairText ~= "")
+        local uniqueB = (b.UniqueHairText ~= nil and b.UniqueHairText ~= "")
         if uniqueA ~= uniqueB then
             return uniqueA
         end
@@ -2830,8 +2830,7 @@ task.spawn(function()
             local horses = GetWorldHorses()
 
             if #horses > 0 then
-                -- Horse is available: stop any checkpoint roving immediately
-                -- and return to the normal catching routine.
+                -- A horse is available: stop roving and return to the normal catcher.
                 if RovingActive then
                     CancelRoving()
                 end
@@ -2843,7 +2842,7 @@ task.spawn(function()
                     TargetUID = bestHorse.UID
                 end
             elseif not RovingActive then
-                -- Tracker is empty: begin the island checkpoint route.
+                -- Tracker is empty: begin checkpoint roving.
                 StartRoving()
             end
         elseif not AutoFarmEnabled and RovingActive then
