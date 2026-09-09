@@ -1469,8 +1469,33 @@ local function CreateProfile(
     local Stroke =
         Instance.new("UIStroke")
 
-    -- Red outline if Mane OR Tail is Unique Hair
-    if IsUniqueHair(maneColour)
+    -- Purple = hornColour exists (highest priority)
+    if item.variants
+        and item.variants.hornColour then
+
+        Stroke.Color =
+            Color3.fromRGB(
+                170,
+                0,
+                255
+            )
+
+        Stroke.Thickness = 2
+
+    -- Green = isNatDyed field exists
+    elseif item.isNatDyed ~= nil then
+
+        Stroke.Color =
+            Color3.fromRGB(
+                0,
+                255,
+                0
+            )
+
+        Stroke.Thickness = 2
+
+    -- Red = Mane OR Tail is Unique Hair
+    elseif IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour) then
 
         Stroke.Color =
