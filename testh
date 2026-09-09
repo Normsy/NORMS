@@ -1,5 +1,6 @@
 --// HORSE INVENTORY SCANNER
 --// 5 PROFILE CARDS PER ROW
+--// HORSE-ONLY DETECTION
 --// READ-ONLY
 --// MOBILE FRIENDLY
 --
@@ -98,7 +99,7 @@ local function NormalizeBreed(value)
 
     local lower = text:lower()
 
-    -- Exact match
+    -- Exact known breed
     for key, displayName in pairs(BreedNames) do
 
         if lower == key then
@@ -111,7 +112,7 @@ local function NormalizeBreed(value)
 
     end
 
-    -- Partial match
+    -- Partial known breed
     for key, displayName in pairs(BreedNames) do
 
         if lower:find(key, 1, true) then
@@ -120,7 +121,7 @@ local function NormalizeBreed(value)
 
     end
 
-    -- Already contains Horse
+    -- Only accept text already containing "horse"
     if lower:find("horse", 1, true) then
         return text
     end
@@ -167,8 +168,6 @@ local function FindBreedInTable(tbl)
         "BreedName",
         "horseBreed",
         "HorseBreed",
-        "breedId",
-        "BreedId",
         "breedType",
         "BreedType"
 
@@ -243,7 +242,6 @@ local function GetItemInfo(item)
 
     if not References
         or not References.Items then
-
         return nil
     end
 
@@ -273,7 +271,7 @@ local function GetItemInfo(item)
 end
 
 --==================================================
--- GET BREED
+-- RESOLVE BREED
 --==================================================
 
 local function GetBreed(item, info)
@@ -339,7 +337,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- Search entire info
+    -- Search item info
     breed =
         SearchKnownBreed(info)
 
@@ -467,7 +465,7 @@ local function GetColours(item)
 end
 
 --==================================================
--- HORSE DETECTION
+-- STRICT HORSE-ONLY DETECTION
 --==================================================
 
 local function IsHorse(item)
@@ -476,26 +474,48 @@ local function IsHorse(item)
         return false
     end
 
+    --==============================================
+    -- CHECK ACTUAL HORSE VARIANTS
+    --==============================================
+
     local variants =
         item.variants
         or item.Variants
 
-    if type(variants) == "table" then
-
-        if variants.colour
-            or variants.mainColour
-            or variants.MainColour
-            or variants.maneColour
-            or variants.ManeColour
-            or variants.tailColour
-            or variants.TailColour
-            or variants.maneStyle
-            or variants.tailStyle then
-
-            return true
-        end
-
+    if type(variants) ~= "table" then
+        return false
     end
+
+    local hasMainColour =
+        variants.colour ~= nil
+        or variants.mainColour ~= nil
+        or variants.MainColour ~= nil
+
+    local hasMane =
+        variants.maneColour ~= nil
+        or variants.ManeColour ~= nil
+        or variants.maneStyle ~= nil
+        or variants.ManeStyle ~= nil
+
+    local hasTail =
+        variants.tailColour ~= nil
+        or variants.TailColour ~= nil
+        or variants.tailStyle ~= nil
+        or variants.TailStyle ~= nil
+
+    --==============================================
+    -- REQUIRE REAL HORSE CUSTOMIZATION DATA
+    --==============================================
+
+    if hasMainColour
+        and (hasMane or hasTail) then
+
+        return true
+    end
+
+    --==============================================
+    -- EXPLICIT BREED DATA
+    --==============================================
 
     if item.breed
         or item.Breed
@@ -506,6 +526,22 @@ local function IsHorse(item)
 
         return true
     end
+
+    --==============================================
+    -- IMPORTANT:
+    -- DO NOT CHECK ITEM NAME
+    --
+    -- This prevents accessories such as:
+    --
+    -- Horse Shoes
+    -- Horseshoe
+    -- Protective Boots for Horse
+    -- Horse Saddle
+    -- Horse Bridle
+    -- Horse Tack
+    --
+    -- from being detected.
+    --==============================================
 
     return false
 end
@@ -532,7 +568,7 @@ if not guiParent then
 
 end
 
--- Remove old scanner
+-- Remove previous scanner
 
 local old =
     guiParent:FindFirstChild(
@@ -597,7 +633,10 @@ local MainCorner =
     Instance.new("UICorner")
 
 MainCorner.CornerRadius =
-    UDim.new(0, 9)
+    UDim.new(
+        0,
+        9
+    )
 
 MainCorner.Parent =
     Main
@@ -647,7 +686,10 @@ local TopCorner =
     Instance.new("UICorner")
 
 TopCorner.CornerRadius =
-    UDim.new(0, 9)
+    UDim.new(
+        0,
+        9
+    )
 
 TopCorner.Parent =
     TopBar
@@ -741,7 +783,7 @@ Status.Parent =
     TopBar
 
 --==================================================
--- MINIMIZE BUTTON
+-- MINIMIZE
 --==================================================
 
 local Minimize =
@@ -770,7 +812,8 @@ Minimize.BackgroundColor3 =
 
 Minimize.BorderSizePixel = 0
 
-Minimize.Text = "−"
+Minimize.Text =
+    "−"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -791,13 +834,16 @@ local MinCorner =
     Instance.new("UICorner")
 
 MinCorner.CornerRadius =
-    UDim.new(0, 6)
+    UDim.new(
+        0,
+        6
+    )
 
 MinCorner.Parent =
     Minimize
 
 --==================================================
--- CLOSE BUTTON
+-- CLOSE
 --==================================================
 
 local Close =
@@ -826,7 +872,8 @@ Close.BackgroundColor3 =
 
 Close.BorderSizePixel = 0
 
-Close.Text = "×"
+Close.Text =
+    "×"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -847,7 +894,10 @@ local CloseCorner =
     Instance.new("UICorner")
 
 CloseCorner.CornerRadius =
-    UDim.new(0, 6)
+    UDim.new(
+        0,
+        6
+    )
 
 CloseCorner.Parent =
     Close
@@ -885,7 +935,7 @@ Content.Parent =
     Main
 
 --==================================================
--- SEARCH BOX
+-- SEARCH
 --==================================================
 
 local Search =
@@ -947,7 +997,10 @@ local SearchCorner =
     Instance.new("UICorner")
 
 SearchCorner.CornerRadius =
-    UDim.new(0, 6)
+    UDim.new(
+        0,
+        6
+    )
 
 SearchCorner.Parent =
     Search
@@ -1008,9 +1061,6 @@ Results.CanvasSize =
         0
     )
 
-Results.AutomaticCanvasSize =
-    Enum.AutomaticSize.None
-
 Results.Parent =
     Content
 
@@ -1048,9 +1098,7 @@ Grid.CellPadding =
 Grid.FillDirection =
     Enum.FillDirection.Horizontal
 
--- IMPORTANT:
 -- EXACTLY 5 PROFILES PER ROW
-
 Grid.FillDirectionMaxCells = 5
 
 Grid.SortOrder =
@@ -1094,18 +1142,18 @@ Padding.Parent =
     Results
 
 --==================================================
--- UPDATE CANVAS
+-- CANVAS UPDATE
 --==================================================
 
 local function UpdateCanvas()
 
-    local contentSize =
+    local size =
         Grid.AbsoluteContentSize
 
     Results.CanvasSize =
         UDim2.fromOffset(
-            contentSize.X + 10,
-            contentSize.Y + 10
+            size.X + 10,
+            size.Y + 10
         )
 
 end
@@ -1235,7 +1283,7 @@ end)
 local HorseList = {}
 
 --==================================================
--- CREATE PROFILE CARD
+-- CREATE PROFILE
 --==================================================
 
 local function CreateProfile(
@@ -1297,7 +1345,7 @@ local function CreateProfile(
         Card
 
     --==================================================
-    -- PROFILE TITLE
+    -- PROFILE NUMBER
     --==================================================
 
     local ProfileTitle =
@@ -1342,7 +1390,7 @@ local function CreateProfile(
         Card
 
     --==================================================
-    -- DATA
+    -- GET DATA
     --==================================================
 
     local breed =
@@ -1357,7 +1405,7 @@ local function CreateProfile(
         GetColours(item)
 
     --==================================================
-    -- EXACTLY 5 DATA ROWS
+    -- FIVE DATA ROWS
     --==================================================
 
     local Rows = {
@@ -1456,7 +1504,7 @@ end
 
 local function DisplayHorses()
 
-    -- Remove old profile cards
+    -- Remove previous cards
     for _, child in ipairs(
         Results:GetChildren()
     ) do
@@ -1513,7 +1561,9 @@ local function DisplayHorses()
         .. " / "
         .. tostring(#HorseList)
 
-    task.defer(UpdateCanvas)
+    task.defer(
+        UpdateCanvas
+    )
 
 end
 
@@ -1525,6 +1575,7 @@ for uid, item in pairs(
     Inventory
 ) do
 
+    -- ONLY actual horse structures
     if type(item) == "table"
         and IsHorse(item) then
 
@@ -1557,7 +1608,7 @@ Search:GetPropertyChangedSignal(
 end)
 
 --==================================================
--- DISPLAY
+-- INITIAL DISPLAY
 --==================================================
 
 DisplayHorses()
