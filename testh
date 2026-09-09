@@ -1,8 +1,8 @@
 --// HORSE INVENTORY SCANNER
 --// COMPACT PROFILE MODE
 --// READ-ONLY
---//
---// Shows:
+--
+--// PROFILE HAS EXACTLY 5 ROWS:
 --// UID
 --// Breed
 --// Main Colour
@@ -48,7 +48,7 @@ if type(Inventory) ~= "table" then
 end
 
 --==================================================
--- BREEDS
+-- HORSE BREEDS
 --==================================================
 
 local BreedNames = {
@@ -146,7 +146,7 @@ local function GetField(tbl, names)
 end
 
 --==================================================
--- BREED FROM TABLE
+-- DIRECT BREED
 --==================================================
 
 local function FindBreedInTable(tbl)
@@ -172,7 +172,7 @@ local function FindBreedInTable(tbl)
 end
 
 --==================================================
--- RECURSIVE BREED SEARCH
+-- SEARCH BREED
 --==================================================
 
 local function SearchKnownBreed(tbl, depth)
@@ -187,7 +187,6 @@ local function SearchKnownBreed(tbl, depth)
         return nil
     end
 
-    -- First check direct breed fields
     local direct =
         FindBreedInTable(tbl)
 
@@ -195,7 +194,6 @@ local function SearchKnownBreed(tbl, depth)
         return direct
     end
 
-    -- Search values
     for _, value in pairs(tbl) do
 
         if type(value) == "string"
@@ -219,6 +217,7 @@ local function SearchKnownBreed(tbl, depth)
             if result then
                 return result
             end
+
         end
 
     end
@@ -268,12 +267,12 @@ local function GetItemInfo(item)
 end
 
 --==================================================
--- BREED RESOLUTION
+-- RESOLVE BREED
 --==================================================
 
 local function GetBreed(item, info)
 
-    -- 1. Direct item
+    -- Direct item
     local breed =
         FindBreedInTable(item)
 
@@ -281,7 +280,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- 2. Item info
+    -- Item info
     breed =
         FindBreedInTable(info)
 
@@ -289,20 +288,17 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- 3. Common nested structures
+    -- Nested data
     if type(item) == "table" then
 
         local nested = {
 
             "data",
             "Data",
-
             "attributes",
             "Attributes",
-
             "horse",
             "Horse",
-
             "stats",
             "Stats"
 
@@ -327,7 +323,7 @@ local function GetBreed(item, info)
 
     end
 
-    -- 4. Search entire item
+    -- Entire item
     breed =
         SearchKnownBreed(item)
 
@@ -335,7 +331,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- 5. Search entire item info
+    -- Entire info
     breed =
         SearchKnownBreed(info)
 
@@ -343,7 +339,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- 6. Try pId
+    -- pId lookup
     local pId =
         item
         and (
@@ -472,7 +468,6 @@ local function IsHorse(item)
         return false
     end
 
-    -- Main horse structure
     local variants =
         item.variants
         or item.Variants
@@ -494,7 +489,6 @@ local function IsHorse(item)
 
     end
 
-    -- Direct breed
     if item.breed
         or item.Breed
         or item.breedName
@@ -509,7 +503,7 @@ local function IsHorse(item)
 end
 
 --==================================================
--- GUI
+-- GUI PARENT
 --==================================================
 
 local guiParent
@@ -519,7 +513,8 @@ pcall(function()
 end)
 
 if not guiParent then
-    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+    guiParent =
+        LocalPlayer:WaitForChild("PlayerGui")
 end
 
 local old =
@@ -530,6 +525,10 @@ local old =
 if old then
     old:Destroy()
 end
+
+--==================================================
+-- SCREEN GUI
+--==================================================
 
 local ScreenGui =
     Instance.new("ScreenGui")
@@ -544,7 +543,7 @@ ScreenGui.ZIndexBehavior =
 ScreenGui.Parent = guiParent
 
 --==================================================
--- MAIN
+-- MAIN WINDOW
 --==================================================
 
 local Main =
@@ -610,6 +609,10 @@ TopCorner.CornerRadius =
 
 TopCorner.Parent = TopBar
 
+--==================================================
+-- TITLE
+--==================================================
+
 local Title =
     Instance.new("TextLabel")
 
@@ -636,6 +639,10 @@ Title.TextXAlignment =
     Enum.TextXAlignment.Left
 
 Title.Parent = TopBar
+
+--==================================================
+-- STATUS
+--==================================================
 
 local Status =
     Instance.new("TextLabel")
@@ -878,7 +885,7 @@ local Layout =
     Instance.new("UIListLayout")
 
 Layout.Padding =
-    UDim.new(0, 5)
+    UDim.new(0, 4)
 
 Layout.SortOrder =
     Enum.SortOrder.LayoutOrder
@@ -917,7 +924,7 @@ Layout:GetPropertyChangedSignal(
 end)
 
 --==================================================
--- MINIMIZE STATE
+-- MINIMIZE
 --==================================================
 
 local Minimized = false
@@ -931,14 +938,20 @@ Minimize.MouseButton1Click:Connect(function()
     if Minimized then
 
         Main.Size =
-            UDim2.fromOffset(350, 40)
+            UDim2.fromOffset(
+                350,
+                40
+            )
 
         Minimize.Text = "+"
 
     else
 
         Main.Size =
-            UDim2.fromOffset(350, 300)
+            UDim2.fromOffset(
+                350,
+                300
+            )
 
         Minimize.Text = "−"
 
@@ -947,7 +960,7 @@ Minimize.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
--- DRAG
+-- DRAGGING
 --==================================================
 
 local Dragging = false
@@ -1020,7 +1033,7 @@ end)
 local HorseList = {}
 
 --==================================================
--- CREATE PROFILE
+-- CREATE SMALL PROFILE
 --==================================================
 
 local function CreateProfile(
@@ -1033,12 +1046,13 @@ local function CreateProfile(
     local Card =
         Instance.new("Frame")
 
+    -- SMALL CARD
     Card.Size =
         UDim2.new(
             1,
             -2,
             0,
-            113
+            78
         )
 
     Card.BackgroundColor3 =
@@ -1055,9 +1069,22 @@ local function CreateProfile(
         Instance.new("UICorner")
 
     Corner.CornerRadius =
-        UDim.new(0, 6)
+        UDim.new(0, 5)
 
     Corner.Parent = Card
+
+    local Stroke =
+        Instance.new("UIStroke")
+
+    Stroke.Color =
+        Color3.fromRGB(42, 42, 52)
+
+    Stroke.Thickness = 1
+    Stroke.Parent = Card
+
+    --==================================================
+    -- DATA
+    --==================================================
 
     local breed =
         GetBreed(
@@ -1071,7 +1098,7 @@ local function CreateProfile(
         GetColours(item)
 
     --==================================================
-    -- FIVE ROWS
+    -- EXACTLY 5 ROWS
     --==================================================
 
     local Rows = {
@@ -1083,22 +1110,22 @@ local function CreateProfile(
 
         {
             "Breed",
-            breed
+            tostring(breed)
         },
 
         {
             "Main Colour",
-            mainColour
+            tostring(mainColour)
         },
 
         {
             "Mane Colour",
-            maneColour
+            tostring(maneColour)
         },
 
         {
             "Tail Colour",
-            tailColour
+            tostring(tailColour)
         }
 
     }
@@ -1111,15 +1138,15 @@ local function CreateProfile(
         Label.Size =
             UDim2.new(
                 1,
-                -12,
+                -10,
                 0,
-                19
+                14
             )
 
         Label.Position =
             UDim2.fromOffset(
-                6,
-                4 + ((i - 1) * 21)
+                5,
+                2 + ((i - 1) * 15)
             )
 
         Label.BackgroundTransparency = 1
@@ -1127,7 +1154,7 @@ local function CreateProfile(
         Label.Text =
             row[1]
             .. ": "
-            .. tostring(row[2])
+            .. row[2]
 
         Label.TextColor3 =
             i == 2
@@ -1137,18 +1164,21 @@ local function CreateProfile(
                 100
             )
             or Color3.fromRGB(
-                220,
-                220,
-                230
+                215,
+                215,
+                225
             )
 
-        Label.TextSize = 8
+        Label.TextSize = 7
 
         Label.Font =
             Enum.Font.Gotham
 
         Label.TextXAlignment =
             Enum.TextXAlignment.Left
+
+        Label.TextYAlignment =
+            Enum.TextYAlignment.Center
 
         Label.TextTruncate =
             Enum.TextTruncate.AtEnd
@@ -1159,7 +1189,7 @@ local function CreateProfile(
 end
 
 --==================================================
--- DISPLAY HORSES
+-- DISPLAY
 --==================================================
 
 local function DisplayHorses()
@@ -1209,6 +1239,7 @@ local function DisplayHorses()
             )
 
         end
+
     end
 
     Status.Text =
@@ -1220,7 +1251,7 @@ local function DisplayHorses()
 end
 
 --==================================================
--- SCAN WHOLE INVENTORY
+-- SCAN ENTIRE INVENTORY
 --==================================================
 
 for uid, item in pairs(Inventory) do
@@ -1257,13 +1288,13 @@ Search:GetPropertyChangedSignal(
 end)
 
 --==================================================
--- FIRST DISPLAY
+-- DISPLAY ALL HORSES
 --==================================================
 
 DisplayHorses()
 
 print(
-    "[HORSE SCANNER] Scanned inventory."
+    "[HORSE SCANNER] Inventory scanned."
 )
 
 print(
