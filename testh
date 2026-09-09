@@ -1,129 +1,228 @@
--- SELL TAB PROTOTYPE ONLY
+-- SELL TAB PROTOTYPE
+-- Compact UI + recursive horse inventory scanner.
+-- The scanner checks the player's character/backpack/player containers
+-- and also recursively inspects descendants for horse-like entries.
 
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "SellTabPrototype"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local old = PlayerGui:FindFirstChild("SellTabPrototype")
+if old then old:Destroy() end
 
-local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 520, 0, 420)
-main.Position = UDim2.new(0.5, -260, 0.5, -210)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
-main.BorderSizePixel = 0
-main.Parent = gui
+local Gui = Instance.new("ScreenGui")
+Gui.Name = "SellTabPrototype"
+Gui.ResetOnSpawn = false
+Gui.Parent = PlayerGui
 
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 390, 0, 300)
+Main.Position = UDim2.new(0.5, -195, 0.5, -150)
+Main.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+Main.BorderSizePixel = 0
+Main.Parent = Gui
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 8)
 
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -24, 0, 42)
-title.Position = UDim2.new(0, 12, 0, 8)
-title.BackgroundTransparency = 1
-title.Text = "Sell"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextSize = 18
-title.Font = Enum.Font.GothamBold
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = main
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -80, 0, 30)
+Title.Position = UDim2.new(0, 10, 0, 7)
+Title.BackgroundTransparency = 1
+Title.Text = "Sell"
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.TextSize = 14
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
 
-local list = Instance.new("ScrollingFrame")
-list.Size = UDim2.new(1, -24, 1, -65)
-list.Position = UDim2.new(0, 12, 0, 58)
-list.BackgroundTransparency = 1
-list.BorderSizePixel = 0
-list.ScrollBarThickness = 4
-list.AutomaticCanvasSize = Enum.AutomaticSize.Y
-list.Parent = main
+local Count = Instance.new("TextLabel")
+Count.Size = UDim2.new(0, 80, 0, 25)
+Count.Position = UDim2.new(1, -90, 0, 9)
+Count.BackgroundTransparency = 1
+Count.Text = "0 horses"
+Count.TextColor3 = Color3.fromRGB(145,145,152)
+Count.TextSize = 9
+Count.Font = Enum.Font.Gotham
+Count.TextXAlignment = Enum.TextXAlignment.Right
+Count.Parent = Main
 
-local grid = Instance.new("UIGridLayout")
-grid.CellSize = UDim2.new(0, 155, 0, 145)
-grid.CellPadding = UDim2.new(0, 8, 0, 8)
-grid.SortOrder = Enum.SortOrder.LayoutOrder
-grid.Parent = list
+local Refresh = Instance.new("TextButton")
+Refresh.Size = UDim2.new(0, 55, 0, 22)
+Refresh.Position = UDim2.new(1, -65, 1, -30)
+Refresh.BackgroundColor3 = Color3.fromRGB(38,38,45)
+Refresh.Text = "Refresh"
+Refresh.TextColor3 = Color3.fromRGB(220,220,225)
+Refresh.TextSize = 8
+Refresh.Font = Enum.Font.GothamBold
+Refresh.BorderSizePixel = 0
+Refresh.Parent = Main
+Instance.new("UICorner", Refresh).CornerRadius = UDim.new(0, 5)
 
--- Prototype horse data
-local horses = {
-    {"Arabian", "Black", "Rare", true},
-    {"Mustang", "Chestnut", "Uncommon", false},
-    {"Andalusian", "White", "Rare", true},
-    {"Friesian", "Black", "Epic", false},
-    {"Quarter Horse", "Bay", "Common", false},
-    {"Thoroughbred", "Palomino", "Rare", true},
-}
+local List = Instance.new("ScrollingFrame")
+List.Size = UDim2.new(1, -20, 1, -48)
+List.Position = UDim2.new(0, 10, 0, 40)
+List.BackgroundTransparency = 1
+List.BorderSizePixel = 0
+List.ScrollBarThickness = 3
+List.AutomaticCanvasSize = Enum.AutomaticSize.Y
+List.CanvasSize = UDim2.new()
+List.Parent = Main
 
-local function createCard(horse, index)
-    local name, colour, rarity, unique = table.unpack(horse)
+local Grid = Instance.new("UIGridLayout")
+Grid.CellSize = UDim2.new(0, 116, 0, 92)
+Grid.CellPadding = UDim2.new(0, 6, 0, 6)
+Grid.SortOrder = Enum.SortOrder.LayoutOrder
+Grid.Parent = List
 
-    local card = Instance.new("TextButton")
-    card.Name = "Horse_" .. index
-    card.Text = ""
-    card.AutoButtonColor = false
-    card.BackgroundColor3 = Color3.fromRGB(29,29,35)
-    card.BorderSizePixel = 0
-    card.LayoutOrder = index
-    card.Parent = list
+local function getValue(obj, names)
+    for _, name in ipairs(names) do
+        local a = obj:GetAttribute(name)
+        if a ~= nil and tostring(a) ~= "" then
+            return tostring(a)
+        end
 
-    Instance.new("UICorner", card).CornerRadius = UDim.new(0, 8)
+        local child = obj:FindFirstChild(name, true)
+        if child and child:IsA("ValueBase") and child.Value ~= nil then
+            local v = tostring(child.Value)
+            if v ~= "" then return v end
+        end
+    end
+    return nil
+end
 
-    local stroke = Instance.new("UIStroke")
-    stroke.Color = Color3.fromRGB(48,48,57)
-    stroke.Parent = card
+local function looksLikeHorse(obj)
+    local n = string.lower(obj.Name)
+    if string.find(n, "horse") then return true end
 
-    local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(0,52,0,52)
-    icon.Position = UDim2.new(0.5,-26,0,10)
-    icon.BackgroundColor3 = Color3.fromRGB(40,40,48)
-    icon.Text = "ð´"
-    icon.TextSize = 24
-    icon.Parent = card
-    Instance.new("UICorner", icon).CornerRadius = UDim.new(0,8)
+    local breed = getValue(obj, {"Breed", "BreedName", "HorseBreed", "Species"})
+    local uid = getValue(obj, {"UID", "Uid", "UniqueId", "UUID", "Id"})
+    local color = getValue(obj, {"Color", "Colour", "Coat", "HorseColor", "HorseColour"})
 
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1,-12,0,20)
-    nameLabel.Position = UDim2.new(0,6,0,68)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = name
-    nameLabel.TextColor3 = Color3.fromRGB(255,255,255)
-    nameLabel.TextSize = 12
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    nameLabel.Parent = card
+    return breed ~= nil and (uid ~= nil or color ~= nil)
+end
 
-    local info = Instance.new("TextLabel")
-    info.Size = UDim2.new(1,-12,0,18)
-    info.Position = UDim2.new(0,6,0,90)
-    info.BackgroundTransparency = 1
-    info.Text = colour .. " â¢ " .. rarity
-    info.TextColor3 = Color3.fromRGB(160,160,168)
-    info.TextSize = 9
-    info.Font = Enum.Font.Gotham
-    info.Parent = card
+local function getHorseData(obj)
+    local uid = getValue(obj, {"UID", "Uid", "UniqueId", "UUID", "Id"}) or obj:GetAttribute("UID") or "N/A"
+    local breed = getValue(obj, {"Breed", "BreedName", "HorseBreed", "Species"}) or obj.Name
+    local color = getValue(obj, {"Color", "Colour", "Coat", "HorseColor", "HorseColour"}) or "N/A"
 
-    local uniqueLabel = Instance.new("TextLabel")
-    uniqueLabel.Size = UDim2.new(1,-12,0,20)
-    uniqueLabel.Position = UDim2.new(0,6,1,-25)
-    uniqueLabel.BackgroundTransparency = 1
-    uniqueLabel.Text = unique and "â UNIQUE" or "STANDARD"
-    uniqueLabel.TextColor3 = unique and Color3.fromRGB(255,210,90) or Color3.fromRGB(105,105,112)
-    uniqueLabel.TextSize = 9
-    uniqueLabel.Font = Enum.Font.GothamBold
-    uniqueLabel.Parent = card
+    return tostring(uid), tostring(breed), tostring(color)
+end
 
-    card.MouseEnter:Connect(function()
-        card.BackgroundColor3 = Color3.fromRGB(38,38,45)
+local function clearList()
+    for _, child in ipairs(List:GetChildren()) do
+        if not child:IsA("UIGridLayout") then
+            child:Destroy()
+        end
+    end
+end
+
+local function addCard(uid, breed, color, index)
+    local Card = Instance.new("TextButton")
+    Card.Name = "HorseCard_" .. index
+    Card.Size = UDim2.new(0,116,0,92)
+    Card.BackgroundColor3 = Color3.fromRGB(29,29,35)
+    Card.BorderSizePixel = 0
+    Card.Text = ""
+    Card.AutoButtonColor = false
+    Card.LayoutOrder = index
+    Card.Parent = List
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 6)
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(47,47,55)
+    Stroke.Thickness = 1
+    Stroke.Parent = Card
+
+    local Info = Instance.new("TextLabel")
+    Info.Size = UDim2.new(1,-12,1,-10)
+    Info.Position = UDim2.new(0,6,0,5)
+    Info.BackgroundTransparency = 1
+    Info.Text = "uid: " .. uid .. "\nbreed name: " .. breed .. "\ncolor: " .. color
+    Info.TextColor3 = Color3.fromRGB(225,225,230)
+    Info.TextSize = 8
+    Info.Font = Enum.Font.Gotham
+    Info.TextWrapped = true
+    Info.TextXAlignment = Enum.TextXAlignment.Left
+    Info.TextYAlignment = Enum.TextYAlignment.Top
+    Info.Parent = Card
+
+    Card.MouseEnter:Connect(function()
+        Card.BackgroundColor3 = Color3.fromRGB(37,37,44)
     end)
-
-    card.MouseLeave:Connect(function()
-        card.BackgroundColor3 = Color3.fromRGB(29,29,35)
+    Card.MouseLeave:Connect(function()
+        Card.BackgroundColor3 = Color3.fromRGB(29,29,35)
     end)
-
-    card.MouseButton1Click:Connect(function()
-        print("Selected:", name, colour, rarity, unique)
+    Card.MouseButton1Click:Connect(function()
+        print("Selected horse:", uid, breed, color)
     end)
 end
 
-for i, horse in ipairs(horses) do
-    createCard(horse, i)
+local function scanInventory()
+    clearList()
+
+    local roots = {
+        LocalPlayer,
+        LocalPlayer:FindFirstChild("Backpack"),
+        LocalPlayer.Character,
+        LocalPlayer:FindFirstChild("PlayerGui"),
+    }
+
+    local seen = {}
+    local horses = {}
+
+    for _, root in ipairs(roots) do
+        if root then
+            for _, obj in ipairs(root:GetDescendants()) do
+                if not seen[obj] and looksLikeHorse(obj) then
+                    seen[obj] = true
+                    local uid, breed, color = getHorseData(obj)
+                    table.insert(horses, {
+                        uid = uid,
+                        breed = breed,
+                        color = color
+                    })
+                end
+            end
+        end
+    end
+
+    -- Also check direct children in case the horse entries themselves are roots.
+    for _, root in ipairs(roots) do
+        if root and looksLikeHorse(root) and not seen[root] then
+            seen[root] = true
+            local uid, breed, color = getHorseData(root)
+            table.insert(horses, {uid=uid, breed=breed, color=color})
+        end
+    end
+
+    table.sort(horses, function(a,b)
+        return string.lower(a.breed) < string.lower(b.breed)
+    end)
+
+    for i, horse in ipairs(horses) do
+        addCard(horse.uid, horse.breed, horse.color, i)
+    end
+
+    Count.Text = tostring(#horses) .. " horses"
 end
+
+Refresh.MouseButton1Click:Connect(scanInventory)
+
+scanInventory()
+
+-- Refresh automatically when inventory containers change.
+local function hook(root)
+    if not root then return end
+    root.DescendantAdded:Connect(function()
+        task.wait(0.15)
+        scanInventory()
+    end)
+    root.DescendantRemoving:Connect(function()
+        task.wait(0.15)
+        scanInventory()
+    end)
+end
+
+hook(LocalPlayer)
+hook(LocalPlayer:FindFirstChild("Backpack"))
+hook(LocalPlayer.Character)
