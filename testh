@@ -1494,8 +1494,8 @@ local function CreateProfile(
 
         Stroke.Thickness = 2
 
-    -- Blue = Main and Tail colours do not match
-    elseif tostring(mainColour):lower()
+    -- Blue = Mane and Tail colours do not match
+    elseif tostring(maneColour):lower()
         ~= tostring(tailColour):lower() then
 
         Stroke.Color =
