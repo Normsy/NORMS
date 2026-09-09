@@ -590,7 +590,7 @@ local function GetColours(item)
         tailColour or "Unknown"
 end
 
--- Compare Main and Tail by their actual value/content.
+-- Compare Mane and Tail only. Main Colour is intentionally NOT part of mismatch detection.
 -- This prevents identical colour tables/values from being marked blue
 -- just because tostring(table) produces different memory addresses.
 local function ColoursMatch(a, b)
@@ -1578,8 +1578,8 @@ local function CreateProfile(
         Stroke.Color = Color3.fromRGB(255,140,0)
         Stroke.Thickness = 2
 
-    -- BLUE = Main and Tail are different (3rd best)
-    elseif MainTailDifferent then
+    -- BLUE = Mane and Tail are different (3rd best)
+    elseif ManeTailDifferent then
 
         Stroke.Color =
             Color3.fromRGB(
@@ -1633,7 +1633,7 @@ local function CreateProfile(
     --==============================================
     -- SPECIAL INDICATOR CIRCLES
     -- Red = Unique Hair
-    -- Blue = Main and Tail are different
+    -- Blue = Mane and Tail are different
     -- Green = Nat Dyed
     -- Purple = Horn Colour
     -- Every matching indicator is shown, even when
@@ -1702,8 +1702,8 @@ local function CreateProfile(
         IndicatorX = IndicatorX + 8
     end
 
-    -- Blue = Main and Tail are different
-    if MainTailDifferent then
+    -- Blue = Mane and Tail are different
+    if ManeTailDifferent then
         AddIndicator(
             Color3.fromRGB(0, 170, 255),
             IndicatorX
