@@ -590,7 +590,7 @@ local function GetColours(item)
         tailColour or "Unknown"
 end
 
--- Compare Mane and Tail by their actual value/content.
+-- Compare Main and Tail by their actual value/content.
 -- This prevents identical colour tables/values from being marked blue
 -- just because tostring(table) produces different memory addresses.
 local function ColoursMatch(a, b)
@@ -720,14 +720,14 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        350,
+        410,
         300
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -175,
+        -205,
         0.5,
         -150
     )
@@ -1198,14 +1198,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        125,
-        100
+        72,
+        88
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        5,
-        5
+        4,
+        4
     )
 
 Grid.FillDirection =
@@ -1295,7 +1295,7 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                350,
+                410,
                 40
             )
 
@@ -1306,7 +1306,7 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                350,
+                410,
                 300
             )
 
@@ -1477,8 +1477,8 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            125,
-            100
+            72,
+            88
         )
 
     Card.BackgroundColor3 =
@@ -1527,7 +1527,7 @@ local function CreateProfile(
         IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour)
 
-    local ManeTailDifferent =
+    local MainTailDifferent =
         not ColoursMatch(maneColour, tailColour)
 
     -- RED = Unique Hair (BEST / highest priority)
@@ -1542,8 +1542,8 @@ local function CreateProfile(
 
         Stroke.Thickness = 2
 
-    -- BLUE = Mane and Tail are different (2nd best)
-    elseif ManeTailDifferent then
+    -- BLUE = Main and Tail are different (2nd best)
+    elseif MainTailDifferent then
 
         Stroke.Color =
             Color3.fromRGB(
@@ -1597,7 +1597,7 @@ local function CreateProfile(
     --==============================================
     -- SPECIAL INDICATOR CIRCLES
     -- Red = Unique Hair
-    -- Blue = Mane and Tail are different
+    -- Blue = Main and Tail are different
     -- Green = Nat Dyed
     -- Purple = Horn Colour
     -- Every matching indicator is shown, even when
@@ -1608,10 +1608,10 @@ local function CreateProfile(
         Instance.new("Frame")
 
     IndicatorContainer.Size =
-        UDim2.fromOffset(48, 12)
+        UDim2.fromOffset(40, 10)
 
     IndicatorContainer.Position =
-        UDim2.new(1, -36, 0, 4)
+        UDim2.new(1, -41, 0, 3)
 
     IndicatorContainer.BackgroundTransparency = 1
     IndicatorContainer.Parent = Card
@@ -1622,7 +1622,7 @@ local function CreateProfile(
             Instance.new("Frame")
 
         Circle.Size =
-            UDim2.fromOffset(9, 9)
+            UDim2.fromOffset(7, 7)
 
         Circle.Position =
             UDim2.fromOffset(x, 1)
@@ -1657,16 +1657,16 @@ local function CreateProfile(
             Color3.fromRGB(255, 0, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 11
+        IndicatorX = IndicatorX + 9
     end
 
-    -- Blue = Mane and Tail are different
-    if ManeTailDifferent then
+    -- Blue = Main and Tail are different
+    if MainTailDifferent then
         AddIndicator(
             Color3.fromRGB(0, 170, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 11
+        IndicatorX = IndicatorX + 9
     end
 
     -- Green = Nat Dyed
@@ -1675,7 +1675,7 @@ local function CreateProfile(
             Color3.fromRGB(0, 255, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 11
+        IndicatorX = IndicatorX + 9
     end
 
     -- Purple = Horn Colour
@@ -1684,7 +1684,7 @@ local function CreateProfile(
             Color3.fromRGB(170, 0, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 11
+        IndicatorX = IndicatorX + 9
     end
 
     --==============================================
@@ -1699,16 +1699,16 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     BreedLabel.Size =
-        UDim2.new(1, -8, 0, 16)
+        UDim2.new(1, -6, 0, 13)
 
     BreedLabel.Position =
-        UDim2.fromOffset(4, 3)
+        UDim2.fromOffset(3, 3)
 
     BreedLabel.BackgroundTransparency = 1
     BreedLabel.Text = tostring(breed)
     BreedLabel.TextColor3 =
         Color3.fromRGB(255, 215, 100)
-    BreedLabel.TextSize = 8
+    BreedLabel.TextSize = 5
     BreedLabel.Font = Enum.Font.GothamBold
     BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
     BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1741,16 +1741,16 @@ local function CreateProfile(
         Label.Size =
             UDim2.new(
                 1,
-                -8,
+                -6,
                 0,
-                14
+                12
             )
 
         Label.Position =
             UDim2.fromOffset(
-                4,
-                20
-                    + ((i - 1) * 15)
+                3,
+                17
+                    + ((i - 1) * 13)
             )
 
         Label.BackgroundTransparency = 1
@@ -1790,22 +1790,79 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     UIDLabel.Size =
-        UDim2.new(1, -8, 0, 12)
+        UDim2.new(1, -6, 0, 9)
 
     UIDLabel.Position =
-        UDim2.fromOffset(4, 76)
+        UDim2.fromOffset(3, 74)
 
     UIDLabel.BackgroundTransparency = 1
     UIDLabel.Text = "UID: " .. tostring(uid)
     UIDLabel.TextColor3 =
         Color3.fromRGB(105, 115, 135)
-    UIDLabel.TextSize = 5
+    UIDLabel.TextSize = 4
     UIDLabel.Font = Enum.Font.Gotham
     UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
     UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
     UIDLabel.Parent = Card
 
 end
+
+--==================================================
+-- SORT BEST TO NORMAL
+--==================================================
+
+local function GetHorsePriority(horse)
+
+    local item = horse.item
+
+    local mainColour,
+        maneColour,
+        tailColour =
+        GetColours(item)
+
+    local variants =
+        item.variants
+        or item.Variants
+        or {}
+
+    local HasHorn =
+        variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local HasNatDyed =
+        item.isNatDyed ~= nil
+
+    local HasUniqueHair =
+        IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour)
+
+    local MainTailDifferent =
+        not ColoursMatch(mainColour, tailColour)
+
+    if HasUniqueHair then
+        return 4
+    elseif MainTailDifferent then
+        return 3
+    elseif HasNatDyed then
+        return 2
+    elseif HasHorn then
+        return 1
+    end
+
+    return 0
+end
+
+table.sort(HorseList, function(a, b)
+
+    local priorityA = GetHorsePriority(a)
+    local priorityB = GetHorsePriority(b)
+
+    if priorityA ~= priorityB then
+        return priorityA > priorityB
+    end
+
+    return tostring(a.uid) < tostring(b.uid)
+end)
 
 --==================================================
 -- DISPLAY
