@@ -1,69 +1,149 @@
+--// HORSE INVENTORY SCANNER
+--// KEYWORD-BASED HORSE / DONKEY SCANNER
+--// 5 PROFILES PER ROW
+--// READ-ONLY
+--// MOBILE FRIENDLY
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+
+--==================================================
+-- LOAD INVENTORY
+--==================================================
+
+local References
+local Data
+local Inventory
+
+local success, err = pcall(function()
+
+    References = require(
+        ReplicatedStorage:WaitForChild("References")
+    )
+
+    Data = require(
+        References.PlayerScripts.Priority.Data
+    )
+
+    Inventory = Data.GetLocal({"inventory"})
+
+end)
+
+if not success then
+    warn("[HORSE SCANNER] Failed to load inventory:", err)
+    return
+end
+
+if type(Inventory) ~= "table" then
+    warn("[HORSE SCANNER] Inventory is not a table.")
+    return
+end
+
 --==================================================
 -- BREED KEYWORDS
 --==================================================
 
-local BreedKeywords = {
-    "akhal-teke",
-    "andalusian",
-    "appaloosa",
-    "arabian",
-    "clydesdale",
-    "connemara",
-    "dutch warmblood",
-    "fjord",
-    "friesian",
-    "hinny",
-    "icelandic",
-    "mammoth donkey",
-    "marwari",
-    "morgan",
-    "mule",
-    "mustang",
-    "paint horse",
-    "percheron",
-    "quarter horse",
-    "reindeer",
-    "shire",
-    "standard donkey",
-    "standardbred",
-    "tennessee walking horse",
-    "thoroughbred",
-    "unicorn",
-    "donkey"
-}
-
 local BreedDisplayNames = {
+
+    ["akhal teke"] = "Akhal-Teke Horse",
     ["akhal-teke"] = "Akhal-Teke Horse",
+
     ["andalusian"] = "Andalusian Horse",
     ["appaloosa"] = "Appaloosa Horse",
     ["arabian"] = "Arabian Horse",
     ["clydesdale"] = "Clydesdale Horse",
     ["connemara"] = "Connemara Horse",
+
     ["dutch warmblood"] = "Dutch Warmblood",
+
     ["fjord"] = "Fjord Horse",
     ["friesian"] = "Friesian Horse",
     ["hinny"] = "Hinny",
     ["icelandic"] = "Icelandic Horse",
+
     ["mammoth donkey"] = "Mammoth Donkey",
+
     ["marwari"] = "Marwari Horse",
     ["morgan"] = "Morgan Horse",
     ["mule"] = "Mule",
     ["mustang"] = "Mustang Horse",
+
     ["paint horse"] = "Paint Horse",
+
     ["percheron"] = "Percheron Horse",
+
     ["quarter horse"] = "Quarter Horse",
+
     ["reindeer"] = "Reindeer",
+
     ["shire"] = "Shire Horse",
+
     ["standard donkey"] = "Standard Donkey",
+
     ["standardbred"] = "Standardbred Horse",
-    ["tennessee walking horse"] = "Tennessee Walking Horse",
-    ["thoroughbred"] = "Thoroughbred Horse",
-    ["unicorn"] = "Unicorn",
-    ["donkey"] = "Donkey"
+
+    ["tennessee walking horse"] =
+        "Tennessee Walking Horse",
+
+    ["thoroughbred"] =
+        "Thoroughbred Horse",
+
+    ["unicorn"] =
+        "Unicorn",
+
+    ["donkey"] =
+        "Donkey"
 }
 
 --==================================================
--- NORMALIZE
+-- KEYWORDS
+-- Longest / most specific first
+--==================================================
+
+local BreedKeywords = {
+
+    "tennessee walking horse",
+
+    "dutch warmblood",
+
+    "mammoth donkey",
+
+    "standard donkey",
+
+    "paint horse",
+
+    "quarter horse",
+
+    "akhal-teke",
+    "akhal teke",
+
+    "andalusian",
+    "appaloosa",
+    "arabian",
+    "clydesdale",
+    "connemara",
+    "fjord",
+    "friesian",
+    "hinny",
+    "icelandic",
+    "marwari",
+    "morgan",
+    "mule",
+    "mustang",
+    "percheron",
+    "reindeer",
+    "shire",
+    "standardbred",
+    "thoroughbred",
+    "unicorn",
+    "donkey"
+}
+
+--==================================================
+-- NORMALIZE TEXT
 --==================================================
 
 local function NormalizeText(value)
@@ -74,10 +154,24 @@ local function NormalizeText(value)
 
     local text = tostring(value):lower()
 
-    text = text:gsub("[%p_]+", " ")
-    text = text:gsub("%s+", " ")
+    text = text:gsub(
+        "_",
+        " "
+    )
 
-    return text:match("^%s*(.-)%s*$")
+    text = text:gsub(
+        "-",
+        " "
+    )
+
+    text = text:gsub(
+        "%s+",
+        " "
+    )
+
+    return text:match(
+        "^%s*(.-)%s*$"
+    )
 end
 
 --==================================================
@@ -90,64 +184,33 @@ local function FindBreedKeyword(value)
         return nil
     end
 
-    local text = NormalizeText(value)
+    local text =
+        NormalizeText(value)
 
     if text == "" then
         return nil
     end
 
-    -- Check longer keywords first.
-    -- This prevents "donkey" from winning over
-    -- "mammoth donkey" or "standard donkey".
-
-    local sortedKeywords = {
-        "tennessee walking horse",
-        "dutch warmblood",
-        "mammoth donkey",
-        "standard donkey",
-        "paint horse",
-        "quarter horse",
-        "akhal teke",
-        "akhal-teke",
-
-        "andalusian",
-        "appaloosa",
-        "arabian",
-        "clydesdale",
-        "connemara",
-        "fjord",
-        "friesian",
-        "hinny",
-        "icelandic",
-        "marwari",
-        "morgan",
-        "mule",
-        "mustang",
-        "percheron",
-        "reindeer",
-        "shire",
-        "standardbred",
-        "thoroughbred",
-        "unicorn",
-        "donkey"
-    }
-
-    for _, keyword in ipairs(sortedKeywords) do
+    for _, keyword in ipairs(
+        BreedKeywords
+    ) do
 
         local normalizedKeyword =
             NormalizeText(keyword)
 
-        if text == normalizedKeyword
-            or text:find(
-                normalizedKeyword,
-                1,
-                true
-            ) then
+        if text == normalizedKeyword then
 
             return BreedDisplayNames[keyword]
-                or BreedDisplayNames[
-                    normalizedKeyword
-                ]
+
+        end
+
+        if text:find(
+            normalizedKeyword,
+            1,
+            true
+        ) then
+
+            return BreedDisplayNames[keyword]
 
         end
 
@@ -200,25 +263,42 @@ local BreedFields = {
 }
 
 --==================================================
--- SEARCH BREED DATA
+-- SEARCH TABLE FOR BREED
 --==================================================
 
-local function SearchBreedData(tbl, depth)
+local function SearchBreedData(
+    tbl,
+    depth,
+    visited
+)
 
     if type(tbl) ~= "table" then
         return nil
     end
 
     depth = depth or 0
+    visited = visited or {}
 
-    if depth > 8 then
+    if depth > 10 then
         return nil
     end
 
-    -- First check explicit breed fields.
-    for _, field in ipairs(BreedFields) do
+    if visited[tbl] then
+        return nil
+    end
 
-        local value = tbl[field]
+    visited[tbl] = true
+
+    --==============================================
+    -- CHECK EXPLICIT BREED FIELDS FIRST
+    --==============================================
+
+    for _, field in ipairs(
+        BreedFields
+    ) do
+
+        local value =
+            tbl[field]
 
         if value ~= nil then
 
@@ -233,7 +313,10 @@ local function SearchBreedData(tbl, depth)
 
     end
 
-    -- Then inspect nested tables.
+    --==============================================
+    -- SEARCH ALL NESTED DATA
+    --==============================================
+
     for key, value in pairs(tbl) do
 
         if type(value) == "table" then
@@ -241,7 +324,8 @@ local function SearchBreedData(tbl, depth)
             local breed =
                 SearchBreedData(
                     value,
-                    depth + 1
+                    depth + 1,
+                    visited
                 )
 
             if breed then
@@ -250,19 +334,51 @@ local function SearchBreedData(tbl, depth)
 
         elseif type(value) == "string" then
 
-            -- Only inspect strings from fields that
-            -- are likely to describe an item/animal.
-            local keyName =
+            local normalizedKey =
                 NormalizeText(key)
 
             local relevant =
-                keyName:find("breed", 1, true)
-                or keyName:find("horse", 1, true)
-                or keyName:find("animal", 1, true)
-                or keyName:find("species", 1, true)
-                or keyName:find("type", 1, true)
-                or keyName:find("name", 1, true)
-                or keyName:find("item", 1, true)
+                normalizedKey:find(
+                    "breed",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "horse",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "animal",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "species",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "type",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "name",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "item",
+                    1,
+                    true
+                )
 
             if relevant then
 
@@ -294,6 +410,7 @@ local function GetItemInfo(item)
 
     if not References
         or not References.Items then
+
         return nil
     end
 
@@ -308,7 +425,11 @@ local function GetItemInfo(item)
 
     local ok, result =
         pcall(function()
-            return References.Items.GetInfo(itemId)
+
+            return References.Items.GetInfo(
+                itemId
+            )
+
         end)
 
     if ok and type(result) == "table" then
@@ -322,9 +443,12 @@ end
 -- GET BREED
 --==================================================
 
-local function GetBreed(item, info)
+local function GetBreed(
+    item,
+    info
+)
 
-    -- Search actual inventory data
+    -- Search inventory item
     local breed =
         SearchBreedData(item)
 
@@ -332,7 +456,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- Search item definition/info
+    -- Search item definition
     breed =
         SearchBreedData(info)
 
@@ -340,22 +464,29 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- pId lookup
+    --==============================================
+    -- pId LOOKUP
+    --==============================================
+
     local pId
 
     if type(item) == "table" then
+
         pId =
             item.pId
             or item.PId
             or item.pid
+
     end
 
     if type(info) == "table" then
+
         pId =
             pId
             or info.pId
             or info.PId
             or info.pid
+
     end
 
     if pId
@@ -391,4 +522,1163 @@ local function GetBreed(item, info)
 end
 
 --==================================================
--- HORSE DETECTOR
+-- CHECK IF INVENTORY ENTRY IS A PROFILE
+--==================================================
+
+local function IsBreedProfile(
+    item,
+    info
+)
+
+    local breed =
+        GetBreed(
+            item,
+            info
+        )
+
+    if breed then
+        return true, breed
+    end
+
+    return false, nil
+end
+
+--==================================================
+-- GET COLOURS
+--==================================================
+
+local function GetColours(item)
+
+    if type(item) ~= "table" then
+
+        return
+            "Unknown",
+            "Unknown",
+            "Unknown"
+
+    end
+
+    local variants =
+        item.variants
+        or item.Variants
+
+    if type(variants) ~= "table" then
+
+        return
+            "Unknown",
+            "Unknown",
+            "Unknown"
+
+    end
+
+    local mainColour =
+        variants.colour
+        or variants.mainColour
+        or variants.MainColour
+
+    local maneColour =
+        variants.maneColour
+        or variants.ManeColour
+
+    local tailColour =
+        variants.tailColour
+        or variants.TailColour
+
+    return
+        tostring(
+            mainColour or "Unknown"
+        ),
+
+        tostring(
+            maneColour or "Unknown"
+        ),
+
+        tostring(
+            tailColour or "Unknown"
+        )
+end
+
+--==================================================
+-- GUI
+--==================================================
+
+local guiParent
+
+pcall(function()
+
+    guiParent =
+        game:GetService("CoreGui")
+
+end)
+
+if not guiParent then
+
+    guiParent =
+        LocalPlayer:WaitForChild(
+            "PlayerGui"
+        )
+
+end
+
+local old =
+    guiParent:FindFirstChild(
+        "HorseInventoryScanner"
+    )
+
+if old then
+    old:Destroy()
+end
+
+local ScreenGui =
+    Instance.new("ScreenGui")
+
+ScreenGui.Name =
+    "HorseInventoryScanner"
+
+ScreenGui.ResetOnSpawn = false
+
+ScreenGui.ZIndexBehavior =
+    Enum.ZIndexBehavior.Sibling
+
+ScreenGui.Parent =
+    guiParent
+
+--==================================================
+-- MAIN
+--==================================================
+
+local Main =
+    Instance.new("Frame")
+
+Main.Size =
+    UDim2.fromOffset(
+        350,
+        300
+    )
+
+Main.Position =
+    UDim2.new(
+        0.5,
+        -175,
+        0.5,
+        -150
+    )
+
+Main.BackgroundColor3 =
+    Color3.fromRGB(
+        13,
+        13,
+        18
+    )
+
+Main.BorderSizePixel = 0
+Main.Active = true
+
+Main.Parent =
+    ScreenGui
+
+local MainCorner =
+    Instance.new("UICorner")
+
+MainCorner.CornerRadius =
+    UDim.new(
+        0,
+        9
+    )
+
+MainCorner.Parent =
+    Main
+
+local MainStroke =
+    Instance.new("UIStroke")
+
+MainStroke.Color =
+    Color3.fromRGB(
+        45,
+        45,
+        55
+    )
+
+MainStroke.Thickness = 1
+
+MainStroke.Parent =
+    Main
+
+--==================================================
+-- TOP BAR
+--==================================================
+
+local TopBar =
+    Instance.new("Frame")
+
+TopBar.Size =
+    UDim2.new(
+        1,
+        0,
+        0,
+        40
+    )
+
+TopBar.BackgroundColor3 =
+    Color3.fromRGB(
+        20,
+        20,
+        27
+    )
+
+TopBar.BorderSizePixel = 0
+TopBar.Active = true
+
+TopBar.Parent =
+    Main
+
+local TopCorner =
+    Instance.new("UICorner")
+
+TopCorner.CornerRadius =
+    UDim.new(
+        0,
+        9
+    )
+
+TopCorner.Parent =
+    TopBar
+
+--==================================================
+-- TITLE
+--==================================================
+
+local Title =
+    Instance.new("TextLabel")
+
+Title.Size =
+    UDim2.new(
+        1,
+        -90,
+        0,
+        20
+    )
+
+Title.Position =
+    UDim2.fromOffset(
+        10,
+        4
+    )
+
+Title.BackgroundTransparency = 1
+
+Title.Text =
+    "🐴 HORSE SCANNER"
+
+Title.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+Title.TextSize = 11
+
+Title.Font =
+    Enum.Font.GothamBold
+
+Title.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Title.Parent =
+    TopBar
+
+--==================================================
+-- STATUS
+--==================================================
+
+local Status =
+    Instance.new("TextLabel")
+
+Status.Size =
+    UDim2.new(
+        1,
+        -90,
+        0,
+        13
+    )
+
+Status.Position =
+    UDim2.fromOffset(
+        10,
+        23
+    )
+
+Status.BackgroundTransparency = 1
+
+Status.Text =
+    "Scanning inventory..."
+
+Status.TextColor3 =
+    Color3.fromRGB(
+        140,
+        145,
+        160
+    )
+
+Status.TextSize = 7
+
+Status.Font =
+    Enum.Font.Gotham
+
+Status.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Status.Parent =
+    TopBar
+
+--==================================================
+-- MINIMIZE
+--==================================================
+
+local Minimize =
+    Instance.new("TextButton")
+
+Minimize.Size =
+    UDim2.fromOffset(
+        27,
+        27
+    )
+
+Minimize.Position =
+    UDim2.new(
+        1,
+        -64,
+        0,
+        7
+    )
+
+Minimize.BackgroundColor3 =
+    Color3.fromRGB(
+        38,
+        38,
+        48
+    )
+
+Minimize.BorderSizePixel = 0
+
+Minimize.Text =
+    "−"
+
+Minimize.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+Minimize.TextSize = 16
+
+Minimize.Font =
+    Enum.Font.GothamBold
+
+Minimize.Parent =
+    TopBar
+
+local MinCorner =
+    Instance.new("UICorner")
+
+MinCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+MinCorner.Parent =
+    Minimize
+
+--==================================================
+-- CLOSE
+--==================================================
+
+local Close =
+    Instance.new("TextButton")
+
+Close.Size =
+    UDim2.fromOffset(
+        27,
+        27
+    )
+
+Close.Position =
+    UDim2.new(
+        1,
+        -33,
+        0,
+        7
+    )
+
+Close.BackgroundColor3 =
+    Color3.fromRGB(
+        45,
+        25,
+        28
+    )
+
+Close.BorderSizePixel = 0
+
+Close.Text =
+    "×"
+
+Close.TextColor3 =
+    Color3.fromRGB(
+        255,
+        120,
+        120
+    )
+
+Close.TextSize = 17
+
+Close.Font =
+    Enum.Font.GothamBold
+
+Close.Parent =
+    TopBar
+
+local CloseCorner =
+    Instance.new("UICorner")
+
+CloseCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+CloseCorner.Parent =
+    Close
+
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+--==================================================
+-- CONTENT
+--==================================================
+
+local Content =
+    Instance.new("Frame")
+
+Content.Size =
+    UDim2.new(
+        1,
+        0,
+        1,
+        -40
+    )
+
+Content.Position =
+    UDim2.fromOffset(
+        0,
+        40
+    )
+
+Content.BackgroundTransparency = 1
+
+Content.Parent =
+    Main
+
+--==================================================
+-- SEARCH
+--==================================================
+
+local Search =
+    Instance.new("TextBox")
+
+Search.Size =
+    UDim2.new(
+        1,
+        -20,
+        0,
+        27
+    )
+
+Search.Position =
+    UDim2.fromOffset(
+        10,
+        7
+    )
+
+Search.BackgroundColor3 =
+    Color3.fromRGB(
+        23,
+        23,
+        31
+    )
+
+Search.BorderSizePixel = 0
+
+Search.PlaceholderText =
+    "Search UID or breed..."
+
+Search.PlaceholderColor3 =
+    Color3.fromRGB(
+        100,
+        105,
+        120
+    )
+
+Search.Text = ""
+
+Search.TextColor3 =
+    Color3.fromRGB(
+        235,
+        235,
+        240
+    )
+
+Search.TextSize = 8
+
+Search.Font =
+    Enum.Font.Gotham
+
+Search.ClearTextOnFocus = false
+
+Search.Parent =
+    Content
+
+local SearchCorner =
+    Instance.new("UICorner")
+
+SearchCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+SearchCorner.Parent =
+    Search
+
+local SearchPadding =
+    Instance.new("UIPadding")
+
+SearchPadding.PaddingLeft =
+    UDim.new(
+        0,
+        8
+    )
+
+SearchPadding.Parent =
+    Search
+
+--==================================================
+-- RESULTS
+--==================================================
+
+local Results =
+    Instance.new("ScrollingFrame")
+
+Results.Size =
+    UDim2.new(
+        1,
+        -20,
+        1,
+        -45
+    )
+
+Results.Position =
+    UDim2.fromOffset(
+        10,
+        40
+    )
+
+Results.BackgroundColor3 =
+    Color3.fromRGB(
+        17,
+        17,
+        23
+    )
+
+Results.BorderSizePixel = 0
+
+Results.ScrollBarThickness = 3
+
+Results.ScrollingDirection =
+    Enum.ScrollingDirection.XY
+
+Results.CanvasSize =
+    UDim2.fromOffset(
+        0,
+        0
+    )
+
+Results.Parent =
+    Content
+
+local ResultsCorner =
+    Instance.new("UICorner")
+
+ResultsCorner.CornerRadius =
+    UDim.new(
+        0,
+        7
+    )
+
+ResultsCorner.Parent =
+    Results
+
+--==================================================
+-- GRID
+--==================================================
+
+local Grid =
+    Instance.new("UIGridLayout")
+
+Grid.CellSize =
+    UDim2.fromOffset(
+        125,
+        100
+    )
+
+Grid.CellPadding =
+    UDim2.fromOffset(
+        5,
+        5
+    )
+
+Grid.FillDirection =
+    Enum.FillDirection.Horizontal
+
+Grid.FillDirectionMaxCells =
+    5
+
+Grid.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+Grid.Parent =
+    Results
+
+--==================================================
+-- PADDING
+--==================================================
+
+local Padding =
+    Instance.new("UIPadding")
+
+Padding.PaddingTop =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingBottom =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingLeft =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingRight =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.Parent =
+    Results
+
+--==================================================
+-- CANVAS
+--==================================================
+
+local function UpdateCanvas()
+
+    local size =
+        Grid.AbsoluteContentSize
+
+    Results.CanvasSize =
+        UDim2.fromOffset(
+            size.X + 10,
+            size.Y + 10
+        )
+
+end
+
+Grid:GetPropertyChangedSignal(
+    "AbsoluteContentSize"
+):Connect(
+    UpdateCanvas
+)
+
+--==================================================
+-- MINIMIZE
+--==================================================
+
+local Minimized = false
+
+Minimize.MouseButton1Click:Connect(function()
+
+    Minimized =
+        not Minimized
+
+    Content.Visible =
+        not Minimized
+
+    if Minimized then
+
+        Main.Size =
+            UDim2.fromOffset(
+                350,
+                40
+            )
+
+        Minimize.Text =
+            "+"
+
+    else
+
+        Main.Size =
+            UDim2.fromOffset(
+                350,
+                300
+            )
+
+        Minimize.Text =
+            "−"
+
+    end
+
+end)
+
+--==================================================
+-- DRAG
+--==================================================
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+TopBar.InputBegan:Connect(function(input)
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        Dragging = true
+
+        DragStart =
+            input.Position
+
+        StartPosition =
+            Main.Position
+
+    end
+
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if not Dragging then
+        return
+    end
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseMovement
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        local Delta =
+            input.Position
+            - DragStart
+
+        Main.Position =
+            UDim2.new(
+
+                StartPosition.X.Scale,
+                StartPosition.X.Offset
+                    + Delta.X,
+
+                StartPosition.Y.Scale,
+                StartPosition.Y.Offset
+                    + Delta.Y
+
+            )
+
+    end
+
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        Dragging = false
+
+    end
+
+end)
+
+--==================================================
+-- HORSE LIST
+--==================================================
+
+local HorseList = {}
+
+--==================================================
+-- SCAN ENTIRE INVENTORY
+--==================================================
+
+local function ScanInventory()
+
+    table.clear(HorseList)
+
+    local totalEntries = 0
+
+    for uid, item in pairs(Inventory) do
+
+        totalEntries += 1
+
+        if type(item) == "table" then
+
+            local info =
+                GetItemInfo(item)
+
+            local isHorse, breed =
+                IsBreedProfile(
+                    item,
+                    info
+                )
+
+            if isHorse then
+
+                table.insert(
+                    HorseList,
+                    {
+                        uid = uid,
+                        item = item,
+                        info = info,
+                        breed = breed
+                    }
+                )
+
+            end
+
+        end
+
+    end
+
+    return totalEntries
+end
+
+--==================================================
+-- CREATE PROFILE
+--==================================================
+
+local function CreateProfile(
+    horse,
+    order
+)
+
+    local uid =
+        horse.uid
+
+    local item =
+        horse.item
+
+    local info =
+        horse.info
+
+    local breed =
+        horse.breed
+        or GetBreed(
+            item,
+            info
+        )
+        or "Unknown"
+
+    local mainColour,
+        maneColour,
+        tailColour =
+        GetColours(item)
+
+    local Card =
+        Instance.new("Frame")
+
+    Card.Size =
+        UDim2.fromOffset(
+            125,
+            100
+        )
+
+    Card.BackgroundColor3 =
+        Color3.fromRGB(
+            24,
+            24,
+            32
+        )
+
+    Card.BorderSizePixel = 0
+
+    Card.LayoutOrder =
+        order
+
+    Card.Parent =
+        Results
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(
+            0,
+            6
+        )
+
+    Corner.Parent =
+        Card
+
+    local Stroke =
+        Instance.new("UIStroke")
+
+    Stroke.Color =
+        Color3.fromRGB(
+            42,
+            42,
+            52
+        )
+
+    Stroke.Thickness = 1
+
+    Stroke.Parent =
+        Card
+
+    --==============================================
+    -- PROFILE TITLE
+    --==============================================
+
+    local ProfileTitle =
+        Instance.new("TextLabel")
+
+    ProfileTitle.Size =
+        UDim2.new(
+            1,
+            -8,
+            0,
+            15
+        )
+
+    ProfileTitle.Position =
+        UDim2.fromOffset(
+            4,
+            3
+        )
+
+    ProfileTitle.BackgroundTransparency = 1
+
+    ProfileTitle.Text =
+        "PROFILE "
+        .. tostring(order)
+
+    ProfileTitle.TextColor3 =
+        Color3.fromRGB(
+            255,
+            215,
+            100
+        )
+
+    ProfileTitle.TextSize = 7
+
+    ProfileTitle.Font =
+        Enum.Font.GothamBold
+
+    ProfileTitle.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ProfileTitle.Parent =
+        Card
+
+    --==============================================
+    -- FIVE FIELDS
+    --==============================================
+
+    local Rows = {
+
+        {
+            "UID",
+            tostring(uid)
+        },
+
+        {
+            "Breed",
+            tostring(breed)
+        },
+
+        {
+            "Main",
+            tostring(mainColour)
+        },
+
+        {
+            "Mane",
+            tostring(maneColour)
+        },
+
+        {
+            "Tail",
+            tostring(tailColour)
+        }
+
+    }
+
+    for i, row in ipairs(Rows) do
+
+        local Label =
+            Instance.new("TextLabel")
+
+        Label.Size =
+            UDim2.new(
+                1,
+                -8,
+                0,
+                14
+            )
+
+        Label.Position =
+            UDim2.fromOffset(
+                4,
+                18
+                    + ((i - 1) * 15)
+            )
+
+        Label.BackgroundTransparency = 1
+
+        Label.Text =
+            row[1]
+            .. ": "
+            .. row[2]
+
+        Label.TextColor3 =
+            i == 2
+
+            and Color3.fromRGB(
+                255,
+                215,
+                100
+            )
+
+            or Color3.fromRGB(
+                215,
+                215,
+                225
+            )
+
+        Label.TextSize = 6
+
+        Label.Font =
+            Enum.Font.Gotham
+
+        Label.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Label.TextYAlignment =
+            Enum.TextYAlignment.Center
+
+        Label.TextTruncate =
+            Enum.TextTruncate.AtEnd
+
+        Label.Parent =
+            Card
+
+    end
+
+end
+
+--==================================================
+-- DISPLAY
+--==================================================
+
+local function DisplayHorses()
+
+    for _, child in ipairs(
+        Results:GetChildren()
+    ) do
+
+        if child:IsA("Frame") then
+            child:Destroy()
+        end
+
+    end
+
+    local searchText =
+        Search.Text:lower()
+
+    local shown = 0
+
+    for _, horse in ipairs(
+        HorseList
+    ) do
+
+        local breed =
+            horse.breed
+            or GetBreed(
+                horse.item,
+                horse.info
+            )
+            or "Unknown"
+
+        local searchable =
+            tostring(horse.uid)
+            .. " "
+            .. tostring(breed)
+
+        if searchText == ""
+            or searchable:lower():find(
+                searchText,
+                1,
+                true
+            ) then
+
+            shown += 1
+
+            CreateProfile(
+                horse,
+                shown
+            )
+
+        end
+
+    end
+
+    Status.Text =
+        "Horses: "
+        .. tostring(shown)
+        .. " / "
+        .. tostring(#HorseList)
+
+    task.defer(
+        UpdateCanvas
+    )
+
+end
+
+--==================================================
+-- INITIAL SCAN
+--==================================================
+
+local totalEntries =
+    ScanInventory()
+
+DisplayHorses()
+
+print(
+    "[HORSE SCANNER] Total inventory entries:",
+    totalEntries
+)
+
+print(
+    "[HORSE SCANNER] Horse profiles found:",
+    #HorseList
+)
