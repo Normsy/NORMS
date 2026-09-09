@@ -1,8 +1,9 @@
 --// HORSE INVENTORY SCANNER
---// COMPACT PROFILE MODE
+--// 5 PROFILE CARDS PER ROW
 --// READ-ONLY
+--// MOBILE FRIENDLY
 --
---// PROFILE HAS EXACTLY 5 ROWS:
+--// EACH PROFILE:
 --// UID
 --// Breed
 --// Main Colour
@@ -48,7 +49,7 @@ if type(Inventory) ~= "table" then
 end
 
 --==================================================
--- HORSE BREEDS
+-- BREED DATABASE
 --==================================================
 
 local BreedNames = {
@@ -97,6 +98,7 @@ local function NormalizeBreed(value)
 
     local lower = text:lower()
 
+    -- Exact match
     for key, displayName in pairs(BreedNames) do
 
         if lower == key then
@@ -109,6 +111,7 @@ local function NormalizeBreed(value)
 
     end
 
+    -- Partial match
     for key, displayName in pairs(BreedNames) do
 
         if lower:find(key, 1, true) then
@@ -117,6 +120,7 @@ local function NormalizeBreed(value)
 
     end
 
+    -- Already contains Horse
     if lower:find("horse", 1, true) then
         return text
     end
@@ -146,7 +150,7 @@ local function GetField(tbl, names)
 end
 
 --==================================================
--- DIRECT BREED
+-- FIND BREED
 --==================================================
 
 local function FindBreedInTable(tbl)
@@ -164,7 +168,9 @@ local function FindBreedInTable(tbl)
         "horseBreed",
         "HorseBreed",
         "breedId",
-        "BreedId"
+        "BreedId",
+        "breedType",
+        "BreedType"
 
     })
 
@@ -172,7 +178,7 @@ local function FindBreedInTable(tbl)
 end
 
 --==================================================
--- SEARCH BREED
+-- RECURSIVE BREED SEARCH
 --==================================================
 
 local function SearchKnownBreed(tbl, depth)
@@ -183,7 +189,7 @@ local function SearchKnownBreed(tbl, depth)
 
     depth = depth or 0
 
-    if depth > 5 then
+    if depth > 6 then
         return nil
     end
 
@@ -267,7 +273,7 @@ local function GetItemInfo(item)
 end
 
 --==================================================
--- RESOLVE BREED
+-- GET BREED
 --==================================================
 
 local function GetBreed(item, info)
@@ -288,10 +294,10 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- Nested data
+    -- Nested item data
     if type(item) == "table" then
 
-        local nested = {
+        local nestedKeys = {
 
             "data",
             "Data",
@@ -300,11 +306,13 @@ local function GetBreed(item, info)
             "horse",
             "Horse",
             "stats",
-            "Stats"
+            "Stats",
+            "config",
+            "Config"
 
         }
 
-        for _, key in ipairs(nested) do
+        for _, key in ipairs(nestedKeys) do
 
             if type(item[key]) == "table" then
 
@@ -323,7 +331,7 @@ local function GetBreed(item, info)
 
     end
 
-    -- Entire item
+    -- Search entire item
     breed =
         SearchKnownBreed(item)
 
@@ -331,7 +339,7 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- Entire info
+    -- Search entire info
     breed =
         SearchKnownBreed(info)
 
@@ -400,7 +408,7 @@ local function GetBreed(item, info)
 end
 
 --==================================================
--- COLOURS
+-- GET COLOURS
 --==================================================
 
 local function GetColours(item)
@@ -509,13 +517,22 @@ end
 local guiParent
 
 pcall(function()
-    guiParent = game:GetService("CoreGui")
+
+    guiParent =
+        game:GetService("CoreGui")
+
 end)
 
 if not guiParent then
+
     guiParent =
-        LocalPlayer:WaitForChild("PlayerGui")
+        LocalPlayer:WaitForChild(
+            "PlayerGui"
+        )
+
 end
+
+-- Remove old scanner
 
 local old =
     guiParent:FindFirstChild(
@@ -537,10 +554,12 @@ ScreenGui.Name =
     "HorseInventoryScanner"
 
 ScreenGui.ResetOnSpawn = false
+
 ScreenGui.ZIndexBehavior =
     Enum.ZIndexBehavior.Sibling
 
-ScreenGui.Parent = guiParent
+ScreenGui.Parent =
+    guiParent
 
 --==================================================
 -- MAIN WINDOW
@@ -550,7 +569,10 @@ local Main =
     Instance.new("Frame")
 
 Main.Size =
-    UDim2.fromOffset(350, 300)
+    UDim2.fromOffset(
+        350,
+        300
+    )
 
 Main.Position =
     UDim2.new(
@@ -561,7 +583,11 @@ Main.Position =
     )
 
 Main.BackgroundColor3 =
-    Color3.fromRGB(13, 13, 18)
+    Color3.fromRGB(
+        13,
+        13,
+        18
+    )
 
 Main.BorderSizePixel = 0
 Main.Active = true
@@ -573,16 +599,23 @@ local MainCorner =
 MainCorner.CornerRadius =
     UDim.new(0, 9)
 
-MainCorner.Parent = Main
+MainCorner.Parent =
+    Main
 
 local MainStroke =
     Instance.new("UIStroke")
 
 MainStroke.Color =
-    Color3.fromRGB(45, 45, 55)
+    Color3.fromRGB(
+        45,
+        45,
+        55
+    )
 
 MainStroke.Thickness = 1
-MainStroke.Parent = Main
+
+MainStroke.Parent =
+    Main
 
 --==================================================
 -- TOP BAR
@@ -592,10 +625,19 @@ local TopBar =
     Instance.new("Frame")
 
 TopBar.Size =
-    UDim2.new(1, 0, 0, 40)
+    UDim2.new(
+        1,
+        0,
+        0,
+        40
+    )
 
 TopBar.BackgroundColor3 =
-    Color3.fromRGB(20, 20, 27)
+    Color3.fromRGB(
+        20,
+        20,
+        27
+    )
 
 TopBar.BorderSizePixel = 0
 TopBar.Active = true
@@ -607,7 +649,8 @@ local TopCorner =
 TopCorner.CornerRadius =
     UDim.new(0, 9)
 
-TopCorner.Parent = TopBar
+TopCorner.Parent =
+    TopBar
 
 --==================================================
 -- TITLE
@@ -617,10 +660,18 @@ local Title =
     Instance.new("TextLabel")
 
 Title.Size =
-    UDim2.new(1, -90, 0, 20)
+    UDim2.new(
+        1,
+        -90,
+        0,
+        20
+    )
 
 Title.Position =
-    UDim2.fromOffset(10, 4)
+    UDim2.fromOffset(
+        10,
+        4
+    )
 
 Title.BackgroundTransparency = 1
 
@@ -628,7 +679,11 @@ Title.Text =
     "🐴 HORSE SCANNER"
 
 Title.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
 
 Title.TextSize = 11
 
@@ -638,7 +693,8 @@ Title.Font =
 Title.TextXAlignment =
     Enum.TextXAlignment.Left
 
-Title.Parent = TopBar
+Title.Parent =
+    TopBar
 
 --==================================================
 -- STATUS
@@ -648,10 +704,18 @@ local Status =
     Instance.new("TextLabel")
 
 Status.Size =
-    UDim2.new(1, -90, 0, 13)
+    UDim2.new(
+        1,
+        -90,
+        0,
+        13
+    )
 
 Status.Position =
-    UDim2.fromOffset(10, 23)
+    UDim2.fromOffset(
+        10,
+        23
+    )
 
 Status.BackgroundTransparency = 1
 
@@ -659,7 +723,11 @@ Status.Text =
     "Scanning..."
 
 Status.TextColor3 =
-    Color3.fromRGB(140, 145, 160)
+    Color3.fromRGB(
+        140,
+        145,
+        160
+    )
 
 Status.TextSize = 7
 
@@ -669,17 +737,21 @@ Status.Font =
 Status.TextXAlignment =
     Enum.TextXAlignment.Left
 
-Status.Parent = TopBar
+Status.Parent =
+    TopBar
 
 --==================================================
--- MINIMIZE
+-- MINIMIZE BUTTON
 --==================================================
 
 local Minimize =
     Instance.new("TextButton")
 
 Minimize.Size =
-    UDim2.fromOffset(27, 27)
+    UDim2.fromOffset(
+        27,
+        27
+    )
 
 Minimize.Position =
     UDim2.new(
@@ -690,21 +762,30 @@ Minimize.Position =
     )
 
 Minimize.BackgroundColor3 =
-    Color3.fromRGB(38, 38, 48)
+    Color3.fromRGB(
+        38,
+        38,
+        48
+    )
 
 Minimize.BorderSizePixel = 0
 
 Minimize.Text = "−"
 
 Minimize.TextColor3 =
-    Color3.fromRGB(255, 255, 255)
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
 
 Minimize.TextSize = 16
 
 Minimize.Font =
     Enum.Font.GothamBold
 
-Minimize.Parent = TopBar
+Minimize.Parent =
+    TopBar
 
 local MinCorner =
     Instance.new("UICorner")
@@ -712,17 +793,21 @@ local MinCorner =
 MinCorner.CornerRadius =
     UDim.new(0, 6)
 
-MinCorner.Parent = Minimize
+MinCorner.Parent =
+    Minimize
 
 --==================================================
--- CLOSE
+-- CLOSE BUTTON
 --==================================================
 
 local Close =
     Instance.new("TextButton")
 
 Close.Size =
-    UDim2.fromOffset(27, 27)
+    UDim2.fromOffset(
+        27,
+        27
+    )
 
 Close.Position =
     UDim2.new(
@@ -733,21 +818,30 @@ Close.Position =
     )
 
 Close.BackgroundColor3 =
-    Color3.fromRGB(45, 25, 28)
+    Color3.fromRGB(
+        45,
+        25,
+        28
+    )
 
 Close.BorderSizePixel = 0
 
 Close.Text = "×"
 
 Close.TextColor3 =
-    Color3.fromRGB(255, 120, 120)
+    Color3.fromRGB(
+        255,
+        120,
+        120
+    )
 
 Close.TextSize = 17
 
 Close.Font =
     Enum.Font.GothamBold
 
-Close.Parent = TopBar
+Close.Parent =
+    TopBar
 
 local CloseCorner =
     Instance.new("UICorner")
@@ -755,10 +849,13 @@ local CloseCorner =
 CloseCorner.CornerRadius =
     UDim.new(0, 6)
 
-CloseCorner.Parent = Close
+CloseCorner.Parent =
+    Close
 
 Close.MouseButton1Click:Connect(function()
+
     ScreenGui:Destroy()
+
 end)
 
 --==================================================
@@ -777,13 +874,18 @@ Content.Size =
     )
 
 Content.Position =
-    UDim2.fromOffset(0, 40)
+    UDim2.fromOffset(
+        0,
+        40
+    )
 
 Content.BackgroundTransparency = 1
-Content.Parent = Main
+
+Content.Parent =
+    Main
 
 --==================================================
--- SEARCH
+-- SEARCH BOX
 --==================================================
 
 local Search =
@@ -798,10 +900,17 @@ Search.Size =
     )
 
 Search.Position =
-    UDim2.fromOffset(10, 7)
+    UDim2.fromOffset(
+        10,
+        7
+    )
 
 Search.BackgroundColor3 =
-    Color3.fromRGB(23, 23, 31)
+    Color3.fromRGB(
+        23,
+        23,
+        31
+    )
 
 Search.BorderSizePixel = 0
 
@@ -809,12 +918,20 @@ Search.PlaceholderText =
     "Search UID or breed..."
 
 Search.PlaceholderColor3 =
-    Color3.fromRGB(100, 105, 120)
+    Color3.fromRGB(
+        100,
+        105,
+        120
+    )
 
 Search.Text = ""
 
 Search.TextColor3 =
-    Color3.fromRGB(235, 235, 240)
+    Color3.fromRGB(
+        235,
+        235,
+        240
+    )
 
 Search.TextSize = 8
 
@@ -822,7 +939,9 @@ Search.Font =
     Enum.Font.Gotham
 
 Search.ClearTextOnFocus = false
-Search.Parent = Content
+
+Search.Parent =
+    Content
 
 local SearchCorner =
     Instance.new("UICorner")
@@ -830,15 +949,20 @@ local SearchCorner =
 SearchCorner.CornerRadius =
     UDim.new(0, 6)
 
-SearchCorner.Parent = Search
+SearchCorner.Parent =
+    Search
 
 local SearchPadding =
     Instance.new("UIPadding")
 
 SearchPadding.PaddingLeft =
-    UDim.new(0, 8)
+    UDim.new(
+        0,
+        8
+    )
 
-SearchPadding.Parent = Search
+SearchPadding.Parent =
+    Search
 
 --==================================================
 -- RESULTS
@@ -856,10 +980,17 @@ Results.Size =
     )
 
 Results.Position =
-    UDim2.fromOffset(10, 40)
+    UDim2.fromOffset(
+        10,
+        40
+    )
 
 Results.BackgroundColor3 =
-    Color3.fromRGB(17, 17, 23)
+    Color3.fromRGB(
+        17,
+        17,
+        23
+    )
 
 Results.BorderSizePixel = 0
 
@@ -868,60 +999,122 @@ Results.ScrollBarThickness = 3
 Results.ScrollBarImageTransparency =
     0.25
 
-Results.CanvasSize =
-    UDim2.new(0, 0, 0, 0)
+Results.ScrollingDirection =
+    Enum.ScrollingDirection.XY
 
-Results.Parent = Content
+Results.CanvasSize =
+    UDim2.fromOffset(
+        0,
+        0
+    )
+
+Results.AutomaticCanvasSize =
+    Enum.AutomaticSize.None
+
+Results.Parent =
+    Content
 
 local ResultsCorner =
     Instance.new("UICorner")
 
 ResultsCorner.CornerRadius =
-    UDim.new(0, 7)
+    UDim.new(
+        0,
+        7
+    )
 
-ResultsCorner.Parent = Results
+ResultsCorner.Parent =
+    Results
 
-local Layout =
-    Instance.new("UIListLayout")
+--==================================================
+-- GRID
+--==================================================
 
-Layout.Padding =
-    UDim.new(0, 4)
+local Grid =
+    Instance.new("UIGridLayout")
 
-Layout.SortOrder =
+Grid.CellSize =
+    UDim2.fromOffset(
+        125,
+        100
+    )
+
+Grid.CellPadding =
+    UDim2.fromOffset(
+        5,
+        5
+    )
+
+Grid.FillDirection =
+    Enum.FillDirection.Horizontal
+
+-- IMPORTANT:
+-- EXACTLY 5 PROFILES PER ROW
+
+Grid.FillDirectionMaxCells = 5
+
+Grid.SortOrder =
     Enum.SortOrder.LayoutOrder
 
-Layout.Parent = Results
+Grid.Parent =
+    Results
+
+--==================================================
+-- PADDING
+--==================================================
 
 local Padding =
     Instance.new("UIPadding")
 
 Padding.PaddingTop =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
 Padding.PaddingBottom =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
 Padding.PaddingLeft =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
 Padding.PaddingRight =
-    UDim.new(0, 5)
+    UDim.new(
+        0,
+        5
+    )
 
-Padding.Parent = Results
+Padding.Parent =
+    Results
 
-Layout:GetPropertyChangedSignal(
-    "AbsoluteContentSize"
-):Connect(function()
+--==================================================
+-- UPDATE CANVAS
+--==================================================
+
+local function UpdateCanvas()
+
+    local contentSize =
+        Grid.AbsoluteContentSize
 
     Results.CanvasSize =
-        UDim2.new(
-            0,
-            0,
-            0,
-            Layout.AbsoluteContentSize.Y + 10
+        UDim2.fromOffset(
+            contentSize.X + 10,
+            contentSize.Y + 10
         )
 
-end)
+end
+
+Grid:GetPropertyChangedSignal(
+    "AbsoluteContentSize"
+):Connect(
+    UpdateCanvas
+)
 
 --==================================================
 -- MINIMIZE
@@ -931,9 +1124,11 @@ local Minimized = false
 
 Minimize.MouseButton1Click:Connect(function()
 
-    Minimized = not Minimized
+    Minimized =
+        not Minimized
 
-    Content.Visible = not Minimized
+    Content.Visible =
+        not Minimized
 
     if Minimized then
 
@@ -943,7 +1138,8 @@ Minimize.MouseButton1Click:Connect(function()
                 40
             )
 
-        Minimize.Text = "+"
+        Minimize.Text =
+            "+"
 
     else
 
@@ -953,7 +1149,8 @@ Minimize.MouseButton1Click:Connect(function()
                 300
             )
 
-        Minimize.Text = "−"
+        Minimize.Text =
+            "−"
 
     end
 
@@ -998,15 +1195,20 @@ UserInputService.InputChanged:Connect(function(input)
         Enum.UserInputType.Touch then
 
         local Delta =
-            input.Position - DragStart
+            input.Position
+            - DragStart
 
         Main.Position =
             UDim2.new(
+
                 StartPosition.X.Scale,
-                StartPosition.X.Offset + Delta.X,
+                StartPosition.X.Offset
+                    + Delta.X,
 
                 StartPosition.Y.Scale,
-                StartPosition.Y.Offset + Delta.Y
+                StartPosition.Y.Offset
+                    + Delta.Y
+
             )
 
     end
@@ -1033,7 +1235,7 @@ end)
 local HorseList = {}
 
 --==================================================
--- CREATE SMALL PROFILE
+-- CREATE PROFILE CARD
 --==================================================
 
 local function CreateProfile(
@@ -1046,41 +1248,98 @@ local function CreateProfile(
     local Card =
         Instance.new("Frame")
 
-    -- SMALL CARD
     Card.Size =
-        UDim2.new(
-            1,
-            -2,
-            0,
-            78
+        UDim2.fromOffset(
+            125,
+            100
         )
 
     Card.BackgroundColor3 =
-        Color3.fromRGB(24, 24, 32)
+        Color3.fromRGB(
+            24,
+            24,
+            32
+        )
 
     Card.BorderSizePixel = 0
 
     Card.LayoutOrder =
         order
 
-    Card.Parent = Results
+    Card.Parent =
+        Results
 
     local Corner =
         Instance.new("UICorner")
 
     Corner.CornerRadius =
-        UDim.new(0, 5)
+        UDim.new(
+            0,
+            6
+        )
 
-    Corner.Parent = Card
+    Corner.Parent =
+        Card
 
     local Stroke =
         Instance.new("UIStroke")
 
     Stroke.Color =
-        Color3.fromRGB(42, 42, 52)
+        Color3.fromRGB(
+            42,
+            42,
+            52
+        )
 
     Stroke.Thickness = 1
-    Stroke.Parent = Card
+
+    Stroke.Parent =
+        Card
+
+    --==================================================
+    -- PROFILE TITLE
+    --==================================================
+
+    local ProfileTitle =
+        Instance.new("TextLabel")
+
+    ProfileTitle.Size =
+        UDim2.new(
+            1,
+            -8,
+            0,
+            15
+        )
+
+    ProfileTitle.Position =
+        UDim2.fromOffset(
+            4,
+            3
+        )
+
+    ProfileTitle.BackgroundTransparency = 1
+
+    ProfileTitle.Text =
+        "PROFILE "
+        .. tostring(order)
+
+    ProfileTitle.TextColor3 =
+        Color3.fromRGB(
+            255,
+            215,
+            100
+        )
+
+    ProfileTitle.TextSize = 7
+
+    ProfileTitle.Font =
+        Enum.Font.GothamBold
+
+    ProfileTitle.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    ProfileTitle.Parent =
+        Card
 
     --==================================================
     -- DATA
@@ -1098,7 +1357,7 @@ local function CreateProfile(
         GetColours(item)
 
     --==================================================
-    -- EXACTLY 5 ROWS
+    -- EXACTLY 5 DATA ROWS
     --==================================================
 
     local Rows = {
@@ -1114,17 +1373,17 @@ local function CreateProfile(
         },
 
         {
-            "Main Colour",
+            "Main",
             tostring(mainColour)
         },
 
         {
-            "Mane Colour",
+            "Mane",
             tostring(maneColour)
         },
 
         {
-            "Tail Colour",
+            "Tail",
             tostring(tailColour)
         }
 
@@ -1138,15 +1397,16 @@ local function CreateProfile(
         Label.Size =
             UDim2.new(
                 1,
-                -10,
+                -8,
                 0,
                 14
             )
 
         Label.Position =
             UDim2.fromOffset(
-                5,
-                2 + ((i - 1) * 15)
+                4,
+                18
+                    + ((i - 1) * 15)
             )
 
         Label.BackgroundTransparency = 1
@@ -1169,7 +1429,7 @@ local function CreateProfile(
                 225
             )
 
-        Label.TextSize = 7
+        Label.TextSize = 6
 
         Label.Font =
             Enum.Font.Gotham
@@ -1183,17 +1443,20 @@ local function CreateProfile(
         Label.TextTruncate =
             Enum.TextTruncate.AtEnd
 
-        Label.Parent = Card
+        Label.Parent =
+            Card
 
     end
+
 end
 
 --==================================================
--- DISPLAY
+-- DISPLAY HORSES
 --==================================================
 
 local function DisplayHorses()
 
+    -- Remove old profile cards
     for _, child in ipairs(
         Results:GetChildren()
     ) do
@@ -1209,7 +1472,9 @@ local function DisplayHorses()
 
     local shown = 0
 
-    for _, horse in ipairs(HorseList) do
+    for _, horse in ipairs(
+        HorseList
+    ) do
 
         local breed =
             GetBreed(
@@ -1248,13 +1513,17 @@ local function DisplayHorses()
         .. " / "
         .. tostring(#HorseList)
 
+    task.defer(UpdateCanvas)
+
 end
 
 --==================================================
--- SCAN ENTIRE INVENTORY
+-- SCAN INVENTORY
 --==================================================
 
-for uid, item in pairs(Inventory) do
+for uid, item in pairs(
+    Inventory
+) do
 
     if type(item) == "table"
         and IsHorse(item) then
@@ -1288,7 +1557,7 @@ Search:GetPropertyChangedSignal(
 end)
 
 --==================================================
--- DISPLAY ALL HORSES
+-- DISPLAY
 --==================================================
 
 DisplayHorses()
