@@ -673,14 +673,26 @@ end
 local guiParent
 
 pcall(function()
-    guiParent = game:GetService("CoreGui")
+
+    guiParent =
+        game:GetService("CoreGui")
+
 end)
 
 if not guiParent then
-    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+
+    guiParent =
+        LocalPlayer:WaitForChild(
+            "PlayerGui"
+        )
+
 end
 
-local old = guiParent:FindFirstChild("HorseInventoryScanner")
+local old =
+    guiParent:FindFirstChild(
+        "HorseInventoryScanner"
+    )
+
 if old then
     old:Destroy()
 end
@@ -692,189 +704,201 @@ ScreenGui.Name =
     "HorseInventoryScanner"
 
 ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent = guiParent
+
+ScreenGui.ZIndexBehavior =
+    Enum.ZIndexBehavior.Sibling
+
+ScreenGui.Parent =
+    guiParent
 
 --==================================================
--- MAIN WINDOW
+-- MAIN
 --==================================================
 
 local Main =
     Instance.new("Frame")
 
 Main.Size =
-    UDim2.new(0.94, 0, 0.86, 0)
+    UDim2.fromOffset(
+        350,
+        300
+    )
 
 Main.Position =
-    UDim2.fromScale(0.5, 0.5)
-
-Main.AnchorPoint =
-    Vector2.new(0.5, 0.5)
+    UDim2.new(
+        0.5,
+        -175,
+        0.5,
+        -150
+    )
 
 Main.BackgroundColor3 =
-    Color3.fromRGB(7, 16, 30)
+    Color3.fromRGB(
+        13,
+        13,
+        18
+    )
 
 Main.BorderSizePixel = 0
 Main.Active = true
-Main.ClipsDescendants = true
-Main.Parent = ScreenGui
+
+Main.Parent =
+    ScreenGui
 
 local MainCorner =
     Instance.new("UICorner")
 
 MainCorner.CornerRadius =
-    UDim.new(0, 22)
+    UDim.new(
+        0,
+        9
+    )
 
-MainCorner.Parent = Main
+MainCorner.Parent =
+    Main
 
 local MainStroke =
     Instance.new("UIStroke")
 
 MainStroke.Color =
-    Color3.fromRGB(0, 115, 230)
+    Color3.fromRGB(
+        45,
+        45,
+        55
+    )
 
-MainStroke.Thickness = 2
-MainStroke.Transparency = 0.15
-MainStroke.Parent = Main
+MainStroke.Thickness = 1
+
+MainStroke.Parent =
+    Main
 
 --==================================================
--- HEADER
+-- TOP BAR
 --==================================================
 
 local TopBar =
     Instance.new("Frame")
 
 TopBar.Size =
-    UDim2.new(1, 0, 0, 88)
+    UDim2.new(
+        1,
+        0,
+        0,
+        40
+    )
 
 TopBar.BackgroundColor3 =
-    Color3.fromRGB(8, 20, 37)
+    Color3.fromRGB(
+        20,
+        20,
+        27
+    )
 
 TopBar.BorderSizePixel = 0
 TopBar.Active = true
-TopBar.Parent = Main
+
+TopBar.Parent =
+    Main
+
+local TopCorner =
+    Instance.new("UICorner")
+
+TopCorner.CornerRadius =
+    UDim.new(
+        0,
+        9
+    )
+
+TopCorner.Parent =
+    TopBar
+
+--==================================================
+-- TITLE
+--==================================================
 
 local Title =
     Instance.new("TextLabel")
 
 Title.Size =
-    UDim2.new(0.42, 0, 0, 34)
+    UDim2.new(
+        1,
+        -90,
+        0,
+        20
+    )
 
 Title.Position =
-    UDim2.fromOffset(24, 12)
+    UDim2.fromOffset(
+        10,
+        4
+    )
 
 Title.BackgroundTransparency = 1
-Title.Text = "HORSE SCANNER"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 25
-Title.Font = Enum.Font.GothamBold
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = TopBar
 
-local TitleGradient =
-    Instance.new("UIGradient")
+Title.Text =
+    "🐴 HORSE SCANNER"
 
-TitleGradient.Color =
-    ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(245, 210, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 90, 255))
-    })
+Title.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
 
-TitleGradient.Parent = Title
+Title.TextSize = 11
+
+Title.Font =
+    Enum.Font.GothamBold
+
+Title.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Title.Parent =
+    TopBar
+
+--==================================================
+-- STATUS
+--==================================================
 
 local Status =
     Instance.new("TextLabel")
 
 Status.Size =
-    UDim2.new(0.35, 0, 0, 22)
+    UDim2.new(
+        1,
+        -90,
+        0,
+        13
+    )
 
 Status.Position =
-    UDim2.fromOffset(25, 47)
+    UDim2.fromOffset(
+        10,
+        23
+    )
 
 Status.BackgroundTransparency = 1
-Status.Text = "Scanning inventory..."
-Status.TextColor3 = Color3.fromRGB(170, 190, 215)
-Status.TextSize = 14
-Status.Font = Enum.Font.Gotham
-Status.TextXAlignment = Enum.TextXAlignment.Left
-Status.Parent = TopBar
 
---==================================================
--- LEGEND
---==================================================
+Status.Text =
+    "Scanning inventory..."
 
-local Legend =
-    Instance.new("Frame")
+Status.TextColor3 =
+    Color3.fromRGB(
+        140,
+        145,
+        160
+    )
 
-Legend.Size =
-    UDim2.new(0.52, -20, 0, 62)
+Status.TextSize = 7
 
-Legend.Position =
-    UDim2.new(0.46, 0, 0, 12)
+Status.Font =
+    Enum.Font.Gotham
 
-Legend.BackgroundColor3 =
-    Color3.fromRGB(10, 27, 47)
+Status.TextXAlignment =
+    Enum.TextXAlignment.Left
 
-Legend.BorderSizePixel = 0
-Legend.Parent = TopBar
-
-local LegendCorner =
-    Instance.new("UICorner")
-
-LegendCorner.CornerRadius =
-    UDim.new(0, 14)
-
-LegendCorner.Parent = Legend
-
-local LegendStroke =
-    Instance.new("UIStroke")
-
-LegendStroke.Color = Color3.fromRGB(25, 65, 105)
-LegendStroke.Thickness = 1
-LegendStroke.Parent = Legend
-
-local function AddLegend(color, title, subtitle, x)
-
-    local Dot =
-        Instance.new("Frame")
-
-    Dot.Size = UDim2.fromOffset(16, 16)
-    Dot.Position = UDim2.fromOffset(x, 15)
-    Dot.BackgroundColor3 = color
-    Dot.BorderSizePixel = 0
-    Dot.Parent = Legend
-
-    local DotCorner = Instance.new("UICorner")
-    DotCorner.CornerRadius = UDim.new(1, 0)
-    DotCorner.Parent = Dot
-
-    local DotStroke = Instance.new("UIStroke")
-    DotStroke.Color = color
-    DotStroke.Thickness = 2
-    DotStroke.Transparency = 0.2
-    DotStroke.Parent = Dot
-
-    local Label =
-        Instance.new("TextLabel")
-
-    Label.Size = UDim2.fromOffset(105, 38)
-    Label.Position = UDim2.fromOffset(x + 22, 9)
-    Label.BackgroundTransparency = 1
-    Label.Text = title .. "\n" .. subtitle
-    Label.TextColor3 = Color3.fromRGB(235, 240, 250)
-    Label.TextSize = 10
-    Label.Font = Enum.Font.Gotham
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.TextYAlignment = Enum.TextYAlignment.Center
-    Label.Parent = Legend
-
-end
-
-AddLegend(Color3.fromRGB(255, 55, 70), "Unique Hair", "(Highest)", 12)
-AddLegend(Color3.fromRGB(0, 170, 255), "Main ≠ Tail", "(2nd)", 130)
-AddLegend(Color3.fromRGB(50, 255, 150), "Nat Dyed", "(3rd)", 240)
-AddLegend(Color3.fromRGB(190, 50, 255), "Horn Colour", "(4th)", 350)
+Status.Parent =
+    TopBar
 
 --==================================================
 -- MINIMIZE
@@ -883,21 +907,58 @@ AddLegend(Color3.fromRGB(190, 50, 255), "Horn Colour", "(4th)", 350)
 local Minimize =
     Instance.new("TextButton")
 
-Minimize.Size = UDim2.fromOffset(42, 34)
-Minimize.Position = UDim2.new(1, -96, 0, 20)
-Minimize.BackgroundColor3 = Color3.fromRGB(17, 39, 64)
-Minimize.BorderSizePixel = 0
-Minimize.Text = "−"
-Minimize.TextColor3 = Color3.fromRGB(235, 245, 255)
-Minimize.TextSize = 22
-Minimize.Font = Enum.Font.GothamBold
-Minimize.AutoButtonColor = true
-Minimize.ZIndex = 5
-Minimize.Parent = Main
+Minimize.Size =
+    UDim2.fromOffset(
+        27,
+        27
+    )
 
-local MinCorner = Instance.new("UICorner")
-MinCorner.CornerRadius = UDim.new(0, 10)
-MinCorner.Parent = Minimize
+Minimize.Position =
+    UDim2.new(
+        1,
+        -64,
+        0,
+        7
+    )
+
+Minimize.BackgroundColor3 =
+    Color3.fromRGB(
+        38,
+        38,
+        48
+    )
+
+Minimize.BorderSizePixel = 0
+
+Minimize.Text =
+    "−"
+
+Minimize.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+Minimize.TextSize = 16
+
+Minimize.Font =
+    Enum.Font.GothamBold
+
+Minimize.Parent =
+    TopBar
+
+local MinCorner =
+    Instance.new("UICorner")
+
+MinCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+MinCorner.Parent =
+    Minimize
 
 --==================================================
 -- CLOSE
@@ -906,21 +967,58 @@ MinCorner.Parent = Minimize
 local Close =
     Instance.new("TextButton")
 
-Close.Size = UDim2.fromOffset(42, 34)
-Close.Position = UDim2.new(1, -48, 0, 20)
-Close.BackgroundColor3 = Color3.fromRGB(70, 25, 45)
-Close.BorderSizePixel = 0
-Close.Text = "×"
-Close.TextColor3 = Color3.fromRGB(255, 130, 160)
-Close.TextSize = 23
-Close.Font = Enum.Font.GothamBold
-Close.AutoButtonColor = true
-Close.ZIndex = 5
-Close.Parent = Main
+Close.Size =
+    UDim2.fromOffset(
+        27,
+        27
+    )
 
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 10)
-CloseCorner.Parent = Close
+Close.Position =
+    UDim2.new(
+        1,
+        -33,
+        0,
+        7
+    )
+
+Close.BackgroundColor3 =
+    Color3.fromRGB(
+        45,
+        25,
+        28
+    )
+
+Close.BorderSizePixel = 0
+
+Close.Text =
+    "×"
+
+Close.TextColor3 =
+    Color3.fromRGB(
+        255,
+        120,
+        120
+    )
+
+Close.TextSize = 17
+
+Close.Font =
+    Enum.Font.GothamBold
+
+Close.Parent =
+    TopBar
+
+local CloseCorner =
+    Instance.new("UICorner")
+
+CloseCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+CloseCorner.Parent =
+    Close
 
 Close.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
@@ -934,74 +1032,106 @@ local Content =
     Instance.new("Frame")
 
 Content.Size =
-    UDim2.new(1, 0, 1, -88)
+    UDim2.new(
+        1,
+        0,
+        1,
+        -40
+    )
 
 Content.Position =
-    UDim2.fromOffset(0, 88)
+    UDim2.fromOffset(
+        0,
+        40
+    )
 
 Content.BackgroundTransparency = 1
-Content.Parent = Main
+
+Content.Parent =
+    Main
 
 --==================================================
--- SEARCH BAR
+-- SEARCH
 --==================================================
-
-local SearchHolder =
-    Instance.new("Frame")
-
-SearchHolder.Size =
-    UDim2.new(1, -42, 0, 48)
-
-SearchHolder.Position =
-    UDim2.fromOffset(21, 12)
-
-SearchHolder.BackgroundColor3 =
-    Color3.fromRGB(8, 22, 39)
-
-SearchHolder.BorderSizePixel = 0
-SearchHolder.Parent = Content
-
-local SearchHolderCorner = Instance.new("UICorner")
-SearchHolderCorner.CornerRadius = UDim.new(0, 15)
-SearchHolderCorner.Parent = SearchHolder
-
-local SearchHolderStroke = Instance.new("UIStroke")
-SearchHolderStroke.Color = Color3.fromRGB(23, 76, 125)
-SearchHolderStroke.Thickness = 1
-SearchHolderStroke.Parent = SearchHolder
-
-local SearchIcon =
-    Instance.new("TextLabel")
-
-SearchIcon.Size = UDim2.fromOffset(35, 48)
-SearchIcon.Position = UDim2.fromOffset(12, 0)
-SearchIcon.BackgroundTransparency = 1
-SearchIcon.Text = "⌕"
-SearchIcon.TextColor3 = Color3.fromRGB(225, 235, 250)
-SearchIcon.TextSize = 30
-SearchIcon.Font = Enum.Font.Gotham
-SearchIcon.Parent = SearchHolder
 
 local Search =
     Instance.new("TextBox")
 
 Search.Size =
-    UDim2.new(1, -58, 1, 0)
+    UDim2.new(
+        1,
+        -20,
+        0,
+        27
+    )
 
 Search.Position =
-    UDim2.fromOffset(52, 0)
+    UDim2.fromOffset(
+        10,
+        7
+    )
 
-Search.BackgroundTransparency = 1
+Search.BackgroundColor3 =
+    Color3.fromRGB(
+        23,
+        23,
+        31
+    )
+
 Search.BorderSizePixel = 0
-Search.PlaceholderText = "Search UID or breed..."
-Search.PlaceholderColor3 = Color3.fromRGB(105, 135, 170)
+
+Search.PlaceholderText =
+    "Search UID or breed..."
+
+Search.PlaceholderColor3 =
+    Color3.fromRGB(
+        100,
+        105,
+        120
+    )
+
 Search.Text = ""
-Search.TextColor3 = Color3.fromRGB(235, 240, 250)
-Search.TextSize = 15
-Search.Font = Enum.Font.Gotham
+
+Search.TextColor3 =
+    Color3.fromRGB(
+        235,
+        235,
+        240
+    )
+
+Search.TextSize = 8
+
+Search.Font =
+    Enum.Font.Gotham
+
 Search.ClearTextOnFocus = false
-Search.TextXAlignment = Enum.TextXAlignment.Left
-Search.Parent = SearchHolder
+
+Search.Parent =
+    Content
+
+local SearchCorner =
+    Instance.new("UICorner")
+
+SearchCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+SearchCorner.Parent =
+    Search
+
+local SearchPadding =
+    Instance.new("UIPadding")
+
+SearchPadding.PaddingLeft =
+    UDim.new(
+        0,
+        8
+    )
+
+SearchPadding.Parent =
+    Search
 
 --==================================================
 -- RESULTS
@@ -1011,29 +1141,53 @@ local Results =
     Instance.new("ScrollingFrame")
 
 Results.Size =
-    UDim2.new(1, -42, 1, -78)
+    UDim2.new(
+        1,
+        -20,
+        1,
+        -45
+    )
 
 Results.Position =
-    UDim2.fromOffset(21, 70)
+    UDim2.fromOffset(
+        10,
+        40
+    )
 
 Results.BackgroundColor3 =
-    Color3.fromRGB(6, 16, 29)
+    Color3.fromRGB(
+        17,
+        17,
+        23
+    )
 
 Results.BorderSizePixel = 0
-Results.ScrollBarThickness = 5
-Results.ScrollBarImageColor3 = Color3.fromRGB(30, 105, 180)
-Results.ScrollingDirection = Enum.ScrollingDirection.Y
-Results.CanvasSize = UDim2.fromOffset(0, 0)
-Results.Parent = Content
 
-local ResultsCorner = Instance.new("UICorner")
-ResultsCorner.CornerRadius = UDim.new(0, 17)
-ResultsCorner.Parent = Results
+Results.ScrollBarThickness = 3
 
-local ResultsStroke = Instance.new("UIStroke")
-ResultsStroke.Color = Color3.fromRGB(18, 58, 98)
-ResultsStroke.Thickness = 1
-ResultsStroke.Parent = Results
+Results.ScrollingDirection =
+    Enum.ScrollingDirection.XY
+
+Results.CanvasSize =
+    UDim2.fromOffset(
+        0,
+        0
+    )
+
+Results.Parent =
+    Content
+
+local ResultsCorner =
+    Instance.new("UICorner")
+
+ResultsCorner.CornerRadius =
+    UDim.new(
+        0,
+        7
+    )
+
+ResultsCorner.Parent =
+    Results
 
 --==================================================
 -- GRID
@@ -1043,31 +1197,85 @@ local Grid =
     Instance.new("UIGridLayout")
 
 Grid.CellSize =
-    UDim2.new(0.2, -8, 0, 128)
+    UDim2.fromOffset(
+        125,
+        100
+    )
 
 Grid.CellPadding =
-    UDim2.fromOffset(8, 8)
+    UDim2.fromOffset(
+        5,
+        5
+    )
 
-Grid.FillDirection = Enum.FillDirection.Horizontal
-Grid.FillDirectionMaxCells = 5
-Grid.SortOrder = Enum.SortOrder.LayoutOrder
-Grid.Parent = Results
+Grid.FillDirection =
+    Enum.FillDirection.Horizontal
+
+Grid.FillDirectionMaxCells =
+    5
+
+Grid.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+Grid.Parent =
+    Results
+
+--==================================================
+-- PADDING
+--==================================================
 
 local Padding =
     Instance.new("UIPadding")
 
-Padding.PaddingTop = UDim.new(0, 10)
-Padding.PaddingBottom = UDim.new(0, 10)
-Padding.PaddingLeft = UDim.new(0, 10)
-Padding.PaddingRight = UDim.new(0, 10)
-Padding.Parent = Results
+Padding.PaddingTop =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingBottom =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingLeft =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.PaddingRight =
+    UDim.new(
+        0,
+        5
+    )
+
+Padding.Parent =
+    Results
+
+--==================================================
+-- CANVAS
+--==================================================
 
 local function UpdateCanvas()
-    local size = Grid.AbsoluteContentSize
-    Results.CanvasSize = UDim2.fromOffset(0, size.Y + 20)
+
+    local size =
+        Grid.AbsoluteContentSize
+
+    Results.CanvasSize =
+        UDim2.fromOffset(
+            size.X + 10,
+            size.Y + 10
+        )
+
 end
 
-Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(UpdateCanvas)
+Grid:GetPropertyChangedSignal(
+    "AbsoluteContentSize"
+):Connect(
+    UpdateCanvas
+)
 
 --==================================================
 -- MINIMIZE
@@ -1077,20 +1285,34 @@ local Minimized = false
 
 Minimize.MouseButton1Click:Connect(function()
 
-    Minimized = not Minimized
-    Content.Visible = not Minimized
-    Legend.Visible = not Minimized
+    Minimized =
+        not Minimized
+
+    Content.Visible =
+        not Minimized
 
     if Minimized then
-        Main.Size = UDim2.new(0.94, 0, 0, 72)
-        Minimize.Position = UDim2.new(1, -96, 0, 19)
-        Close.Position = UDim2.new(1, -48, 0, 19)
-        Minimize.Text = "+"
+
+        Main.Size =
+            UDim2.fromOffset(
+                350,
+                40
+            )
+
+        Minimize.Text =
+            "+"
+
     else
-        Main.Size = UDim2.new(0.94, 0, 0.86, 0)
-        Minimize.Position = UDim2.new(1, -96, 0, 104)
-        Close.Position = UDim2.new(1, -48, 0, 104)
-        Minimize.Text = "−"
+
+        Main.Size =
+            UDim2.fromOffset(
+                350,
+                300
+            )
+
+        Minimize.Text =
+            "−"
+
     end
 
 end)
@@ -1105,12 +1327,18 @@ local StartPosition
 
 TopBar.InputBegan:Connect(function(input)
 
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
 
         Dragging = true
-        DragStart = input.Position
-        StartPosition = Main.Position
+
+        DragStart =
+            input.Position
+
+        StartPosition =
+            Main.Position
 
     end
 
@@ -1122,17 +1350,27 @@ UserInputService.InputChanged:Connect(function(input)
         return
     end
 
-    if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType ==
+        Enum.UserInputType.MouseMovement
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
 
-        local Delta = input.Position - DragStart
+        local Delta =
+            input.Position
+            - DragStart
 
-        Main.Position = UDim2.new(
-            StartPosition.X.Scale,
-            StartPosition.X.Offset + Delta.X,
-            StartPosition.Y.Scale,
-            StartPosition.Y.Offset + Delta.Y
-        )
+        Main.Position =
+            UDim2.new(
+
+                StartPosition.X.Scale,
+                StartPosition.X.Offset
+                    + Delta.X,
+
+                StartPosition.Y.Scale,
+                StartPosition.Y.Offset
+                    + Delta.Y
+
+            )
 
     end
 
@@ -1140,8 +1378,10 @@ end)
 
 UserInputService.InputEnded:Connect(function(input)
 
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or input.UserInputType ==
+        Enum.UserInputType.Touch then
 
         Dragging = false
 
@@ -1210,13 +1450,21 @@ local function CreateProfile(
     order
 )
 
-    local uid = horse.uid
-    local item = horse.item
-    local info = horse.info
+    local uid =
+        horse.uid
+
+    local item =
+        horse.item
+
+    local info =
+        horse.info
 
     local breed =
         horse.breed
-        or GetBreed(item, info)
+        or GetBreed(
+            item,
+            info
+        )
         or "Unknown"
 
     local mainColour,
@@ -1227,18 +1475,41 @@ local function CreateProfile(
     local Card =
         Instance.new("Frame")
 
+    Card.Size =
+        UDim2.fromOffset(
+            125,
+            100
+        )
+
     Card.BackgroundColor3 =
-        Color3.fromRGB(8, 24, 42)
+        Color3.fromRGB(
+            24,
+            24,
+            32
+        )
 
     Card.BorderSizePixel = 0
-    Card.LayoutOrder = order
-    Card.Parent = Results
 
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 13)
-    Corner.Parent = Card
+    Card.LayoutOrder =
+        order
 
-    local Stroke = Instance.new("UIStroke")
+    Card.Parent =
+        Results
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(
+            0,
+            6
+        )
+
+    Corner.Parent =
+        Card
+
+    local Stroke =
+        Instance.new("UIStroke")
 
     local variants =
         item.variants
@@ -1256,48 +1527,91 @@ local function CreateProfile(
         IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour)
 
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
+    local ManeTailDifferent =
+        not ColoursMatch(maneColour, tailColour)
 
     -- RED = Unique Hair (BEST / highest priority)
     if HasUniqueHair then
-        Stroke.Color = Color3.fromRGB(255, 45, 65)
+
+        Stroke.Color =
+            Color3.fromRGB(
+                255,
+                0,
+                0
+            )
+
         Stroke.Thickness = 2
 
-    -- BLUE = Main and Tail are different (2nd best)
-    elseif MainTailDifferent then
-        Stroke.Color = Color3.fromRGB(0, 170, 255)
+    -- BLUE = Mane and Tail are different (2nd best)
+    elseif ManeTailDifferent then
+
+        Stroke.Color =
+            Color3.fromRGB(
+                0,
+                170,
+                255
+            )
+
         Stroke.Thickness = 2
 
     -- GREEN = Nat Dyed (3rd best)
     elseif HasNatDyed then
-        Stroke.Color = Color3.fromRGB(50, 255, 150)
+
+        Stroke.Color =
+            Color3.fromRGB(
+                0,
+                255,
+                0
+            )
+
         Stroke.Thickness = 2
 
     -- PURPLE = Horn Colour (4th best)
     elseif HasHorn then
-        Stroke.Color = Color3.fromRGB(190, 50, 255)
+
+        Stroke.Color =
+            Color3.fromRGB(
+                170,
+                0,
+                255
+            )
+
         Stroke.Thickness = 2
 
     else
-        Stroke.Color = Color3.fromRGB(22, 55, 85)
+
+        Stroke.Color =
+            Color3.fromRGB(
+                42,
+                42,
+                52
+            )
+
         Stroke.Thickness = 1
+
     end
 
-    Stroke.Parent = Card
+    Stroke.Parent =
+        Card
 
-    --==================================================
+    --==============================================
     -- SPECIAL INDICATOR CIRCLES
-    --==================================================
+    -- Red = Unique Hair
+    -- Blue = Mane and Tail are different
+    -- Green = Nat Dyed
+    -- Purple = Horn Colour
+    -- Every matching indicator is shown, even when
+    -- another condition wins the main outline priority.
+    --==============================================
 
     local IndicatorContainer =
         Instance.new("Frame")
 
     IndicatorContainer.Size =
-        UDim2.fromOffset(65, 20)
+        UDim2.fromOffset(48, 12)
 
     IndicatorContainer.Position =
-        UDim2.new(1, -76, 0, 9)
+        UDim2.new(1, -36, 0, 4)
 
     IndicatorContainer.BackgroundTransparency = 1
     IndicatorContainer.Parent = Card
@@ -1307,96 +1621,116 @@ local function CreateProfile(
         local Circle =
             Instance.new("Frame")
 
-        Circle.Size = UDim2.fromOffset(13, 13)
-        Circle.Position = UDim2.fromOffset(x, 2)
+        Circle.Size =
+            UDim2.fromOffset(9, 9)
+
+        Circle.Position =
+            UDim2.fromOffset(x, 1)
+
         Circle.BackgroundColor3 = color
         Circle.BorderSizePixel = 0
         Circle.Parent = IndicatorContainer
 
-        local CircleCorner = Instance.new("UICorner")
-        CircleCorner.CornerRadius = UDim.new(1, 0)
+        local CircleCorner =
+            Instance.new("UICorner")
+
+        CircleCorner.CornerRadius =
+            UDim.new(1, 0)
+
         CircleCorner.Parent = Circle
 
-        local CircleStroke = Instance.new("UIStroke")
-        CircleStroke.Color = Color3.fromRGB(255, 255, 255)
-        CircleStroke.Thickness = 1
-        CircleStroke.Transparency = 0.15
-        CircleStroke.Parent = Circle
+        local CircleStroke =
+            Instance.new("UIStroke")
 
+        CircleStroke.Color =
+            Color3.fromRGB(255, 255, 255)
+
+        CircleStroke.Thickness = 1
+        CircleStroke.Parent = Circle
     end
 
     local IndicatorX = 0
 
+    -- Red = Unique Hair
     if HasUniqueHair then
-        AddIndicator(Color3.fromRGB(255, 45, 65), IndicatorX)
-        IndicatorX += 17
+        AddIndicator(
+            Color3.fromRGB(255, 0, 0),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
     end
 
-    if MainTailDifferent then
-        AddIndicator(Color3.fromRGB(0, 170, 255), IndicatorX)
-        IndicatorX += 17
+    -- Blue = Mane and Tail are different
+    if ManeTailDifferent then
+        AddIndicator(
+            Color3.fromRGB(0, 170, 255),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
     end
 
+    -- Green = Nat Dyed
     if HasNatDyed then
-        AddIndicator(Color3.fromRGB(50, 255, 150), IndicatorX)
-        IndicatorX += 17
+        AddIndicator(
+            Color3.fromRGB(0, 255, 0),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
     end
 
+    -- Purple = Horn Colour
     if HasHorn then
-        AddIndicator(Color3.fromRGB(190, 50, 255), IndicatorX)
+        AddIndicator(
+            Color3.fromRGB(170, 0, 255),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
     end
 
-    --==================================================
-    -- UID
-    --==================================================
+    --==============================================
+    -- PROFILE TITLE
+    --==============================================
 
-    local UIDLabel =
-        Instance.new("TextLabel")
-
-    UIDLabel.Size = UDim2.new(1, -95, 0, 18)
-    UIDLabel.Position = UDim2.fromOffset(12, 8)
-    UIDLabel.BackgroundTransparency = 1
-    UIDLabel.Text = "UID: " .. tostring(uid)
-    UIDLabel.TextColor3 = Color3.fromRGB(175, 200, 225)
-    UIDLabel.TextSize = 9
-    UIDLabel.Font = Enum.Font.Gotham
-    UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    UIDLabel.Parent = Card
-
-    --==================================================
-    -- BREED
-    --==================================================
+    --==============================================
+    -- FIVE FIELDS
+    --==============================================
 
     local BreedLabel =
         Instance.new("TextLabel")
 
-    BreedLabel.Size = UDim2.new(1, -24, 0, 25)
-    BreedLabel.Position = UDim2.fromOffset(12, 30)
+    BreedLabel.Size =
+        UDim2.new(1, -8, 0, 16)
+
+    BreedLabel.Position =
+        UDim2.fromOffset(4, 3)
+
     BreedLabel.BackgroundTransparency = 1
     BreedLabel.Text = tostring(breed)
-    BreedLabel.TextColor3 = Color3.fromRGB(255, 214, 105)
-    BreedLabel.TextSize = 13
+    BreedLabel.TextColor3 =
+        Color3.fromRGB(255, 215, 100)
+    BreedLabel.TextSize = 8
     BreedLabel.Font = Enum.Font.GothamBold
     BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
     BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
     BreedLabel.Parent = Card
 
-    local Divider = Instance.new("Frame")
-    Divider.Size = UDim2.new(1, -24, 0, 1)
-    Divider.Position = UDim2.fromOffset(12, 58)
-    Divider.BackgroundColor3 = Color3.fromRGB(20, 58, 92)
-    Divider.BorderSizePixel = 0
-    Divider.Parent = Card
-
-    --==================================================
-    -- DATA ROWS
-    --==================================================
-
     local Rows = {
-        {"Main", tostring(mainColour)},
-        {"Mane", tostring(maneColour)},
-        {"Tail", tostring(tailColour)}
+
+        {
+            "Main",
+            tostring(mainColour)
+        },
+
+        {
+            "Mane",
+            tostring(maneColour)
+        },
+
+        {
+            "Tail",
+            tostring(tailColour)
+        }
+
     }
 
     for i, row in ipairs(Rows) do
@@ -1404,19 +1738,72 @@ local function CreateProfile(
         local Label =
             Instance.new("TextLabel")
 
-        Label.Size = UDim2.new(1, -24, 0, 17)
-        Label.Position = UDim2.fromOffset(12, 64 + ((i - 1) * 18))
+        Label.Size =
+            UDim2.new(
+                1,
+                -8,
+                0,
+                14
+            )
+
+        Label.Position =
+            UDim2.fromOffset(
+                4,
+                20
+                    + ((i - 1) * 15)
+            )
+
         Label.BackgroundTransparency = 1
-        Label.Text = row[1] .. ": " .. row[2]
-        Label.TextColor3 = Color3.fromRGB(215, 225, 238)
-        Label.TextSize = 9
-        Label.Font = Enum.Font.Gotham
-        Label.TextXAlignment = Enum.TextXAlignment.Left
-        Label.TextYAlignment = Enum.TextYAlignment.Center
-        Label.TextTruncate = Enum.TextTruncate.AtEnd
-        Label.Parent = Card
+
+        Label.Text =
+            row[1]
+            .. ": "
+            .. row[2]
+
+        Label.TextColor3 =
+            Color3.fromRGB(
+                215,
+                215,
+                225
+            )
+
+        Label.TextSize = 6
+
+        Label.Font =
+            Enum.Font.Gotham
+
+        Label.TextXAlignment =
+            Enum.TextXAlignment.Left
+
+        Label.TextYAlignment =
+            Enum.TextYAlignment.Center
+
+        Label.TextTruncate =
+            Enum.TextTruncate.AtEnd
+
+        Label.Parent =
+            Card
 
     end
+
+    local UIDLabel =
+        Instance.new("TextLabel")
+
+    UIDLabel.Size =
+        UDim2.new(1, -8, 0, 12)
+
+    UIDLabel.Position =
+        UDim2.fromOffset(4, 76)
+
+    UIDLabel.BackgroundTransparency = 1
+    UIDLabel.Text = "UID: " .. tostring(uid)
+    UIDLabel.TextColor3 =
+        Color3.fromRGB(105, 115, 135)
+    UIDLabel.TextSize = 5
+    UIDLabel.Font = Enum.Font.Gotham
+    UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
+    UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    UIDLabel.Parent = Card
 
 end
 
@@ -1477,10 +1864,10 @@ local function DisplayHorses()
     end
 
     Status.Text =
-        tostring(shown)
+        "Horses: "
+        .. tostring(shown)
         .. " / "
         .. tostring(#HorseList)
-        .. " HORSES"
 
     task.defer(
         UpdateCanvas
