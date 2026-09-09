@@ -1511,21 +1511,51 @@ local function CreateProfile(
     local Stroke =
         Instance.new("UIStroke")
 
-    -- Purple = hornColour exists (highest priority)
-    if item.variants
-        and item.variants.hornColour then
+    local variants =
+        item.variants
+        or item.Variants
+        or {}
+
+    local HasHorn =
+        variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local HasNatDyed =
+        item.isNatDyed ~= nil
+
+    local HasUniqueHair =
+        IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour)
+
+    local ManeTailDifferent =
+        not ColoursMatch(maneColour, tailColour)
+
+    -- RED = Unique Hair (BEST / highest priority)
+    if HasUniqueHair then
 
         Stroke.Color =
             Color3.fromRGB(
-                170,
+                255,
                 0,
+                0
+            )
+
+        Stroke.Thickness = 2
+
+    -- BLUE = Mane and Tail are different (2nd best)
+    elseif ManeTailDifferent then
+
+        Stroke.Color =
+            Color3.fromRGB(
+                0,
+                170,
                 255
             )
 
         Stroke.Thickness = 2
 
-    -- Green = isNatDyed field exists
-    elseif item.isNatDyed ~= nil then
+    -- GREEN = Nat Dyed (3rd best)
+    elseif HasNatDyed then
 
         Stroke.Color =
             Color3.fromRGB(
@@ -1536,27 +1566,14 @@ local function CreateProfile(
 
         Stroke.Thickness = 2
 
-    -- Blue = Mane and Tail colours do not match
-    elseif not ColoursMatch(maneColour, tailColour) then
+    -- PURPLE = Horn Colour (4th best)
+    elseif HasHorn then
 
         Stroke.Color =
             Color3.fromRGB(
-                0,
                 170,
-                255
-            )
-
-        Stroke.Thickness = 2
-
-    -- Red = Mane OR Tail is Unique Hair
-    elseif IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour) then
-
-        Stroke.Color =
-            Color3.fromRGB(
-                255,
                 0,
-                0
+                255
             )
 
         Stroke.Thickness = 2
@@ -1576,6 +1593,81 @@ local function CreateProfile(
 
     Stroke.Parent =
         Card
+
+    --==============================================
+    -- SPECIAL INDICATOR CIRCLES
+    -- Purple = Horn Colour
+    -- Green = Nat Dyed
+    -- These indicators stay visible even when the
+    -- main profile outline is RED for Unique Hair.
+    --==============================================
+
+    local IndicatorContainer =
+        Instance.new("Frame")
+
+    IndicatorContainer.Size =
+        UDim2.fromOffset(32, 12)
+
+    IndicatorContainer.Position =
+        UDim2.new(1, -36, 0, 4)
+
+    IndicatorContainer.BackgroundTransparency = 1
+    IndicatorContainer.Parent = Card
+
+    local function AddIndicator(color, x)
+
+        local Circle =
+            Instance.new("Frame")
+
+        Circle.Size =
+            UDim2.fromOffset(9, 9)
+
+        Circle.Position =
+            UDim2.fromOffset(x, 1)
+
+        Circle.BackgroundColor3 = color
+        Circle.BorderSizePixel = 0
+        Circle.Parent = IndicatorContainer
+
+        local CircleCorner =
+            Instance.new("UICorner")
+
+        CircleCorner.CornerRadius =
+            UDim.new(1, 0)
+
+        CircleCorner.Parent = Circle
+
+        local CircleStroke =
+            Instance.new("UIStroke")
+
+        CircleStroke.Color =
+            Color3.fromRGB(255, 255, 255)
+
+        CircleStroke.Thickness = 1
+        CircleStroke.Parent = Circle
+    end
+
+    local IndicatorX = 0
+
+    if HasHorn then
+
+        AddIndicator(
+            Color3.fromRGB(170, 0, 255),
+            IndicatorX
+        )
+
+        IndicatorX = IndicatorX + 11
+
+    end
+
+    if HasNatDyed then
+
+        AddIndicator(
+            Color3.fromRGB(0, 255, 0),
+            IndicatorX
+        )
+
+    end
 
     --==============================================
     -- PROFILE TITLE
