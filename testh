@@ -670,6 +670,21 @@ end
 -- GUI
 --==================================================
 
+local guiParent
+
+pcall(function()
+    guiParent = game:GetService("CoreGui")
+end)
+
+if not guiParent then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+local old = guiParent:FindFirstChild("HorseInventoryScanner")
+if old then
+    old:Destroy()
+end
+
 local ScreenGui =
     Instance.new("ScreenGui")
 
@@ -869,7 +884,7 @@ local Minimize =
     Instance.new("TextButton")
 
 Minimize.Size = UDim2.fromOffset(42, 34)
-Minimize.Position = UDim2.new(1, -96, 0, 104)
+Minimize.Position = UDim2.new(1, -96, 0, 20)
 Minimize.BackgroundColor3 = Color3.fromRGB(17, 39, 64)
 Minimize.BorderSizePixel = 0
 Minimize.Text = "−"
@@ -892,7 +907,7 @@ local Close =
     Instance.new("TextButton")
 
 Close.Size = UDim2.fromOffset(42, 34)
-Close.Position = UDim2.new(1, -48, 0, 104)
+Close.Position = UDim2.new(1, -48, 0, 20)
 Close.BackgroundColor3 = Color3.fromRGB(70, 25, 45)
 Close.BorderSizePixel = 0
 Close.Text = "×"
