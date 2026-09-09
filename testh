@@ -720,14 +720,14 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        410,
+        700,
         300
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -205,
+        -350,
         0.5,
         -150
     )
@@ -1198,14 +1198,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        72,
+        132,
         88
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        4,
-        4
+        6,
+        6
     )
 
 Grid.FillDirection =
@@ -1295,7 +1295,7 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                410,
+                700,
                 40
             )
 
@@ -1306,7 +1306,7 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                410,
+                700,
                 300
             )
 
@@ -1477,7 +1477,7 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            72,
+            132,
             88
         )
 
