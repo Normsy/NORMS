@@ -720,16 +720,16 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        620,
-        300
+        500,
+        230
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -310,
+        -250,
         0.5,
-        -150
+        -115
     )
 
 Main.BackgroundColor3 =
@@ -784,7 +784,7 @@ TopBar.Size =
         1,
         0,
         0,
-        40
+        34
     )
 
 TopBar.BackgroundColor3 =
@@ -822,9 +822,9 @@ local Title =
 Title.Size =
     UDim2.new(
         1,
-        -90,
+        -70,
         0,
-        20
+        18
     )
 
 Title.Position =
@@ -845,7 +845,7 @@ Title.TextColor3 =
         255
     )
 
-Title.TextSize = 11
+Title.TextSize = 10
 
 Title.Font =
     Enum.Font.GothamBold
@@ -874,7 +874,7 @@ Status.Size =
 Status.Position =
     UDim2.fromOffset(
         10,
-        23
+        20
     )
 
 Status.BackgroundTransparency = 1
@@ -889,7 +889,7 @@ Status.TextColor3 =
         160
     )
 
-Status.TextSize = 7
+Status.TextSize = 6
 
 Status.Font =
     Enum.Font.Gotham
@@ -909,16 +909,16 @@ local Minimize =
 
 Minimize.Size =
     UDim2.fromOffset(
-        27,
-        27
+        23,
+        23
     )
 
 Minimize.Position =
     UDim2.new(
         1,
-        -64,
+        -54,
         0,
-        7
+        5
     )
 
 Minimize.BackgroundColor3 =
@@ -940,7 +940,7 @@ Minimize.TextColor3 =
         255
     )
 
-Minimize.TextSize = 16
+Minimize.TextSize = 14
 
 Minimize.Font =
     Enum.Font.GothamBold
@@ -969,16 +969,16 @@ local Close =
 
 Close.Size =
     UDim2.fromOffset(
-        27,
-        27
+        23,
+        23
     )
 
 Close.Position =
     UDim2.new(
         1,
-        -33,
+        -28,
         0,
-        7
+        5
     )
 
 Close.BackgroundColor3 =
@@ -1000,7 +1000,7 @@ Close.TextColor3 =
         120
     )
 
-Close.TextSize = 17
+Close.TextSize = 14
 
 Close.Font =
     Enum.Font.GothamBold
@@ -1036,13 +1036,13 @@ Content.Size =
         1,
         0,
         1,
-        -40
+        -34
     )
 
 Content.Position =
     UDim2.fromOffset(
         0,
-        40
+        34
     )
 
 Content.BackgroundTransparency = 1
@@ -1060,15 +1060,15 @@ local Search =
 Search.Size =
     UDim2.new(
         1,
-        -20,
+        -16,
         0,
-        27
+        22
     )
 
 Search.Position =
     UDim2.fromOffset(
-        10,
-        7
+        8,
+        5
     )
 
 Search.BackgroundColor3 =
@@ -1099,7 +1099,7 @@ Search.TextColor3 =
         240
     )
 
-Search.TextSize = 8
+Search.TextSize = 7
 
 Search.Font =
     Enum.Font.Gotham
@@ -1127,7 +1127,7 @@ local SearchPadding =
 SearchPadding.PaddingLeft =
     UDim.new(
         0,
-        8
+        6
     )
 
 SearchPadding.Parent =
@@ -1143,15 +1143,15 @@ local Results =
 Results.Size =
     UDim2.new(
         1,
-        -20,
+        -16,
         1,
-        -45
+        -31
     )
 
 Results.Position =
     UDim2.fromOffset(
-        10,
-        40
+        8,
+        31
     )
 
 Results.BackgroundColor3 =
@@ -1198,14 +1198,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        115,
-        78
+        95,
+        68
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        4,
-        4
+        3,
+        3
     )
 
 Grid.FillDirection =
@@ -1230,25 +1230,25 @@ local Padding =
 Padding.PaddingTop =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingBottom =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingLeft =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingRight =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.Parent =
@@ -1295,8 +1295,8 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                700,
-                40
+                500,
+                34
             )
 
         Minimize.Text =
@@ -1306,8 +1306,8 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                620,
-                300
+                500,
+                230
             )
 
         Minimize.Text =
@@ -1477,8 +1477,8 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            115,
-            78
+            95,
+            68
         )
 
     Card.BackgroundColor3 =
@@ -1657,7 +1657,7 @@ local function CreateProfile(
             Color3.fromRGB(255, 0, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Blue = Main and Tail are different
@@ -1666,7 +1666,7 @@ local function CreateProfile(
             Color3.fromRGB(0, 170, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Green = Nat Dyed
@@ -1675,7 +1675,7 @@ local function CreateProfile(
             Color3.fromRGB(0, 255, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Purple = Horn Colour
@@ -1684,7 +1684,7 @@ local function CreateProfile(
             Color3.fromRGB(170, 0, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     --==============================================
@@ -1699,16 +1699,16 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     BreedLabel.Size =
-        UDim2.new(1, -6, 0, 11)
+        UDim2.new(1, -5, 0, 9)
 
     BreedLabel.Position =
-        UDim2.fromOffset(3, 3)
+        UDim2.fromOffset(3, 2)
 
     BreedLabel.BackgroundTransparency = 1
     BreedLabel.Text = tostring(breed)
     BreedLabel.TextColor3 =
         Color3.fromRGB(255, 215, 100)
-    BreedLabel.TextSize = 7
+    BreedLabel.TextSize = 5
     BreedLabel.Font = Enum.Font.GothamBold
     BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
     BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1741,16 +1741,16 @@ local function CreateProfile(
         Label.Size =
             UDim2.new(
                 1,
-                -6,
+                -5,
                 0,
-                10
+                8
             )
 
         Label.Position =
             UDim2.fromOffset(
                 3,
-                15
-                    + ((i - 1) * 11)
+                12
+                    + ((i - 1) * 9)
             )
 
         Label.BackgroundTransparency = 1
@@ -1767,7 +1767,7 @@ local function CreateProfile(
                 225
             )
 
-        Label.TextSize = 6
+        Label.TextSize = 5
 
         Label.Font =
             Enum.Font.Gotham
@@ -1790,16 +1790,16 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     UIDLabel.Size =
-        UDim2.new(1, -6, 0, 8)
+        UDim2.new(1, -5, 0, 7)
 
     UIDLabel.Position =
-        UDim2.fromOffset(3, 68)
+        UDim2.fromOffset(3, 59)
 
     UIDLabel.BackgroundTransparency = 1
     UIDLabel.Text = "UID: " .. tostring(uid)
     UIDLabel.TextColor3 =
         Color3.fromRGB(105, 115, 135)
-    UIDLabel.TextSize = 5
+    UIDLabel.TextSize = 4
     UIDLabel.Font = Enum.Font.Gotham
     UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
     UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1811,7 +1811,7 @@ end
 -- SORT BEST TO NORMAL
 --==================================================
 
-local function GetHorsePriority(horse)
+local function GetHorseStats(horse)
 
     local item = horse.item
 
@@ -1839,26 +1839,47 @@ local function GetHorsePriority(horse)
     local MainTailDifferent =
         not ColoursMatch(mainColour, tailColour)
 
+    local priority = 0
+
     if HasUniqueHair then
-        return 4
+        priority = 4
     elseif MainTailDifferent then
-        return 3
+        priority = 3
     elseif HasNatDyed then
-        return 2
+        priority = 2
     elseif HasHorn then
-        return 1
+        priority = 1
     end
 
-    return 0
+    local specialCount = 0
+
+    if HasUniqueHair then specialCount += 1 end
+    if MainTailDifferent then specialCount += 1 end
+    if HasNatDyed then specialCount += 1 end
+    if HasHorn then specialCount += 1 end
+
+    return priority, specialCount
+end
+
+local function GetHorsePriority(horse)
+    local priority = GetHorseStats(horse)
+    return priority
 end
 
 table.sort(HorseList, function(a, b)
 
-    local priorityA = GetHorsePriority(a)
-    local priorityB = GetHorsePriority(b)
+    local priorityA, countA = GetHorseStats(a)
+    local priorityB, countB = GetHorseStats(b)
 
+    -- Highest priority group always comes first.
     if priorityA ~= priorityB then
         return priorityA > priorityB
+    end
+
+    -- Within the same priority, horses with more special
+    -- properties come first.
+    if countA ~= countB then
+        return countA > countB
     end
 
     return tostring(a.uid) < tostring(b.uid)
