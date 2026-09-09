@@ -1323,7 +1323,8 @@ local FilterOptions = {
     {"Red - Unique Hair", Color3.fromRGB(255, 0, 0)},
     {"Blue - Main/Tail Different", Color3.fromRGB(0, 170, 255)},
     {"Green - Nat Dyed", Color3.fromRGB(0, 255, 0)},
-    {"Purple - Horn Colour", Color3.fromRGB(170, 0, 255)}
+    {"Purple - Horn Colour", Color3.fromRGB(170, 0, 255)},
+    {"Grey - Normal", Color3.fromRGB(120, 120, 130)}
 }
 
 local function SetFilter(name)
@@ -2229,7 +2230,7 @@ end)
 -- 3 = Main != Tail
 -- 2 = Nat Dyed
 -- 1 = Horn Colour
--- 0 = Normal
+-- 0 = Grey / Normal
 --==================================================
 --==================================================
 -- FILTER / SELL HELPERS
@@ -2275,7 +2276,7 @@ local function GetHorseFilter(horse)
         return "Purple - Horn Colour"
     end
 
-    return "Normal"
+    return "Grey - Normal"
 end
 
 local function MatchesSelectedFilter(horse)
