@@ -1,4 +1,4 @@
---// HORSE INVENTORY SCANNER
+﻿--// HORSE INVENTORY SCANNER
 --// KEYWORD-BASED HORSE / DONKEY SCANNER
 --// 5 PROFILES PER ROW
 --// READ-ONLY
@@ -585,63 +585,21 @@ local function GetColours(item)
         or variants.TailColour
 
     return
-        mainColour or "Unknown",
-        maneColour or "Unknown",
-        tailColour or "Unknown"
-end
+        tostring(
+            mainColour or "Unknown"
+        ),
 
--- Compare Main and Tail by their actual value/content.
--- This prevents identical colour tables/values from being marked blue
--- just because tostring(table) produces different memory addresses.
-local function ColoursMatch(a, b)
+        tostring(
+            maneColour or "Unknown"
+        ),
 
-    if a == b then
-        return true
-    end
-
-    if type(a) == "table" and type(b) == "table" then
-
-        local function NormalizeTable(t)
-            local keys = {}
-
-            for k in pairs(t) do
-                table.insert(keys, k)
-            end
-
-            table.sort(keys, function(x, y)
-                return tostring(x) < tostring(y)
-            end)
-
-            local parts = {}
-
-            for _, k in ipairs(keys) do
-                local v = t[k]
-
-                if type(v) == "table" then
-                    v = NormalizeTable(v)
-                end
-
-                table.insert(parts, tostring(k) .. "=" .. tostring(v))
-            end
-
-            return "{" .. table.concat(parts, ";") .. "}"
-        end
-
-        return NormalizeTable(a) == NormalizeTable(b)
-    end
-
-    local function NormalizeColour(value)
-        return tostring(value or "")
-            :lower()
-            :gsub("^%s+", "")
-            :gsub("%s+$", "")
-    end
-
-    return NormalizeColour(a) == NormalizeColour(b)
+        tostring(
+            tailColour or "Unknown"
+        )
 end
 
 --==================================================
--- UNIQUE HAIR
+-- SPECIAL HORSE HELPERS
 --==================================================
 
 local UniqueHair = {
@@ -664,6 +622,23 @@ end
 
 local function IsUniqueHair(value)
     return UniqueHair[NormalizeUniqueHair(value)] == true
+end
+
+local function ColoursMatch(a,b)
+    if a == b then return true end
+    if type(a) == "table" and type(b) == "table" then
+        local function norm(v)
+            if type(v) ~= "table" then return tostring(v) end
+            local keys={}
+            for k in pairs(v) do table.insert(keys,k) end
+            table.sort(keys,function(x,y) return tostring(x)<tostring(y) end)
+            local parts={}
+            for _,k in ipairs(keys) do table.insert(parts,tostring(k).."="..norm(v[k])) end
+            return "{"..table.concat(parts,";").."}"
+        end
+        return norm(a)==norm(b)
+    end
+    return tostring(a or ""):lower()==tostring(b or ""):lower()
 end
 
 --==================================================
@@ -720,16 +695,16 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        460,
-        230
+        350,
+        300
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -230,
+        -175,
         0.5,
-        -115
+        -150
     )
 
 Main.BackgroundColor3 =
@@ -784,7 +759,7 @@ TopBar.Size =
         1,
         0,
         0,
-        34
+        40
     )
 
 TopBar.BackgroundColor3 =
@@ -822,9 +797,9 @@ local Title =
 Title.Size =
     UDim2.new(
         1,
-        -70,
+        -90,
         0,
-        18
+        20
     )
 
 Title.Position =
@@ -845,7 +820,7 @@ Title.TextColor3 =
         255
     )
 
-Title.TextSize = 10
+Title.TextSize = 11
 
 Title.Font =
     Enum.Font.GothamBold
@@ -874,7 +849,7 @@ Status.Size =
 Status.Position =
     UDim2.fromOffset(
         10,
-        20
+        23
     )
 
 Status.BackgroundTransparency = 1
@@ -889,7 +864,7 @@ Status.TextColor3 =
         160
     )
 
-Status.TextSize = 6
+Status.TextSize = 7
 
 Status.Font =
     Enum.Font.Gotham
@@ -909,16 +884,16 @@ local Minimize =
 
 Minimize.Size =
     UDim2.fromOffset(
-        23,
-        23
+        27,
+        27
     )
 
 Minimize.Position =
     UDim2.new(
         1,
-        -54,
+        -64,
         0,
-        5
+        7
     )
 
 Minimize.BackgroundColor3 =
@@ -940,7 +915,7 @@ Minimize.TextColor3 =
         255
     )
 
-Minimize.TextSize = 14
+Minimize.TextSize = 16
 
 Minimize.Font =
     Enum.Font.GothamBold
@@ -969,16 +944,16 @@ local Close =
 
 Close.Size =
     UDim2.fromOffset(
-        23,
-        23
+        27,
+        27
     )
 
 Close.Position =
     UDim2.new(
         1,
-        -28,
+        -33,
         0,
-        5
+        7
     )
 
 Close.BackgroundColor3 =
@@ -1000,7 +975,7 @@ Close.TextColor3 =
         120
     )
 
-Close.TextSize = 14
+Close.TextSize = 17
 
 Close.Font =
     Enum.Font.GothamBold
@@ -1036,13 +1011,13 @@ Content.Size =
         1,
         0,
         1,
-        -34
+        -40
     )
 
 Content.Position =
     UDim2.fromOffset(
         0,
-        34
+        40
     )
 
 Content.BackgroundTransparency = 1
@@ -1060,15 +1035,15 @@ local Search =
 Search.Size =
     UDim2.new(
         1,
-        -72,
+        -20,
         0,
-        22
+        27
     )
 
 Search.Position =
     UDim2.fromOffset(
-        8,
-        5
+        10,
+        7
     )
 
 Search.BackgroundColor3 =
@@ -1099,7 +1074,7 @@ Search.TextColor3 =
         240
     )
 
-Search.TextSize = 7
+Search.TextSize = 8
 
 Search.Font =
     Enum.Font.Gotham
@@ -1127,134 +1102,31 @@ local SearchPadding =
 SearchPadding.PaddingLeft =
     UDim.new(
         0,
-        6
+        8
     )
 
 SearchPadding.Parent =
     Search
 
 --==================================================
--- SELECT DROPDOWN
---==================================================
-
--- Forward declaration because the dropdown is created before Results.
-local Results
-
-local SelectedGroups = {}
-
-local SelectButton =
-    Instance.new("TextButton")
-
-SelectButton.Size =
-    UDim2.fromOffset(50, 22)
-
-SelectButton.Position =
-    UDim2.new(1, -58, 0, 5)
-
-SelectButton.BackgroundColor3 =
-    Color3.fromRGB(30, 30, 40)
-
-SelectButton.BorderSizePixel = 0
-SelectButton.Text = "Select ▼"
-SelectButton.TextColor3 =
-    Color3.fromRGB(230, 230, 240)
-SelectButton.TextSize = 6
-SelectButton.Font = Enum.Font.GothamBold
-SelectButton.Parent = Content
-
-local SelectCorner = Instance.new("UICorner")
-SelectCorner.CornerRadius = UDim.new(0, 6)
-SelectCorner.Parent = SelectButton
-
-local SelectMenu =
-    Instance.new("Frame")
-
-SelectMenu.Size =
-    UDim2.fromOffset(120, 110)
-
-SelectMenu.Position =
-    UDim2.new(1, -128, 0, 29)
-
-SelectMenu.BackgroundColor3 =
-    Color3.fromRGB(24, 24, 32)
-SelectMenu.BorderSizePixel = 0
-SelectMenu.Visible = false
-SelectMenu.ZIndex = 50
-SelectMenu.Parent = Content
-
-local MenuCorner = Instance.new("UICorner")
-MenuCorner.CornerRadius = UDim.new(0, 6)
-MenuCorner.Parent = SelectMenu
-
-local CategoryInfo = {
-    {"Unique Hair", 4, Color3.fromRGB(255, 0, 0)},
-    {"Mismatched", 3, Color3.fromRGB(0, 170, 255)},
-    {"Natural Dyed", 2, Color3.fromRGB(0, 255, 0)},
-    {"Horned", 1, Color3.fromRGB(170, 0, 255)},
-    {"Normal", 0, Color3.fromRGB(150, 150, 160)}
-}
-
-local CategoryButtons = {}
-
-for index, info in ipairs(CategoryInfo) do
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(1, -8, 0, 19)
-    Button.Position = UDim2.fromOffset(4, 4 + ((index - 1) * 21))
-    Button.BackgroundTransparency = 1
-    Button.BorderSizePixel = 0
-    Button.TextColor3 = info[3]
-    Button.TextSize = 6
-    Button.Font = Enum.Font.GothamBold
-    Button.TextXAlignment = Enum.TextXAlignment.Left
-    Button.Text = "☐  " .. info[1]
-    Button.ZIndex = 51
-    Button.Parent = SelectMenu
-    CategoryButtons[index] = Button
-
-    Button.MouseButton1Click:Connect(function()
-        local priority = info[2]
-        SelectedGroups[priority] = not SelectedGroups[priority]
-
-        if SelectedGroups[priority] then
-            Button.Text = "☑  " .. info[1]
-        else
-            Button.Text = "☐  " .. info[1]
-        end
-
-        -- Refresh selection state on all currently displayed profiles.
-        for _, child in ipairs(Results:GetChildren()) do
-            local priorityValue = child:GetAttribute("HorsePriority")
-            local selectionStroke = child:FindFirstChild("SelectionStroke")
-            if selectionStroke and priorityValue ~= nil then
-                selectionStroke.Thickness = SelectedGroups[priorityValue] and 2 or 0
-            end
-        end
-    end)
-end
-
-SelectButton.MouseButton1Click:Connect(function()
-    SelectMenu.Visible = not SelectMenu.Visible
-end)
-
---==================================================
 -- RESULTS
 --==================================================
 
-Results =
+local Results =
     Instance.new("ScrollingFrame")
 
 Results.Size =
     UDim2.new(
         1,
-        -16,
+        -20,
         1,
-        -31
+        -45
     )
 
 Results.Position =
     UDim2.fromOffset(
-        8,
-        31
+        10,
+        40
     )
 
 Results.BackgroundColor3 =
@@ -1301,14 +1173,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        108,
-        72
+        82,
+        78
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        3,
-        3
+        5,
+        5
     )
 
 Grid.FillDirection =
@@ -1333,25 +1205,25 @@ local Padding =
 Padding.PaddingTop =
     UDim.new(
         0,
-        3
+        5
     )
 
 Padding.PaddingBottom =
     UDim.new(
         0,
-        3
+        5
     )
 
 Padding.PaddingLeft =
     UDim.new(
         0,
-        3
+        5
     )
 
 Padding.PaddingRight =
     UDim.new(
         0,
-        3
+        5
     )
 
 Padding.Parent =
@@ -1398,8 +1270,8 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                500,
-                34
+                350,
+                40
             )
 
         Minimize.Text =
@@ -1409,8 +1281,8 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                500,
-                230
+                350,
+                300
             )
 
         Minimize.Text =
@@ -1548,403 +1420,128 @@ end
 -- CREATE PROFILE
 --==================================================
 
-local function CreateProfile(
-    horse,
-    order
-)
+local function CreateProfile(horse, order)
+    local uid = horse.uid
+    local item = horse.item
+    local info = horse.info
+    local breed = horse.breed or GetBreed(item,info) or "Unknown"
+    local mainColour,maneColour,tailColour = GetColours(item)
 
-    local uid =
-        horse.uid
+    local variants = item.variants or item.Variants or {}
+    local HasHorn = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    local HasNatDyed = item.isNatDyed == true
+    local HasUniqueHair = IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
+    local MainTailDifferent = not ColoursMatch(mainColour,tailColour)
 
-    local item =
-        horse.item
+    local priority = 0
+    if HasUniqueHair then priority=4
+    elseif MainTailDifferent then priority=3
+    elseif HasNatDyed then priority=2
+    elseif HasHorn then priority=1 end
 
-    local info =
-        horse.info
-
-    local breed =
-        horse.breed
-        or GetBreed(
-            item,
-            info
-        )
-        or "Unknown"
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local Card =
-        Instance.new("Frame")
-
-    Card.Size =
-        UDim2.fromOffset(
-            108,
-            72
-        )
-
-    Card.BackgroundColor3 =
-        Color3.fromRGB(
-            24,
-            24,
-            32
-        )
-
+    local Card = Instance.new("Frame")
+    Card.Size = UDim2.fromOffset(82,78)
+    Card.BackgroundColor3 = Color3.fromRGB(24,24,32)
     Card.BorderSizePixel = 0
+    Card.LayoutOrder = order
+    Card:SetAttribute("HorsePriority",priority)
+    Card.Parent = Results
 
-    Card.LayoutOrder =
-        order
+    local Corner=Instance.new("UICorner")
+    Corner.CornerRadius=UDim.new(0,5)
+    Corner.Parent=Card
 
-    Card.Parent =
-        Results
+    local Stroke=Instance.new("UIStroke")
+    if priority==4 then Stroke.Color=Color3.fromRGB(255,0,0); Stroke.Thickness=2
+    elseif priority==3 then Stroke.Color=Color3.fromRGB(0,170,255); Stroke.Thickness=2
+    elseif priority==2 then Stroke.Color=Color3.fromRGB(0,255,0); Stroke.Thickness=2
+    elseif priority==1 then Stroke.Color=Color3.fromRGB(170,0,255); Stroke.Thickness=2
+    else Stroke.Color=Color3.fromRGB(42,42,52); Stroke.Thickness=1 end
+    Stroke.Parent=Card
 
-    local Corner =
-        Instance.new("UICorner")
+    local SelectionStroke=Instance.new("UIStroke")
+    SelectionStroke.Name="SelectionStroke"
+    SelectionStroke.Color=Color3.fromRGB(255,255,255)
+    SelectionStroke.Thickness=0
+    SelectionStroke.Parent=Card
 
-    Corner.CornerRadius =
-        UDim.new(
-            0,
-            5
-        )
+    local Dots=Instance.new("Frame")
+    Dots.Size=UDim2.fromOffset(36,9)
+    Dots.Position=UDim2.new(1,-39,0,3)
+    Dots.BackgroundTransparency=1
+    Dots.ZIndex=5
+    Dots.Parent=Card
+    local dx=0
+    local function Dot(c)
+        local d=Instance.new("Frame")
+        d.Size=UDim2.fromOffset(7,7)
+        d.Position=UDim2.fromOffset(dx,1)
+        d.BackgroundColor3=c
+        d.BorderSizePixel=0
+        d.ZIndex=6
+        d.Parent=Dots
+        local dc=Instance.new("UICorner")
+        dc.CornerRadius=UDim.new(1,0); dc.Parent=d
+        dx+=8
+    end
+    if HasUniqueHair then Dot(Color3.fromRGB(255,0,0)) end
+    if MainTailDifferent then Dot(Color3.fromRGB(0,170,255)) end
+    if HasNatDyed then Dot(Color3.fromRGB(0,255,0)) end
+    if HasHorn then Dot(Color3.fromRGB(170,0,255)) end
 
-    Corner.Parent =
-        Card
+    local Title=Instance.new("TextLabel")
+    Title.Size=UDim2.new(1,-6,0,12)
+    Title.Position=UDim2.fromOffset(3,2)
+    Title.BackgroundTransparency=1
+    Title.Text=tostring(breed)
+    Title.TextColor3=Color3.fromRGB(255,215,100)
+    Title.TextSize=6
+    Title.Font=Enum.Font.GothamBold
+    Title.TextXAlignment=Enum.TextXAlignment.Left
+    Title.TextTruncate=Enum.TextTruncate.AtEnd
+    Title.ZIndex=2
+    Title.Parent=Card
 
-    local Stroke =
-        Instance.new("UIStroke")
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    local HorsePriority = 0
-
-    if HasUniqueHair then
-        HorsePriority = 4
-    elseif MainTailDifferent then
-        HorsePriority = 3
-    elseif HasNatDyed then
-        HorsePriority = 2
-    elseif HasHorn then
-        HorsePriority = 1
+    local rows={{"Main",mainColour},{"Mane",maneColour},{"Tail",tailColour}}
+    for i,row in ipairs(rows) do
+        local L=Instance.new("TextLabel")
+        L.Size=UDim2.new(1,-6,0,10)
+        L.Position=UDim2.fromOffset(3,16+(i-1)*12)
+        L.BackgroundTransparency=1
+        L.Text=row[1]..": "..tostring(row[2])
+        L.TextColor3=Color3.fromRGB(215,215,225)
+        L.TextSize=5
+        L.Font=Enum.Font.Gotham
+        L.TextXAlignment=Enum.TextXAlignment.Left
+        L.TextTruncate=Enum.TextTruncate.AtEnd
+        L.ZIndex=2
+        L.Parent=Card
     end
 
-    Card:SetAttribute("HorsePriority", HorsePriority)
-
-    -- RED = Unique Hair (BEST / highest priority)
-    if HasUniqueHair then
-
-        Stroke.Color =
-            Color3.fromRGB(
-                255,
-                0,
-                0
-            )
-
-        Stroke.Thickness = 2
-
-    -- BLUE = Main and Tail are different (2nd best)
-    elseif MainTailDifferent then
-
-        Stroke.Color =
-            Color3.fromRGB(
-                0,
-                170,
-                255
-            )
-
-        Stroke.Thickness = 2
-
-    -- GREEN = Nat Dyed (3rd best)
-    elseif HasNatDyed then
-
-        Stroke.Color =
-            Color3.fromRGB(
-                0,
-                255,
-                0
-            )
-
-        Stroke.Thickness = 2
-
-    -- PURPLE = Horn Colour (4th best)
-    elseif HasHorn then
-
-        Stroke.Color =
-            Color3.fromRGB(
-                170,
-                0,
-                255
-            )
-
-        Stroke.Thickness = 2
-
-    else
-
-        Stroke.Color =
-            Color3.fromRGB(
-                42,
-                42,
-                52
-            )
-
-        Stroke.Thickness = 1
-
-    end
-
-    Stroke.Parent =
-        Card
-
-    --==============================================
-    -- SPECIAL INDICATOR CIRCLES
-    -- Red = Unique Hair
-    -- Blue = Main and Tail are different
-    -- Green = Nat Dyed
-    -- Purple = Horn Colour
-    -- Every matching indicator is shown, even when
-    -- another condition wins the main outline priority.
-    --==============================================
-
-    local IndicatorContainer =
-        Instance.new("Frame")
-
-    IndicatorContainer.Size =
-        UDim2.fromOffset(40, 10)
-
-    IndicatorContainer.Position =
-        UDim2.new(1, -41, 0, 3)
-
-    IndicatorContainer.BackgroundTransparency = 1
-    IndicatorContainer.Parent = Card
-
-    local function AddIndicator(color, x)
-
-        local Circle =
-            Instance.new("Frame")
-
-        Circle.Size =
-            UDim2.fromOffset(7, 7)
-
-        Circle.Position =
-            UDim2.fromOffset(x, 1)
-
-        Circle.BackgroundColor3 = color
-        Circle.BorderSizePixel = 0
-        Circle.Parent = IndicatorContainer
-
-        local CircleCorner =
-            Instance.new("UICorner")
-
-        CircleCorner.CornerRadius =
-            UDim.new(1, 0)
-
-        CircleCorner.Parent = Circle
-
-        local CircleStroke =
-            Instance.new("UIStroke")
-
-        CircleStroke.Color =
-            Color3.fromRGB(255, 255, 255)
-
-        CircleStroke.Thickness = 1
-        CircleStroke.Parent = Circle
-    end
-
-    local IndicatorX = 0
-
-    -- Red = Unique Hair
-    if HasUniqueHair then
-        AddIndicator(
-            Color3.fromRGB(255, 0, 0),
-            IndicatorX
-        )
-        IndicatorX = IndicatorX + 8
-    end
-
-    -- Blue = Main and Tail are different
-    if MainTailDifferent then
-        AddIndicator(
-            Color3.fromRGB(0, 170, 255),
-            IndicatorX
-        )
-        IndicatorX = IndicatorX + 8
-    end
-
-    -- Green = Nat Dyed
-    if HasNatDyed then
-        AddIndicator(
-            Color3.fromRGB(0, 255, 0),
-            IndicatorX
-        )
-        IndicatorX = IndicatorX + 8
-    end
-
-    -- Purple = Horn Colour
-    if HasHorn then
-        AddIndicator(
-            Color3.fromRGB(170, 0, 255),
-            IndicatorX
-        )
-        IndicatorX = IndicatorX + 8
-    end
-
-    --==============================================
-    -- PROFILE TITLE
-    --==============================================
-
-    --==============================================
-    -- FIVE FIELDS
-    --==============================================
-
-    local BreedLabel =
-        Instance.new("TextLabel")
-
-    BreedLabel.Size =
-        UDim2.new(1, -5, 0, 9)
-
-    BreedLabel.Position =
-        UDim2.fromOffset(3, 2)
-
-    BreedLabel.BackgroundTransparency = 1
-    BreedLabel.Text = tostring(breed)
-    BreedLabel.TextColor3 =
-        Color3.fromRGB(255, 215, 100)
-    BreedLabel.TextSize = 5
-    BreedLabel.Font = Enum.Font.GothamBold
-    BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
-    BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    BreedLabel.Parent = Card
-
-    local Rows = {
-
-        {
-            "Main",
-            tostring(mainColour)
-        },
-
-        {
-            "Mane",
-            tostring(maneColour)
-        },
-
-        {
-            "Tail",
-            tostring(tailColour)
-        }
-
-    }
-
-    for i, row in ipairs(Rows) do
-
-        local Label =
-            Instance.new("TextLabel")
-
-        Label.Size =
-            UDim2.new(
-                1,
-                -5,
-                0,
-                8
-            )
-
-        Label.Position =
-            UDim2.fromOffset(
-                3,
-                12
-                    + ((i - 1) * 9)
-            )
-
-        Label.BackgroundTransparency = 1
-
-        Label.Text =
-            row[1]
-            .. ": "
-            .. row[2]
-
-        Label.TextColor3 =
-            Color3.fromRGB(
-                215,
-                215,
-                225
-            )
-
-        Label.TextSize = 5
-
-        Label.Font =
-            Enum.Font.Gotham
-
-        Label.TextXAlignment =
-            Enum.TextXAlignment.Left
-
-        Label.TextYAlignment =
-            Enum.TextYAlignment.Center
-
-        Label.TextTruncate =
-            Enum.TextTruncate.AtEnd
-
-        Label.Parent =
-            Card
-
-    end
-
-    local UIDLabel =
-        Instance.new("TextLabel")
-
-    UIDLabel.Size =
-        UDim2.new(1, -5, 0, 7)
-
-    UIDLabel.Position =
-        UDim2.fromOffset(3, 59)
-
-    UIDLabel.BackgroundTransparency = 1
-    UIDLabel.Text = "UID: " .. tostring(uid)
-    UIDLabel.TextColor3 =
-        Color3.fromRGB(105, 115, 135)
-    UIDLabel.TextSize = 4
-    UIDLabel.Font = Enum.Font.Gotham
-    UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
-    UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    UIDLabel.Parent = Card
-
-    -- White outline used when this profile is selected.
-    local SelectionStroke = Instance.new("UIStroke")
-    SelectionStroke.Name = "SelectionStroke"
-    SelectionStroke.Color = Color3.fromRGB(255, 255, 255)
-    SelectionStroke.Thickness = 0
-    SelectionStroke.Parent = Card
-
-    -- Transparent button makes the whole profile selectable.
-    local SelectProfile = Instance.new("TextButton")
-    SelectProfile.Size = UDim2.fromScale(1, 1)
-    SelectProfile.Position = UDim2.fromScale(0, 0)
-    SelectProfile.BackgroundTransparency = 1
-    SelectProfile.BorderSizePixel = 0
-    SelectProfile.Text = ""
-    SelectProfile.AutoButtonColor = false
-    SelectProfile.ZIndex = 20
-    SelectProfile.Parent = Card
-
-    SelectProfile.MouseButton1Click:Connect(function()
-        SelectionStroke.Thickness =
-            SelectionStroke.Thickness == 0 and 2 or 0
+    local UID=Instance.new("TextLabel")
+    UID.Size=UDim2.new(1,-6,0,7)
+    UID.Position=UDim2.fromOffset(3,68)
+    UID.BackgroundTransparency=1
+    UID.Text="UID: "..tostring(uid)
+    UID.TextColor3=Color3.fromRGB(105,115,135)
+    UID.TextSize=3
+    UID.Font=Enum.Font.Gotham
+    UID.TextXAlignment=Enum.TextXAlignment.Left
+    UID.TextTruncate=Enum.TextTruncate.AtEnd
+    UID.ZIndex=2
+    UID.Parent=Card
+
+    local Hit=Instance.new("TextButton")
+    Hit.Size=UDim2.fromScale(1,1)
+    Hit.BackgroundTransparency=1
+    Hit.BorderSizePixel=0
+    Hit.Text=""
+    Hit.AutoButtonColor=false
+    Hit.ZIndex=20
+    Hit.Parent=Card
+    Hit.MouseButton1Click:Connect(function()
+        SelectionStroke.Thickness=(SelectionStroke.Thickness==0) and 2 or 0
     end)
-
 end
 
 --==================================================
@@ -1952,86 +1549,86 @@ end
 --==================================================
 
 local function GetHorseStats(horse)
-
-    local item = horse.item
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    local priority = 0
-
-    if HasUniqueHair then
-        priority = 4
-    elseif MainTailDifferent then
-        priority = 3
-    elseif HasNatDyed then
-        priority = 2
-    elseif HasHorn then
-        priority = 1
-    end
-
-    local specialCount = 0
-
-    if HasUniqueHair then specialCount += 1 end
-    if MainTailDifferent then specialCount += 1 end
-    if HasNatDyed then specialCount += 1 end
-    if HasHorn then specialCount += 1 end
-
-    return priority, specialCount
+    local main,mane,tail=GetColours(horse.item)
+    local v=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(mane) or IsUniqueHair(tail)
+    local mismatch=not ColoursMatch(main,tail)
+    local nat=horse.item.isNatDyed == true
+    local horn=v.hornColour ~= nil and tostring(v.hornColour) ~= ""
+    local priority=unique and 4 or mismatch and 3 or nat and 2 or horn and 1 or 0
+    local count=(unique and 1 or 0)+(mismatch and 1 or 0)+(nat and 1 or 0)+(horn and 1 or 0)
+    return priority,count
 end
 
-local function GetHorsePriority(horse)
-    local priority = GetHorseStats(horse)
-    return priority
-end
-
-table.sort(HorseList, function(a, b)
-
-    local priorityA, countA = GetHorseStats(a)
-    local priorityB, countB = GetHorseStats(b)
-
-    -- Highest priority group always comes first.
-    if priorityA ~= priorityB then
-        return priorityA > priorityB
-    end
-
-    -- Within the same priority, horses with more special
-    -- properties come first.
-    if countA ~= countB then
-        return countA > countB
-    end
-
-    return tostring(a.uid) < tostring(b.uid)
+table.sort(HorseList,function(a,b)
+    local pa,ca=GetHorseStats(a)
+    local pb,cb=GetHorseStats(b)
+    if pa~=pb then return pa>pb end
+    if ca~=cb then return ca>cb end
+    return tostring(a.uid)<tostring(b.uid)
 end)
 
--- HORSE LIST IS SORTED BEST -> NORMAL
--- 4 = Unique Hair
--- 3 = Main != Tail
--- 2 = Nat Dyed
--- 1 = Horn Colour
--- 0 = Normal
 --==================================================
+-- SELECT DROPDOWN
+--==================================================
+
+local SelectedGroups={}
+local SelectButton=Instance.new("TextButton")
+SelectButton.Size=UDim2.fromOffset(58,18)
+SelectButton.Position=UDim2.new(1,-68,0,4)
+SelectButton.BackgroundColor3=Color3.fromRGB(30,30,40)
+SelectButton.BorderSizePixel=0
+SelectButton.Text="Select ▼"
+SelectButton.TextColor3=Color3.fromRGB(230,230,240)
+SelectButton.TextSize=5
+SelectButton.Font=Enum.Font.GothamBold
+SelectButton.ZIndex=30
+SelectButton.Parent=Content
+
+local SelectMenu=Instance.new("Frame")
+SelectMenu.Size=UDim2.fromOffset(118,105)
+SelectMenu.Position=UDim2.new(1,-126,0,25)
+SelectMenu.BackgroundColor3=Color3.fromRGB(24,24,32)
+SelectMenu.BorderSizePixel=0
+SelectMenu.Visible=false
+SelectMenu.ZIndex=40
+SelectMenu.Parent=Content
+local mc=Instance.new("UICorner"); mc.CornerRadius=UDim.new(0,5); mc.Parent=SelectMenu
+
+local CategoryInfo={
+    {"Unique Hair",4,Color3.fromRGB(255,0,0)},
+    {"Mismatched",3,Color3.fromRGB(0,170,255)},
+    {"Natural Dyed",2,Color3.fromRGB(0,255,0)},
+    {"Horned",1,Color3.fromRGB(170,0,255)},
+    {"Normal",0,Color3.fromRGB(150,150,160)}
+}
+for i,info in ipairs(CategoryInfo) do
+    local B=Instance.new("TextButton")
+    B.Size=UDim2.new(1,-8,0,18)
+    B.Position=UDim2.fromOffset(4,3+(i-1)*20)
+    B.BackgroundTransparency=1
+    B.Text="☐  "..info[1]
+    B.TextColor3=info[3]
+    B.TextSize=5
+    B.Font=Enum.Font.GothamBold
+    B.TextXAlignment=Enum.TextXAlignment.Left
+    B.ZIndex=41
+    B.Parent=SelectMenu
+    B.MouseButton1Click:Connect(function()
+        local p=info[2]
+        SelectedGroups[p]=not SelectedGroups[p]
+        B.Text=(SelectedGroups[p] and "☑  " or "☐  ")..info[1]
+        for _,child in ipairs(Results:GetChildren()) do
+            if child:IsA("Frame") then
+                local s=child:FindFirstChild("SelectionStroke")
+                local hp=child:GetAttribute("HorsePriority")
+                if s and hp~=nil then s.Thickness=SelectedGroups[hp] and 2 or 0 end
+            end
+        end
+    end)
+end
+SelectButton.MouseButton1Click:Connect(function() SelectMenu.Visible=not SelectMenu.Visible end)
+
 --==================================================
 -- DISPLAY
 --==================================================
