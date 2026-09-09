@@ -720,16 +720,16 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        410,
-        300
+        500,
+        275
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -205,
+        -250,
         0.5,
-        -150
+        -115
     )
 
 Main.BackgroundColor3 =
@@ -784,7 +784,7 @@ TopBar.Size =
         1,
         0,
         0,
-        40
+        34
     )
 
 TopBar.BackgroundColor3 =
@@ -822,9 +822,9 @@ local Title =
 Title.Size =
     UDim2.new(
         1,
-        -90,
+        -70,
         0,
-        20
+        18
     )
 
 Title.Position =
@@ -836,7 +836,7 @@ Title.Position =
 Title.BackgroundTransparency = 1
 
 Title.Text =
-    "🐴 HORSE SCANNER"
+    "ð´ HORSE SCANNER"
 
 Title.TextColor3 =
     Color3.fromRGB(
@@ -845,7 +845,7 @@ Title.TextColor3 =
         255
     )
 
-Title.TextSize = 11
+Title.TextSize = 10
 
 Title.Font =
     Enum.Font.GothamBold
@@ -874,7 +874,7 @@ Status.Size =
 Status.Position =
     UDim2.fromOffset(
         10,
-        23
+        20
     )
 
 Status.BackgroundTransparency = 1
@@ -889,7 +889,7 @@ Status.TextColor3 =
         160
     )
 
-Status.TextSize = 7
+Status.TextSize = 6
 
 Status.Font =
     Enum.Font.Gotham
@@ -909,16 +909,16 @@ local Minimize =
 
 Minimize.Size =
     UDim2.fromOffset(
-        27,
-        27
+        23,
+        23
     )
 
 Minimize.Position =
     UDim2.new(
         1,
-        -64,
+        -54,
         0,
-        7
+        5
     )
 
 Minimize.BackgroundColor3 =
@@ -931,7 +931,7 @@ Minimize.BackgroundColor3 =
 Minimize.BorderSizePixel = 0
 
 Minimize.Text =
-    "−"
+    "â"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -940,7 +940,7 @@ Minimize.TextColor3 =
         255
     )
 
-Minimize.TextSize = 16
+Minimize.TextSize = 14
 
 Minimize.Font =
     Enum.Font.GothamBold
@@ -969,16 +969,16 @@ local Close =
 
 Close.Size =
     UDim2.fromOffset(
-        27,
-        27
+        23,
+        23
     )
 
 Close.Position =
     UDim2.new(
         1,
-        -33,
+        -28,
         0,
-        7
+        5
     )
 
 Close.BackgroundColor3 =
@@ -991,7 +991,7 @@ Close.BackgroundColor3 =
 Close.BorderSizePixel = 0
 
 Close.Text =
-    "×"
+    "Ã"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -1000,7 +1000,7 @@ Close.TextColor3 =
         120
     )
 
-Close.TextSize = 17
+Close.TextSize = 14
 
 Close.Font =
     Enum.Font.GothamBold
@@ -1036,13 +1036,13 @@ Content.Size =
         1,
         0,
         1,
-        -40
+        -34
     )
 
 Content.Position =
     UDim2.fromOffset(
         0,
-        40
+        34
     )
 
 Content.BackgroundTransparency = 1
@@ -1060,15 +1060,15 @@ local Search =
 Search.Size =
     UDim2.new(
         1,
-        -20,
+        -16,
         0,
-        27
+        22
     )
 
 Search.Position =
     UDim2.fromOffset(
-        10,
-        7
+        8,
+        5
     )
 
 Search.BackgroundColor3 =
@@ -1099,7 +1099,7 @@ Search.TextColor3 =
         240
     )
 
-Search.TextSize = 8
+Search.TextSize = 7
 
 Search.Font =
     Enum.Font.Gotham
@@ -1127,11 +1127,350 @@ local SearchPadding =
 SearchPadding.PaddingLeft =
     UDim.new(
         0,
-        8
+        6
     )
 
 SearchPadding.Parent =
     Search
+
+Search:GetPropertyChangedSignal("Text"):Connect(function()
+    if DisplayHorses then
+        DisplayHorses()
+    end
+end)
+
+--==================================================
+-- SELL CONTROLS
+--==================================================
+
+local RemoteNameBox =
+    Instance.new("TextBox")
+
+RemoteNameBox.Size =
+    UDim2.fromOffset(
+        180,
+        22
+    )
+
+RemoteNameBox.Position =
+    UDim2.fromOffset(
+        8,
+        32
+    )
+
+RemoteNameBox.BackgroundColor3 =
+    Color3.fromRGB(
+        23,
+        23,
+        31
+    )
+
+RemoteNameBox.BorderSizePixel = 0
+
+RemoteNameBox.PlaceholderText =
+    "Remote name..."
+
+RemoteNameBox.PlaceholderColor3 =
+    Color3.fromRGB(
+        100,
+        105,
+        120
+    )
+
+RemoteNameBox.Text = ""
+
+RemoteNameBox.TextColor3 =
+    Color3.fromRGB(
+        235,
+        235,
+        240
+    )
+
+RemoteNameBox.TextSize = 7
+RemoteNameBox.Font = Enum.Font.Gotham
+RemoteNameBox.ClearTextOnFocus = false
+RemoteNameBox.Parent = Content
+
+local RemoteCorner =
+    Instance.new("UICorner")
+
+RemoteCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+RemoteCorner.Parent =
+    RemoteNameBox
+
+local RemotePadding =
+    Instance.new("UIPadding")
+
+RemotePadding.PaddingLeft =
+    UDim.new(
+        0,
+        6
+    )
+
+RemotePadding.Parent =
+    RemoteNameBox
+
+-- FILTER DROPDOWN
+
+local FilterButton =
+    Instance.new("TextButton")
+
+FilterButton.Size =
+    UDim2.fromOffset(
+        145,
+        22
+    )
+
+FilterButton.Position =
+    UDim2.fromOffset(
+        193,
+        32
+    )
+
+FilterButton.BackgroundColor3 =
+    Color3.fromRGB(
+        23,
+        23,
+        31
+    )
+
+FilterButton.BorderSizePixel = 0
+FilterButton.Text = "Filter: All"
+FilterButton.TextColor3 =
+    Color3.fromRGB(
+        235,
+        235,
+        240
+    )
+
+FilterButton.TextSize = 7
+FilterButton.Font = Enum.Font.GothamBold
+FilterButton.Parent = Content
+
+local FilterCorner =
+    Instance.new("UICorner")
+
+FilterCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+FilterCorner.Parent =
+    FilterButton
+
+local FilterList =
+    Instance.new("Frame")
+
+FilterList.Size =
+    UDim2.fromOffset(
+        145,
+        0
+    )
+
+FilterList.Position =
+    UDim2.fromOffset(
+        193,
+        56
+    )
+
+FilterList.BackgroundColor3 =
+    Color3.fromRGB(
+        20,
+        20,
+        27
+    )
+
+FilterList.BorderSizePixel = 0
+FilterList.Visible = false
+FilterList.ZIndex = 20
+FilterList.Parent = Content
+
+local FilterListCorner =
+    Instance.new("UICorner")
+
+FilterListCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+FilterListCorner.Parent =
+    FilterList
+
+local FilterLayout =
+    Instance.new("UIListLayout")
+
+FilterLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+FilterLayout.Parent =
+    FilterList
+
+local SelectedFilter = "All"
+
+-- Forward declaration because filter/sell buttons are created
+-- before the final display function below.
+local DisplayHorses
+
+local FilterOptions = {
+    {"All", Color3.fromRGB(235, 235, 240)},
+    {"Red - Unique Hair", Color3.fromRGB(255, 0, 0)},
+    {"Blue - Main/Tail Different", Color3.fromRGB(0, 170, 255)},
+    {"Green - Nat Dyed", Color3.fromRGB(0, 255, 0)},
+    {"Purple - Horn Colour", Color3.fromRGB(170, 0, 255)}
+}
+
+local function SetFilter(name)
+    SelectedFilter = name
+    FilterButton.Text = "Filter: " .. name
+    FilterList.Visible = false
+    DisplayHorses()
+end
+
+for index, option in ipairs(FilterOptions) do
+    local optionName = option[1]
+    local optionColor = option[2]
+
+    local OptionButton =
+        Instance.new("TextButton")
+
+    OptionButton.Size =
+        UDim2.new(
+            1,
+            0,
+            0,
+            22
+        )
+
+    OptionButton.BackgroundColor3 =
+        Color3.fromRGB(
+            25,
+            25,
+            33
+        )
+
+    OptionButton.BorderSizePixel = 0
+    OptionButton.Text = optionName
+    OptionButton.TextColor3 = optionColor
+    OptionButton.TextSize = 7
+    OptionButton.Font = Enum.Font.GothamBold
+    OptionButton.TextXAlignment = Enum.TextXAlignment.Left
+    OptionButton.ZIndex = 21
+    OptionButton.Parent = FilterList
+
+    local OptionPadding =
+        Instance.new("UIPadding")
+
+    OptionPadding.PaddingLeft =
+        UDim.new(
+            0,
+            7
+        )
+
+    OptionPadding.Parent =
+        OptionButton
+
+    OptionButton.MouseButton1Click:Connect(function()
+        SetFilter(optionName)
+    end)
+end
+
+FilterList.Size =
+    UDim2.fromOffset(
+        145,
+        #FilterOptions * 22
+    )
+
+FilterButton.MouseButton1Click:Connect(function()
+    FilterList.Visible =
+        not FilterList.Visible
+end)
+
+-- SELL BUTTON
+
+local SellButton =
+    Instance.new("TextButton")
+
+SellButton.Size =
+    UDim2.fromOffset(
+        145,
+        22
+    )
+
+SellButton.Position =
+    UDim2.fromOffset(
+        347,
+        32
+    )
+
+SellButton.BackgroundColor3 =
+    Color3.fromRGB(
+        125,
+        35,
+        40
+    )
+
+SellButton.BorderSizePixel = 0
+SellButton.Text = "SELL FILTERED"
+SellButton.TextColor3 =
+    Color3.fromRGB(
+        255,
+        255,
+        255
+    )
+
+SellButton.TextSize = 7
+SellButton.Font = Enum.Font.GothamBold
+SellButton.Parent = Content
+
+local SellCorner =
+    Instance.new("UICorner")
+
+SellCorner.CornerRadius =
+    UDim.new(
+        0,
+        6
+    )
+
+SellCorner.Parent =
+    SellButton
+
+local SellStatus =
+    Instance.new("TextLabel")
+
+SellStatus.Size =
+    UDim2.new(
+        1,
+        -16,
+        0,
+        12
+    )
+
+SellStatus.Position =
+    UDim2.fromOffset(
+        8,
+        57
+    )
+
+SellStatus.BackgroundTransparency = 1
+SellStatus.Text = ""
+SellStatus.TextColor3 =
+    Color3.fromRGB(
+        150,
+        155,
+        170
+    )
+
+SellStatus.TextSize = 6
+SellStatus.Font = Enum.Font.Gotham
+SellStatus.TextXAlignment = Enum.TextXAlignment.Left
+SellStatus.Parent = Content
 
 --==================================================
 -- RESULTS
@@ -1143,15 +1482,15 @@ local Results =
 Results.Size =
     UDim2.new(
         1,
-        -20,
+        -16,
         1,
-        -45
+        -76
     )
 
 Results.Position =
     UDim2.fromOffset(
-        10,
-        40
+        8,
+        76
     )
 
 Results.BackgroundColor3 =
@@ -1198,14 +1537,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        72,
-        88
+        95,
+        68
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        4,
-        4
+        3,
+        3
     )
 
 Grid.FillDirection =
@@ -1230,25 +1569,25 @@ local Padding =
 Padding.PaddingTop =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingBottom =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingLeft =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.PaddingRight =
     UDim.new(
         0,
-        5
+        3
     )
 
 Padding.Parent =
@@ -1295,8 +1634,8 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                410,
-                40
+                500,
+                34
             )
 
         Minimize.Text =
@@ -1306,12 +1645,12 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                410,
-                300
+                500,
+                275
             )
 
         Minimize.Text =
-            "−"
+            "â"
 
     end
 
@@ -1477,8 +1816,8 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            72,
-            88
+            95,
+            68
         )
 
     Card.BackgroundColor3 =
@@ -1502,7 +1841,7 @@ local function CreateProfile(
     Corner.CornerRadius =
         UDim.new(
             0,
-            6
+            5
         )
 
     Corner.Parent =
@@ -1657,7 +1996,7 @@ local function CreateProfile(
             Color3.fromRGB(255, 0, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Blue = Main and Tail are different
@@ -1666,7 +2005,7 @@ local function CreateProfile(
             Color3.fromRGB(0, 170, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Green = Nat Dyed
@@ -1675,7 +2014,7 @@ local function CreateProfile(
             Color3.fromRGB(0, 255, 0),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     -- Purple = Horn Colour
@@ -1684,7 +2023,7 @@ local function CreateProfile(
             Color3.fromRGB(170, 0, 255),
             IndicatorX
         )
-        IndicatorX = IndicatorX + 9
+        IndicatorX = IndicatorX + 8
     end
 
     --==============================================
@@ -1699,10 +2038,10 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     BreedLabel.Size =
-        UDim2.new(1, -6, 0, 13)
+        UDim2.new(1, -5, 0, 9)
 
     BreedLabel.Position =
-        UDim2.fromOffset(3, 3)
+        UDim2.fromOffset(3, 2)
 
     BreedLabel.BackgroundTransparency = 1
     BreedLabel.Text = tostring(breed)
@@ -1741,16 +2080,16 @@ local function CreateProfile(
         Label.Size =
             UDim2.new(
                 1,
-                -6,
+                -5,
                 0,
-                12
+                8
             )
 
         Label.Position =
             UDim2.fromOffset(
                 3,
-                17
-                    + ((i - 1) * 13)
+                12
+                    + ((i - 1) * 9)
             )
 
         Label.BackgroundTransparency = 1
@@ -1767,7 +2106,7 @@ local function CreateProfile(
                 225
             )
 
-        Label.TextSize = 6
+        Label.TextSize = 5
 
         Label.Font =
             Enum.Font.Gotham
@@ -1790,10 +2129,10 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     UIDLabel.Size =
-        UDim2.new(1, -6, 0, 9)
+        UDim2.new(1, -5, 0, 7)
 
     UIDLabel.Position =
-        UDim2.fromOffset(3, 74)
+        UDim2.fromOffset(3, 59)
 
     UIDLabel.BackgroundTransparency = 1
     UIDLabel.Text = "UID: " .. tostring(uid)
@@ -1811,7 +2150,7 @@ end
 -- SORT BEST TO NORMAL
 --==================================================
 
-local function GetHorsePriority(horse)
+local function GetHorseStats(horse)
 
     local item = horse.item
 
@@ -1839,36 +2178,284 @@ local function GetHorsePriority(horse)
     local MainTailDifferent =
         not ColoursMatch(mainColour, tailColour)
 
+    local priority = 0
+
     if HasUniqueHair then
-        return 4
+        priority = 4
     elseif MainTailDifferent then
-        return 3
+        priority = 3
     elseif HasNatDyed then
-        return 2
+        priority = 2
     elseif HasHorn then
-        return 1
+        priority = 1
     end
 
-    return 0
+    local specialCount = 0
+
+    if HasUniqueHair then specialCount += 1 end
+    if MainTailDifferent then specialCount += 1 end
+    if HasNatDyed then specialCount += 1 end
+    if HasHorn then specialCount += 1 end
+
+    return priority, specialCount
+end
+
+local function GetHorsePriority(horse)
+    local priority = GetHorseStats(horse)
+    return priority
 end
 
 table.sort(HorseList, function(a, b)
 
-    local priorityA = GetHorsePriority(a)
-    local priorityB = GetHorsePriority(b)
+    local priorityA, countA = GetHorseStats(a)
+    local priorityB, countB = GetHorseStats(b)
 
+    -- Highest priority group always comes first.
     if priorityA ~= priorityB then
         return priorityA > priorityB
     end
 
+    -- Within the same priority, horses with more special
+    -- properties come first.
+    if countA ~= countB then
+        return countA > countB
+    end
+
     return tostring(a.uid) < tostring(b.uid)
+end)
+
+-- HORSE LIST IS SORTED BEST -> NORMAL
+-- 4 = Unique Hair
+-- 3 = Main != Tail
+-- 2 = Nat Dyed
+-- 1 = Horn Colour
+-- 0 = Normal
+--==================================================
+--==================================================
+-- FILTER / SELL HELPERS
+--==================================================
+
+local function GetHorseFilter(horse)
+
+    local item = horse.item
+
+    local mainColour,
+        maneColour,
+        tailColour =
+        GetColours(item)
+
+    local variants =
+        item.variants
+        or item.Variants
+        or {}
+
+    local HasHorn =
+        variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local HasNatDyed =
+        item.isNatDyed ~= nil
+
+    local HasUniqueHair =
+        IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour)
+
+    local MainTailDifferent =
+        not ColoursMatch(mainColour, tailColour)
+
+    -- IMPORTANT:
+    -- This uses the exact same priority as the card outline.
+    if HasUniqueHair then
+        return "Red - Unique Hair"
+    elseif MainTailDifferent then
+        return "Blue - Main/Tail Different"
+    elseif HasNatDyed then
+        return "Green - Nat Dyed"
+    elseif HasHorn then
+        return "Purple - Horn Colour"
+    end
+
+    return "Normal"
+end
+
+local function MatchesSelectedFilter(horse)
+
+    if SelectedFilter == "All" then
+        return true
+    end
+
+    return GetHorseFilter(horse) == SelectedFilter
+end
+
+local function GetSellRemote()
+
+    local remoteName =
+        tostring(RemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
+
+    if remoteName == "" then
+        return nil, "Enter the RemoteEvent name first."
+    end
+
+    local Events =
+        ReplicatedStorage
+            :WaitForChild("Communication")
+            :WaitForChild("Events")
+
+    local remote =
+        Events:FindFirstChild(remoteName)
+
+    if not remote then
+        return nil, "RemoteEvent not found: " .. remoteName
+    end
+
+    if not remote:IsA("RemoteEvent") then
+        return nil, remoteName .. " is not a RemoteEvent."
+    end
+
+    return remote, nil
+end
+
+SellButton.MouseButton1Click:Connect(function()
+
+    local remote, remoteError =
+        GetSellRemote()
+
+    if not remote then
+        SellStatus.Text = remoteError
+        SellStatus.TextColor3 =
+            Color3.fromRGB(
+                255,
+                110,
+                110
+            )
+        return
+    end
+
+    local ItemsToSell = {}
+    local count = 0
+
+    for _, horse in ipairs(HorseList) do
+
+        if MatchesSelectedFilter(horse) then
+
+            local uid =
+                tostring(horse.uid)
+
+            ItemsToSell[uid] = 1
+            count += 1
+
+        end
+
+    end
+
+    if count == 0 then
+        SellStatus.Text =
+            "Nothing matches: "
+            .. SelectedFilter
+
+        SellStatus.TextColor3 =
+            Color3.fromRGB(
+                255,
+                190,
+                100
+            )
+
+        return
+    end
+
+    local ok, err =
+        pcall(function()
+
+            remote:FireServer(
+                "SellItems",
+                ItemsToSell
+            )
+
+        end)
+
+    if ok then
+
+        SellStatus.Text =
+            "Sent sell request: "
+            .. tostring(count)
+            .. " horse(s) ["
+            .. SelectedFilter
+            .. "]"
+
+        SellStatus.TextColor3 =
+            Color3.fromRGB(
+                100,
+                255,
+                130
+            )
+
+        -- Refresh the local inventory reference and UI after selling.
+        task.delay(0.5, function()
+
+            local refreshOK, refreshedInventory =
+                pcall(function()
+                    return Data.GetLocal({"inventory"})
+                end)
+
+            if refreshOK
+                and type(refreshedInventory) == "table" then
+
+                Inventory =
+                    refreshedInventory
+
+                ScanInventory()
+
+                table.sort(
+                    HorseList,
+                    function(a, b)
+
+                        local priorityA, countA =
+                            GetHorseStats(a)
+
+                        local priorityB, countB =
+                            GetHorseStats(b)
+
+                        if priorityA ~= priorityB then
+                            return priorityA > priorityB
+                        end
+
+                        if countA ~= countB then
+                            return countA > countB
+                        end
+
+                        return tostring(a.uid)
+                            < tostring(b.uid)
+                    end
+                )
+
+                DisplayHorses()
+
+            end
+
+        end)
+
+    else
+
+        SellStatus.Text =
+            "Sell failed: "
+            .. tostring(err)
+
+        SellStatus.TextColor3 =
+            Color3.fromRGB(
+                255,
+                110,
+                110
+            )
+
+    end
+
 end)
 
 --==================================================
 -- DISPLAY
 --==================================================
 
-local function DisplayHorses()
+DisplayHorses = function()
 
     for _, child in ipairs(
         Results:GetChildren()
@@ -1902,12 +2489,19 @@ local function DisplayHorses()
             .. " "
             .. tostring(breed)
 
-        if searchText == ""
+        local passesSearch =
+            searchText == ""
             or searchable:lower():find(
                 searchText,
                 1,
                 true
-            ) then
+            )
+
+        local passesFilter =
+            MatchesSelectedFilter(horse)
+
+        if passesSearch
+            and passesFilter then
 
             shown += 1
 
@@ -1925,6 +2519,8 @@ local function DisplayHorses()
         .. tostring(shown)
         .. " / "
         .. tostring(#HorseList)
+        .. " | "
+        .. SelectedFilter
 
     task.defer(
         UpdateCanvas
