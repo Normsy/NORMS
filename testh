@@ -599,6 +599,32 @@ local function GetColours(item)
 end
 
 --==================================================
+-- UNIQUE HAIR
+--==================================================
+
+local UniqueHair = {
+    iceyblack=true, iceyblue=true, iceypink=true, iceywhite=true,
+    winterstreaks=true, leafy=true, flowery=true, pearly=true, pearlygreen=true,
+    pastelstreaks=true, clearquartz=true, leathery=true, pearlypink=true, cowprint=true,
+    royalstreaks=true, ruby=true, limestone=true, sandstone=true, pearlyred=true, zebra=true,
+    dustyfade=true, iceygreen=true, glacierblue=true, glaciergreen=true, glacierpink=true,
+    snowyglacierfade=true, sapphire=true, diamond=true, pearlyorange=true, pinkcowprint=true,
+    sunrisestreaks=true, topaz=true, emerald=true, amethyst=true, mossy=true, tigerstripes=true,
+    jaguarspots=true, moonstone=true, neonpurple=true, neonblue=true, obsidian=true,
+    pearlyblue=true, deepspace=true, prismatic=true, volcanicorange=true, volcanicblack=true,
+    pearlyblack=true, crackedlavafade=true, blessed=true, pearlypurple=true, sandy=true,
+    pearlygold=true, clearseaglass=true
+}
+
+local function NormalizeUniqueHair(value)
+    return tostring(value or ""):lower():gsub("[%s_%-]", "")
+end
+
+local function IsUniqueHair(value)
+    return UniqueHair[NormalizeUniqueHair(value)] == true
+end
+
+--==================================================
 -- GUI
 --==================================================
 
@@ -1443,14 +1469,31 @@ local function CreateProfile(
     local Stroke =
         Instance.new("UIStroke")
 
-    Stroke.Color =
-        Color3.fromRGB(
-            42,
-            42,
-            52
-        )
+    -- Red outline if Mane OR Tail is Unique Hair
+    if IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour) then
 
-    Stroke.Thickness = 1
+        Stroke.Color =
+            Color3.fromRGB(
+                255,
+                0,
+                0
+            )
+
+        Stroke.Thickness = 2
+
+    else
+
+        Stroke.Color =
+            Color3.fromRGB(
+                42,
+                42,
+                52
+            )
+
+        Stroke.Thickness = 1
+
+    end
 
     Stroke.Parent =
         Card
