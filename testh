@@ -1321,7 +1321,8 @@ local DisplayHorses
 local FilterOptions = {
     {"All", Color3.fromRGB(235, 235, 240)},
     {"Red - Unique Hair", Color3.fromRGB(255, 0, 0)},
-    {"Blue - Main/Tail Different", Color3.fromRGB(0, 170, 255)},
+    {"Orange - Special Main Colour", Color3.fromRGB(255, 140, 0)},
+    {"Blue - Mismatched Hair", Color3.fromRGB(0, 170, 255)},
     {"Green - Nat Dyed", Color3.fromRGB(0, 255, 0)},
     {"Purple - Horn Colour", Color3.fromRGB(170, 0, 255)},
     {"Grey - Normal", Color3.fromRGB(120, 120, 130)}
@@ -1867,6 +1868,9 @@ local function CreateProfile(
         IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour)
 
+    local HasOrangeMain =
+        IsOrangeMainColour(mainColour)
+
     local MainTailDifferent =
         not ColoursMatch(maneColour, tailColour)
 
@@ -1882,7 +1886,15 @@ local function CreateProfile(
 
         Stroke.Thickness = 2
 
-    -- BLUE = Main and Tail are different (2nd best)
+    -- ORANGE = Special Main Colour (2nd best)
+    elseif HasOrangeMain then
+
+        Stroke.Color =
+            Color3.fromRGB(255, 140, 0)
+
+        Stroke.Thickness = 2
+
+    -- BLUE = Main and Tail are different (3rd best)
     elseif MainTailDifferent then
 
         Stroke.Color =
@@ -1995,6 +2007,15 @@ local function CreateProfile(
     if HasUniqueHair then
         AddIndicator(
             Color3.fromRGB(255, 0, 0),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 8
+    end
+
+    -- Orange = Special Main Colour
+    if HasOrangeMain then
+        AddIndicator(
+            Color3.fromRGB(255, 140, 0),
             IndicatorX
         )
         IndicatorX = IndicatorX + 8
@@ -2151,6 +2172,23 @@ end
 -- SORT BEST TO NORMAL
 --==================================================
 
+local OrangeMainColours = {
+    blowingSnow = true,
+    motherOfPearl = true,
+    royalDun = true,
+    dustyBrindle = true,
+    glacierChimera = true,
+    mountainSunrise = true,
+    jaguar = true,
+    deepSpace = true,
+    crackedLava = true
+}
+
+local function IsOrangeMainColour(mainColour)
+    local key = tostring(mainColour or ""):gsub("%s+", "")
+    return OrangeMainColours[key] == true
+end
+
 local function GetHorseStats(horse)
 
     local item = horse.item
@@ -2176,12 +2214,17 @@ local function GetHorseStats(horse)
         IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour)
 
+    local HasOrangeMain =
+        IsOrangeMainColour(mainColour)
+
     local MainTailDifferent =
         not ColoursMatch(mainColour, tailColour)
 
     local priority = 0
 
     if HasUniqueHair then
+        priority = 5
+    elseif HasOrangeMain then
         priority = 4
     elseif MainTailDifferent then
         priority = 3
@@ -2194,6 +2237,7 @@ local function GetHorseStats(horse)
     local specialCount = 0
 
     if HasUniqueHair then specialCount += 1 end
+    if HasOrangeMain then specialCount += 1 end
     if MainTailDifferent then specialCount += 1 end
     if HasNatDyed then specialCount += 1 end
     if HasHorn then specialCount += 1 end
@@ -2226,7 +2270,8 @@ table.sort(HorseList, function(a, b)
 end)
 
 -- HORSE LIST IS SORTED BEST -> NORMAL
--- 4 = Unique Hair
+-- 5 = Unique Hair
+-- 4 = Orange Main Colour
 -- 3 = Main != Tail
 -- 2 = Nat Dyed
 -- 1 = Horn Colour
@@ -2261,6 +2306,9 @@ local function GetHorseFilter(horse)
         IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour)
 
+    local HasOrangeMain =
+        IsOrangeMainColour(mainColour)
+
     local MainTailDifferent =
         not ColoursMatch(mainColour, tailColour)
 
@@ -2268,8 +2316,10 @@ local function GetHorseFilter(horse)
     -- This uses the exact same priority as the card outline.
     if HasUniqueHair then
         return "Red - Unique Hair"
+    elseif HasOrangeMain then
+        return "Orange - Special Main Colour"
     elseif MainTailDifferent then
-        return "Blue - Main/Tail Different"
+        return "Blue - Mismatched Hair"
     elseif HasNatDyed then
         return "Green - Nat Dyed"
     elseif HasHorn then
@@ -2285,7 +2335,56 @@ local function MatchesSelectedFilter(horse)
         return true
     end
 
-    return GetHorseFilter(horse) == SelectedFilter
+    local item = horse.item
+
+    local mainColour,
+        maneColour,
+        tailColour =
+        GetColours(item)
+
+    local variants =
+        item.variants
+        or item.Variants
+        or {}
+
+    local HasHorn =
+        variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local HasNatDyed =
+        item.isNatDyed ~= nil
+
+    local HasUniqueHair =
+        IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour)
+
+    local HasOrangeMain =
+        IsOrangeMainColour(mainColour)
+
+    local MainTailDifferent =
+        not ColoursMatch(mainColour, tailColour)
+
+    -- FILTERS are independent.
+    -- A horse can appear in multiple filters if it has multiple properties.
+    if SelectedFilter == "Red - Unique Hair" then
+        return HasUniqueHair
+    elseif SelectedFilter == "Orange - Special Main Colour" then
+        return HasOrangeMain
+    elseif SelectedFilter == "Blue - Mismatched Hair" then
+        return MainTailDifferent
+    elseif SelectedFilter == "Green - Nat Dyed" then
+        return HasNatDyed
+    elseif SelectedFilter == "Purple - Horn Colour" then
+        return HasHorn
+    elseif SelectedFilter == "Grey - Normal" then
+        return not HasUniqueHair
+            and not HasOrangeMain
+            and not MainTailDifferent
+            and not HasNatDyed
+            and not HasHorn
+    end
+
+    return false
 end
 
 local function GetSellRemote()
