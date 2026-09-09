@@ -1596,17 +1596,19 @@ local function CreateProfile(
 
     --==============================================
     -- SPECIAL INDICATOR CIRCLES
-    -- Purple = Horn Colour
+    -- Red = Unique Hair
+    -- Blue = Mane and Tail are different
     -- Green = Nat Dyed
-    -- These indicators stay visible even when the
-    -- main profile outline is RED for Unique Hair.
+    -- Purple = Horn Colour
+    -- Every matching indicator is shown, even when
+    -- another condition wins the main outline priority.
     --==============================================
 
     local IndicatorContainer =
         Instance.new("Frame")
 
     IndicatorContainer.Size =
-        UDim2.fromOffset(32, 12)
+        UDim2.fromOffset(48, 12)
 
     IndicatorContainer.Position =
         UDim2.new(1, -36, 0, 4)
@@ -1649,24 +1651,40 @@ local function CreateProfile(
 
     local IndicatorX = 0
 
-    if HasHorn then
-
+    -- Red = Unique Hair
+    if HasUniqueHair then
         AddIndicator(
-            Color3.fromRGB(170, 0, 255),
+            Color3.fromRGB(255, 0, 0),
             IndicatorX
         )
-
         IndicatorX = IndicatorX + 11
-
     end
 
-    if HasNatDyed then
+    -- Blue = Mane and Tail are different
+    if ManeTailDifferent then
+        AddIndicator(
+            Color3.fromRGB(0, 170, 255),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
+    end
 
+    -- Green = Nat Dyed
+    if HasNatDyed then
         AddIndicator(
             Color3.fromRGB(0, 255, 0),
             IndicatorX
         )
+        IndicatorX = IndicatorX + 11
+    end
 
+    -- Purple = Horn Colour
+    if HasHorn then
+        AddIndicator(
+            Color3.fromRGB(170, 0, 255),
+            IndicatorX
+        )
+        IndicatorX = IndicatorX + 11
     end
 
     --==============================================
