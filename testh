@@ -1,15 +1,8 @@
 --// HORSE INVENTORY SCANNER
---// 5 PROFILE CARDS PER ROW
---// HORSE-ONLY DETECTION
+--// HORSE-ONLY PROFILE SCANNER
+--// 5 PROFILES PER ROW
 --// READ-ONLY
 --// MOBILE FRIENDLY
---
---// EACH PROFILE:
---// UID
---// Breed
---// Main Colour
---// Mane Colour
---// Tail Colour
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -50,80 +43,119 @@ if type(Inventory) ~= "table" then
 end
 
 --==================================================
--- BREED DATABASE
+-- ALLOWED HORSE BREEDS
 --==================================================
 
-local BreedNames = {
+local AllowedBreeds = {
 
-    fjord = "Fjord Horse",
-    mustang = "Mustang Horse",
-    appaloosa = "Appaloosa Horse",
-    paint = "Paint Horse",
-    morgan = "Morgan Horse",
-    quarter = "Quarter Horse",
-    donkey = "Donkey",
-    connemara = "Connemara Horse",
-    thoroughbred = "Thoroughbred Horse",
-    warmblood = "Warmblood Horse",
-    akhal = "Akhal-Teke Horse",
-    icelandic = "Icelandic Horse",
-    andalusian = "Andalusian Horse",
-    mammoth = "Mammoth Horse",
-    percheron = "Percheron Horse",
-    friesian = "Friesian Horse",
-    arabian = "Arabian Horse",
-    tennessee = "Tennessee Walker Horse",
-    clydesdale = "Clydesdale Horse",
-    marwari = "Marwari Horse",
-    shire = "Shire Horse",
-    mule = "Mule",
-    hinny = "Hinny",
-    reindeer = "Reindeer"
+    ["akhal-teke"] = "Akhal-Teke Horse",
+    ["andalusian"] = "Andalusian Horse",
+    ["appaloosa"] = "Appaloosa Horse",
+    ["arabian"] = "Arabian Horse",
+    ["clydesdale"] = "Clydesdale Horse",
+    ["connemara"] = "Connemara Horse",
+
+    ["dutch warmblood"] = "Dutch Warmblood",
+
+    ["fjord"] = "Fjord Horse",
+    ["friesian"] = "Friesian Horse",
+    ["hinny"] = "Hinny",
+    ["icelandic"] = "Icelandic Horse",
+
+    ["mammoth donkey"] = "Mammoth Donkey",
+
+    ["marwari"] = "Marwari Horse",
+    ["morgan"] = "Morgan Horse",
+    ["mule"] = "Mule",
+    ["mustang"] = "Mustang Horse",
+    ["paint horse"] = "Paint Horse",
+    ["percheron"] = "Percheron Horse",
+    ["quarter horse"] = "Quarter Horse",
+    ["reindeer"] = "Reindeer",
+    ["shire"] = "Shire Horse",
+
+    ["standard donkey"] = "Standard Donkey",
+    ["standardbred"] = "Standardbred Horse",
+
+    ["tennessee walking horse"] =
+        "Tennessee Walking Horse",
+
+    ["thoroughbred"] = "Thoroughbred Horse",
+
+    ["unicorn"] = "Unicorn"
 }
 
 --==================================================
--- NORMALIZE BREED
+-- NORMALIZE TEXT
 --==================================================
 
-local function NormalizeBreed(value)
+local function NormalizeText(value)
 
     if value == nil then
-        return nil
+        return ""
     end
 
-    local text = tostring(value)
+    local text = tostring(value):lower()
+
+    text = text:gsub(
+        "[%p_]+",
+        " "
+    )
+
+    text = text:gsub(
+        "%s+",
+        " "
+    )
+
+    return text:match(
+        "^%s*(.-)%s*$"
+    )
+end
+
+--==================================================
+-- FIND ALLOWED BREED
+--==================================================
+
+local function FindAllowedBreed(value)
+
+    local text =
+        NormalizeText(value)
 
     if text == "" then
         return nil
     end
 
-    local lower = text:lower()
+    -- Exact match
+    for key, displayName in pairs(
+        AllowedBreeds
+    ) do
 
-    -- Exact known breed
-    for key, displayName in pairs(BreedNames) do
-
-        if lower == key then
+        if text == key then
             return displayName
         end
 
-        if lower == displayName:lower() then
-            return displayName
-        end
+        if text ==
+            NormalizeText(displayName) then
 
-    end
-
-    -- Partial known breed
-    for key, displayName in pairs(BreedNames) do
-
-        if lower:find(key, 1, true) then
             return displayName
         end
 
     end
 
-    -- Only accept text already containing "horse"
-    if lower:find("horse", 1, true) then
-        return text
+    -- Partial match
+    for key, displayName in pairs(
+        AllowedBreeds
+    ) do
+
+        if text:find(
+            key,
+            1,
+            true
+        ) then
+
+            return displayName
+        end
+
     end
 
     return nil
@@ -133,7 +165,10 @@ end
 -- GET FIELD
 --==================================================
 
-local function GetField(tbl, names)
+local function GetField(
+    tbl,
+    names
+)
 
     if type(tbl) ~= "table" then
         return nil
@@ -151,7 +186,7 @@ local function GetField(tbl, names)
 end
 
 --==================================================
--- FIND BREED
+-- FIND BREED IN TABLE
 --==================================================
 
 local function FindBreedInTable(tbl)
@@ -160,38 +195,53 @@ local function FindBreedInTable(tbl)
         return nil
     end
 
-    local value = GetField(tbl, {
+    local value =
+        GetField(
+            tbl,
+            {
 
-        "breed",
-        "Breed",
-        "breedName",
-        "BreedName",
-        "horseBreed",
-        "HorseBreed",
-        "breedType",
-        "BreedType"
+                "breed",
+                "Breed",
 
-    })
+                "breedName",
+                "BreedName",
 
-    return NormalizeBreed(value)
+                "horseBreed",
+                "HorseBreed",
+
+                "breedType",
+                "BreedType",
+
+                "breedId",
+                "BreedId"
+
+            }
+        )
+
+    return FindAllowedBreed(value)
 end
 
 --==================================================
 -- RECURSIVE BREED SEARCH
 --==================================================
 
-local function SearchKnownBreed(tbl, depth)
+local function SearchAllowedBreed(
+    tbl,
+    depth
+)
 
     if type(tbl) ~= "table" then
         return nil
     end
 
-    depth = depth or 0
+    depth =
+        depth or 0
 
     if depth > 6 then
         return nil
     end
 
+    -- Direct breed fields
     local direct =
         FindBreedInTable(tbl)
 
@@ -199,28 +249,30 @@ local function SearchKnownBreed(tbl, depth)
         return direct
     end
 
+    -- Search nested data
     for _, value in pairs(tbl) do
 
-        if type(value) == "string"
-            or type(value) == "number" then
+        if type(value) == "string" then
 
-            local result =
-                NormalizeBreed(value)
+            local breed =
+                FindAllowedBreed(
+                    value
+                )
 
-            if result then
-                return result
+            if breed then
+                return breed
             end
 
         elseif type(value) == "table" then
 
-            local result =
-                SearchKnownBreed(
+            local breed =
+                SearchAllowedBreed(
                     value,
                     depth + 1
                 )
 
-            if result then
-                return result
+            if breed then
+                return breed
             end
 
         end
@@ -242,6 +294,7 @@ local function GetItemInfo(item)
 
     if not References
         or not References.Items then
+
         return nil
     end
 
@@ -271,13 +324,18 @@ local function GetItemInfo(item)
 end
 
 --==================================================
--- RESOLVE BREED
+-- GET BREED
 --==================================================
 
-local function GetBreed(item, info)
+local function GetBreed(
+    item,
+    info
+)
+
+    local breed
 
     -- Direct item
-    local breed =
+    breed =
         FindBreedInTable(item)
 
     if breed then
@@ -292,69 +350,35 @@ local function GetBreed(item, info)
         return breed
     end
 
-    -- Nested item data
-    if type(item) == "table" then
-
-        local nestedKeys = {
-
-            "data",
-            "Data",
-            "attributes",
-            "Attributes",
-            "horse",
-            "Horse",
-            "stats",
-            "Stats",
-            "config",
-            "Config"
-
-        }
-
-        for _, key in ipairs(nestedKeys) do
-
-            if type(item[key]) == "table" then
-
-                breed =
-                    SearchKnownBreed(
-                        item[key]
-                    )
-
-                if breed then
-                    return breed
-                end
-
-            end
-
-        end
-
-    end
-
-    -- Search entire item
+    -- Search item
     breed =
-        SearchKnownBreed(item)
+        SearchAllowedBreed(item)
 
     if breed then
         return breed
     end
 
-    -- Search item info
+    -- Search info
     breed =
-        SearchKnownBreed(info)
+        SearchAllowedBreed(info)
 
     if breed then
         return breed
     end
 
     -- pId lookup
-    local pId =
-        item
-        and (
+    local pId
+
+    if type(item) == "table" then
+
+        pId =
             item.pId
             or item.PId
             or item.pid
-        )
 
-    if info then
+    end
+
+    if type(info) == "table" then
 
         pId =
             pId
@@ -376,7 +400,9 @@ local function GetBreed(item, info)
             tostring(pId)
         }
 
-        for _, lookupId in ipairs(attempts) do
+        for _, lookupId in ipairs(
+            attempts
+        ) do
 
             local ok, result =
                 pcall(function()
@@ -390,7 +416,9 @@ local function GetBreed(item, info)
             if ok and type(result) == "table" then
 
                 breed =
-                    SearchKnownBreed(result)
+                    SearchAllowedBreed(
+                        result
+                    )
 
                 if breed then
                     return breed
@@ -402,7 +430,93 @@ local function GetBreed(item, info)
 
     end
 
-    return "Breed Data Not Exposed"
+    return "Unknown Breed"
+end
+
+--==================================================
+-- STRICT HORSE DETECTION
+--==================================================
+
+local function IsHorse(item)
+
+    if type(item) ~= "table" then
+        return false
+    end
+
+    --==============================================
+    -- FIRST: FIND AN ACTUAL ALLOWED BREED
+    --==============================================
+
+    local breed =
+        FindBreedInTable(item)
+
+    if breed then
+        return true
+    end
+
+    --==============================================
+    -- SEARCH NESTED DATA
+    --==============================================
+
+    local nestedKeys = {
+
+        "data",
+        "Data",
+
+        "attributes",
+        "Attributes",
+
+        "horse",
+        "Horse",
+
+        "stats",
+        "Stats",
+
+        "config",
+        "Config",
+
+        "variants",
+        "Variants"
+
+    }
+
+    for _, key in ipairs(
+        nestedKeys
+    ) do
+
+        if type(item[key]) == "table" then
+
+            local found =
+                SearchAllowedBreed(
+                    item[key]
+                )
+
+            if found then
+                return true
+            end
+
+        end
+
+    end
+
+    --==============================================
+    -- IMPORTANT
+    --
+    -- ITEM NAMES ARE NOT USED TO DETECT HORSES.
+    --
+    -- Therefore:
+    --
+    -- Golden Horseshoe       = ignored
+    -- Horseshoe              = ignored
+    -- Protective Boots        = ignored
+    -- Saddle                  = ignored
+    -- Bridle                  = ignored
+    -- Horse accessories       = ignored
+    --
+    -- Only an allowed breed can pass.
+    --==============================================
+
+    return false
 end
 
 --==================================================
@@ -465,88 +579,6 @@ local function GetColours(item)
 end
 
 --==================================================
--- STRICT HORSE-ONLY DETECTION
---==================================================
-
-local function IsHorse(item)
-
-    if type(item) ~= "table" then
-        return false
-    end
-
-    --==============================================
-    -- CHECK ACTUAL HORSE VARIANTS
-    --==============================================
-
-    local variants =
-        item.variants
-        or item.Variants
-
-    if type(variants) ~= "table" then
-        return false
-    end
-
-    local hasMainColour =
-        variants.colour ~= nil
-        or variants.mainColour ~= nil
-        or variants.MainColour ~= nil
-
-    local hasMane =
-        variants.maneColour ~= nil
-        or variants.ManeColour ~= nil
-        or variants.maneStyle ~= nil
-        or variants.ManeStyle ~= nil
-
-    local hasTail =
-        variants.tailColour ~= nil
-        or variants.TailColour ~= nil
-        or variants.tailStyle ~= nil
-        or variants.TailStyle ~= nil
-
-    --==============================================
-    -- REQUIRE REAL HORSE CUSTOMIZATION DATA
-    --==============================================
-
-    if hasMainColour
-        and (hasMane or hasTail) then
-
-        return true
-    end
-
-    --==============================================
-    -- EXPLICIT BREED DATA
-    --==============================================
-
-    if item.breed
-        or item.Breed
-        or item.breedName
-        or item.BreedName
-        or item.horseBreed
-        or item.HorseBreed then
-
-        return true
-    end
-
-    --==============================================
-    -- IMPORTANT:
-    -- DO NOT CHECK ITEM NAME
-    --
-    -- This prevents accessories such as:
-    --
-    -- Horse Shoes
-    -- Horseshoe
-    -- Protective Boots for Horse
-    -- Horse Saddle
-    -- Horse Bridle
-    -- Horse Tack
-    --
-    -- from being detected.
-    --==============================================
-
-    return false
-end
-
---==================================================
 -- GUI PARENT
 --==================================================
 
@@ -568,8 +600,7 @@ if not guiParent then
 
 end
 
--- Remove previous scanner
-
+-- Remove old GUI
 local old =
     guiParent:FindFirstChild(
         "HorseInventoryScanner"
@@ -627,7 +658,9 @@ Main.BackgroundColor3 =
 
 Main.BorderSizePixel = 0
 Main.Active = true
-Main.Parent = ScreenGui
+
+Main.Parent =
+    ScreenGui
 
 local MainCorner =
     Instance.new("UICorner")
@@ -680,7 +713,9 @@ TopBar.BackgroundColor3 =
 
 TopBar.BorderSizePixel = 0
 TopBar.Active = true
-TopBar.Parent = Main
+
+TopBar.Parent =
+    Main
 
 local TopCorner =
     Instance.new("UICorner")
@@ -1142,7 +1177,7 @@ Padding.Parent =
     Results
 
 --==================================================
--- CANVAS UPDATE
+-- CANVAS
 --==================================================
 
 local function UpdateCanvas()
@@ -1390,7 +1425,7 @@ local function CreateProfile(
         Card
 
     --==================================================
-    -- GET DATA
+    -- DATA
     --==================================================
 
     local breed =
@@ -1405,7 +1440,7 @@ local function CreateProfile(
         GetColours(item)
 
     --==================================================
-    -- FIVE DATA ROWS
+    -- FIVE DATA FIELDS
     --==================================================
 
     local Rows = {
@@ -1504,7 +1539,7 @@ end
 
 local function DisplayHorses()
 
-    -- Remove previous cards
+    -- Remove old profile cards
     for _, child in ipairs(
         Results:GetChildren()
     ) do
@@ -1575,7 +1610,7 @@ for uid, item in pairs(
     Inventory
 ) do
 
-    -- ONLY actual horse structures
+    -- Only allowed horse breeds
     if type(item) == "table"
         and IsHorse(item) then
 
