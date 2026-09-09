@@ -720,16 +720,16 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        500,
-        230
+        440,
+        220
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -250,
+        -220,
         0.5,
-        -115
+        -110
     )
 
 Main.BackgroundColor3 =
@@ -1198,8 +1198,8 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        95,
-        68
+        103,
+        72
     )
 
 Grid.CellPadding =
@@ -1212,7 +1212,7 @@ Grid.FillDirection =
     Enum.FillDirection.Horizontal
 
 Grid.FillDirectionMaxCells =
-    5
+    4
 
 Grid.SortOrder =
     Enum.SortOrder.LayoutOrder
@@ -1477,8 +1477,8 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            95,
-            68
+            103,
+            72
         )
 
     Card.BackgroundColor3 =
@@ -1893,6 +1893,87 @@ end)
 -- 0 = Normal
 --==================================================
 --==================================================
+-- PRIORITY SORT
+--==================================================
+
+local function GetHorsePriority(horse)
+
+    local item =
+        horse.item
+
+    local mainColour,
+        maneColour,
+        tailColour =
+        GetColours(item)
+
+    local variants =
+        item.variants
+        or item.Variants
+        or {}
+
+    local HasHorn =
+        variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local HasNatDyed =
+        item.isNatDyed ~= nil
+
+    local HasUniqueHair =
+        IsUniqueHair(maneColour)
+        or IsUniqueHair(tailColour)
+
+    local ManeTailDifferent =
+        not ColoursMatch(maneColour, tailColour)
+
+    -- 1 = RED / Unique Hair / BEST
+    if HasUniqueHair then
+        return 1
+    end
+
+    -- 2 = BLUE / Mane and Tail different
+    if ManeTailDifferent then
+        return 2
+    end
+
+    -- 3 = GREEN / Nat Dyed
+    if HasNatDyed then
+        return 3
+    end
+
+    -- 4 = PURPLE / Horn Colour
+    if HasHorn then
+        return 4
+    end
+
+    -- 5 = GREY / Normal
+    return 5
+end
+
+local function SortHorsesByPriority()
+
+    table.sort(
+        HorseList,
+        function(a, b)
+
+            local pa =
+                GetHorsePriority(a)
+
+            local pb =
+                GetHorsePriority(b)
+
+            if pa ~= pb then
+                return pa < pb
+            end
+
+            -- Keep a predictable order within the same priority.
+            return tostring(a.uid) < tostring(b.uid)
+
+        end
+    )
+
+end
+
+--==================================================
 -- DISPLAY
 --==================================================
 
@@ -1966,6 +2047,8 @@ end
 
 local totalEntries =
     ScanInventory()
+
+SortHorsesByPriority()
 
 DisplayHorses()
 
