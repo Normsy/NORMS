@@ -836,7 +836,7 @@ Title.Position =
 Title.BackgroundTransparency = 1
 
 Title.Text =
-    "🐴 HORSE SCANNER"
+    "ð´ HORSE SCANNER"
 
 Title.TextColor3 =
     Color3.fromRGB(
@@ -931,7 +931,7 @@ Minimize.BackgroundColor3 =
 Minimize.BorderSizePixel = 0
 
 Minimize.Text =
-    "−"
+    "â"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -991,7 +991,7 @@ Close.BackgroundColor3 =
 Close.BorderSizePixel = 0
 
 Close.Text =
-    "×"
+    "Ã"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -1345,7 +1345,7 @@ Minimize.MouseButton1Click:Connect(function()
         Main.Size = UDim2.fromOffset(500,275)
 
         Minimize.Text =
-            "−"
+            "â"
 
     end
 
@@ -1559,7 +1559,7 @@ local function CreateProfile(
 
     local HasUniqueHair = IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
     local HasOrangeMain = IsOrangeMainColour(mainColour)
-    local MainTailDifferent = not ColoursMatch(mainColour, tailColour)
+    local ManeTailDifferent = not ColoursMatch(maneColour, tailColour)
 
     -- RED = Unique Hair (BEST / highest priority)
     if HasUniqueHair then
@@ -1858,7 +1858,7 @@ local function GetHorseStats(horse)
     local variants=horse.item.variants or horse.item.Variants or {}
     local unique=IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
     local orange=IsOrangeMainColour(mainColour)
-    local mismatch=not ColoursMatch(mainColour,tailColour)
+    local mismatch=not ColoursMatch(maneColour,tailColour)
     local natdyed=horse.item.isNatDyed ~= nil
     local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
     local priority=0
@@ -1883,7 +1883,7 @@ local function MatchesSelectedFilter(horse)
     local variants=horse.item.variants or horse.item.Variants or {}
     local unique=IsUniqueHair(mane) or IsUniqueHair(tail)
     local orange=IsOrangeMainColour(main)
-    local mismatch=not ColoursMatch(main,tail)
+    local mismatch=not ColoursMatch(mane,tail)
     local natdyed=horse.item.isNatDyed ~= nil
     local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
     if SelectedFilter=="Red - Unique Hair" then return unique end
