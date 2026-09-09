@@ -667,6 +667,29 @@ local function IsUniqueHair(value)
 end
 
 --==================================================
+-- SPECIAL MAIN COLOURS
+-- Defined before CreateProfile so the local function is in scope.
+--==================================================
+
+local OrangeMainColours = {
+    blowingSnow = true,
+    motherOfPearl = true,
+    royalDun = true,
+    dustyBrindle = true,
+    glacierChimera = true,
+    mountainSunrise = true,
+    jaguar = true,
+    deepSpace = true,
+    crackedLava = true
+}
+
+local function IsOrangeMainColour(mainColour)
+    local key = tostring(mainColour or ""):gsub("%s+", "")
+    return OrangeMainColours[key] == true
+end
+
+
+--==================================================
 -- GUI
 --==================================================
 
@@ -2171,23 +2194,6 @@ end
 --==================================================
 -- SORT BEST TO NORMAL
 --==================================================
-
-local OrangeMainColours = {
-    blowingSnow = true,
-    motherOfPearl = true,
-    royalDun = true,
-    dustyBrindle = true,
-    glacierChimera = true,
-    mountainSunrise = true,
-    jaguar = true,
-    deepSpace = true,
-    crackedLava = true
-}
-
-local function IsOrangeMainColour(mainColour)
-    local key = tostring(mainColour or ""):gsub("%s+", "")
-    return OrangeMainColours[key] == true
-end
 
 local function GetHorseStats(horse)
 
