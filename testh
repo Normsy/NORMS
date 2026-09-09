@@ -585,17 +585,59 @@ local function GetColours(item)
         or variants.TailColour
 
     return
-        tostring(
-            mainColour or "Unknown"
-        ),
+        mainColour or "Unknown",
+        maneColour or "Unknown",
+        tailColour or "Unknown"
+end
 
-        tostring(
-            maneColour or "Unknown"
-        ),
+-- Compare Mane and Tail by their actual value/content.
+-- This prevents identical colour tables/values from being marked blue
+-- just because tostring(table) produces different memory addresses.
+local function ColoursMatch(a, b)
 
-        tostring(
-            tailColour or "Unknown"
-        )
+    if a == b then
+        return true
+    end
+
+    if type(a) == "table" and type(b) == "table" then
+
+        local function NormalizeTable(t)
+            local keys = {}
+
+            for k in pairs(t) do
+                table.insert(keys, k)
+            end
+
+            table.sort(keys, function(x, y)
+                return tostring(x) < tostring(y)
+            end)
+
+            local parts = {}
+
+            for _, k in ipairs(keys) do
+                local v = t[k]
+
+                if type(v) == "table" then
+                    v = NormalizeTable(v)
+                end
+
+                table.insert(parts, tostring(k) .. "=" .. tostring(v))
+            end
+
+            return "{" .. table.concat(parts, ";") .. "}"
+        end
+
+        return NormalizeTable(a) == NormalizeTable(b)
+    end
+
+    local function NormalizeColour(value)
+        return tostring(value or "")
+            :lower()
+            :gsub("^%s+", "")
+            :gsub("%s+$", "")
+    end
+
+    return NormalizeColour(a) == NormalizeColour(b)
 end
 
 --==================================================
@@ -1495,8 +1537,7 @@ local function CreateProfile(
         Stroke.Thickness = 2
 
     -- Blue = Mane and Tail colours do not match
-    elseif tostring(maneColour):lower()
-        ~= tostring(tailColour):lower() then
+    elseif not ColoursMatch(maneColour, tailColour) then
 
         Stroke.Color =
             Color3.fromRGB(
