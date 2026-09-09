@@ -720,14 +720,14 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        700,
+        620,
         300
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -350,
+        -310,
         0.5,
         -150
     )
@@ -1198,14 +1198,14 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        132,
-        88
+        115,
+        78
     )
 
 Grid.CellPadding =
     UDim2.fromOffset(
-        6,
-        6
+        4,
+        4
     )
 
 Grid.FillDirection =
@@ -1306,7 +1306,7 @@ Minimize.MouseButton1Click:Connect(function()
 
         Main.Size =
             UDim2.fromOffset(
-                700,
+                620,
                 300
             )
 
@@ -1477,8 +1477,8 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            132,
-            88
+            115,
+            78
         )
 
     Card.BackgroundColor3 =
@@ -1502,7 +1502,7 @@ local function CreateProfile(
     Corner.CornerRadius =
         UDim.new(
             0,
-            6
+            5
         )
 
     Corner.Parent =
@@ -1699,7 +1699,7 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     BreedLabel.Size =
-        UDim2.new(1, -6, 0, 13)
+        UDim2.new(1, -6, 0, 11)
 
     BreedLabel.Position =
         UDim2.fromOffset(3, 3)
@@ -1708,7 +1708,7 @@ local function CreateProfile(
     BreedLabel.Text = tostring(breed)
     BreedLabel.TextColor3 =
         Color3.fromRGB(255, 215, 100)
-    BreedLabel.TextSize = 5
+    BreedLabel.TextSize = 7
     BreedLabel.Font = Enum.Font.GothamBold
     BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
     BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1743,14 +1743,14 @@ local function CreateProfile(
                 1,
                 -6,
                 0,
-                12
+                10
             )
 
         Label.Position =
             UDim2.fromOffset(
                 3,
-                17
-                    + ((i - 1) * 13)
+                15
+                    + ((i - 1) * 11)
             )
 
         Label.BackgroundTransparency = 1
@@ -1790,16 +1790,16 @@ local function CreateProfile(
         Instance.new("TextLabel")
 
     UIDLabel.Size =
-        UDim2.new(1, -6, 0, 9)
+        UDim2.new(1, -6, 0, 8)
 
     UIDLabel.Position =
-        UDim2.fromOffset(3, 74)
+        UDim2.fromOffset(3, 68)
 
     UIDLabel.BackgroundTransparency = 1
     UIDLabel.Text = "UID: " .. tostring(uid)
     UIDLabel.TextColor3 =
         Color3.fromRGB(105, 115, 135)
-    UIDLabel.TextSize = 4
+    UIDLabel.TextSize = 5
     UIDLabel.Font = Enum.Font.Gotham
     UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
     UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1864,6 +1864,13 @@ table.sort(HorseList, function(a, b)
     return tostring(a.uid) < tostring(b.uid)
 end)
 
+-- HORSE LIST IS SORTED BEST -> NORMAL
+-- 4 = Unique Hair
+-- 3 = Main != Tail
+-- 2 = Nat Dyed
+-- 1 = Horn Colour
+-- 0 = Normal
+--==================================================
 --==================================================
 -- DISPLAY
 --==================================================
