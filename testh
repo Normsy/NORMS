@@ -720,16 +720,16 @@ local Main =
 
 Main.Size =
     UDim2.fromOffset(
-        440,
-        220
+        460,
+        230
     )
 
 Main.Position =
     UDim2.new(
         0.5,
-        -220,
+        -230,
         0.5,
-        -110
+        -115
     )
 
 Main.BackgroundColor3 =
@@ -1060,7 +1060,7 @@ local Search =
 Search.Size =
     UDim2.new(
         1,
-        -16,
+        -72,
         0,
         22
     )
@@ -1134,144 +1134,113 @@ SearchPadding.Parent =
     Search
 
 --==================================================
--- CATEGORY DROPDOWN / BULK SELECT
+-- SELECT DROPDOWN
 --==================================================
 
-local CategoryButton =
+-- Forward declaration because the dropdown is created before Results.
+local Results
+
+local SelectedGroups = {}
+
+local SelectButton =
     Instance.new("TextButton")
 
-CategoryButton.Size =
-    UDim2.fromOffset(86, 22)
+SelectButton.Size =
+    UDim2.fromOffset(50, 22)
 
-CategoryButton.Position =
-    UDim2.new(1, -94, 0, 5)
+SelectButton.Position =
+    UDim2.new(1, -58, 0, 5)
 
-CategoryButton.BackgroundColor3 =
-    Color3.fromRGB(27, 27, 36)
+SelectButton.BackgroundColor3 =
+    Color3.fromRGB(30, 30, 40)
 
-CategoryButton.BorderSizePixel = 0
-CategoryButton.Text = "Select ▾"
-CategoryButton.TextColor3 = Color3.fromRGB(225, 225, 235)
-CategoryButton.TextSize = 7
-CategoryButton.Font = Enum.Font.GothamBold
-CategoryButton.AutoButtonColor = false
-CategoryButton.Parent = Content
+SelectButton.BorderSizePixel = 0
+SelectButton.Text = "Select ▼"
+SelectButton.TextColor3 =
+    Color3.fromRGB(230, 230, 240)
+SelectButton.TextSize = 6
+SelectButton.Font = Enum.Font.GothamBold
+SelectButton.Parent = Content
 
-local CategoryCorner = Instance.new("UICorner")
-CategoryCorner.CornerRadius = UDim.new(0, 5)
-CategoryCorner.Parent = CategoryButton
+local SelectCorner = Instance.new("UICorner")
+SelectCorner.CornerRadius = UDim.new(0, 6)
+SelectCorner.Parent = SelectButton
 
-local CategoryMenu =
+local SelectMenu =
     Instance.new("Frame")
 
-CategoryMenu.Size =
-    UDim2.fromOffset(145, 116)
+SelectMenu.Size =
+    UDim2.fromOffset(120, 110)
 
-CategoryMenu.Position =
-    UDim2.new(1, -153, 0, 29)
+SelectMenu.Position =
+    UDim2.new(1, -128, 0, 29)
 
-CategoryMenu.BackgroundColor3 =
-    Color3.fromRGB(20, 20, 28)
-
-CategoryMenu.BorderSizePixel = 0
-CategoryMenu.Visible = false
-CategoryMenu.ZIndex = 100
-CategoryMenu.Parent = Content
+SelectMenu.BackgroundColor3 =
+    Color3.fromRGB(24, 24, 32)
+SelectMenu.BorderSizePixel = 0
+SelectMenu.Visible = false
+SelectMenu.ZIndex = 50
+SelectMenu.Parent = Content
 
 local MenuCorner = Instance.new("UICorner")
 MenuCorner.CornerRadius = UDim.new(0, 6)
-MenuCorner.Parent = CategoryMenu
+MenuCorner.Parent = SelectMenu
 
-local MenuStroke = Instance.new("UIStroke")
-MenuStroke.Color = Color3.fromRGB(55, 55, 70)
-MenuStroke.Thickness = 1
-MenuStroke.Parent = CategoryMenu
-
-local CategoryDefinitions = {
-    {"UniqueHair", "Unique Hair", Color3.fromRGB(255, 0, 0)},
-    {"Mismatched", "Mismatched", Color3.fromRGB(0, 170, 255)},
-    {"NaturalDyed", "Natural Dyed", Color3.fromRGB(0, 255, 0)},
-    {"Horned", "Horned", Color3.fromRGB(170, 0, 255)},
-    {"Normal", "Normal", Color3.fromRGB(120, 120, 130)}
+local CategoryInfo = {
+    {"Unique Hair", 4, Color3.fromRGB(255, 0, 0)},
+    {"Mismatched", 3, Color3.fromRGB(0, 170, 255)},
+    {"Natural Dyed", 2, Color3.fromRGB(0, 255, 0)},
+    {"Horned", 1, Color3.fromRGB(170, 0, 255)},
+    {"Normal", 0, Color3.fromRGB(150, 150, 160)}
 }
 
-local CategoryRows = {}
+local CategoryButtons = {}
 
-local function UpdateCategoryMenu()
-    for _, row in pairs(CategoryRows) do
-        row.Check.Text = SelectedCategories[row.Key] and "✓" or ""
-    end
-end
+for index, info in ipairs(CategoryInfo) do
+    local Button = Instance.new("TextButton")
+    Button.Size = UDim2.new(1, -8, 0, 19)
+    Button.Position = UDim2.fromOffset(4, 4 + ((index - 1) * 21))
+    Button.BackgroundTransparency = 1
+    Button.BorderSizePixel = 0
+    Button.TextColor3 = info[3]
+    Button.TextSize = 6
+    Button.Font = Enum.Font.GothamBold
+    Button.TextXAlignment = Enum.TextXAlignment.Left
+    Button.Text = "☐  " .. info[1]
+    Button.ZIndex = 51
+    Button.Parent = SelectMenu
+    CategoryButtons[index] = Button
 
-for index, def in ipairs(CategoryDefinitions) do
-    local key, labelText, dotColor = def[1], def[2], def[3]
+    Button.MouseButton1Click:Connect(function()
+        local priority = info[2]
+        SelectedGroups[priority] = not SelectedGroups[priority]
 
-    local Row = Instance.new("TextButton")
-    Row.Size = UDim2.new(1, -8, 0, 21)
-    Row.Position = UDim2.fromOffset(4, 3 + ((index - 1) * 22))
-    Row.BackgroundTransparency = 1
-    Row.BorderSizePixel = 0
-    Row.Text = ""
-    Row.ZIndex = 101
-    Row.AutoButtonColor = false
-    Row.Parent = CategoryMenu
+        if SelectedGroups[priority] then
+            Button.Text = "☑  " .. info[1]
+        else
+            Button.Text = "☐  " .. info[1]
+        end
 
-    local Dot = Instance.new("Frame")
-    Dot.Size = UDim2.fromOffset(8, 8)
-    Dot.Position = UDim2.fromOffset(5, 6)
-    Dot.BackgroundColor3 = dotColor
-    Dot.BorderSizePixel = 0
-    Dot.ZIndex = 102
-    Dot.Parent = Row
-
-    local DotCorner = Instance.new("UICorner")
-    DotCorner.CornerRadius = UDim.new(1, 0)
-    DotCorner.Parent = Dot
-
-    local Text = Instance.new("TextLabel")
-    Text.Size = UDim2.new(1, -38, 1, 0)
-    Text.Position = UDim2.fromOffset(18, 0)
-    Text.BackgroundTransparency = 1
-    Text.Text = labelText
-    Text.TextColor3 = Color3.fromRGB(225, 225, 235)
-    Text.TextSize = 7
-    Text.Font = Enum.Font.Gotham
-    Text.TextXAlignment = Enum.TextXAlignment.Left
-    Text.ZIndex = 102
-    Text.Parent = Row
-
-    local Check = Instance.new("TextLabel")
-    Check.Size = UDim2.fromOffset(16, 18)
-    Check.Position = UDim2.new(1, -21, 0, 1)
-    Check.BackgroundTransparency = 1
-    Check.Text = ""
-    Check.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Check.TextSize = 11
-    Check.Font = Enum.Font.GothamBold
-    Check.ZIndex = 102
-    Check.Parent = Row
-
-    CategoryRows[key] = {Key = key, Check = Check}
-
-    Row.MouseButton1Click:Connect(function()
-        SetCategorySelection(key, not SelectedCategories[key])
-        UpdateCategoryMenu()
-        DisplayHorses()
+        -- Refresh selection state on all currently displayed profiles.
+        for _, child in ipairs(Results:GetChildren()) do
+            local priorityValue = child:GetAttribute("HorsePriority")
+            local selectionStroke = child:FindFirstChild("SelectionStroke")
+            if selectionStroke and priorityValue ~= nil then
+                selectionStroke.Thickness = SelectedGroups[priorityValue] and 2 or 0
+            end
+        end
     end)
 end
 
-CategoryButton.MouseButton1Click:Connect(function()
-    CategoryMenu.Visible = not CategoryMenu.Visible
-    if CategoryMenu.Visible then
-        UpdateCategoryMenu()
-    end
+SelectButton.MouseButton1Click:Connect(function()
+    SelectMenu.Visible = not SelectMenu.Visible
 end)
 
 --==================================================
 -- RESULTS
 --==================================================
 
-local Results =
+Results =
     Instance.new("ScrollingFrame")
 
 Results.Size =
@@ -1279,13 +1248,13 @@ Results.Size =
         1,
         -16,
         1,
-        -55
+        -31
     )
 
 Results.Position =
     UDim2.fromOffset(
         8,
-        55
+        31
     )
 
 Results.BackgroundColor3 =
@@ -1332,7 +1301,7 @@ local Grid =
 
 Grid.CellSize =
     UDim2.fromOffset(
-        103,
+        108,
         72
     )
 
@@ -1527,6 +1496,8 @@ end)
 -- HORSE LIST
 --==================================================
 
+local HorseList = {}
+
 --==================================================
 -- SCAN ENTIRE INVENTORY
 --==================================================
@@ -1574,81 +1545,6 @@ local function ScanInventory()
 end
 
 --==================================================
--- SELECTION
---==================================================
-
-local HorseList = {}
-local DisplayHorses
-
-local SelectedHorses = {}
-local SelectedCategories = {
-    UniqueHair = false,
-    Mismatched = false,
-    NaturalDyed = false,
-    Horned = false,
-    Normal = false
-}
-
-local function GetHorseCategory(horse)
-
-    local mainColour, maneColour, tailColour =
-        GetColours(horse.item)
-
-    local variants =
-        horse.item.variants
-        or horse.item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        horse.item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    if HasUniqueHair then
-        return "UniqueHair"
-    elseif MainTailDifferent then
-        return "Mismatched"
-    elseif HasNatDyed then
-        return "NaturalDyed"
-    elseif HasHorn then
-        return "Horned"
-    else
-        return "Normal"
-    end
-end
-
-local function IsHorseSelected(horse)
-    if SelectedHorses[horse.uid] then
-        return true
-    end
-
-    return SelectedCategories[GetHorseCategory(horse)] == true
-end
-
-local function SetCategorySelection(category, selected)
-    SelectedCategories[category] = selected
-
-    for _, horse in ipairs(HorseList) do
-        if GetHorseCategory(horse) == category then
-            if selected then
-                SelectedHorses[horse.uid] = true
-            else
-                SelectedHorses[horse.uid] = nil
-            end
-        end
-    end
-end
-
---==================================================
 -- CREATE PROFILE
 --==================================================
 
@@ -1684,7 +1580,7 @@ local function CreateProfile(
 
     Card.Size =
         UDim2.fromOffset(
-            103,
+            108,
             72
         )
 
@@ -1736,6 +1632,20 @@ local function CreateProfile(
 
     local MainTailDifferent =
         not ColoursMatch(mainColour, tailColour)
+
+    local HorsePriority = 0
+
+    if HasUniqueHair then
+        HorsePriority = 4
+    elseif MainTailDifferent then
+        HorsePriority = 3
+    elseif HasNatDyed then
+        HorsePriority = 2
+    elseif HasHorn then
+        HorsePriority = 1
+    end
+
+    Card:SetAttribute("HorsePriority", HorsePriority)
 
     -- RED = Unique Hair (BEST / highest priority)
     if HasUniqueHair then
@@ -1801,45 +1711,6 @@ local function CreateProfile(
     Stroke.Parent =
         Card
 
-    local SelectionStroke =
-        Instance.new("UIStroke")
-
-    SelectionStroke.Color =
-        Color3.fromRGB(255, 255, 255)
-
-    SelectionStroke.Thickness = 3
-    SelectionStroke.Transparency = 1
-    SelectionStroke.Parent = Card
-
-    local SelectButton =
-        Instance.new("TextButton")
-
-    SelectButton.Size = UDim2.fromScale(1, 1)
-    SelectButton.BackgroundTransparency = 1
-    SelectButton.Text = ""
-    SelectButton.AutoButtonColor = false
-    SelectButton.ZIndex = 20
-    SelectButton.Parent = Card
-
-    local function RefreshSelectionVisual()
-        SelectionStroke.Transparency =
-            IsHorseSelected(horse) and 0 or 1
-    end
-
-    SelectButton.MouseButton1Click:Connect(function()
-        local uidKey = horse.uid
-
-        if SelectedHorses[uidKey] then
-            SelectedHorses[uidKey] = nil
-        else
-            SelectedHorses[uidKey] = true
-        end
-
-        RefreshSelectionVisual()
-    end)
-
-    RefreshSelectionVisual()
-
     --==============================================
     -- SPECIAL INDICATOR CIRCLES
     -- Red = Unique Hair
@@ -1860,7 +1731,6 @@ local function CreateProfile(
         UDim2.new(1, -41, 0, 3)
 
     IndicatorContainer.BackgroundTransparency = 1
-    IndicatorContainer.ZIndex = 22
     IndicatorContainer.Parent = Card
 
     local function AddIndicator(color, x)
@@ -1959,7 +1829,6 @@ local function CreateProfile(
     BreedLabel.Font = Enum.Font.GothamBold
     BreedLabel.TextXAlignment = Enum.TextXAlignment.Left
     BreedLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    BreedLabel.ZIndex = 21
     BreedLabel.Parent = Card
 
     local Rows = {
@@ -2029,7 +1898,6 @@ local function CreateProfile(
         Label.TextTruncate =
             Enum.TextTruncate.AtEnd
 
-        Label.ZIndex = 21
         Label.Parent =
             Card
 
@@ -2052,8 +1920,30 @@ local function CreateProfile(
     UIDLabel.Font = Enum.Font.Gotham
     UIDLabel.TextXAlignment = Enum.TextXAlignment.Left
     UIDLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    UIDLabel.ZIndex = 21
     UIDLabel.Parent = Card
+
+    -- White outline used when this profile is selected.
+    local SelectionStroke = Instance.new("UIStroke")
+    SelectionStroke.Name = "SelectionStroke"
+    SelectionStroke.Color = Color3.fromRGB(255, 255, 255)
+    SelectionStroke.Thickness = 0
+    SelectionStroke.Parent = Card
+
+    -- Transparent button makes the whole profile selectable.
+    local SelectProfile = Instance.new("TextButton")
+    SelectProfile.Size = UDim2.fromScale(1, 1)
+    SelectProfile.Position = UDim2.fromScale(0, 0)
+    SelectProfile.BackgroundTransparency = 1
+    SelectProfile.BorderSizePixel = 0
+    SelectProfile.Text = ""
+    SelectProfile.AutoButtonColor = false
+    SelectProfile.ZIndex = 20
+    SelectProfile.Parent = Card
+
+    SelectProfile.MouseButton1Click:Connect(function()
+        SelectionStroke.Thickness =
+            SelectionStroke.Thickness == 0 and 2 or 0
+    end)
 
 end
 
@@ -2143,91 +2033,10 @@ end)
 -- 0 = Normal
 --==================================================
 --==================================================
--- PRIORITY SORT
---==================================================
-
-local function GetHorsePriority(horse)
-
-    local item =
-        horse.item
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local ManeTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    -- 1 = RED / Unique Hair / BEST
-    if HasUniqueHair then
-        return 1
-    end
-
-    -- 2 = BLUE / Mane and Tail different
-    if ManeTailDifferent then
-        return 2
-    end
-
-    -- 3 = GREEN / Nat Dyed
-    if HasNatDyed then
-        return 3
-    end
-
-    -- 4 = PURPLE / Horn Colour
-    if HasHorn then
-        return 4
-    end
-
-    -- 5 = GREY / Normal
-    return 5
-end
-
-local function SortHorsesByPriority()
-
-    table.sort(
-        HorseList,
-        function(a, b)
-
-            local pa =
-                GetHorsePriority(a)
-
-            local pb =
-                GetHorsePriority(b)
-
-            if pa ~= pb then
-                return pa < pb
-            end
-
-            -- Keep a predictable order within the same priority.
-            return tostring(a.uid) < tostring(b.uid)
-
-        end
-    )
-
-end
-
---==================================================
 -- DISPLAY
 --==================================================
 
-function DisplayHorses()
+local function DisplayHorses()
 
     for _, child in ipairs(
         Results:GetChildren()
@@ -2297,8 +2106,6 @@ end
 
 local totalEntries =
     ScanInventory()
-
-SortHorsesByPriority()
 
 DisplayHorses()
 
