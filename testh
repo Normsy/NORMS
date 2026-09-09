@@ -666,28 +666,15 @@ local function IsUniqueHair(value)
     return UniqueHair[NormalizeUniqueHair(value)] == true
 end
 
---==================================================
--- SPECIAL MAIN COLOURS
--- Defined before CreateProfile so the local function is in scope.
---==================================================
-
 local OrangeMainColours = {
-    blowingSnow = true,
-    motherOfPearl = true,
-    royalDun = true,
-    dustyBrindle = true,
-    glacierChimera = true,
-    mountainSunrise = true,
-    jaguar = true,
-    deepSpace = true,
-    crackedLava = true
+    blowingSnow=true, motherOfPearl=true, royalDun=true, dustyBrindle=true,
+    glacierChimera=true, mountainSunrise=true, jaguar=true, deepSpace=true, crackedLava=true
 }
 
 local function IsOrangeMainColour(mainColour)
     local key = tostring(mainColour or ""):gsub("%s+", "")
     return OrangeMainColours[key] == true
 end
-
 
 --==================================================
 -- GUI
@@ -741,19 +728,9 @@ ScreenGui.Parent =
 local Main =
     Instance.new("Frame")
 
-Main.Size =
-    UDim2.fromOffset(
-        500,
-        275
-    )
+Main.Size = UDim2.fromOffset(500, 275)
 
-Main.Position =
-    UDim2.new(
-        0.5,
-        -250,
-        0.5,
-        -115
-    )
+Main.Position = UDim2.new(0.5, -250, 0.5, -137.5)
 
 Main.BackgroundColor3 =
     Color3.fromRGB(
@@ -859,7 +836,7 @@ Title.Position =
 Title.BackgroundTransparency = 1
 
 Title.Text =
-    "ð´ HORSE SCANNER"
+    "🐴 HORSE SCANNER"
 
 Title.TextColor3 =
     Color3.fromRGB(
@@ -954,7 +931,7 @@ Minimize.BackgroundColor3 =
 Minimize.BorderSizePixel = 0
 
 Minimize.Text =
-    "â"
+    "−"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -1014,7 +991,7 @@ Close.BackgroundColor3 =
 Close.BorderSizePixel = 0
 
 Close.Text =
-    "Ã"
+    "×"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -1156,346 +1133,53 @@ SearchPadding.PaddingLeft =
 SearchPadding.Parent =
     Search
 
-Search:GetPropertyChangedSignal("Text"):Connect(function()
-    if DisplayHorses then
-        DisplayHorses()
-    end
-end)
+local DisplayHorses
 
---==================================================
--- SELL CONTROLS
---==================================================
-
-local RemoteNameBox =
-    Instance.new("TextBox")
-
-RemoteNameBox.Size =
-    UDim2.fromOffset(
-        180,
-        22
-    )
-
-RemoteNameBox.Position =
-    UDim2.fromOffset(
-        8,
-        32
-    )
-
-RemoteNameBox.BackgroundColor3 =
-    Color3.fromRGB(
-        23,
-        23,
-        31
-    )
-
+local RemoteNameBox = Instance.new("TextBox")
+RemoteNameBox.Size = UDim2.fromOffset(180,22)
+RemoteNameBox.Position = UDim2.fromOffset(8,32)
+RemoteNameBox.BackgroundColor3 = Color3.fromRGB(23,23,31)
 RemoteNameBox.BorderSizePixel = 0
-
-RemoteNameBox.PlaceholderText =
-    "Remote name..."
-
-RemoteNameBox.PlaceholderColor3 =
-    Color3.fromRGB(
-        100,
-        105,
-        120
-    )
-
+RemoteNameBox.PlaceholderText = "Remote name..."
 RemoteNameBox.Text = ""
-
-RemoteNameBox.TextColor3 =
-    Color3.fromRGB(
-        235,
-        235,
-        240
-    )
-
+RemoteNameBox.TextColor3 = Color3.fromRGB(235,235,240)
 RemoteNameBox.TextSize = 7
 RemoteNameBox.Font = Enum.Font.Gotham
 RemoteNameBox.ClearTextOnFocus = false
 RemoteNameBox.Parent = Content
+local rc=Instance.new("UICorner"); rc.CornerRadius=UDim.new(0,6); rc.Parent=RemoteNameBox
+local rp=Instance.new("UIPadding"); rp.PaddingLeft=UDim.new(0,6); rp.Parent=RemoteNameBox
 
-local RemoteCorner =
-    Instance.new("UICorner")
+local FilterButton=Instance.new("TextButton")
+FilterButton.Size=UDim2.fromOffset(145,22); FilterButton.Position=UDim2.fromOffset(193,32)
+FilterButton.BackgroundColor3=Color3.fromRGB(23,23,31); FilterButton.BorderSizePixel=0
+FilterButton.Text="Filter: All"; FilterButton.TextColor3=Color3.fromRGB(235,235,240); FilterButton.TextSize=7; FilterButton.Font=Enum.Font.GothamBold; FilterButton.Parent=Content
+local fc=Instance.new("UICorner"); fc.CornerRadius=UDim.new(0,6); fc.Parent=FilterButton
 
-RemoteCorner.CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-RemoteCorner.Parent =
-    RemoteNameBox
-
-local RemotePadding =
-    Instance.new("UIPadding")
-
-RemotePadding.PaddingLeft =
-    UDim.new(
-        0,
-        6
-    )
-
-RemotePadding.Parent =
-    RemoteNameBox
-
--- FILTER DROPDOWN
-
-local FilterButton =
-    Instance.new("TextButton")
-
-FilterButton.Size =
-    UDim2.fromOffset(
-        145,
-        22
-    )
-
-FilterButton.Position =
-    UDim2.fromOffset(
-        193,
-        32
-    )
-
-FilterButton.BackgroundColor3 =
-    Color3.fromRGB(
-        23,
-        23,
-        31
-    )
-
-FilterButton.BorderSizePixel = 0
-FilterButton.Text = "Filter: All"
-FilterButton.TextColor3 =
-    Color3.fromRGB(
-        235,
-        235,
-        240
-    )
-
-FilterButton.TextSize = 7
-FilterButton.Font = Enum.Font.GothamBold
-FilterButton.Parent = Content
-
-local FilterCorner =
-    Instance.new("UICorner")
-
-FilterCorner.CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-FilterCorner.Parent =
-    FilterButton
-
-local FilterList =
-    Instance.new("Frame")
-
-FilterList.Size =
-    UDim2.fromOffset(
-        145,
-        0
-    )
-
-FilterList.Position =
-    UDim2.fromOffset(
-        193,
-        56
-    )
-
-FilterList.BackgroundColor3 =
-    Color3.fromRGB(
-        20,
-        20,
-        27
-    )
-
-FilterList.BorderSizePixel = 0
-FilterList.Visible = false
-FilterList.ZIndex = 20
-FilterList.Parent = Content
-
-local FilterListCorner =
-    Instance.new("UICorner")
-
-FilterListCorner.CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-FilterListCorner.Parent =
-    FilterList
-
-local FilterLayout =
-    Instance.new("UIListLayout")
-
-FilterLayout.SortOrder =
-    Enum.SortOrder.LayoutOrder
-
-FilterLayout.Parent =
-    FilterList
-
-local SelectedFilter = "All"
-
--- Forward declaration because filter/sell buttons are created
--- before the final display function below.
-local DisplayHorses
-
-local FilterOptions = {
-    {"All", Color3.fromRGB(235, 235, 240)},
-    {"Red - Unique Hair", Color3.fromRGB(255, 0, 0)},
-    {"Orange - Special Main Colour", Color3.fromRGB(255, 140, 0)},
-    {"Blue - Mismatched Hair", Color3.fromRGB(0, 170, 255)},
-    {"Green - Nat Dyed", Color3.fromRGB(0, 255, 0)},
-    {"Purple - Horn Colour", Color3.fromRGB(170, 0, 255)},
-    {"Grey - Normal", Color3.fromRGB(120, 120, 130)}
+local FilterList=Instance.new("Frame")
+FilterList.Size=UDim2.fromOffset(145,154); FilterList.Position=UDim2.fromOffset(193,56)
+FilterList.BackgroundColor3=Color3.fromRGB(20,20,27); FilterList.BorderSizePixel=0; FilterList.Visible=false; FilterList.ZIndex=20; FilterList.Parent=Content
+local flc=Instance.new("UICorner"); flc.CornerRadius=UDim.new(0,6); flc.Parent=FilterList
+local fl=Instance.new("UIListLayout"); fl.SortOrder=Enum.SortOrder.LayoutOrder; fl.Parent=FilterList
+local SelectedFilter="All"
+local FilterOptions={
+ {"All",Color3.fromRGB(235,235,240)}, {"Red - Unique Hair",Color3.fromRGB(255,0,0)},
+ {"Orange - Special Main Colour",Color3.fromRGB(255,140,0)}, {"Blue - Mismatched Hair",Color3.fromRGB(0,170,255)},
+ {"Green - Nat Dyed",Color3.fromRGB(0,255,0)}, {"Purple - Horn Colour",Color3.fromRGB(170,0,255)},
+ {"Grey - Normal",Color3.fromRGB(120,120,130)}
 }
-
-local function SetFilter(name)
-    SelectedFilter = name
-    FilterButton.Text = "Filter: " .. name
-    FilterList.Visible = false
-    DisplayHorses()
+for i,opt in ipairs(FilterOptions) do
+ local b=Instance.new("TextButton"); b.Size=UDim2.new(1,0,0,22); b.BackgroundColor3=Color3.fromRGB(25,25,33); b.BorderSizePixel=0; b.Text=opt[1]; b.TextColor3=opt[2]; b.TextSize=7; b.Font=Enum.Font.GothamBold; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex=21; b.LayoutOrder=i; b.Parent=FilterList
+ local pad=Instance.new("UIPadding"); pad.PaddingLeft=UDim.new(0,7); pad.Parent=b
+ b.MouseButton1Click:Connect(function() SelectedFilter=opt[1]; FilterButton.Text="Filter: "..SelectedFilter; FilterList.Visible=false; if DisplayHorses then DisplayHorses() end end)
 end
+FilterButton.MouseButton1Click:Connect(function() FilterList.Visible=not FilterList.Visible end)
 
-for index, option in ipairs(FilterOptions) do
-    local optionName = option[1]
-    local optionColor = option[2]
-
-    local OptionButton =
-        Instance.new("TextButton")
-
-    OptionButton.Size =
-        UDim2.new(
-            1,
-            0,
-            0,
-            22
-        )
-
-    OptionButton.BackgroundColor3 =
-        Color3.fromRGB(
-            25,
-            25,
-            33
-        )
-
-    OptionButton.BorderSizePixel = 0
-    OptionButton.Text = optionName
-    OptionButton.TextColor3 = optionColor
-    OptionButton.TextSize = 7
-    OptionButton.Font = Enum.Font.GothamBold
-    OptionButton.TextXAlignment = Enum.TextXAlignment.Left
-    OptionButton.ZIndex = 21
-    OptionButton.Parent = FilterList
-
-    local OptionPadding =
-        Instance.new("UIPadding")
-
-    OptionPadding.PaddingLeft =
-        UDim.new(
-            0,
-            7
-        )
-
-    OptionPadding.Parent =
-        OptionButton
-
-    OptionButton.MouseButton1Click:Connect(function()
-        SetFilter(optionName)
-    end)
-end
-
-FilterList.Size =
-    UDim2.fromOffset(
-        145,
-        #FilterOptions * 22
-    )
-
-FilterButton.MouseButton1Click:Connect(function()
-    FilterList.Visible =
-        not FilterList.Visible
-end)
-
--- SELL BUTTON
-
-local SellButton =
-    Instance.new("TextButton")
-
-SellButton.Size =
-    UDim2.fromOffset(
-        145,
-        22
-    )
-
-SellButton.Position =
-    UDim2.fromOffset(
-        347,
-        32
-    )
-
-SellButton.BackgroundColor3 =
-    Color3.fromRGB(
-        125,
-        35,
-        40
-    )
-
-SellButton.BorderSizePixel = 0
-SellButton.Text = "SELL FILTERED"
-SellButton.TextColor3 =
-    Color3.fromRGB(
-        255,
-        255,
-        255
-    )
-
-SellButton.TextSize = 7
-SellButton.Font = Enum.Font.GothamBold
-SellButton.Parent = Content
-
-local SellCorner =
-    Instance.new("UICorner")
-
-SellCorner.CornerRadius =
-    UDim.new(
-        0,
-        6
-    )
-
-SellCorner.Parent =
-    SellButton
-
-local SellStatus =
-    Instance.new("TextLabel")
-
-SellStatus.Size =
-    UDim2.new(
-        1,
-        -16,
-        0,
-        12
-    )
-
-SellStatus.Position =
-    UDim2.fromOffset(
-        8,
-        57
-    )
-
-SellStatus.BackgroundTransparency = 1
-SellStatus.Text = ""
-SellStatus.TextColor3 =
-    Color3.fromRGB(
-        150,
-        155,
-        170
-    )
-
-SellStatus.TextSize = 6
-SellStatus.Font = Enum.Font.Gotham
-SellStatus.TextXAlignment = Enum.TextXAlignment.Left
-SellStatus.Parent = Content
+local SellButton=Instance.new("TextButton")
+SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
+local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
+local SellStatus=Instance.new("TextLabel")
+SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57); SellStatus.BackgroundTransparency=1; SellStatus.Text=""; SellStatus.TextColor3=Color3.fromRGB(150,155,170); SellStatus.TextSize=6; SellStatus.Font=Enum.Font.Gotham; SellStatus.TextXAlignment=Enum.TextXAlignment.Left; SellStatus.Parent=Content
 
 --==================================================
 -- RESULTS
@@ -1504,19 +1188,9 @@ SellStatus.Parent = Content
 local Results =
     Instance.new("ScrollingFrame")
 
-Results.Size =
-    UDim2.new(
-        1,
-        -16,
-        1,
-        -76
-    )
+Results.Size = UDim2.new(1,-16,1,-76)
 
-Results.Position =
-    UDim2.fromOffset(
-        8,
-        76
-    )
+Results.Position = UDim2.fromOffset(8,76)
 
 Results.BackgroundColor3 =
     Color3.fromRGB(
@@ -1668,14 +1342,10 @@ Minimize.MouseButton1Click:Connect(function()
 
     else
 
-        Main.Size =
-            UDim2.fromOffset(
-                500,
-                275
-            )
+        Main.Size = UDim2.fromOffset(500,275)
 
         Minimize.Text =
-            "â"
+            "−"
 
     end
 
@@ -1887,15 +1557,9 @@ local function CreateProfile(
     local HasNatDyed =
         item.isNatDyed ~= nil
 
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local HasOrangeMain =
-        IsOrangeMainColour(mainColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(maneColour, tailColour)
+    local HasUniqueHair = IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
+    local HasOrangeMain = IsOrangeMainColour(mainColour)
+    local MainTailDifferent = not ColoursMatch(mainColour, tailColour)
 
     -- RED = Unique Hair (BEST / highest priority)
     if HasUniqueHair then
@@ -1911,10 +1575,7 @@ local function CreateProfile(
 
     -- ORANGE = Special Main Colour (2nd best)
     elseif HasOrangeMain then
-
-        Stroke.Color =
-            Color3.fromRGB(255, 140, 0)
-
+        Stroke.Color = Color3.fromRGB(255,140,0)
         Stroke.Thickness = 2
 
     -- BLUE = Main and Tail are different (3rd best)
@@ -2037,10 +1698,7 @@ local function CreateProfile(
 
     -- Orange = Special Main Colour
     if HasOrangeMain then
-        AddIndicator(
-            Color3.fromRGB(255, 140, 0),
-            IndicatorX
-        )
+        AddIndicator(Color3.fromRGB(255,140,0), IndicatorX)
         IndicatorX = IndicatorX + 8
     end
 
@@ -2196,459 +1854,97 @@ end
 --==================================================
 
 local function GetHorseStats(horse)
-
-    local item = horse.item
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local HasOrangeMain =
-        IsOrangeMainColour(mainColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    local priority = 0
-
-    if HasUniqueHair then
-        priority = 5
-    elseif HasOrangeMain then
-        priority = 4
-    elseif MainTailDifferent then
-        priority = 3
-    elseif HasNatDyed then
-        priority = 2
-    elseif HasHorn then
-        priority = 1
-    end
-
-    local specialCount = 0
-
-    if HasUniqueHair then specialCount += 1 end
-    if HasOrangeMain then specialCount += 1 end
-    if MainTailDifferent then specialCount += 1 end
-    if HasNatDyed then specialCount += 1 end
-    if HasHorn then specialCount += 1 end
-
-    return priority, specialCount
+    local mainColour,maneColour,tailColour=GetColours(horse.item)
+    local variants=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
+    local orange=IsOrangeMainColour(mainColour)
+    local mismatch=not ColoursMatch(mainColour,tailColour)
+    local natdyed=horse.item.isNatDyed ~= nil
+    local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    local priority=0
+    if unique then priority=5 elseif orange then priority=4 elseif mismatch then priority=3 elseif natdyed then priority=2 elseif horn then priority=1 end
+    local count=0
+    if unique then count+=1 end; if orange then count+=1 end; if mismatch then count+=1 end; if natdyed then count+=1 end; if horn then count+=1 end
+    return priority,count
 end
 
-local function GetHorsePriority(horse)
-    local priority = GetHorseStats(horse)
-    return priority
-end
-
-table.sort(HorseList, function(a, b)
-
-    local priorityA, countA = GetHorseStats(a)
-    local priorityB, countB = GetHorseStats(b)
-
-    -- Highest priority group always comes first.
-    if priorityA ~= priorityB then
-        return priorityA > priorityB
-    end
-
-    -- Within the same priority, horses with more special
-    -- properties come first.
-    if countA ~= countB then
-        return countA > countB
-    end
-
-    return tostring(a.uid) < tostring(b.uid)
-end)
-
--- HORSE LIST IS SORTED BEST -> NORMAL
--- 5 = Unique Hair
--- 4 = Orange Main Colour
--- 3 = Main != Tail
--- 2 = Nat Dyed
--- 1 = Horn Colour
--- 0 = Grey / Normal
---==================================================
---==================================================
--- FILTER / SELL HELPERS
---==================================================
-
-local function GetHorseFilter(horse)
-
-    local item = horse.item
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local HasOrangeMain =
-        IsOrangeMainColour(mainColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    -- IMPORTANT:
-    -- This uses the exact same priority as the card outline.
-    if HasUniqueHair then
-        return "Red - Unique Hair"
-    elseif HasOrangeMain then
-        return "Orange - Special Main Colour"
-    elseif MainTailDifferent then
-        return "Blue - Mismatched Hair"
-    elseif HasNatDyed then
-        return "Green - Nat Dyed"
-    elseif HasHorn then
-        return "Purple - Horn Colour"
-    end
-
-    return "Grey - Normal"
+local function SortHorseList()
+    table.sort(HorseList,function(a,b)
+        local pa,ca=GetHorseStats(a); local pb,cb=GetHorseStats(b)
+        if pa~=pb then return pa>pb end
+        if ca~=cb then return ca>cb end
+        return tostring(a.uid)<tostring(b.uid)
+    end)
 end
 
 local function MatchesSelectedFilter(horse)
-
-    if SelectedFilter == "All" then
-        return true
-    end
-
-    local item = horse.item
-
-    local mainColour,
-        maneColour,
-        tailColour =
-        GetColours(item)
-
-    local variants =
-        item.variants
-        or item.Variants
-        or {}
-
-    local HasHorn =
-        variants.hornColour ~= nil
-        and tostring(variants.hornColour) ~= ""
-
-    local HasNatDyed =
-        item.isNatDyed ~= nil
-
-    local HasUniqueHair =
-        IsUniqueHair(maneColour)
-        or IsUniqueHair(tailColour)
-
-    local HasOrangeMain =
-        IsOrangeMainColour(mainColour)
-
-    local MainTailDifferent =
-        not ColoursMatch(mainColour, tailColour)
-
-    -- FILTERS are independent.
-    -- A horse can appear in multiple filters if it has multiple properties.
-    if SelectedFilter == "Red - Unique Hair" then
-        return HasUniqueHair
-    elseif SelectedFilter == "Orange - Special Main Colour" then
-        return HasOrangeMain
-    elseif SelectedFilter == "Blue - Mismatched Hair" then
-        return MainTailDifferent
-    elseif SelectedFilter == "Green - Nat Dyed" then
-        return HasNatDyed
-    elseif SelectedFilter == "Purple - Horn Colour" then
-        return HasHorn
-    elseif SelectedFilter == "Grey - Normal" then
-        return not HasUniqueHair
-            and not HasOrangeMain
-            and not MainTailDifferent
-            and not HasNatDyed
-            and not HasHorn
-    end
-
+    if SelectedFilter=="All" then return true end
+    local main,mane,tail=GetColours(horse.item)
+    local variants=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(mane) or IsUniqueHair(tail)
+    local orange=IsOrangeMainColour(main)
+    local mismatch=not ColoursMatch(main,tail)
+    local natdyed=horse.item.isNatDyed ~= nil
+    local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    if SelectedFilter=="Red - Unique Hair" then return unique end
+    if SelectedFilter=="Orange - Special Main Colour" then return orange end
+    if SelectedFilter=="Blue - Mismatched Hair" then return mismatch end
+    if SelectedFilter=="Green - Nat Dyed" then return natdyed end
+    if SelectedFilter=="Purple - Horn Colour" then return horn end
+    if SelectedFilter=="Grey - Normal" then return not unique and not orange and not mismatch and not natdyed and not horn end
     return false
 end
 
 local function GetSellRemote()
-
-    local remoteName =
-        tostring(RemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
-
-    if remoteName == "" then
-        return nil, "Enter the RemoteEvent name first."
-    end
-
-    local Events =
-        ReplicatedStorage
-            :WaitForChild("Communication")
-            :WaitForChild("Events")
-
-    local remote =
-        Events:FindFirstChild(remoteName)
-
-    if not remote then
-        return nil, "RemoteEvent not found: " .. remoteName
-    end
-
-    if not remote:IsA("RemoteEvent") then
-        return nil, remoteName .. " is not a RemoteEvent."
-    end
-
-    return remote, nil
+    local name=tostring(RemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
+    if name=="" then return nil,"Enter the RemoteEvent name first." end
+    local Events=ReplicatedStorage:WaitForChild("Communication"):WaitForChild("Events")
+    local remote=Events:FindFirstChild(name)
+    if not remote then return nil,"RemoteEvent not found: "..name end
+    if not remote:IsA("RemoteEvent") then return nil,name.." is not a RemoteEvent." end
+    return remote
 end
 
-SellButton.MouseButton1Click:Connect(function()
-
-    local remote, remoteError =
-        GetSellRemote()
-
-    if not remote then
-        SellStatus.Text = remoteError
-        SellStatus.TextColor3 =
-            Color3.fromRGB(
-                255,
-                110,
-                110
-            )
-        return
-    end
-
-    local ItemsToSell = {}
-    local count = 0
-
-    for _, horse in ipairs(HorseList) do
-
-        if MatchesSelectedFilter(horse) then
-
-            local uid =
-                tostring(horse.uid)
-
-            ItemsToSell[uid] = 1
-            count += 1
-
+DisplayHorses=function()
+    for _,child in ipairs(Results:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
+    local searchText=Search.Text:lower(); local shown=0
+    for _,horse in ipairs(HorseList) do
+        local breed=horse.breed or GetBreed(horse.item,horse.info) or "Unknown"
+        local searchable=tostring(horse.uid).." "..tostring(breed)
+        if (searchText=="" or searchable:lower():find(searchText,1,true)) and MatchesSelectedFilter(horse) then
+            shown+=1; CreateProfile(horse,shown)
         end
-
     end
+    Status.Text="Horses: "..tostring(shown).." / "..tostring(#HorseList)
+    task.defer(UpdateCanvas)
+end
 
-    if count == 0 then
-        SellStatus.Text =
-            "Nothing matches: "
-            .. SelectedFilter
-
-        SellStatus.TextColor3 =
-            Color3.fromRGB(
-                255,
-                190,
-                100
-            )
-
-        return
-    end
-
-    local ok, err =
-        pcall(function()
-
-            remote:FireServer(
-                "SellItems",
-                ItemsToSell
-            )
-
-        end)
-
-    if ok then
-
-        SellStatus.Text =
-            "Sent sell request: "
-            .. tostring(count)
-            .. " horse(s) ["
-            .. SelectedFilter
-            .. "]"
-
-        SellStatus.TextColor3 =
-            Color3.fromRGB(
-                100,
-                255,
-                130
-            )
-
-        -- Refresh the local inventory reference and UI after selling.
-        task.delay(0.5, function()
-
-            local refreshOK, refreshedInventory =
-                pcall(function()
-                    return Data.GetLocal({"inventory"})
-                end)
-
-            if refreshOK
-                and type(refreshedInventory) == "table" then
-
-                Inventory =
-                    refreshedInventory
-
-                ScanInventory()
-
-                table.sort(
-                    HorseList,
-                    function(a, b)
-
-                        local priorityA, countA =
-                            GetHorseStats(a)
-
-                        local priorityB, countB =
-                            GetHorseStats(b)
-
-                        if priorityA ~= priorityB then
-                            return priorityA > priorityB
-                        end
-
-                        if countA ~= countB then
-                            return countA > countB
-                        end
-
-                        return tostring(a.uid)
-                            < tostring(b.uid)
-                    end
-                )
-
-                DisplayHorses()
-
-            end
-
-        end)
-
-    else
-
-        SellStatus.Text =
-            "Sell failed: "
-            .. tostring(err)
-
-        SellStatus.TextColor3 =
-            Color3.fromRGB(
-                255,
-                110,
-                110
-            )
-
-    end
-
+Search:GetPropertyChangedSignal("Text"):Connect(function()
+    if DisplayHorses then DisplayHorses() end
 end)
 
---==================================================
--- DISPLAY
---==================================================
-
-DisplayHorses = function()
-
-    for _, child in ipairs(
-        Results:GetChildren()
-    ) do
-
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
-
-    end
-
-    local searchText =
-        Search.Text:lower()
-
-    local shown = 0
-
-    for _, horse in ipairs(
-        HorseList
-    ) do
-
-        local breed =
-            horse.breed
-            or GetBreed(
-                horse.item,
-                horse.info
-            )
-            or "Unknown"
-
-        local searchable =
-            tostring(horse.uid)
-            .. " "
-            .. tostring(breed)
-
-        local passesSearch =
-            searchText == ""
-            or searchable:lower():find(
-                searchText,
-                1,
-                true
-            )
-
-        local passesFilter =
-            MatchesSelectedFilter(horse)
-
-        if passesSearch
-            and passesFilter then
-
-            shown += 1
-
-            CreateProfile(
-                horse,
-                shown
-            )
-
-        end
-
-    end
-
-    Status.Text =
-        "Horses: "
-        .. tostring(shown)
-        .. " / "
-        .. tostring(#HorseList)
-        .. " | "
-        .. SelectedFilter
-
-    task.defer(
-        UpdateCanvas
-    )
-
-end
+SellButton.MouseButton1Click:Connect(function()
+    local remote,err=GetSellRemote()
+    if not remote then SellStatus.Text=err; SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
+    local ItemsToSell={}; local count=0
+    for _,horse in ipairs(HorseList) do if MatchesSelectedFilter(horse) then ItemsToSell[tostring(horse.uid)]=1; count+=1 end end
+    if count==0 then SellStatus.Text="Nothing matches: "..SelectedFilter; SellStatus.TextColor3=Color3.fromRGB(255,190,100); return end
+    local ok,sendErr=pcall(function() remote:FireServer("SellItems",ItemsToSell) end)
+    if not ok then SellStatus.Text="Sell failed: "..tostring(sendErr); SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
+    SellStatus.Text="Sent sell request: "..tostring(count).." horse(s) ["..SelectedFilter.."]"; SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+    task.delay(0.5,function()
+        local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
+        if ok2 and type(newInv)=="table" then Inventory=newInv; ScanInventory(); SortHorseList(); DisplayHorses() end
+    end)
+end)
 
 --==================================================
 -- INITIAL SCAN
 --==================================================
 
-local totalEntries =
-    ScanInventory()
-
+local totalEntries=ScanInventory()
+SortHorseList()
 DisplayHorses()
 
-print(
-    "[HORSE SCANNER] Total inventory entries:",
-    totalEntries
-)
-
-print(
-    "[HORSE SCANNER] Horse profiles found:",
-    #HorseList
-)
+print("[HORSE SCANNER] Total inventory entries:",totalEntries)
+print("[HORSE SCANNER] Horse profiles found:",#HorseList)
