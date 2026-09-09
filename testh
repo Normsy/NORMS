@@ -1494,6 +1494,19 @@ local function CreateProfile(
 
         Stroke.Thickness = 2
 
+    -- Blue = Main and Tail colours do not match
+    elseif tostring(mainColour):lower()
+        ~= tostring(tailColour):lower() then
+
+        Stroke.Color =
+            Color3.fromRGB(
+                0,
+                170,
+                255
+            )
+
+        Stroke.Thickness = 2
+
     -- Red = Mane OR Tail is Unique Hair
     elseif IsUniqueHair(maneColour)
         or IsUniqueHair(tailColour) then
