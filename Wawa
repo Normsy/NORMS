@@ -1,0 +1,194 @@
+--// MD EGG FARM HUB (Headless Auto-Farm & Auto-Hop Edition)
+--// No UI, Auto-Base, Auto-Farm 100B+, Auto-NoClip, Auto-Hop to smallest server.
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+
+local minValueFilter = 100000000000 -- Hardcoded to 100B
+local farmSpeed = 300 -- Hardcoded speed
+local baseCFrame = nil
+
+-- 1. Auto Set Base Position on startup
+local function initBase()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart", 5)
+	if hrp then
+		baseCFrame = hrp.CFrame
+	end
+end
+
+-- 2. Value Parsing Helpers
+local function parseValueText(text)
+	if type(text) ~= "string" or text == "" then return 0 end
+	local cleanText = text:lower():gsub("%s+", "")
+	local numStr, unit = cleanText:match("([%d%.]+)([kmbpt]?)")
+	local num = tonumber(numStr)
+	if not num then return 0 end
+	if unit == "k" then return num * 1000
+	elseif unit == "m" then return num * 1000000
+	elseif unit == "b" then return num * 1000000000
+	elseif unit == "t" then return num * 1000000000000 end
+	return num
+end
+
+local function getEggFolder()
+	return workspace:FindFirstChild("RenderedEggs") 
+		or workspace:FindFirstChild("Eggs") 
+		or workspace:FindFirstChild("EggFolder") 
+		or workspace:FindFirstChild("SpawnedEggs") 
+		or workspace
+end
+
+local function getEggValue(eggModel)
+	local highestValue = 0
+	for _, desc in ipairs(eggModel:GetDescendants()) do
+		if desc:IsA("TextLabel") and desc.Text ~= "" then
+			local val = parseValueText(desc.Text)
+			if val > highestValue then highestValue = val end
+		end
+	end
+	return highestValue > 0 and highestValue or 1
+end
+
+local function getAllEggs()
+	local eggList = {}
+	local targetFolder = getEggFolder()
+	local searchPool = (targetFolder == workspace) and workspace:GetChildren() or targetFolder:GetChildren()
+	
+	for _, item in ipairs(searchPool) do
+		local prompt = item:FindFirstChildWhichIsA("ProximityPrompt", true)
+		local isEgg = item.Name:lower():find("egg") ~= nil
+		if prompt or isEgg then
+			local part = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart", true)
+			if part then
+				local val = getEggValue(item)
+				table.insert(eggList, {Model = item, Part = part, Prompt = prompt, Value = val})
+			end
+		end
+	end
+	return eggList
+end
+
+local function moveTo3D(hrp, targetCFrame)
+	local startCFrame = hrp.CFrame
+	local distance = (startCFrame.Position - targetCFrame.Position).Magnitude
+	local travelTime = distance / math.max(farmSpeed, 1)
+	local elapsed = 0
+	
+	while elapsed < travelTime do
+		elapsed = elapsed + RunService.Heartbeat:Wait()
+		local alpha = math.min(elapsed / travelTime, 1)
+		hrp.CFrame = startCFrame:Lerp(targetCFrame, alpha)
+		hrp.AssemblyLinearVelocity = Vector3.zero
+	end
+	hrp.CFrame = targetCFrame
+end
+
+local function interactPrompt(prompt)
+	if not prompt then return end
+	prompt.HoldDuration = 0
+	local fireFunc = fireproximityprompt or (syn and syn.fireproximityprompt)
+	if fireFunc then
+		for _ = 1, 5 do
+			fireFunc(prompt)
+			task.wait(0.05)
+		end
+	end
+end
+
+-- 3. Server Hopper (Smallest Server)
+local function hopToSmallestServer()
+	local success, site = pcall(function()
+		return HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+	end)
+	
+	if success and site and site.data then
+		local servers = site.data
+		table.sort(servers, function(a, b)
+			return a.playing < b.playing
+		end)
+		
+		for _, s in ipairs(servers) do
+			if s.playing < s.maxPlayers and s.id ~= game.JobId then
+				TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, player)
+				return
+			end
+		end
+	end
+	TeleportService:Teleport(game.PlaceId, player)
+end
+
+-- 4. Automatic No Clip
+RunService.Stepped:Connect(function()
+	local char = player.Character
+	if char then
+		for _, part in ipairs(char:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = false end
+		end
+	end
+end)
+
+-- 5. Main Execution Loop
+task.spawn(function()
+	initBase()
+	task.wait(2) -- Wait for character to fully load
+
+	while true do
+		task.wait(0.2)
+		local char = player.Character
+		local hrp = char and char:FindFirstChild("HumanoidRootPart")
+		
+		if hrp then
+			if not baseCFrame then baseCFrame = hrp.CFrame end
+			
+			local allEggs = getAllEggs()
+			local validEggs = {}
+			
+			for _, eggData in ipairs(allEggs) do
+				if eggData.Value >= minValueFilter and eggData.Prompt then
+					table.insert(validEggs, eggData)
+				end
+			end
+			
+			table.sort(validEggs, function(a, b) return a.Value > b.Value end)
+			
+			if #validEggs > 0 then
+				local target = validEggs[1]
+				local targetCFrame = target.Part.CFrame * CFrame.new(0, 1, 0)
+				
+				moveTo3D(hrp, targetCFrame)
+				
+				if (hrp.Position - target.Part.Position).Magnitude <= 12 then
+					interactPrompt(target.Prompt)
+					task.wait(0.2)
+					
+					if baseCFrame then 
+						moveTo3D(hrp, baseCFrame)
+						task.wait(1.5)
+					end
+				end
+			else
+				-- Double check before jumping servers to avoid false hops
+				task.wait(2)
+				local freshCheck = getAllEggs()
+				local foundAny = false
+				for _, eggData in ipairs(freshCheck) do
+					if eggData.Value >= minValueFilter then
+						foundAny = true
+						break
+					end
+				end
+				
+				if not foundAny then
+					hopToSmallestServer()
+					task.wait(5)
+				end
+			end
+		end
+	end
+end)
