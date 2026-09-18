@@ -2742,4 +2742,86 @@ end)
 -- Keep the UI scanner independent from the Auto movement/catching routine.
 -- The Auto routine can spend time travelling/tweening/catching, while this
 -- loop continues detecting new horses and updating the Tracker list.
-task.
+task.spawn(function()
+    while ScreenGui.Parent do
+        if CurrentTab == "Main" then
+            pcall(RefreshList)
+        end
+        task.wait(0.20)
+    end
+end)
+
+
+-- Delta Executor Anti-AFK Script (Integrated with PlayerAdded & Custom Handler)
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local VirtualUser = game:GetService("VirtualUser")
+
+-- Global reference for cross-scope access
+_G.AFKHandlerInstance = nil
+
+-- Handle native Roblox 20-minute inactivity kick
+local function setupIdled(player)
+    if player == LocalPlayer then
+        player.Idled:Connect(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+            
+            -- Trigger custom AFK state reset instantly on idle signal
+            if _G.AFKHandlerInstance then
+                pcall(function()
+                    _G.AFKHandlerInstance.Reset()
+                    _G.AFKHandlerInstance.isAfk = false
+                    _G.AFKHandlerInstance.isHardAfk = false
+                end)
+            end
+        end)
+    end
+end
+
+Players.PlayerAdded:Connect(setupIdled)
+if LocalPlayer then
+    setupIdled(LocalPlayer)
+end
+
+-- Bypass the game's custom AFKHandler module
+task.spawn(function()
+    local afkHandler = nil
+    
+    pcall(function()
+        for _, mod in ipairs(getloadedmodules()) do
+            if mod.Name == "AFKHandler" then
+                afkHandler = require(mod)
+                break
+            end
+        end
+    end)
+    
+    if not afkHandler then
+        pcall(function()
+            local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts") or LocalPlayer:WaitForChild("PlayerScripts", 5)
+            local secondary = playerScripts and playerScripts:FindFirstChild("Secondary")
+            local mod = secondary and secondary:FindFirstChild("AFKHandler")
+            if mod then
+                afkHandler = require(mod)
+            end
+        end)
+    end
+    
+    if afkHandler then
+        _G.AFKHandlerInstance = afkHandler
+        print("[Anti-AFK] Successfully hooked game AFKHandler!")
+        while task.wait(15) do
+            pcall(function()
+                afkHandler.Reset()
+                afkHandler.isAfk = false
+                afkHandler.isHardAfk = false
+            end)
+        end
+    else
+        warn("[Anti-AFK] AFKHandler module not found automatically; native Idled bypass active.")
+    end
+end)
+
+--// THIS IS PH
+--// THIS IS PH
