@@ -531,10 +531,9 @@ AutoToggleBtn.MouseButton1Click:Connect(function()
     SavePersistentConfig()
 end)
 
-
 --// 40-SECOND CATCH WATCHDOG
--- One timer per catch cycle. Uses tick() for the elapsed time.
-local function StartCatchWatchdog(activeHorse)
+-- One watchdog is created for each catch cycle. tick() measures real elapsed time.
+local function StartCatchWatchdog()
     if CatchWatchdogRunning then return end
 
     CatchWatchdogToken += 1
@@ -547,53 +546,47 @@ local function StartCatchWatchdog(activeHorse)
         while myToken == CatchWatchdogToken and AutoFarmEnabled and CatchWatchdogRunning do
             local elapsed = tick() - startedAt
             local remaining = CATCH_TIMEOUT_SECONDS - elapsed
-            CatchCountdownRemaining = math.max(0, math.ceil(remaining))
+            local seconds = math.max(0, math.ceil(remaining))
+            CatchCountdownRemaining = seconds
 
             if remaining <= 0 then
-                if myToken == CatchWatchdogToken and AutoFarmEnabled
-                    and ActiveWalkTarget == activeHorse and activeHorse and activeHorse.Parent then
-                    CatchWatchdogToken += 1
-                    CatchWatchdogRunning = false
-                    CatchCountdownRemaining = nil
+                -- Force the recovery even if the horse disappeared at the exact timeout.
+                CatchWatchdogToken += 1
+                CatchWatchdogRunning = false
+                CatchCountdownRemaining = nil
 
-                    AutoFarmEnabled = false
-                    AutoToggleBtn.Text = " Auto OFF"
-                    AutoToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 200)
-                    ToggleSwitch.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
-                    SwitchCircle.Position = UDim2.new(0, 1, 0.5, -3)
-                    SwitchCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 170)
-                    ActiveWalkTarget = nil
-                    ActiveTargetIsland = nil
-                    TargetUID = nil
+                AutoFarmEnabled = false
+                AutoToggleBtn.Text = " Auto OFF"
+                AutoToggleBtn.TextColor3 = Color3.fromRGB(180, 180, 200)
+                ToggleSwitch.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+                SwitchCircle.Position = UDim2.new(0, 1, 0.5, -3)
+                SwitchCircle.BackgroundColor3 = Color3.fromRGB(150, 150, 170)
+                ActiveWalkTarget = nil
+                ActiveTargetIsland = nil
+                TargetUID = nil
+                SavePersistentConfig()
+
+                task.wait(0.5)
+
+                if ScreenGui and ScreenGui.Parent then
+                    AutoFarmEnabled = true
+                    AutoToggleBtn.Text = " Auto ON"
+                    AutoToggleBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
+                    ToggleSwitch.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
+                    SwitchCircle.Position = UDim2.new(1, -8, 0.5, -3)
+                    SwitchCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
                     SavePersistentConfig()
-
-                    task.wait(0.5)
-
-                    if ScreenGui.Parent then
-                        AutoFarmEnabled = true
-                        AutoToggleBtn.Text = " Auto ON"
-                        AutoToggleBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
-                        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
-                        SwitchCircle.Position = UDim2.new(1, -8, 0.5, -3)
-                        SwitchCircle.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                        SavePersistentConfig()
-                    end
                 end
                 break
             end
 
-            if ActiveWalkTarget ~= activeHorse or not (activeHorse and activeHorse.Parent) then
-                CatchWatchdogRunning = false
-                CatchCountdownRemaining = nil
-                break
+            if StatusText and CatchWatchdogRunning then
+                local old = StatusText.Text or "STATUS: Catching"
+                old = old:gsub("%s*%[%d+s%]", "")
+                StatusText.Text = old .. " [" .. tostring(seconds) .. "s]"
             end
 
             task.wait(0.05)
-        end
-
-        if myToken == CatchWatchdogToken and not AutoFarmEnabled then
-            CatchWatchdogRunning = false
-            CatchCountdownRemaining = nil
         end
     end)
 end
@@ -2679,13 +2672,13 @@ task.spawn(function()
                         break
                     end
 
-                    local lName = LassoNameBox and LassoNameBox.Text ~= "" and LassoNameBox.Text or SelectedLasso
                     if not CatchWatchdogRunning then
-                        StartCatchWatchdog(activeHorse)
+                        StartCatchWatchdog()
                     end
                     if StatusText then
-                        local countdown = CatchCountdownRemaining and (" [" .. tostring(CatchCountdownRemaining) .. "s]") or " [40s]"
-                        StatusText.Text = "STATUS: Catching (" .. lName .. ")..." .. countdown
+                        local lName = LassoNameBox and LassoNameBox.Text ~= "" and LassoNameBox.Text or SelectedLasso
+                        local countdown = CatchCountdownRemaining or CATCH_TIMEOUT_SECONDS
+                        StatusText.Text = "STATUS: Catching (" .. lName .. ")... [" .. tostring(countdown) .. "s]"
                         StatusText.TextColor3 = Color3.fromRGB(57, 255, 20)
                     end
 
