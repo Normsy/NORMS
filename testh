@@ -728,7 +728,7 @@ ScreenGui.Parent =
 local Main =
     Instance.new("Frame")
 
-Main.Size = UDim2.fromOffset(500, 275)
+Main.Size = UDim2.fromOffset(500, 315)
 
 Main.Position = UDim2.new(0.5, -250, 0.5, -137.5)
 
@@ -1175,11 +1175,136 @@ for i,opt in ipairs(FilterOptions) do
 end
 FilterButton.MouseButton1Click:Connect(function() FilterList.Visible=not FilterList.Visible end)
 
+--==================================================
+-- SCAN / AUTO SELL CONTROLS
+--==================================================
+
+local ScanButton=Instance.new("TextButton")
+ScanButton.Size=UDim2.fromOffset(72,22); ScanButton.Position=UDim2.fromOffset(347,32)
+ScanButton.BackgroundColor3=Color3.fromRGB(35,75,125); ScanButton.BorderSizePixel=0
+ScanButton.Text="SCAN NEW"; ScanButton.TextColor3=Color3.fromRGB(255,255,255); ScanButton.TextSize=7
+ScanButton.Font=Enum.Font.GothamBold; ScanButton.Parent=Content
+local scanCorner=Instance.new("UICorner"); scanCorner.CornerRadius=UDim.new(0,6); scanCorner.Parent=ScanButton
+
 local SellButton=Instance.new("TextButton")
-SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
+SellButton.Size=UDim2.fromOffset(67,22); SellButton.Position=UDim2.fromOffset(424,32)
+SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0
+SellButton.Text="SELL NOW"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7
+SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
+
+local AutoSellButton=Instance.new("TextButton")
+AutoSellButton.Size=UDim2.fromOffset(120,22); AutoSellButton.Position=UDim2.fromOffset(8,57)
+AutoSellButton.BackgroundColor3=Color3.fromRGB(45,45,55); AutoSellButton.BorderSizePixel=0
+AutoSellButton.Text="AUTO SELL: OFF"; AutoSellButton.TextColor3=Color3.fromRGB(255,255,255); AutoSellButton.TextSize=7
+AutoSellButton.Font=Enum.Font.GothamBold; AutoSellButton.Parent=Content
+local asc=Instance.new("UICorner"); asc.CornerRadius=UDim.new(0,6); asc.Parent=AutoSellButton
+
+local AutoSellListButton=Instance.new("TextButton")
+AutoSellListButton.Size=UDim2.fromOffset(160,22); AutoSellListButton.Position=UDim2.fromOffset(134,57)
+AutoSellListButton.BackgroundColor3=Color3.fromRGB(23,23,31); AutoSellListButton.BorderSizePixel=0
+AutoSellListButton.Text="Auto Sell: Nothing"; AutoSellListButton.TextColor3=Color3.fromRGB(235,235,240)
+AutoSellListButton.TextSize=7; AutoSellListButton.Font=Enum.Font.GothamBold; AutoSellListButton.Parent=Content
+local aslc=Instance.new("UICorner"); aslc.CornerRadius=UDim.new(0,6); aslc.Parent=AutoSellListButton
+
+local IntervalButton=Instance.new("TextButton")
+IntervalButton.Size=UDim2.fromOffset(95,22); IntervalButton.Position=UDim2.fromOffset(302,57)
+IntervalButton.BackgroundColor3=Color3.fromRGB(23,23,31); IntervalButton.BorderSizePixel=0
+IntervalButton.Text="Every 5s"; IntervalButton.TextColor3=Color3.fromRGB(235,235,240)
+IntervalButton.TextSize=7; IntervalButton.Font=Enum.Font.GothamBold; IntervalButton.Parent=Content
+local ic=Instance.new("UICorner"); ic.CornerRadius=UDim.new(0,6); ic.Parent=IntervalButton
+
 local SellStatus=Instance.new("TextLabel")
-SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57); SellStatus.BackgroundTransparency=1; SellStatus.Text=""; SellStatus.TextColor3=Color3.fromRGB(150,155,170); SellStatus.TextSize=6; SellStatus.Font=Enum.Font.Gotham; SellStatus.TextXAlignment=Enum.TextXAlignment.Left; SellStatus.Parent=Content
+SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,82)
+SellStatus.BackgroundTransparency=1; SellStatus.Text="New horses are checked automatically."
+SellStatus.TextColor3=Color3.fromRGB(150,155,170); SellStatus.TextSize=6
+SellStatus.Font=Enum.Font.Gotham; SellStatus.TextXAlignment=Enum.TextXAlignment.Left; SellStatus.Parent=Content
+
+local AutoSellList=Instance.new("Frame")
+AutoSellList.Size=UDim2.fromOffset(225,170); AutoSellList.Position=UDim2.fromOffset(134,81)
+AutoSellList.BackgroundColor3=Color3.fromRGB(20,20,27); AutoSellList.BorderSizePixel=0
+AutoSellList.Visible=false; AutoSellList.ZIndex=50; AutoSellList.Parent=Content
+local aslc2=Instance.new("UICorner"); aslc2.CornerRadius=UDim.new(0,6); aslc2.Parent=AutoSellList
+local asLayout=Instance.new("UIListLayout"); asLayout.SortOrder=Enum.SortOrder.LayoutOrder; asLayout.Parent=AutoSellList
+
+local AutoSellOptions={
+    {"Red — IUH (Unique Hair)",Color3.fromRGB(255,0,0)},
+    {"Orange — SUIC (Special Unique Main Colour)",Color3.fromRGB(255,140,0)},
+    {"Blue — MM (Mismatched Mane)",Color3.fromRGB(0,170,255)},
+    {"Green — ND (Naturally Dyed)",Color3.fromRGB(0,255,0)},
+    {"Purple — HORN (Horn Colour)",Color3.fromRGB(170,0,255)},
+    {"Grey — NORMAL (Normal Horse)",Color3.fromRGB(120,120,130)}
+}
+local AutoSellSelected={}
+for _,opt in ipairs(AutoSellOptions) do AutoSellSelected[opt[1]]=false end
+
+local function UpdateAutoSellLabel()
+    local selected={}
+    for _,opt in ipairs(AutoSellOptions) do
+        if AutoSellSelected[opt[1]] then
+            table.insert(selected,opt[1])
+        end
+    end
+    if #selected==0 then
+        AutoSellListButton.Text="Auto Sell: Nothing"
+    elseif #selected==#AutoSellOptions then
+        AutoSellListButton.Text="Auto Sell: All"
+    elseif #selected<=2 then
+        AutoSellListButton.Text="Auto: "..table.concat(selected,", ")
+    else
+        AutoSellListButton.Text="Auto Sell: "..tostring(#selected).." selected"
+    end
+end
+
+for i,opt in ipairs(AutoSellOptions) do
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,0,0,26); b.BackgroundColor3=Color3.fromRGB(25,25,33); b.BorderSizePixel=0
+    b.Text="☐ "..opt[1]; b.TextColor3=opt[2]; b.TextSize=7; b.Font=Enum.Font.GothamBold
+    b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex=51; b.LayoutOrder=i; b.Parent=AutoSellList
+    local p=Instance.new("UIPadding"); p.PaddingLeft=UDim.new(0,7); p.Parent=b
+    b.MouseButton1Click:Connect(function()
+        AutoSellSelected[opt[1]]=not AutoSellSelected[opt[1]]
+        b.Text=(AutoSellSelected[opt[1]] and "☑ " or "☐ ")..opt[1]
+        UpdateAutoSellLabel()
+    end)
+end
+
+AutoSellListButton.MouseButton1Click:Connect(function()
+    AutoSellList.Visible=not AutoSellList.Visible
+    IntervalList.Visible=false
+end)
+
+local IntervalList=Instance.new("Frame")
+IntervalList.Size=UDim2.fromOffset(95,110); IntervalList.Position=UDim2.fromOffset(302,81)
+IntervalList.BackgroundColor3=Color3.fromRGB(20,20,27); IntervalList.BorderSizePixel=0
+IntervalList.Visible=false; IntervalList.ZIndex=50; IntervalList.Parent=Content
+local ilc=Instance.new("UICorner"); ilc.CornerRadius=UDim.new(0,6); ilc.Parent=IntervalList
+local il=Instance.new("UIListLayout"); il.SortOrder=Enum.SortOrder.LayoutOrder; il.Parent=IntervalList
+
+local SellIntervals={5,10,15,30}
+local AutoSellInterval=5
+for i,seconds in ipairs(SellIntervals) do
+    local b=Instance.new("TextButton")
+    b.Size=UDim2.new(1,0,0,27); b.BackgroundColor3=Color3.fromRGB(25,25,33); b.BorderSizePixel=0
+    b.Text="Every "..seconds.."s"; b.TextColor3=Color3.fromRGB(235,235,240); b.TextSize=7
+    b.Font=Enum.Font.GothamBold; b.ZIndex=51; b.LayoutOrder=i; b.Parent=IntervalList
+    b.MouseButton1Click:Connect(function()
+        AutoSellInterval=seconds
+        IntervalButton.Text="Every "..seconds.."s"
+        IntervalList.Visible=false
+    end)
+end
+IntervalButton.MouseButton1Click:Connect(function()
+    IntervalList.Visible=not IntervalList.Visible
+    AutoSellList.Visible=false
+end)
+
+local AutoSellEnabled=false
+AutoSellButton.MouseButton1Click:Connect(function()
+    AutoSellEnabled=not AutoSellEnabled
+    AutoSellButton.Text=AutoSellEnabled and "AUTO SELL: ON" or "AUTO SELL: OFF"
+    AutoSellButton.BackgroundColor3=AutoSellEnabled and Color3.fromRGB(35,105,60) or Color3.fromRGB(45,45,55)
+end)
 
 --==================================================
 -- RESULTS
@@ -1188,9 +1313,9 @@ SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57
 local Results =
     Instance.new("ScrollingFrame")
 
-Results.Size = UDim2.new(1,-16,1,-76)
+Results.Size = UDim2.new(1,-16,1,-108)
 
-Results.Position = UDim2.fromOffset(8,76)
+Results.Position = UDim2.fromOffset(8,108)
 
 Results.BackgroundColor3 =
     Color3.fromRGB(
@@ -1342,7 +1467,7 @@ Minimize.MouseButton1Click:Connect(function()
 
     else
 
-        Main.Size = UDim2.fromOffset(500,275)
+        Main.Size = UDim2.fromOffset(500,315)
 
         Minimize.Text =
             "â"
@@ -1433,46 +1558,64 @@ local HorseList = {}
 -- SCAN ENTIRE INVENTORY
 --==================================================
 
-local function ScanInventory()
+local function ScanInventory(clearExisting)
+    if clearExisting then table.clear(HorseList) end
 
-    table.clear(HorseList)
-
-    local totalEntries = 0
-
-    for uid, item in pairs(Inventory) do
-
-        totalEntries += 1
-
-        if type(item) == "table" then
-
-            local info =
-                GetItemInfo(item)
-
-            local isHorse, breed =
-                IsBreedProfile(
-                    item,
-                    info
-                )
-
-            if isHorse then
-
-                table.insert(
-                    HorseList,
-                    {
-                        uid = uid,
-                        item = item,
-                        info = info,
-                        breed = breed
-                    }
-                )
-
-            end
-
-        end
-
+    local totalEntries=0
+    local known={}
+    for _,horse in ipairs(HorseList) do
+        known[tostring(horse.uid)]=true
     end
 
+    for uid,item in pairs(Inventory) do
+        totalEntries+=1
+        if type(item)=="table" then
+            local key=tostring(uid)
+            if not known[key] then
+                local info=GetItemInfo(item)
+                local isHorse,breed=IsBreedProfile(item,info)
+                if isHorse then
+                    table.insert(HorseList,{
+                        uid=uid,item=item,info=info,breed=breed
+                    })
+                    known[key]=true
+                end
+            end
+        end
+    end
     return totalEntries
+end
+
+local function RefreshInventoryAndFindNew()
+    local ok,newInv=pcall(function()
+        return Data.GetLocal({"inventory"})
+    end)
+    if not ok or type(newInv)~="table" then return 0 end
+
+    Inventory=newInv
+
+    -- Remove horses that are no longer in the current inventory.
+    local current={}
+    for uid in pairs(Inventory) do
+        current[tostring(uid)]=true
+    end
+    for i=#HorseList,1,-1 do
+        if not current[tostring(HorseList[i].uid)] then
+            table.remove(HorseList,i)
+        end
+    end
+
+    local before=#HorseList
+    ScanInventory(false)
+    local added=#HorseList-before
+
+    if added>0 then
+        SortHorseList()
+        DisplayHorses()
+        SellStatus.Text="Found "..tostring(added).." new horse(s)."
+        SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+    end
+    return added
 end
 
 --==================================================
@@ -1886,12 +2029,12 @@ local function MatchesSelectedFilter(horse)
     local mismatch=not ColoursMatch(mane,tail)
     local natdyed=horse.item.isNatDyed ~= nil
     local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
-    if SelectedFilter=="Red - Unique Hair" then return unique end
-    if SelectedFilter=="Orange - Special Main Colour" then return orange end
-    if SelectedFilter=="Blue - Mismatched Hair" then return mismatch end
-    if SelectedFilter=="Green - Nat Dyed" then return natdyed end
-    if SelectedFilter=="Purple - Horn Colour" then return horn end
-    if SelectedFilter=="Grey - Normal" then return not unique and not orange and not mismatch and not natdyed and not horn end
+    if SelectedFilter=="Red — IUH (Unique Hair)" then return unique end
+    if SelectedFilter=="Orange — SUIC (Special Unique Main Colour)" then return orange end
+    if SelectedFilter=="Blue — MM (Mismatched Mane)" then return mismatch end
+    if SelectedFilter=="Green — ND (Naturally Dyed)" then return natdyed end
+    if SelectedFilter=="Purple — HORN (Horn Colour)" then return horn end
+    if SelectedFilter=="Grey — NORMAL (Normal Horse)" then return not unique and not orange and not mismatch and not natdyed and not horn end
     return false
 end
 
@@ -1923,6 +2066,79 @@ Search:GetPropertyChangedSignal("Text"):Connect(function()
     if DisplayHorses then DisplayHorses() end
 end)
 
+ScanButton.MouseButton1Click:Connect(function()
+    local ok,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
+    if not ok or type(newInv)~="table" then
+        SellStatus.Text="Scan failed: inventory unavailable."
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+        return
+    end
+
+    Inventory=newInv
+    local before=#HorseList
+    ScanInventory(false)
+    local added=#HorseList-before
+    SortHorseList()
+    DisplayHorses()
+    SellStatus.Text=added>0 and ("Scan complete: "..tostring(added).." new horse(s).") or "Scan complete: no new horses."
+    SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+end)
+
+local function MatchesAutoSell(horse)
+    local main,mane,tail=GetColours(horse.item)
+    local variants=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(mane) or IsUniqueHair(tail)
+    local orange=IsOrangeMainColour(main)
+    local mismatch=not ColoursMatch(mane,tail)
+    local natdyed=horse.item.isNatDyed ~= nil
+    local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+
+    if AutoSellSelected["Red — IUH (Unique Hair)"] and unique then return true end
+    if AutoSellSelected["Orange — SUIC (Special Unique Main Colour)"] and orange then return true end
+    if AutoSellSelected["Blue — MM (Mismatched Mane)"] and mismatch then return true end
+    if AutoSellSelected["Green — ND (Naturally Dyed)"] and natdyed then return true end
+    if AutoSellSelected["Purple — HORN (Horn Colour)"] and horn then return true end
+    if AutoSellSelected["Grey — NORMAL (Normal Horse)"] and not unique and not orange and not mismatch and not natdyed and not horn then return true end
+    return false
+end
+
+local function SellAutoSelected()
+    local remote,err=GetSellRemote()
+    if not remote then
+        SellStatus.Text=err
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+        return
+    end
+
+    local ItemsToSell={}
+    local count=0
+    for _,horse in ipairs(HorseList) do
+        if MatchesAutoSell(horse) then
+            ItemsToSell[tostring(horse.uid)]=1
+            count+=1
+        end
+    end
+
+    if count==0 then
+        SellStatus.Text="Auto Sell: nothing matches."
+        SellStatus.TextColor3=Color3.fromRGB(150,155,170)
+        return
+    end
+
+    local ok,sendErr=pcall(function()
+        remote:FireServer("SellItems",ItemsToSell)
+    end)
+    if not ok then
+        SellStatus.Text="Auto Sell failed: "..tostring(sendErr)
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+        return
+    end
+
+    SellStatus.Text="Auto Sold "..tostring(count).." horse(s)."
+    SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+    task.delay(0.4,function() RefreshInventoryAndFindNew() end)
+end
+
 SellButton.MouseButton1Click:Connect(function()
     local remote,err=GetSellRemote()
     if not remote then SellStatus.Text=err; SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
@@ -1939,10 +2155,34 @@ SellButton.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
+-- CONTINUOUS NEW-HORSE SCAN
+--==================================================
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(1)
+        RefreshInventoryAndFindNew()
+    end
+end)
+
+--==================================================
+-- AUTO SELL LOOP
+--==================================================
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(AutoSellInterval)
+        if AutoSellEnabled then
+            SellAutoSelected()
+        end
+    end
+end)
+
+--==================================================
 -- INITIAL SCAN
 --==================================================
 
-local totalEntries=ScanInventory()
+local totalEntries=ScanInventory(true)
 SortHorseList()
 DisplayHorses()
 
