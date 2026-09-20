@@ -1602,76 +1602,118 @@ local function SendHorseInventoryToDiscord()
         return false, "Set DiscordWebhookURL first."
     end
 
+    -- Seconds to wait between each Discord batch.
+    local SendInterval = 1.5
+
+    -- Keep batches safely below Discord's embed description limit.
+    local MaxBatchCharacters = 3500
+
     local linesOut, uniqueHair, uniqueCoat, mismatched,
         naturalDyed, horned = BuildHorseWebhookData()
 
-    local summary = "Total Horse: "..tostring(#HorseList)
+    if #linesOut == 0 then
+        local ok, err = pcall(function()
+            SendMessageEMBED(DiscordWebhookURL, {
+                title = "Horse Inventory",
+                description = "No horses were found in the inventory.",
+                color = 5793266,
+                footer = {
+                    text = "Horse Scanner"
+                }
+            })
+        end)
+
+        if not ok then
+            return false, tostring(err)
+        end
+
+        return true
+    end
+
+    -- Build every batch first so we know the total batch count.
+    local batches = {}
+    local currentBatch = {}
+    local currentLength = 0
+
+    for _, line in ipairs(linesOut) do
+        local lineLength = #line + 1
+
+        if #currentBatch > 0
+            and currentLength + lineLength > MaxBatchCharacters then
+
+            table.insert(batches, currentBatch)
+            currentBatch = {}
+            currentLength = 0
+        end
+
+        table.insert(currentBatch, line)
+        currentLength += lineLength
+    end
+
+    if #currentBatch > 0 then
+        table.insert(batches, currentBatch)
+    end
+
+    -- Send EVERY inventory batch first.
+    for batchNumber, batch in ipairs(batches) do
+        local sent, sendErr = pcall(function()
+            SendMessageEMBED(DiscordWebhookURL, {
+                title = "Inventory • Batch "
+                    ..tostring(batchNumber)
+                    .."/"
+                    ..tostring(#batches),
+
+                description = table.concat(batch, "\n"),
+
+                color = 5793266,
+
+                footer = {
+                    text = "Horse Scanner • Batch "
+                        ..tostring(batchNumber)
+                        .."/"
+                        ..tostring(#batches)
+                }
+            })
+        end)
+
+        if not sent then
+            return false,
+                "Batch "
+                ..tostring(batchNumber)
+                .." failed: "
+                ..tostring(sendErr)
+        end
+
+        -- Wait BEFORE sending the next batch.
+        if batchNumber < #batches then
+            task.wait(SendInterval)
+        end
+    end
+
+    -- Only after ALL inventory batches have been sent, send totals.
+    task.wait(SendInterval)
+
+    local totalsDescription =
+        "Total Horse: "..tostring(#HorseList)
         .."\nTotal Island Unique Hair: "..tostring(uniqueHair)
         .."\nTotal Island Unique Coat: "..tostring(uniqueCoat)
         .."\nTotal Mismatched Hair: "..tostring(mismatched)
         .."\nTotal Natural Dyed Hair: "..tostring(naturalDyed)
         .."\nTotal Horned: "..tostring(horned)
 
-    local ok, err = pcall(function()
+    local totalsSent, totalsErr = pcall(function()
         SendMessageEMBED(DiscordWebhookURL, {
-            title = "Horse Inventory",
-            description = "Inventory\n\n"..summary,
+            title = "Inventory • Totals",
+            description = totalsDescription,
             color = 5793266,
             footer = {
-                text = "Horse Scanner"
+                text = "Horse Scanner • All batches sent"
             }
         })
     end)
 
-    if not ok then
-        return false, tostring(err)
-    end
-
-    -- Discord embed fields are limited to 1024 characters.
-    local batch = {}
-    local batchLength = 0
-    local batchNumber = 0
-
-    local function FlushBatch()
-        if #batch == 0 then
-            return true
-        end
-
-        batchNumber += 1
-
-        local sent, sendErr = pcall(function()
-            SendMessageEMBED(DiscordWebhookURL, {
-                title = "Inventory • "..tostring(batchNumber),
-                description = table.concat(batch, "\n"),
-                color = 5793266
-            })
-        end)
-
-        if not sent then
-            return false, tostring(sendErr)
-        end
-
-        table.clear(batch)
-        batchLength = 0
-        task.wait(0.2)
-        return true
-    end
-
-    for _, line in ipairs(linesOut) do
-        if batchLength + #line + 1 > 5500 then
-            local flushed, flushErr = FlushBatch()
-            if not flushed then
-                return false, flushErr
-            end
-        end
-
-        table.insert(batch, line)
-        batchLength += #line + 1
-    end
-
-    local flushed, flushErr = FlushBatch()
-    if not flushed then
-        return false, flushErr
+    if not totalsSent then
+        return false, "Totals failed: "..tostring(totalsErr)
     end
 
     return true
