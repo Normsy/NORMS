@@ -1455,7 +1455,7 @@ local HorseList = {}
 -- DISCORD WEBHOOK
 --==================================================
 
-local DiscordWebhookURL = "PASTE_YOUR_DISCORD_WEBHOOK_URL_HERE"
+local DiscordWebhookURL = "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_"
 
 local function GetWebhookRequest()
     if typeof(request) == "function" then
@@ -1474,9 +1474,10 @@ local function GetWebhookRequest()
 end
 
 local function SendMessage(url, message)
+    url = tostring(url or ""):match("^%s*(.-)%s*$")
     local httpRequest = GetWebhookRequest()
     if not httpRequest then
-        return false, "HTTP request function is not available."
+        return false, "No executor HTTP request function is available. This webhook method requires request/http_request/syn.request/fluxus.request."
     end
 
     local ok, response = pcall(function()
@@ -1504,9 +1505,10 @@ local function SendMessage(url, message)
 end
 
 local function SendMessageEMBED(url, embed)
+    url = tostring(url or ""):match("^%s*(.-)%s*$")
     local httpRequest = GetWebhookRequest()
     if not httpRequest then
-        return false, "HTTP request function is not available."
+        return false, "No executor HTTP request function is available. This webhook method requires request/http_request/syn.request/fluxus.request."
     end
 
     local ok, response = pcall(function()
@@ -1622,7 +1624,7 @@ end
 
 local function SendHorseInventoryToDiscord()
     if DiscordWebhookURL == ""
-        or DiscordWebhookURL == "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_" then
+        or DiscordWebhookURL == "PASTE_YOUR_DISCORD_WEBHOOK_URL_HERE" then
         return false, "Set DiscordWebhookURL first."
     end
 
