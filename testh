@@ -7,6 +7,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -1179,6 +1180,28 @@ local SellButton=Instance.new("TextButton")
 SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
 local SellStatus=Instance.new("TextLabel")
+local WebhookButton=Instance.new("TextButton")
+WebhookButton.Size=UDim2.fromOffset(145,22)
+WebhookButton.Position=UDim2.fromOffset(347,56)
+WebhookButton.BackgroundColor3=Color3.fromRGB(45,90,135)
+WebhookButton.BorderSizePixel=0
+WebhookButton.Text="SEND INVENTORY"
+WebhookButton.TextColor3=Color3.fromRGB(255,255,255)
+WebhookButton.TextSize=7
+WebhookButton.Font=Enum.Font.GothamBold
+WebhookButton.Parent=Content
+local wc=Instance.new("UICorner"); wc.CornerRadius=UDim.new(0,6); wc.Parent=WebhookButton
+
+local WebhookStatus=Instance.new("TextLabel")
+WebhookStatus.Size=UDim2.new(1,-16,0,12)
+WebhookStatus.Position=UDim2.fromOffset(8,80)
+WebhookStatus.BackgroundTransparency=1
+WebhookStatus.Text=""
+WebhookStatus.TextColor3=Color3.fromRGB(150,155,170)
+WebhookStatus.TextSize=6
+WebhookStatus.Font=Enum.Font.Gotham
+WebhookStatus.TextXAlignment=Enum.TextXAlignment.Left
+WebhookStatus.Parent=Content
 SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57); SellStatus.BackgroundTransparency=1; SellStatus.Text=""; SellStatus.TextColor3=Color3.fromRGB(150,155,170); SellStatus.TextSize=6; SellStatus.Font=Enum.Font.Gotham; SellStatus.TextXAlignment=Enum.TextXAlignment.Left; SellStatus.Parent=Content
 
 --==================================================
@@ -1188,9 +1211,9 @@ SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57
 local Results =
     Instance.new("ScrollingFrame")
 
-Results.Size = UDim2.new(1,-16,1,-76)
+Results.Size = UDim2.new(1,-16,1,-100)
 
-Results.Position = UDim2.fromOffset(8,76)
+Results.Position = UDim2.fromOffset(8,100)
 
 Results.BackgroundColor3 =
     Color3.fromRGB(
@@ -1428,6 +1451,251 @@ end)
 --==================================================
 
 local HorseList = {}
+--==================================================
+-- DISCORD WEBHOOK
+--==================================================
+
+local DiscordWebhookURL = "PASTE_YOUR_DISCORD_WEBHOOK_URL_HERE"
+
+local function GetWebhookRequest()
+    if typeof(request) == "function" then
+        return request
+    end
+    if typeof(http_request) == "function" then
+        return http_request
+    end
+    if syn and typeof(syn.request) == "function" then
+        return syn.request
+    end
+    if fluxus and typeof(fluxus.request) == "function" then
+        return fluxus.request
+    end
+    return nil
+end
+
+local function SendMessage(url, message)
+    local httpRequest = GetWebhookRequest()
+    if not httpRequest then
+        return false, "HTTP request function is not available."
+    end
+
+    local ok, response = pcall(function()
+        return httpRequest({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode({
+                content = message
+            })
+        })
+    end)
+
+    if not ok then
+        return false, tostring(response)
+    end
+
+    if response and response.StatusCode and response.StatusCode >= 400 then
+        return false, "Discord returned HTTP "..tostring(response.StatusCode)
+    end
+
+    return true
+end
+
+local function SendMessageEMBED(url, embed)
+    local httpRequest = GetWebhookRequest()
+    if not httpRequest then
+        return false, "HTTP request function is not available."
+    end
+
+    local ok, response = pcall(function()
+        return httpRequest({
+            Url = url,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = HttpService:JSONEncode({
+                embeds = {embed}
+            })
+        })
+    end)
+
+    if not ok then
+        return false, tostring(response)
+    end
+
+    if response and response.StatusCode and response.StatusCode >= 400 then
+        return false, "Discord returned HTTP "..tostring(response.StatusCode)
+    end
+
+    return true
+end
+
+local function GetDiscordRarityCircles(horse)
+    local main, mane, tail = GetColours(horse.item)
+    local variants = horse.item.variants or horse.item.Variants or {}
+
+    local unique = IsUniqueHair(mane) or IsUniqueHair(tail)
+    local uniqueCoat = IsOrangeMainColour(main)
+    local mismatch = not ColoursMatch(mane, tail)
+    local natdyed = horse.item.isNatDyed ~= nil
+    local horn = variants.hornColour ~= nil
+        and tostring(variants.hornColour) ~= ""
+
+    local circles = {}
+
+    if unique then table.insert(circles, "🔴") end
+    if uniqueCoat then table.insert(circles, "🟠") end
+    if mismatch then table.insert(circles, "🔵") end
+    if natdyed then table.insert(circles, "🟢") end
+    if horn then table.insert(circles, "🟣") end
+
+    if #circles == 0 then
+        table.insert(circles, "⚪")
+    end
+
+    return table.concat(circles, " ")
+end
+
+local function GetHorseWebhookLine(horse)
+    local main, mane, tail = GetColours(horse.item)
+    local variants = horse.item.variants or horse.item.Variants or {}
+    local breed = horse.breed or GetBreed(horse.item, horse.info) or "Unknown"
+
+    local detail = "Main: "..tostring(main)
+        .." • Mane: "..tostring(mane)
+        .." • Tail: "..tostring(tail)
+
+    if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then
+        detail = detail.." • Horn: "..tostring(variants.hornColour)
+    end
+
+    if horse.item.isNatDyed ~= nil then
+        detail = detail.." • Natural Dyed: Yes"
+    end
+
+    -- UID is intentionally NOT included.
+    return GetDiscordRarityCircles(horse).." **"..tostring(breed).."** - "..detail
+end
+
+local function BuildHorseWebhookData()
+    local totalUniqueHair = 0
+    local totalUniqueCoat = 0
+    local totalMismatchedHair = 0
+    local totalNaturalDyedHair = 0
+    local totalHorned = 0
+
+    local linesOut = {}
+
+    for _, horse in ipairs(HorseList) do
+        local main, mane, tail = GetColours(horse.item)
+        local variants = horse.item.variants or horse.item.Variants or {}
+
+        if IsUniqueHair(mane) or IsUniqueHair(tail) then
+            totalUniqueHair += 1
+        end
+
+        if IsOrangeMainColour(main) then
+            totalUniqueCoat += 1
+        end
+
+        if not ColoursMatch(mane, tail) then
+            totalMismatchedHair += 1
+        end
+
+        if horse.item.isNatDyed ~= nil then
+            totalNaturalDyedHair += 1
+        end
+
+        if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then
+            totalHorned += 1
+        end
+
+        table.insert(linesOut, GetHorseWebhookLine(horse))
+    end
+
+    return linesOut, totalUniqueHair, totalUniqueCoat,
+        totalMismatchedHair, totalNaturalDyedHair, totalHorned
+end
+
+local function SendHorseInventoryToDiscord()
+    if DiscordWebhookURL == ""
+        or DiscordWebhookURL == "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_" then
+        return false, "Set DiscordWebhookURL first."
+    end
+
+    local linesOut, uniqueHair, uniqueCoat, mismatched,
+        naturalDyed, horned = BuildHorseWebhookData()
+
+    local summary = "Total Horse: "..tostring(#HorseList)
+        .."\nTotal Island Unique Hair: "..tostring(uniqueHair)
+        .."\nTotal Island Unique Coat: "..tostring(uniqueCoat)
+        .."\nTotal Mismatched Hair: "..tostring(mismatched)
+        .."\nTotal Natural Dyed Hair: "..tostring(naturalDyed)
+        .."\nTotal Horned: "..tostring(horned)
+
+    local ok, err = SendMessageEMBED(DiscordWebhookURL, {
+        title = "Horse Inventory",
+        description = "Inventory\n\n"..summary,
+        color = 5793266,
+        footer = {
+            text = "Horse Scanner"
+        }
+    })
+
+    if not ok then
+        return false, err
+    end
+
+    -- Discord embed fields are limited to 1024 characters.
+    local batch = {}
+    local batchLength = 0
+    local batchNumber = 0
+
+    local function FlushBatch()
+        if #batch == 0 then
+            return true
+        end
+
+        batchNumber += 1
+
+        local sent, sendErr = SendMessageEMBED(DiscordWebhookURL, {
+            title = "Inventory • "..tostring(batchNumber),
+            description = table.concat(batch, "\n"),
+            color = 5793266
+        })
+
+        if not sent then
+            return false, sendErr
+        end
+
+        table.clear(batch)
+        batchLength = 0
+        task.wait(0.2)
+        return true
+    end
+
+    for _, line in ipairs(linesOut) do
+        if batchLength + #line + 1 > 5500 then
+            local flushed, flushErr = FlushBatch()
+            if not flushed then
+                return false, flushErr
+            end
+        end
+
+        table.insert(batch, line)
+        batchLength += #line + 1
+    end
+
+    local flushed, flushErr = FlushBatch()
+    if not flushed then
+        return false, flushErr
+    end
+
+    return true
+end
 
 --==================================================
 -- SCAN ENTIRE INVENTORY
@@ -1939,6 +2207,28 @@ SellButton.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
+WebhookButton.MouseButton1Click:Connect(function()
+    WebhookButton.Text="SENDING..."
+    WebhookStatus.Text="Sending inventory to Discord..."
+    WebhookStatus.TextColor3=Color3.fromRGB(180,200,255)
+
+    task.spawn(function()
+        local ok,err=SendHorseInventoryToDiscord()
+
+        if ok then
+            WebhookButton.Text="SENT!"
+            WebhookStatus.Text="Inventory sent to Discord."
+            WebhookStatus.TextColor3=Color3.fromRGB(100,255,130)
+        else
+            WebhookButton.Text="SEND FAILED"
+            WebhookStatus.Text=tostring(err)
+            WebhookStatus.TextColor3=Color3.fromRGB(255,110,110)
+        end
+
+        task.wait(2)
+        WebhookButton.Text="SEND INVENTORY"
+    end)
+end)
 -- INITIAL SCAN
 --==================================================
 
