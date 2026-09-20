@@ -1457,81 +1457,55 @@ local HorseList = {}
 
 local DiscordWebhookURL = "https://discord.com/api/webhooks/1392196860026028184/aFSBpdMyZjmg-cLAQsfPd7NEja-9xNUmf-WboOjBcGrmd7GPGK9mPK59UohHPJRDvfb_"
 
-local function GetWebhookRequest()
-    if typeof(request) == "function" then
-        return request
-    end
-    if typeof(http_request) == "function" then
-        return http_request
-    end
-    if syn and typeof(syn.request) == "function" then
-        return syn.request
-    end
-    if fluxus and typeof(fluxus.request) == "function" then
-        return fluxus.request
-    end
-    return nil
-end
-
 local function SendMessage(url, message)
-    url = tostring(url or ""):match("^%s*(.-)%s*$")
-    local httpRequest = GetWebhookRequest()
-    if not httpRequest then
-        return false, "No executor HTTP request function is available. This webhook method requires request/http_request/syn.request/fluxus.request."
-    end
+    local http = game:GetService("HttpService")
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    local data = {
+        ["content"] = message
+    }
+    local body = http:JSONEncode(data)
 
-    local ok, response = pcall(function()
-        return httpRequest({
-            Url = url,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                content = message
-            })
-        })
-    end)
+    local response = request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = body
+    })
 
-    if not ok then
-        return false, tostring(response)
-    end
-
-    if response and response.StatusCode and response.StatusCode >= 400 then
-        return false, "Discord returned HTTP "..tostring(response.StatusCode)
-    end
-
+    print("Sent")
     return true
 end
 
 local function SendMessageEMBED(url, embed)
-    url = tostring(url or ""):match("^%s*(.-)%s*$")
-    local httpRequest = GetWebhookRequest()
-    if not httpRequest then
-        return false, "No executor HTTP request function is available. This webhook method requires request/http_request/syn.request/fluxus.request."
-    end
+    local http = game:GetService("HttpService")
+    local headers = {
+        ["Content-Type"] = "application/json"
+    }
+    local data = {
+        ["embeds"] = {
+            {
+                ["title"] = embed.title,
+                ["description"] = embed.description,
+                ["color"] = embed.color,
+                ["fields"] = embed.fields,
+                ["footer"] = {
+                    ["text"] = embed.footer and embed.footer.text or ""
+                }
+            }
+        }
+    }
+    local body = http:JSONEncode(data)
 
-    local ok, response = pcall(function()
-        return httpRequest({
-            Url = url,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = HttpService:JSONEncode({
-                embeds = {embed}
-            })
-        })
-    end)
+    local response = request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = body
+    })
 
-    if not ok then
-        return false, tostring(response)
-    end
-
-    if response and response.StatusCode and response.StatusCode >= 400 then
-        return false, "Discord returned HTTP "..tostring(response.StatusCode)
-    end
-
+    print("Sent")
     return true
 end
 
@@ -1638,17 +1612,19 @@ local function SendHorseInventoryToDiscord()
         .."\nTotal Natural Dyed Hair: "..tostring(naturalDyed)
         .."\nTotal Horned: "..tostring(horned)
 
-    local ok, err = SendMessageEMBED(DiscordWebhookURL, {
-        title = "Horse Inventory",
-        description = "Inventory\n\n"..summary,
-        color = 5793266,
-        footer = {
-            text = "Horse Scanner"
-        }
-    })
+    local ok, err = pcall(function()
+        SendMessageEMBED(DiscordWebhookURL, {
+            title = "Horse Inventory",
+            description = "Inventory\n\n"..summary,
+            color = 5793266,
+            footer = {
+                text = "Horse Scanner"
+            }
+        })
+    end)
 
     if not ok then
-        return false, err
+        return false, tostring(err)
     end
 
     -- Discord embed fields are limited to 1024 characters.
@@ -1663,14 +1639,16 @@ local function SendHorseInventoryToDiscord()
 
         batchNumber += 1
 
-        local sent, sendErr = SendMessageEMBED(DiscordWebhookURL, {
-            title = "Inventory • "..tostring(batchNumber),
-            description = table.concat(batch, "\n"),
-            color = 5793266
-        })
+        local sent, sendErr = pcall(function()
+            SendMessageEMBED(DiscordWebhookURL, {
+                title = "Inventory • "..tostring(batchNumber),
+                description = table.concat(batch, "\n"),
+                color = 5793266
+            })
+        end)
 
         if not sent then
-            return false, sendErr
+            return false, tostring(sendErr)
         end
 
         table.clear(batch)
