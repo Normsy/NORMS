@@ -1,5 +1,5 @@
 --// MD EGG FARM HUB (Headless Auto-Farm & Auto-Hop Edition)
---// No UI, Auto-Base, Auto-Farm 100B+, Auto-NoClip, Auto-Hop to smallest server.
+--// No UI, Auto-Base, Auto-Farm 1T+, Auto-NoClip, Auto-Hop to smallest server.
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -9,7 +9,7 @@ local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 
-local minValueFilter = 100000000000 -- Hardcoded to 100B
+local minValueFilter = 1000000000000 -- Hardcoded to 1T
 local farmSpeed = 300 -- Hardcoded speed
 local baseCFrame = nil
 
@@ -128,7 +128,9 @@ RunService.Stepped:Connect(function()
 	local char = player.Character
 	if char then
 		for _, part in ipairs(char:GetDescendants()) do
-			if part:IsA("BasePart") then part.CanCollide = false end
+			if part:IsA("BasePart") then
+				part.CanCollide = false
+			end
 		end
 	end
 end)
@@ -144,7 +146,9 @@ task.spawn(function()
 		local hrp = char and char:FindFirstChild("HumanoidRootPart")
 		
 		if hrp then
-			if not baseCFrame then baseCFrame = hrp.CFrame end
+			if not baseCFrame then
+				baseCFrame = hrp.CFrame
+			end
 			
 			local allEggs = getAllEggs()
 			local validEggs = {}
@@ -155,7 +159,9 @@ task.spawn(function()
 				end
 			end
 			
-			table.sort(validEggs, function(a, b) return a.Value > b.Value end)
+			table.sort(validEggs, function(a, b)
+				return a.Value > b.Value
+			end)
 			
 			if #validEggs > 0 then
 				local target = validEggs[1]
@@ -177,6 +183,7 @@ task.spawn(function()
 				task.wait(2)
 				local freshCheck = getAllEggs()
 				local foundAny = false
+				
 				for _, eggData in ipairs(freshCheck) do
 					if eggData.Value >= minValueFilter then
 						foundAny = true
