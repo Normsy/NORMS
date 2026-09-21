@@ -1181,7 +1181,7 @@ SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(3
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
 local SellStatus=Instance.new("TextLabel")
 local WebhookButton=Instance.new("TextButton")
-WebhookButton.Size=UDim2.fromOffset(145,22)
+WebhookButton.Size=UDim2.fromOffset(90,22)
 WebhookButton.Position=UDim2.fromOffset(347,56)
 WebhookButton.BackgroundColor3=Color3.fromRGB(45,90,135)
 WebhookButton.BorderSizePixel=0
@@ -1191,6 +1191,18 @@ WebhookButton.TextSize=7
 WebhookButton.Font=Enum.Font.GothamBold
 WebhookButton.Parent=Content
 local wc=Instance.new("UICorner"); wc.CornerRadius=UDim.new(0,6); wc.Parent=WebhookButton
+
+local RefreshButton=Instance.new("TextButton")
+RefreshButton.Size=UDim2.fromOffset(50,22)
+RefreshButton.Position=UDim2.fromOffset(442,56)
+RefreshButton.BackgroundColor3=Color3.fromRGB(55,120,75)
+RefreshButton.BorderSizePixel=0
+RefreshButton.Text="REFRESH"
+RefreshButton.TextColor3=Color3.fromRGB(255,255,255)
+RefreshButton.TextSize=6
+RefreshButton.Font=Enum.Font.GothamBold
+RefreshButton.Parent=Content
+local rc=Instance.new("UICorner"); rc.CornerRadius=UDim.new(0,6); rc.Parent=RefreshButton
 
 local WebhookStatus=Instance.new("TextLabel")
 WebhookStatus.Size=UDim2.new(1,-16,0,12)
@@ -2225,6 +2237,41 @@ SellButton.MouseButton1Click:Connect(function()
     task.delay(0.5,function()
         local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
         if ok2 and type(newInv)=="table" then Inventory=newInv; ScanInventory(); SortHorseList(); DisplayHorses() end
+    end)
+end)
+
+--==================================================
+-- REFRESH INVENTORY
+--==================================================
+
+RefreshButton.MouseButton1Click:Connect(function()
+    RefreshButton.Text="..."
+    WebhookStatus.Text="Refreshing inventory..."
+    WebhookStatus.TextColor3=Color3.fromRGB(180,200,255)
+
+    task.spawn(function()
+        local ok,newInv=pcall(function()
+            return Data.GetLocal({"inventory"})
+        end)
+
+        if ok and type(newInv)=="table" then
+            Inventory=newInv
+
+            local totalEntries=ScanInventory()
+            SortHorseList()
+            DisplayHorses()
+
+            WebhookStatus.Text="Refreshed: "..tostring(#HorseList).." horses"
+            WebhookStatus.TextColor3=Color3.fromRGB(100,255,130)
+            print("[HORSE SCANNER] Inventory refreshed. Total entries:",totalEntries)
+            print("[HORSE SCANNER] Horse profiles found:",#HorseList)
+        else
+            WebhookStatus.Text="Refresh failed: "..tostring(newInv)
+            WebhookStatus.TextColor3=Color3.fromRGB(255,110,110)
+        end
+
+        task.wait(1.5)
+        RefreshButton.Text="REFRESH"
     end)
 end)
 
