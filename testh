@@ -1581,7 +1581,46 @@ local function BuildHorseWebhookData()
 
     local linesOut = {}
 
-    for _, horse in ipairs(HorseList) do
+    -- Sort webhook horses by rarity group, then alphabetically by breed/name.
+table.sort(HorseList, function(a, b)
+    local function GetWebhookGroup(horse)
+        local main, mane, tail = GetColours(horse.item)
+
+        if IsUniqueHair(mane) or IsUniqueHair(tail) then
+            return 1 -- Island Unique Hair
+        elseif IsOrangeMainColour(main) then
+            return 2 -- Island Unique Coat
+        elseif not ColoursMatch(mane, tail) then
+            return 3 -- Mismatched Hair
+        elseif horse.item.isNatDyed ~= nil then
+            return 4 -- Natural Dyed
+        elseif horse.item.variants
+            and horse.item.variants.hornColour ~= nil
+            and tostring(horse.item.variants.hornColour) ~= "" then
+            return 5 -- Horned
+        end
+
+        return 6 -- Normal
+    end
+
+    local groupA = GetWebhookGroup(a)
+    local groupB = GetWebhookGroup(b)
+
+    if groupA ~= groupB then
+        return groupA < groupB
+    end
+
+    local nameA = tostring(a.breed or GetBreed(a.item, a.info) or "")
+    local nameB = tostring(b.breed or GetBreed(b.item, b.info) or "")
+
+    if nameA:lower() ~= nameB:lower() then
+        return nameA:lower() < nameB:lower()
+    end
+
+    return nameA < nameB
+end)
+
+for _, horse in ipairs(HorseList) do
         local main, mane, tail = GetColours(horse.item)
         local variants = horse.item.variants or horse.item.Variants or {}
 
