@@ -2081,7 +2081,18 @@ local function GetWorldHorses()
                             break
                         end
                     end
-                    if not hasOwner and not IsInShop(node) then
+
+                    --// LAST LASSO PLAYER FILTER
+                    -- Only target horses that either have no lastPlayerToThrowLasso
+                    -- attribute, or were last lassoed by the current player.
+                    -- Horses lassoed by another player are ignored.
+                    local lastLassoPlayer = node:GetAttribute("lastPlayerToThrowLasso")
+                    local lassoAllowed = (
+                        lastLassoPlayer == nil
+                        or tostring(lastLassoPlayer) == LocalPlayer.Name
+                    )
+
+                    if not hasOwner and lassoAllowed and not IsInShop(node) then
                         if node.Parent then
                             local pivot = node:IsA("Model") and node:GetPivot() or (node:IsA("BasePart") and node.CFrame)
                             if pivot then
