@@ -1183,6 +1183,11 @@ FilterButton.MouseButton1Click:Connect(function() FilterList.Visible=not FilterL
 local SellButton=Instance.new("TextButton")
 SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
+local AutoSellButton=Instance.new("TextButton")
+AutoSellButton.Size=UDim2.fromOffset(145,22); AutoSellButton.Position=UDim2.fromOffset(347,80); AutoSellButton.BackgroundColor3=Color3.fromRGB(95,70,35); AutoSellButton.BorderSizePixel=0; AutoSellButton.Text="AUTO SELL 5M: OFF"; AutoSellButton.TextColor3=Color3.fromRGB(255,255,255); AutoSellButton.TextSize=7; AutoSellButton.Font=Enum.Font.GothamBold; AutoSellButton.Parent=Content
+local asc=Instance.new("UICorner"); asc.CornerRadius=UDim.new(0,6); asc.Parent=AutoSellButton
+local AutoSellEnabled=false
+local AutoSellRunning=false
 local SellStatus=Instance.new("TextLabel")
 local WebhookButton=Instance.new("TextButton")
 WebhookButton.Size=UDim2.fromOffset(90,22)
@@ -1227,9 +1232,9 @@ SellStatus.Size=UDim2.new(1,-16,0,12); SellStatus.Position=UDim2.fromOffset(8,57
 local Results =
     Instance.new("ScrollingFrame")
 
-Results.Size = UDim2.new(1,-16,1,-100)
+Results.Size = UDim2.new(1,-16,1,-124)
 
-Results.Position = UDim2.fromOffset(8,100)
+Results.Position = UDim2.fromOffset(8,124)
 
 Results.BackgroundColor3 =
     Color3.fromRGB(
@@ -2268,19 +2273,102 @@ Search:GetPropertyChangedSignal("Text"):Connect(function()
     if DisplayHorses then DisplayHorses() end
 end)
 
-SellButton.MouseButton1Click:Connect(function()
+local function SellFilteredHorses(statusPrefix)
     local remote,err=GetSellRemote()
-    if not remote then SellStatus.Text=err; SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
+    if not remote then
+        SellStatus.Text=err
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+        return false,err
+    end
+
     local ItemsToSell={}; local count=0
-    for _,horse in ipairs(HorseList) do if MatchesSelectedFilter(horse) then ItemsToSell[tostring(horse.uid)]=1; count+=1 end end
-    if count==0 then SellStatus.Text="Nothing matches: "..SelectedFilter; SellStatus.TextColor3=Color3.fromRGB(255,190,100); return end
-    local ok,sendErr=pcall(function() remote:FireServer("SellItems",ItemsToSell) end)
-    if not ok then SellStatus.Text="Sell failed: "..tostring(sendErr); SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
-    SellStatus.Text="Sent sell request: "..tostring(count).." horse(s) ["..SelectedFilter.."]"; SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+    for _,horse in ipairs(HorseList) do
+        if MatchesSelectedFilter(horse) then
+            ItemsToSell[tostring(horse.uid)]=1
+            count+=1
+        end
+    end
+
+    if count==0 then
+        SellStatus.Text="Nothing matches: "..SelectedFilter
+        SellStatus.TextColor3=Color3.fromRGB(255,190,100)
+        return false,"Nothing to sell"
+    end
+
+    local ok,sendErr=pcall(function()
+        remote:FireServer("SellItems",ItemsToSell)
+    end)
+    if not ok then
+        SellStatus.Text="Sell failed: "..tostring(sendErr)
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+        return false,sendErr
+    end
+
+    SellStatus.Text=(statusPrefix or "Sent sell request")..": "..tostring(count).." horse(s) ["..SelectedFilter.."]"
+    SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+
     task.delay(0.5,function()
         local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
-        if ok2 and type(newInv)=="table" then Inventory=newInv; ScanInventory(); SortHorseList(); DisplayHorses() end
+        if ok2 and type(newInv)=="table" then
+            Inventory=newInv
+            ScanInventory()
+            SortHorseList()
+            DisplayHorses()
+        end
     end)
+    return true,count
+end
+
+SellButton.MouseButton1Click:Connect(function()
+    SellFilteredHorses("Sent sell request")
+end)
+
+AutoSellButton.MouseButton1Click:Connect(function()
+    AutoSellEnabled=not AutoSellEnabled
+
+    if AutoSellEnabled then
+        AutoSellButton.Text="AUTO SELL 5M: ON"
+        AutoSellButton.BackgroundColor3=Color3.fromRGB(45,125,70)
+        SellStatus.Text="Auto sell enabled: rescans every 5 minutes."
+        SellStatus.TextColor3=Color3.fromRGB(180,220,255)
+
+        if not AutoSellRunning then
+            AutoSellRunning=true
+            task.spawn(function()
+                while AutoSellEnabled do
+                    task.wait(300)
+                    if not AutoSellEnabled then break end
+
+                    SellStatus.Text="Auto sell: rescanning inventory..."
+                    SellStatus.TextColor3=Color3.fromRGB(180,200,255)
+
+                    local ok,newInv=pcall(function()
+                        return Data.GetLocal({"inventory"})
+                    end)
+
+                    if ok and type(newInv)=="table" then
+                        Inventory=newInv
+                        local totalEntries=ScanInventory()
+                        SortHorseList()
+                        DisplayHorses()
+                        SellStatus.Text="Auto sell: rescanned "..tostring(#HorseList).." horses. Selling..."
+                        SellStatus.TextColor3=Color3.fromRGB(180,200,255)
+                        SellFilteredHorses("Auto sold")
+                        print("[HORSE SCANNER] Auto-sell rescan entries:",totalEntries)
+                    else
+                        SellStatus.Text="Auto sell rescan failed: "..tostring(newInv)
+                        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+                    end
+                end
+                AutoSellRunning=false
+            end)
+        end
+    else
+        AutoSellButton.Text="AUTO SELL 5M: OFF"
+        AutoSellButton.BackgroundColor3=Color3.fromRGB(95,70,35)
+        SellStatus.Text="Auto sell disabled."
+        SellStatus.TextColor3=Color3.fromRGB(150,155,170)
+    end
 end)
 
 --==================================================
