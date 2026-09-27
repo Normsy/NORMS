@@ -1,4 +1,4 @@
-﻿--// HORSE INVENTORY SCANNER
+--// HORSE INVENTORY SCANNER
 --// KEYWORD-BASED HORSE / DONKEY SCANNER
 --// 5 PROFILES PER ROW
 --// READ-ONLY
@@ -837,7 +837,7 @@ Title.Position =
 Title.BackgroundTransparency = 1
 
 Title.Text =
-    "ð´ HORSE SCANNER"
+    "Ã°ÂÂÂ´ HORSE SCANNER"
 
 Title.TextColor3 =
     Color3.fromRGB(
@@ -932,7 +932,7 @@ Minimize.BackgroundColor3 =
 Minimize.BorderSizePixel = 0
 
 Minimize.Text =
-    "â"
+    "Ã¢ÂÂ"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -992,7 +992,7 @@ Close.BackgroundColor3 =
 Close.BorderSizePixel = 0
 
 Close.Text =
-    "Ã"
+    "ÃÂ"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -1396,7 +1396,7 @@ Minimize.MouseButton1Click:Connect(function()
         Main.Size = UDim2.fromOffset(500,275)
 
         Minimize.Text =
-            "â"
+            "Ã¢ÂÂ"
 
     end
 
@@ -1550,14 +1550,14 @@ local function GetDiscordRarityCircles(horse)
 
     local circles = {}
 
-    if unique then table.insert(circles, "🔴") end
-    if uniqueCoat then table.insert(circles, "🟠") end
-    if mismatch then table.insert(circles, "🔵") end
-    if natdyed then table.insert(circles, "🟢") end
-    if horn then table.insert(circles, "🟣") end
+    if unique then table.insert(circles, "ð´") end
+    if uniqueCoat then table.insert(circles, "ð ") end
+    if mismatch then table.insert(circles, "ðµ") end
+    if natdyed then table.insert(circles, "ð¢") end
+    if horn then table.insert(circles, "ð£") end
 
     if #circles == 0 then
-        table.insert(circles, "⚪")
+        table.insert(circles, "âª")
     end
 
     return table.concat(circles, " ")
@@ -1569,15 +1569,15 @@ local function GetHorseWebhookLine(horse)
     local breed = horse.breed or GetBreed(horse.item, horse.info) or "Unknown"
 
     local detail = "Main: "..tostring(main)
-        .." • Mane: "..tostring(mane)
-        .." • Tail: "..tostring(tail)
+        .." â¢ Mane: "..tostring(mane)
+        .." â¢ Tail: "..tostring(tail)
 
     if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then
-        detail = detail.." • Horn: "..tostring(variants.hornColour)
+        detail = detail.." â¢ Horn: "..tostring(variants.hornColour)
     end
 
     if horse.item.isNatDyed ~= nil then
-        detail = detail.." • Natural Dyed: Yes"
+        detail = detail.." â¢ Natural Dyed: Yes"
     end
 
     -- UID is intentionally NOT included.
@@ -1686,7 +1686,7 @@ local function SendHorseInventoryToDiscord()
     for batchNumber, batch in ipairs(batches) do
         local sent, sendErr = pcall(function()
             SendMessageEMBED(DiscordWebhookURL, {
-                title = "Inventory • Batch "
+                title = "Inventory â¢ Batch "
                     ..tostring(batchNumber)
                     .."/"
                     ..tostring(#batches),
@@ -1696,7 +1696,7 @@ local function SendHorseInventoryToDiscord()
                 color = 5793266,
 
                 footer = {
-                    text = "Horse Scanner • Batch "
+                    text = "Horse Scanner â¢ Batch "
                         ..tostring(batchNumber)
                         .."/"
                         ..tostring(#batches)
@@ -1731,11 +1731,11 @@ local function SendHorseInventoryToDiscord()
 
     local totalsSent, totalsErr = pcall(function()
         SendMessageEMBED(DiscordWebhookURL, {
-            title = "Inventory • Totals",
+            title = "Inventory â¢ Totals",
             description = totalsDescription,
             color = 5793266,
             footer = {
-                text = "Horse Scanner • All batches sent"
+                text = "Horse Scanner â¢ All batches sent"
             }
         })
     end)
