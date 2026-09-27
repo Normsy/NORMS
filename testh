@@ -1,4 +1,4 @@
---// HORSE INVENTORY SCANNER
+﻿--// HORSE INVENTORY SCANNER
 --// KEYWORD-BASED HORSE / DONKEY SCANNER
 --// 5 PROFILES PER ROW
 --// READ-ONLY
@@ -92,9 +92,6 @@ local BreedDisplayNames = {
     ["thoroughbred"] =
         "Thoroughbred Horse",
 
-    ["welsh cob"] =
-        "Welsh Cob",
-
     ["unicorn"] =
         "Unicorn",
 
@@ -142,7 +139,6 @@ local BreedKeywords = {
     "shire",
     "standardbred",
     "thoroughbred",
-    "welsh cob",
     "unicorn",
     "donkey"
 }
@@ -1184,6 +1180,22 @@ local SellButton=Instance.new("TextButton")
 SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
 local SellStatus=Instance.new("TextLabel")
+local TradeRemoteNameBox=Instance.new("TextBox")
+TradeRemoteNameBox.Size=UDim2.fromOffset(180,22); TradeRemoteNameBox.Position=UDim2.fromOffset(8,56)
+TradeRemoteNameBox.BackgroundColor3=Color3.fromRGB(23,23,31); TradeRemoteNameBox.BorderSizePixel=0
+TradeRemoteNameBox.PlaceholderText="Trade Remote name..."; TradeRemoteNameBox.Text=""
+TradeRemoteNameBox.TextColor3=Color3.fromRGB(235,235,240); TradeRemoteNameBox.TextSize=7
+TradeRemoteNameBox.Font=Enum.Font.Gotham; TradeRemoteNameBox.ClearTextOnFocus=false; TradeRemoteNameBox.Parent=Content
+local trc=Instance.new("UICorner"); trc.CornerRadius=UDim.new(0,6); trc.Parent=TradeRemoteNameBox
+local trp=Instance.new("UIPadding"); trp.PaddingLeft=UDim.new(0,6); trp.Parent=TradeRemoteNameBox
+
+local TradeButton=Instance.new("TextButton")
+TradeButton.Size=UDim2.fromOffset(145,22); TradeButton.Position=UDim2.fromOffset(193,56)
+TradeButton.BackgroundColor3=Color3.fromRGB(120,85,35); TradeButton.BorderSizePixel=0
+TradeButton.Text="TRADE FILTERED"; TradeButton.TextColor3=Color3.fromRGB(255,255,255); TradeButton.TextSize=7
+TradeButton.Font=Enum.Font.GothamBold; TradeButton.Parent=Content
+local tc=Instance.new("UICorner"); tc.CornerRadius=UDim.new(0,6); tc.Parent=TradeButton
+
 local WebhookButton=Instance.new("TextButton")
 WebhookButton.Size=UDim2.fromOffset(90,22)
 WebhookButton.Position=UDim2.fromOffset(347,56)
@@ -1581,46 +1593,7 @@ local function BuildHorseWebhookData()
 
     local linesOut = {}
 
-    -- Sort webhook horses by rarity group, then alphabetically by breed/name.
-table.sort(HorseList, function(a, b)
-    local function GetWebhookGroup(horse)
-        local main, mane, tail = GetColours(horse.item)
-
-        if IsUniqueHair(mane) or IsUniqueHair(tail) then
-            return 1 -- Island Unique Hair
-        elseif IsOrangeMainColour(main) then
-            return 2 -- Island Unique Coat
-        elseif not ColoursMatch(mane, tail) then
-            return 3 -- Mismatched Hair
-        elseif horse.item.isNatDyed ~= nil then
-            return 4 -- Natural Dyed
-        elseif horse.item.variants
-            and horse.item.variants.hornColour ~= nil
-            and tostring(horse.item.variants.hornColour) ~= "" then
-            return 5 -- Horned
-        end
-
-        return 6 -- Normal
-    end
-
-    local groupA = GetWebhookGroup(a)
-    local groupB = GetWebhookGroup(b)
-
-    if groupA ~= groupB then
-        return groupA < groupB
-    end
-
-    local nameA = tostring(a.breed or GetBreed(a.item, a.info) or "")
-    local nameB = tostring(b.breed or GetBreed(b.item, b.info) or "")
-
-    if nameA:lower() ~= nameB:lower() then
-        return nameA:lower() < nameB:lower()
-    end
-
-    return nameA < nameB
-end)
-
-for _, horse in ipairs(HorseList) do
+    for _, horse in ipairs(HorseList) do
         local main, mane, tail = GetColours(horse.item)
         local variants = horse.item.variants or horse.item.Variants or {}
 
@@ -2250,6 +2223,40 @@ local function GetSellRemote()
     return remote
 end
 
+local function GetTradeRemote()
+    local name=tostring(TradeRemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
+    if name=="" then return nil,"Enter the Trade RemoteEvent name first." end
+    local Events=ReplicatedStorage:WaitForChild("Communication"):WaitForChild("Events")
+    local remote=Events:FindFirstChild(name)
+    if not remote then return nil,"Trade RemoteEvent not found: "..name end
+    if not remote:IsA("RemoteEvent") then return nil,name.." is not a RemoteEvent." end
+    return remote
+end
+
+local function TradeFilteredHorses()
+    local remote,err=GetTradeRemote()
+    if not remote then return false,err end
+
+    local selected={}
+    for _,horse in ipairs(HorseList) do
+        if MatchesSelectedFilter(horse) then
+            table.insert(selected,tostring(horse.uid))
+            if #selected>=25 then break end
+        end
+    end
+
+    if #selected==0 then
+        return false,"Nothing matches: "..SelectedFilter
+    end
+
+    for _,uid in ipairs(selected) do
+        remote:FireServer("Add",uid)
+        task.wait(0.05)
+    end
+
+    return true,"Added "..tostring(#selected).." horse(s) ["..SelectedFilter.."] to trade"
+end
+
 DisplayHorses=function()
     for _,child in ipairs(Results:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
     local searchText=Search.Text:lower(); local shown=0
@@ -2266,6 +2273,28 @@ end
 
 Search:GetPropertyChangedSignal("Text"):Connect(function()
     if DisplayHorses then DisplayHorses() end
+end)
+
+TradeButton.MouseButton1Click:Connect(function()
+    TradeButton.Text="TRADING..."
+    WebhookStatus.Text="Adding filtered horses to trade..."
+    WebhookStatus.TextColor3=Color3.fromRGB(180,200,255)
+
+    task.spawn(function()
+        local ok,success,result=pcall(TradeFilteredHorses)
+        if ok and success then
+            TradeButton.Text="TRADED!"
+            WebhookStatus.Text=result
+            WebhookStatus.TextColor3=Color3.fromRGB(100,255,130)
+        else
+            TradeButton.Text="TRADE FAILED"
+            WebhookStatus.Text=tostring(ok and result or success)
+            WebhookStatus.TextColor3=Color3.fromRGB(255,110,110)
+        end
+
+        task.wait(1.5)
+        TradeButton.Text="TRADE FILTERED"
+    end)
 end)
 
 SellButton.MouseButton1Click:Connect(function()
