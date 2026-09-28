@@ -1,8 +1,4 @@
---// HORSE INVENTORY SCANNER
---// KEYWORD-BASED HORSE / DONKEY SCANNER
---// 5 PROFILES PER ROW
---// READ-ONLY
---// MOBILE FRIENDLY
+
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -92,6 +88,9 @@ local BreedDisplayNames = {
     ["thoroughbred"] =
         "Thoroughbred Horse",
 
+    ["welsh cob"] =
+        "Welsh Cob",
+
     ["unicorn"] =
         "Unicorn",
 
@@ -139,6 +138,7 @@ local BreedKeywords = {
     "shire",
     "standardbred",
     "thoroughbred",
+    "welsh cob",
     "unicorn",
     "donkey"
 }
@@ -837,7 +837,7 @@ Title.Position =
 Title.BackgroundTransparency = 1
 
 Title.Text =
-    "Ã°ÂÂÂ´ HORSE SCANNER"
+    "ð´ HORSE SCANNER"
 
 Title.TextColor3 =
     Color3.fromRGB(
@@ -932,7 +932,7 @@ Minimize.BackgroundColor3 =
 Minimize.BorderSizePixel = 0
 
 Minimize.Text =
-    "Ã¢ÂÂ"
+    "â"
 
 Minimize.TextColor3 =
     Color3.fromRGB(
@@ -992,7 +992,7 @@ Close.BackgroundColor3 =
 Close.BorderSizePixel = 0
 
 Close.Text =
-    "ÃÂ"
+    "Ã"
 
 Close.TextColor3 =
     Color3.fromRGB(
@@ -1180,22 +1180,6 @@ local SellButton=Instance.new("TextButton")
 SellButton.Size=UDim2.fromOffset(145,22); SellButton.Position=UDim2.fromOffset(347,32); SellButton.BackgroundColor3=Color3.fromRGB(125,35,40); SellButton.BorderSizePixel=0; SellButton.Text="SELL FILTERED"; SellButton.TextColor3=Color3.fromRGB(255,255,255); SellButton.TextSize=7; SellButton.Font=Enum.Font.GothamBold; SellButton.Parent=Content
 local sc=Instance.new("UICorner"); sc.CornerRadius=UDim.new(0,6); sc.Parent=SellButton
 local SellStatus=Instance.new("TextLabel")
-local TradeRemoteNameBox=Instance.new("TextBox")
-TradeRemoteNameBox.Size=UDim2.fromOffset(180,22); TradeRemoteNameBox.Position=UDim2.fromOffset(8,56)
-TradeRemoteNameBox.BackgroundColor3=Color3.fromRGB(23,23,31); TradeRemoteNameBox.BorderSizePixel=0
-TradeRemoteNameBox.PlaceholderText="Trade Remote name..."; TradeRemoteNameBox.Text=""
-TradeRemoteNameBox.TextColor3=Color3.fromRGB(235,235,240); TradeRemoteNameBox.TextSize=7
-TradeRemoteNameBox.Font=Enum.Font.Gotham; TradeRemoteNameBox.ClearTextOnFocus=false; TradeRemoteNameBox.Parent=Content
-local trc=Instance.new("UICorner"); trc.CornerRadius=UDim.new(0,6); trc.Parent=TradeRemoteNameBox
-local trp=Instance.new("UIPadding"); trp.PaddingLeft=UDim.new(0,6); trp.Parent=TradeRemoteNameBox
-
-local TradeButton=Instance.new("TextButton")
-TradeButton.Size=UDim2.fromOffset(145,22); TradeButton.Position=UDim2.fromOffset(193,56)
-TradeButton.BackgroundColor3=Color3.fromRGB(120,85,35); TradeButton.BorderSizePixel=0
-TradeButton.Text="TRADE FILTERED"; TradeButton.TextColor3=Color3.fromRGB(255,255,255); TradeButton.TextSize=7
-TradeButton.Font=Enum.Font.GothamBold; TradeButton.Parent=Content
-local tc=Instance.new("UICorner"); tc.CornerRadius=UDim.new(0,6); tc.Parent=TradeButton
-
 local WebhookButton=Instance.new("TextButton")
 WebhookButton.Size=UDim2.fromOffset(90,22)
 WebhookButton.Position=UDim2.fromOffset(347,56)
@@ -1209,16 +1193,16 @@ WebhookButton.Parent=Content
 local wc=Instance.new("UICorner"); wc.CornerRadius=UDim.new(0,6); wc.Parent=WebhookButton
 
 local RefreshButton=Instance.new("TextButton")
-RefreshButton.Size=UDim2.fromOffset(70,22)
+RefreshButton.Size=UDim2.fromOffset(50,22)
 RefreshButton.Position=UDim2.fromOffset(442,56)
-RefreshButton.BackgroundColor3=Color3.fromRGB(55,105,70)
+RefreshButton.BackgroundColor3=Color3.fromRGB(55,120,75)
 RefreshButton.BorderSizePixel=0
 RefreshButton.Text="REFRESH"
 RefreshButton.TextColor3=Color3.fromRGB(255,255,255)
-RefreshButton.TextSize=7
+RefreshButton.TextSize=6
 RefreshButton.Font=Enum.Font.GothamBold
 RefreshButton.Parent=Content
-local rfc=Instance.new("UICorner"); rfc.CornerRadius=UDim.new(0,6); rfc.Parent=RefreshButton
+local rc=Instance.new("UICorner"); rc.CornerRadius=UDim.new(0,6); rc.Parent=RefreshButton
 
 local WebhookStatus=Instance.new("TextLabel")
 WebhookStatus.Size=UDim2.new(1,-16,0,12)
@@ -1396,7 +1380,7 @@ Minimize.MouseButton1Click:Connect(function()
         Main.Size = UDim2.fromOffset(500,275)
 
         Minimize.Text =
-            "Ã¢ÂÂ"
+            "â"
 
     end
 
@@ -1550,14 +1534,14 @@ local function GetDiscordRarityCircles(horse)
 
     local circles = {}
 
-    if unique then table.insert(circles, "ð´") end
-    if uniqueCoat then table.insert(circles, "ð ") end
-    if mismatch then table.insert(circles, "ðµ") end
-    if natdyed then table.insert(circles, "ð¢") end
-    if horn then table.insert(circles, "ð£") end
+    if unique then table.insert(circles, "🔴") end
+    if uniqueCoat then table.insert(circles, "🟠") end
+    if mismatch then table.insert(circles, "🔵") end
+    if natdyed then table.insert(circles, "🟢") end
+    if horn then table.insert(circles, "🟣") end
 
     if #circles == 0 then
-        table.insert(circles, "âª")
+        table.insert(circles, "⚪")
     end
 
     return table.concat(circles, " ")
@@ -1569,15 +1553,15 @@ local function GetHorseWebhookLine(horse)
     local breed = horse.breed or GetBreed(horse.item, horse.info) or "Unknown"
 
     local detail = "Main: "..tostring(main)
-        .." â¢ Mane: "..tostring(mane)
-        .." â¢ Tail: "..tostring(tail)
+        .." • Mane: "..tostring(mane)
+        .." • Tail: "..tostring(tail)
 
     if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then
-        detail = detail.." â¢ Horn: "..tostring(variants.hornColour)
+        detail = detail.." • Horn: "..tostring(variants.hornColour)
     end
 
     if horse.item.isNatDyed ~= nil then
-        detail = detail.." â¢ Natural Dyed: Yes"
+        detail = detail.." • Natural Dyed: Yes"
     end
 
     -- UID is intentionally NOT included.
@@ -1593,7 +1577,46 @@ local function BuildHorseWebhookData()
 
     local linesOut = {}
 
-    for _, horse in ipairs(HorseList) do
+    -- Sort webhook horses by rarity group, then alphabetically by breed/name.
+table.sort(HorseList, function(a, b)
+    local function GetWebhookGroup(horse)
+        local main, mane, tail = GetColours(horse.item)
+
+        if IsUniqueHair(mane) or IsUniqueHair(tail) then
+            return 1 -- Island Unique Hair
+        elseif IsOrangeMainColour(main) then
+            return 2 -- Island Unique Coat
+        elseif not ColoursMatch(mane, tail) then
+            return 3 -- Mismatched Hair
+        elseif horse.item.isNatDyed ~= nil then
+            return 4 -- Natural Dyed
+        elseif horse.item.variants
+            and horse.item.variants.hornColour ~= nil
+            and tostring(horse.item.variants.hornColour) ~= "" then
+            return 5 -- Horned
+        end
+
+        return 6 -- Normal
+    end
+
+    local groupA = GetWebhookGroup(a)
+    local groupB = GetWebhookGroup(b)
+
+    if groupA ~= groupB then
+        return groupA < groupB
+    end
+
+    local nameA = tostring(a.breed or GetBreed(a.item, a.info) or "")
+    local nameB = tostring(b.breed or GetBreed(b.item, b.info) or "")
+
+    if nameA:lower() ~= nameB:lower() then
+        return nameA:lower() < nameB:lower()
+    end
+
+    return nameA < nameB
+end)
+
+for _, horse in ipairs(HorseList) do
         local main, mane, tail = GetColours(horse.item)
         local variants = horse.item.variants or horse.item.Variants or {}
 
@@ -1686,7 +1709,7 @@ local function SendHorseInventoryToDiscord()
     for batchNumber, batch in ipairs(batches) do
         local sent, sendErr = pcall(function()
             SendMessageEMBED(DiscordWebhookURL, {
-                title = "Inventory â¢ Batch "
+                title = "Inventory • Batch "
                     ..tostring(batchNumber)
                     .."/"
                     ..tostring(#batches),
@@ -1696,7 +1719,7 @@ local function SendHorseInventoryToDiscord()
                 color = 5793266,
 
                 footer = {
-                    text = "Horse Scanner â¢ Batch "
+                    text = "Horse Scanner • Batch "
                         ..tostring(batchNumber)
                         .."/"
                         ..tostring(#batches)
@@ -1731,11 +1754,11 @@ local function SendHorseInventoryToDiscord()
 
     local totalsSent, totalsErr = pcall(function()
         SendMessageEMBED(DiscordWebhookURL, {
-            title = "Inventory â¢ Totals",
+            title = "Inventory • Totals",
             description = totalsDescription,
             color = 5793266,
             footer = {
-                text = "Horse Scanner â¢ All batches sent"
+                text = "Horse Scanner • All batches sent"
             }
         })
     end)
@@ -2223,40 +2246,6 @@ local function GetSellRemote()
     return remote
 end
 
-local function GetTradeRemote()
-    local name=tostring(TradeRemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
-    if name=="" then return nil,"Enter the Trade RemoteEvent name first." end
-    local Events=ReplicatedStorage:WaitForChild("Communication"):WaitForChild("Events")
-    local remote=Events:FindFirstChild(name)
-    if not remote then return nil,"Trade RemoteEvent not found: "..name end
-    if not remote:IsA("RemoteEvent") then return nil,name.." is not a RemoteEvent." end
-    return remote
-end
-
-local function TradeFilteredHorses()
-    local remote,err=GetTradeRemote()
-    if not remote then return false,err end
-
-    local selected={}
-    for _,horse in ipairs(HorseList) do
-        if MatchesSelectedFilter(horse) then
-            table.insert(selected,tostring(horse.uid))
-            if #selected>=25 then break end
-        end
-    end
-
-    if #selected==0 then
-        return false,"Nothing matches: "..SelectedFilter
-    end
-
-    for _,uid in ipairs(selected) do
-        remote:FireServer("Add",uid)
-        task.wait(0.05)
-    end
-
-    return true,"Added "..tostring(#selected).." horse(s) ["..SelectedFilter.."] to trade"
-end
-
 DisplayHorses=function()
     for _,child in ipairs(Results:GetChildren()) do if child:IsA("Frame") then child:Destroy() end end
     local searchText=Search.Text:lower(); local shown=0
@@ -2275,28 +2264,6 @@ Search:GetPropertyChangedSignal("Text"):Connect(function()
     if DisplayHorses then DisplayHorses() end
 end)
 
-TradeButton.MouseButton1Click:Connect(function()
-    TradeButton.Text="TRADING..."
-    WebhookStatus.Text="Adding filtered horses to trade..."
-    WebhookStatus.TextColor3=Color3.fromRGB(180,200,255)
-
-    task.spawn(function()
-        local ok,success,result=pcall(TradeFilteredHorses)
-        if ok and success then
-            TradeButton.Text="TRADED!"
-            WebhookStatus.Text=result
-            WebhookStatus.TextColor3=Color3.fromRGB(100,255,130)
-        else
-            TradeButton.Text="TRADE FAILED"
-            WebhookStatus.Text=tostring(ok and result or success)
-            WebhookStatus.TextColor3=Color3.fromRGB(255,110,110)
-        end
-
-        task.wait(1.5)
-        TradeButton.Text="TRADE FILTERED"
-    end)
-end)
-
 SellButton.MouseButton1Click:Connect(function()
     local remote,err=GetSellRemote()
     if not remote then SellStatus.Text=err; SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
@@ -2306,11 +2273,16 @@ SellButton.MouseButton1Click:Connect(function()
     local ok,sendErr=pcall(function() remote:FireServer("SellItems",ItemsToSell) end)
     if not ok then SellStatus.Text="Sell failed: "..tostring(sendErr); SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
     SellStatus.Text="Sent sell request: "..tostring(count).." horse(s) ["..SelectedFilter.."]"; SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+    task.delay(0.5,function()
+        local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
+        if ok2 and type(newInv)=="table" then Inventory=newInv; ScanInventory(); SortHorseList(); DisplayHorses() end
+    end)
 end)
 
 --==================================================
--- MANUAL REFRESH ONLY
+-- REFRESH INVENTORY
 --==================================================
+
 RefreshButton.MouseButton1Click:Connect(function()
     RefreshButton.Text="..."
     WebhookStatus.Text="Refreshing inventory..."
@@ -2323,12 +2295,14 @@ RefreshButton.MouseButton1Click:Connect(function()
 
         if ok and type(newInv)=="table" then
             Inventory=newInv
+
             local totalEntries=ScanInventory()
             SortHorseList()
             DisplayHorses()
+
             WebhookStatus.Text="Refreshed: "..tostring(#HorseList).." horses"
             WebhookStatus.TextColor3=Color3.fromRGB(100,255,130)
-            print("[HORSE SCANNER] Manual refresh. Total entries:",totalEntries)
+            print("[HORSE SCANNER] Inventory refreshed. Total entries:",totalEntries)
             print("[HORSE SCANNER] Horse profiles found:",#HorseList)
         else
             WebhookStatus.Text="Refresh failed: "..tostring(newInv)
