@@ -1852,73 +1852,86 @@ end
 local function DetectTravelRemote()
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
-    AutoTravelButton.Text = "FINDING HORSE..."
-    AutoTravelStatus.Text = "Scanning for a horse on another island..."
+    AutoTravelButton.Text = "FINDING TRAVEL REMOTE..."
+    AutoTravelStatus.Text = "Detecting your current island..."
     AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        -- IMPORTANT: the target is a REAL horse on another island.
-        -- We do not always use Mainland.
-        local targetHorse = nil
-        local scanDeadline = tick() + 15
+        -- The target argument is ALWAYS the island the player is currently on.
+        -- We are not looking for a horse and we are not forcing Mainland.
+        local currentIsland = GetCurrentPlayerIsland()
 
-        while tick() < scanDeadline and not targetHorse do
-            targetHorse = FindOtherIslandHorse()
-            if not targetHorse then
-                AutoTravelStatus.Text = "No horse on another island yet... rescanning"
-                task.wait(0.5)
-            end
-        end
-
-        if not targetHorse then
-            AutoTravelStatus.Text = "No horse found on another island."
+        if not currentIsland or currentIsland == "" then
+            AutoTravelStatus.Text = "Could not detect your current island."
             AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
             AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
             AutoTravelButton:SetAttribute("Busy", false)
             return
         end
 
-        local targetIsland = targetHorse.Island
-        local targetHorsePosition = targetHorse.Position
-        local currentIsland = GetCurrentPlayerIsland()
-
-        AutoTravelStatus.Text = "Horse found: " .. tostring(targetHorse.Name) .. " | Target: " .. targetIsland
+        AutoTravelStatus.Text = "Testing Travel on: " .. tostring(currentIsland)
         AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
         task.wait(0.25)
 
         -- Test exactly like the captured remote:
-        -- FunctionX:InvokeServer("Travel", targetIsland, 1)
-        -- One Function every 1 second.
+        -- FunctionX:InvokeServer("Travel", currentIsland, 1)
+        -- One test every 1 second.
         for i = 1, 36 do
             local remote = FindRemoteFunction(i)
             local name = "Function" .. tostring(i)
 
             if remote then
                 AutoTravelButton.Text = "TESTING " .. name
-                AutoTravelStatus.Text = "Trying " .. name .. " -> " .. targetIsland
+                AutoTravelStatus.Text = name .. " -> Travel / " .. tostring(currentIsland)
 
                 local beforeRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local beforeCFrame = beforeRoot and beforeRoot.CFrame
                 local beforePosition = beforeRoot and beforeRoot.Position
 
-                local invokeOK, invokeResult = pcall(function()
-                    return remote:InvokeServer("Travel", targetIsland, 1)
+                local invokeOK = pcall(function()
+                    return remote:InvokeServer("Travel", currentIsland, 1)
                 end)
 
-                -- Required cadence: wait one full second before the next Function.
-                task.wait(1)
+                local moved = false
+                local elapsed = 0
 
-                local afterRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                local afterPosition = afterRoot and afterRoot.Position
+                -- Watch the character for the remainder of this 1-second test.
+                -- A CFrame change OR a position change means this Function moved
+                -- the character and is therefore treated as the Travel Remote.
+                while elapsed < 1 do
+                    task.wait(0.05)
+                    elapsed += 0.05
 
-                local reachedTarget = IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
-                -- Only accept the Function when the character actually reaches
-                -- the island containing the selected horse. A large position
-                -- change by itself is NOT enough, because another Function could
-                -- move the character somewhere else.
-                if invokeOK and reachedTarget then
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    if root and beforeRoot and root == beforeRoot then
+                        local cframeChanged = false
+                        local positionChanged = false
+
+                        if beforeCFrame then
+                            cframeChanged = (root.CFrame ~= beforeCFrame)
+                        end
+                        if beforePosition then
+                            positionChanged = ((root.Position - beforePosition).Magnitude > 0.05)
+                        end
+
+                        if cframeChanged or positionChanged then
+                            moved = true
+                            break
+                        end
+                    elseif root and beforePosition then
+                        -- Character/root was replaced: compare the new position.
+                        if (root.Position - beforePosition).Magnitude > 0.05 then
+                            moved = true
+                            break
+                        end
+                    end
+                end
+
+                if invokeOK and moved then
                     TravelRemoteBox.Text = name
                     TravelDropdown.Text = name
-                    AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
+                    AutoTravelStatus.Text = "FOUND: " .. name .. " | Character moved on " .. tostring(currentIsland)
                     AutoTravelStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
                     AutoTravelButton.Text = "TRAVEL REMOTE FOUND"
                     AutoTravelButton:SetAttribute("Busy", false)
@@ -1926,17 +1939,17 @@ local function DetectTravelRemote()
                 end
 
                 if not invokeOK then
-                    AutoTravelStatus.Text = name .. " returned an error; continuing..."
+                    AutoTravelStatus.Text = name .. " errored; testing next..."
                 else
-                    AutoTravelStatus.Text = name .. " did not reach " .. targetIsland .. "; next..."
+                    AutoTravelStatus.Text = name .. " did not move the character; testing next..."
                 end
             else
-                AutoTravelStatus.Text = name .. " not found; next..."
+                AutoTravelStatus.Text = name .. " not available; testing next..."
                 task.wait(1)
             end
         end
 
-        AutoTravelStatus.Text = "No working Travel Remote found in Function1-Function36."
+        AutoTravelStatus.Text = "No Travel Remote found in Function1-Function36."
         AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
         AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
         AutoTravelButton:SetAttribute("Busy", false)
