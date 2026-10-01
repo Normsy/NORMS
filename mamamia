@@ -853,6 +853,7 @@ HopButton.Activated:Connect(function()
 end)
 
 local minimized = false
+local UILastActivity = tick()
 
 local function SetMinimized(value)
     minimized = value
@@ -3044,6 +3045,7 @@ do
     end
     SetMinimized = function(v)
         baseSetMinimized(v)
+        if not v then UILastActivity = tick() end
         dash.Visible = (not v) and ActiveTab == "Main"
     end
 
@@ -3059,6 +3061,52 @@ do
     if Workspace.CurrentCamera then
         Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(Fit)
     end
+end
+
+--// AUTO-MINIMIZE after 10 seconds with no touch / input on the UI
+do
+    local UserInputService = game:GetService("UserInputService")
+    local GuiServiceIdle = game:GetService("GuiService")
+    local IDLE_SECONDS = 10
+
+    local function InsideFrame(pos)
+        local ap, as = frame.AbsolutePosition, frame.AbsoluteSize
+        return pos.X >= ap.X and pos.X <= ap.X + as.X and pos.Y >= ap.Y and pos.Y <= ap.Y + as.Y
+    end
+
+    local function Touched(input)
+        if minimized then return end
+        local t = input.UserInputType
+        if t == Enum.UserInputType.Touch
+            or t == Enum.UserInputType.MouseButton1
+            or t == Enum.UserInputType.MouseMovement
+            or t == Enum.UserInputType.MouseWheel
+            or t == Enum.UserInputType.Keyboard then
+            local p = Vector2.new(input.Position.X, input.Position.Y)
+            local inset = GuiServiceIdle:GetGuiInset()
+            -- input position may or may not include the top bar inset, so check both
+            if t == Enum.UserInputType.Keyboard or InsideFrame(p) or InsideFrame(p + inset) then
+                UILastActivity = tick()
+            end
+        end
+    end
+
+    UserInputService.InputBegan:Connect(Touched)
+    UserInputService.InputChanged:Connect(Touched)
+
+    task.spawn(function()
+        while gui.Parent do
+            task.wait(0.5)
+            if not minimized then
+                -- typing in a box counts as activity (dragging/touching is caught by input events)
+                if UserInputService:GetFocusedTextBox() ~= nil then
+                    UILastActivity = tick()
+                elseif tick() - UILastActivity >= IDLE_SECONDS then
+                    pcall(function() SetMinimized(true) end)
+                end
+            end
+        end
+    end)
 end
 
 --// Cleanly stop on character removal so movement state is never left active.
