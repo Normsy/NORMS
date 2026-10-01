@@ -1719,71 +1719,7 @@ local function CleanVisuals()
     end
 end
 
--- Keep horse models and their parent containers, while removing unrelated
--- visual models from Workspace. This is client-side and does not affect the server.
-local function IsIslandProtected(instance)
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands or not instance then return false end
-    return instance == islands or instance:IsDescendantOf(islands)
-end
-
-local function IsLassoProtected(instance)
-    -- Protect the model itself AND every model inside a Lasso-named model.
-    -- This prevents a parent Lasso model from being deleted before its children
-    -- are checked by the cleanup loop.
-    local current = instance
-    while current and current ~= Workspace do
-        if current:IsA("Model") then
-            local name = tostring(current.Name):lower()
-            if name:find("lasso", 1, true) then
-                return true
-            end
-        end
-        current = current.Parent
-    end
-    return false
-end
-
-local function IsHorseOrHorseContainer(model)
-    if not model:IsA("Model") then return false end
-    if isHorse(model) then return true end
-    for _, descendant in ipairs(model:GetDescendants()) do
-        if descendant:IsA("Model") and (isHorse(descendant) or IsLassoProtected(descendant)) then
-            return true
-        end
-    end
-    return false
-end
-
-local function RemoveNonHorseModels()
-    for _, model in ipairs(Workspace:GetDescendants()) do
-        if model:IsA("Model") and model.Parent then
-            local keep = false
-            pcall(function()
-                if model == LocalPlayer.Character then
-                    keep = true
-                elseif IsIslandProtected(model) then
-                    -- Never delete island containers/geometry; the scanner needs every island.
-                    keep = true
-                elseif IsLassoProtected(model) then
-                    -- NEVER delete a model named Lasso/lasso, or anything
-                    -- contained inside a Lasso-named model.
-                    keep = true
-                elseif IsHorseOrHorseContainer(model) then
-                    keep = true
-                end
-            end)
-            if not keep then
-                pcall(function()
-                    model:Destroy()
-                end)
-            end
-        end
-    end
-end
-
 CleanVisuals()
-RemoveNonHorseModels()
 
 -- Keep newly spawned visual effects cleaned as well.
 Workspace.DescendantAdded:Connect(function(obj)
@@ -1795,10 +1731,6 @@ Workspace.DescendantAdded:Connect(function(obj)
                 or obj:IsA("Highlight") or obj:IsA("PointLight") or obj:IsA("SpotLight")
                 or obj:IsA("SurfaceLight") then
                 obj:Destroy()
-            elseif obj:IsA("Model") and obj.Parent and obj ~= LocalPlayer.Character then
-                if not IsIslandProtected(obj) and not IsLassoProtected(obj) and not IsHorseOrHorseContainer(obj) then
-                    obj:Destroy()
-                end
             end
         end)
     end)
