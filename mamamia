@@ -244,8 +244,13 @@ local islandText
 local status
 local sight
 local sightHint
+local DashboardFrame
+local DashboardTitle
+local DashboardScroll
+local ManualTarget = nil
 local ActiveTab = "Main"
 local SetTab
+local startFarm
 
 --// TABS
 local MainTab = Instance.new("TextButton")
@@ -289,6 +294,52 @@ for _, tab in ipairs({MainTab, SellingTab, SettingsTab}) do
     c.CornerRadius = UDim.new(0, 6)
     c.Parent = tab
 end
+
+--// MAIN DASHBOARD / LIVE HORSE LIST
+DashboardFrame = Instance.new("Frame")
+DashboardFrame.Name = "HorseDashboard"
+DashboardFrame.Size = UDim2.new(1, -12, 0, 140)
+DashboardFrame.Position = UDim2.fromOffset(6, 104)
+DashboardFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+DashboardFrame.BorderSizePixel = 0
+DashboardFrame.Parent = frame
+local dashboardCorner = Instance.new("UICorner")
+dashboardCorner.CornerRadius = UDim.new(0, 7)
+dashboardCorner.Parent = DashboardFrame
+
+DashboardTitle = Instance.new("TextLabel")
+DashboardTitle.Name = "DashboardTitle"
+DashboardTitle.Size = UDim2.new(1, -10, 0, 20)
+DashboardTitle.Position = UDim2.fromOffset(5, 2)
+DashboardTitle.BackgroundTransparency = 1
+DashboardTitle.Text = "HORSES (0)"
+DashboardTitle.TextColor3 = Color3.fromRGB(57, 255, 20)
+DashboardTitle.TextSize = 9
+DashboardTitle.Font = Enum.Font.GothamBold
+DashboardTitle.TextXAlignment = Enum.TextXAlignment.Left
+DashboardTitle.Parent = DashboardFrame
+
+DashboardScroll = Instance.new("ScrollingFrame")
+DashboardScroll.Name = "HorseList"
+DashboardScroll.Size = UDim2.new(1, -8, 1, -27)
+DashboardScroll.Position = UDim2.fromOffset(4, 24)
+DashboardScroll.BackgroundTransparency = 1
+DashboardScroll.BorderSizePixel = 0
+DashboardScroll.ScrollBarThickness = 3
+DashboardScroll.ScrollBarImageTransparency = 0.2
+DashboardScroll.CanvasSize = UDim2.fromOffset(0, 0)
+DashboardScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+DashboardScroll.ScrollingDirection = Enum.ScrollingDirection.Y
+DashboardScroll.Parent = DashboardFrame
+
+local dashboardLayout = Instance.new("UIListLayout")
+dashboardLayout.SortOrder = Enum.SortOrder.LayoutOrder
+dashboardLayout.Padding = UDim.new(0, 3)
+dashboardLayout.Parent = DashboardScroll
+
+local dashboardPadding = Instance.new("UIPadding")
+dashboardPadding.PaddingBottom = UDim.new(0, 3)
+dashboardPadding.Parent = DashboardScroll
 
 local SellingFrame = Instance.new("ScrollingFrame")
 SellingFrame.Name = "Selling"
@@ -978,8 +1029,8 @@ islandText.Parent = frame
 
 status = Instance.new("TextLabel")
 status.BackgroundTransparency = 1
-status.Size = UDim2.fromOffset(230, 30)
-status.Position = UDim2.fromOffset(10, 106)
+status.Size = UDim2.fromOffset(230, 18)
+status.Position = UDim2.fromOffset(10, 90)
 status.Font = Enum.Font.Gotham
 status.Text = "Idle"
 status.TextSize = 12
@@ -1097,7 +1148,8 @@ SetTab = function(tabName)
     islandText.Visible = mainVisible and not minimized
     status.Visible = mainVisible and not minimized
     sight.Visible = mainVisible and not minimized
-    sightHint.Visible = mainVisible and not minimized
+    sightHint.Visible = false
+    DashboardFrame.Visible = mainVisible and not minimized
     SellingFrame.Visible = sellingVisible and not minimized
     SettingsFrame.Visible = settingsVisible and not minimized
 
@@ -1113,6 +1165,17 @@ end
 
 MainTab.Activated:Connect(function()
     SetTab("Main")
+
+--// DASHBOARD LIVE REFRESH
+task.spawn(function()
+    while gui and gui.Parent do
+        if ActiveTab == "Main" and not minimized then
+            pcall(RefreshHorseDashboard)
+        end
+        task.wait(0.5)
+    end
+end)
+
 end)
 SellingTab.Activated:Connect(function()
     SetTab("Selling")
@@ -1886,6 +1949,110 @@ local function ScanHorses()
     return results
 end
 
+--// DASHBOARD HORSE ENTRY
+local function ClearDashboardEntries()
+    if not DashboardScroll then return end
+    for _, child in ipairs(DashboardScroll:GetChildren()) do
+        if child:IsA("Frame") then
+            child:Destroy()
+        end
+    end
+end
+
+local function CreateDashboardHorseEntry(data, index)
+    local entry = Instance.new("Frame")
+    entry.Name = "Horse_" .. tostring(index)
+    entry.Size = UDim2.new(1, 0, 0, 25)
+    entry.BackgroundColor3 = Color3.fromRGB(25, 25, 33)
+    entry.BorderSizePixel = 0
+    entry.LayoutOrder = index
+    entry.Parent = DashboardScroll
+
+    local ec = Instance.new("UICorner")
+    ec.CornerRadius = UDim.new(0, 4)
+    ec.Parent = entry
+
+    local rarity = Instance.new("TextLabel")
+    rarity.Size = UDim2.new(0, 38, 1, 0)
+    rarity.Position = UDim2.fromOffset(4, 0)
+    rarity.BackgroundTransparency = 1
+    rarity.Text = tostring(data.Rarity or "?")
+    rarity.TextColor3 = (data.Rarity == "High" and Color3.fromRGB(255, 180, 60)) or (data.Rarity == "Mid" and Color3.fromRGB(90, 190, 255)) or Color3.fromRGB(57, 255, 20)
+    rarity.TextSize = 7
+    rarity.Font = Enum.Font.GothamBold
+    rarity.TextXAlignment = Enum.TextXAlignment.Left
+    rarity.Parent = entry
+
+    local name = Instance.new("TextLabel")
+    name.Size = UDim2.new(1, -100, 1, 0)
+    name.Position = UDim2.fromOffset(43, 0)
+    name.BackgroundTransparency = 1
+    name.Text = tostring(data.Name or "Horse") .. " • " .. tostring(data.Island or "?")
+    name.TextColor3 = Color3.fromRGB(235, 235, 240)
+    name.TextSize = 7
+    name.Font = Enum.Font.Gotham
+    name.TextXAlignment = Enum.TextXAlignment.Left
+    name.TextTruncate = Enum.TextTruncate.AtEnd
+    name.Parent = entry
+
+    local catch = Instance.new("TextButton")
+    catch.Name = "CatchButton"
+    catch.Size = UDim2.fromOffset(48, 17)
+    catch.Position = UDim2.new(1, -52, 0.5, -8)
+    catch.BorderSizePixel = 0
+    catch.Text = ManualTarget == data.Model and "TARGET" or "CATCH"
+    catch.TextSize = 6
+    catch.Font = Enum.Font.GothamBold
+    catch.TextColor3 = Color3.fromRGB(0, 0, 0)
+    catch.BackgroundColor3 = ManualTarget == data.Model and Color3.fromRGB(251, 191, 36) or Color3.fromRGB(57, 255, 20)
+    catch.Parent = entry
+    local cc = Instance.new("UICorner")
+    cc.CornerRadius = UDim.new(0, 3)
+    cc.Parent = catch
+
+    catch.Activated:Connect(function()
+        if not data.Model or not data.Model.Parent then return end
+        if ManualTarget == data.Model then
+            ManualTarget = nil
+            catch.Text = "CATCH"
+            catch.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
+        else
+            ManualTarget = data.Model
+            CurrentTarget = nil
+            CurrentTargetUID = nil
+            CurrentTargetIsland = nil
+            catch.Text = "TARGET"
+            catch.BackgroundColor3 = Color3.fromRGB(251, 191, 36)
+            status.Text = "Selected: " .. tostring(data.Name)
+            status.TextColor3 = Color3.fromRGB(251, 191, 36)
+            if not Farming then
+                task.spawn(function()
+                    startFarm()
+                end)
+            end
+        end
+    end)
+    return entry
+end
+
+local function RefreshHorseDashboard()
+    if not DashboardFrame or not DashboardFrame.Parent then return end
+    local horses = ScanHorses()
+    table.sort(horses, function(a, b)
+        if a.Priority ~= b.Priority then return a.Priority < b.Priority end
+        if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
+        local pa = RarityPriority[a.Rarity] or 0
+        local pb = RarityPriority[b.Rarity] or 0
+        if pa ~= pb then return pa > pb end
+        return tostring(a.Name) < tostring(b.Name)
+    end)
+    DashboardTitle.Text = "HORSES (" .. tostring(#horses) .. ")"
+    ClearDashboardEntries()
+    for i, data in ipairs(horses) do
+        CreateDashboardHorseEntry(data, i)
+    end
+end
+
 --// AUTO REMOTE GENERATORS
 local function ReadLocalInventory()
     local ok, inv = pcall(function()
@@ -2391,7 +2558,7 @@ local function stopFarm()
 end
 
 
-local function startFarm()
+startFarm = function()
     if Farming then return end
     Farming = true
     SetNoClip(true)
@@ -2435,7 +2602,18 @@ local function startFarm()
                 return (root.Position-a.Position).Magnitude < (root.Position-b.Position).Magnitude
             end)
 
-            local target = candidates[1]
+            local target = nil
+            if ManualTarget and ManualTarget.Parent then
+                for _, candidate in ipairs(candidates) do
+                    if candidate.Model == ManualTarget then
+                        target = candidate
+                        break
+                    end
+                end
+            else
+                ManualTarget = nil
+            end
+            target = target or candidates[1]
             if not target then
                 CurrentTarget = nil
                 status.Text = "Scanning this island..."
