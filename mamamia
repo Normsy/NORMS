@@ -1,3 +1,52 @@
+--// NORMS DELTA SAFE LOADER
+-- Creates a visible diagnostic panel BEFORE loading the main script.
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+if not player then return end
+
+local pg = player:FindFirstChildOfClass("PlayerGui") or player:WaitForChild("PlayerGui", 15)
+if not pg then return end
+
+local old = pg:FindFirstChild("NORMS_BOOT")
+if old then old:Destroy() end
+
+local boot = Instance.new("ScreenGui")
+boot.Name = "NORMS_BOOT"
+boot.ResetOnSpawn = false
+boot.IgnoreGuiInset = true
+boot.DisplayOrder = 999999
+boot.Parent = pg
+
+local box = Instance.new("Frame")
+box.Size = UDim2.fromOffset(360, 110)
+box.Position = UDim2.new(0.5, -180, 0.5, -55)
+box.BackgroundColor3 = Color3.fromRGB(18,18,26)
+box.BorderSizePixel = 0
+box.Parent = boot
+Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,-20,0,26)
+title.Position = UDim2.fromOffset(10,8)
+title.BackgroundTransparency = 1
+title.Text = "NORMS • DELTA STARTUP"
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 14
+title.Font = Enum.Font.GothamBold
+title.Parent = box
+
+local status = Instance.new("TextLabel")
+status.Size = UDim2.new(1,-20,0,55)
+status.Position = UDim2.fromOffset(10,40)
+status.BackgroundTransparency = 1
+status.TextWrapped = true
+status.Text = "Loader started..."
+status.TextColor3 = Color3.fromRGB(180,220,255)
+status.TextSize = 11
+status.Font = Enum.Font.Gotham
+status.Parent = box
+
+local source = [[=[
 --// THIS IS PH
 --// THIS IS PH
 
@@ -151,7 +200,7 @@ local function checkUniqueHair(horseModel)
     local tailColour = normalizeValue(variants.tailColour)
 
     local hasUniqueHair = UNIQUE_HAIR_VALUES[maneColour] or UNIQUE_HAIR_VALUES[tailColour] or false
-    local uniqueHairText = hasUniqueHair and "Ã¢ÂÂ" or "X"
+    local uniqueHairText = hasUniqueHair and "â" or "X"
     return hasUniqueHair, uniqueHairText
 end
 
@@ -343,7 +392,7 @@ MinimizeBtn.Name = "MinimizeBtn"
 MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
 MinimizeBtn.Position = UDim2.new(1, -22, 0, 1)
 MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.Text = "Ã¢ÂÂ"
+MinimizeBtn.Text = "â"
 MinimizeBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
 MinimizeBtn.TextSize = 8
 MinimizeBtn.Font = Enum.Font.GothamBold
@@ -720,7 +769,7 @@ local function CreateCheckbox(name, color, key, order, container, filterTable, c
     local checkMark = Instance.new("TextLabel")
     checkMark.Size = UDim2.new(1, 0, 1, 0)
     checkMark.BackgroundTransparency = 1
-    checkMark.Text = "Ã¢ÂÂ"
+    checkMark.Text = "â"
     checkMark.TextColor3 = Color3.fromRGB(255, 255, 255)
     checkMark.TextSize = 5
     checkMark.Font = Enum.Font.GothamBold
@@ -894,7 +943,7 @@ local BulletLabel = Instance.new("TextLabel")
 BulletLabel.Name = "BulletLabel"
 BulletLabel.Size = UDim2.new(0, 10, 1, 0)
 BulletLabel.BackgroundTransparency = 1
-BulletLabel.Text = "Ã¢ÂÂ¢"
+BulletLabel.Text = "â¢"
 BulletLabel.TextColor3 = Color3.fromRGB(57, 255, 20)
 BulletLabel.TextSize = 8
 BulletLabel.Font = Enum.Font.GothamBold
@@ -2312,8 +2361,8 @@ local function RefreshList()
     TrackerTextLabel.Text = "Live Horse Tracker (" .. tostring(#horses) .. ")"
 
     table.sort(horses, function(a, b)
-        local uniqueA = (a.UniqueHairText == "Ã¢ÂÂ")
-        local uniqueB = (b.UniqueHairText == "Ã¢ÂÂ")
+        local uniqueA = (a.UniqueHairText == "â")
+        local uniqueB = (b.UniqueHairText == "â")
         if uniqueA ~= uniqueB then
             return uniqueA
         end
@@ -2343,7 +2392,7 @@ local function RefreshList()
         entry.NameLabel.Text = horseData.Name
         entry.IslandLabel.Text = horseData.Island
         entry.UniqueHairLabel.Text = horseData.UniqueHairText
-        entry.UniqueHairLabel.TextColor3 = (horseData.UniqueHairText == "Ã¢ÂÂ") and Color3.fromRGB(57, 255, 20) or Color3.fromRGB(239, 68, 68)
+        entry.UniqueHairLabel.TextColor3 = (horseData.UniqueHairText == "â") and Color3.fromRGB(57, 255, 20) or Color3.fromRGB(239, 68, 68)
 
         local isTargeting = (ActiveWalkTarget == horseData.Model)
         local themeColor = Color3.fromRGB(57, 255, 20)
@@ -2520,8 +2569,8 @@ task.spawn(function()
             local horses = GetWorldHorses()
             if #horses > 0 then
                 table.sort(horses, function(a, b)
-                    local uniqueA = (a.UniqueHairText == "Ã¢ÂÂ")
-                    local uniqueB = (b.UniqueHairText == "Ã¢ÂÂ")
+                    local uniqueA = (a.UniqueHairText == "â")
+                    local uniqueB = (b.UniqueHairText == "â")
                     if uniqueA ~= uniqueB then
                         return uniqueA
                     end
@@ -2834,4 +2883,28 @@ task.spawn(function()
     else
         warn("[Anti-AFK] AFKHandler module not found automatically; native Idled bypass active.")
     end
+end)
+
+--// THIS IS PH
+--// THIS IS PH
+]=]
+
+status.Text = "Loading main script..."
+local ok, chunk = pcall(loadstring, source)
+if not ok or not chunk then
+    status.Text = "LOADSTRING FAILED:\n" .. tostring(chunk)
+    status.TextColor3 = Color3.fromRGB(255,90,90)
+    return
+end
+
+local ran, err = pcall(chunk)
+if not ran then
+    status.Text = "SCRIPT ERROR:\n" .. tostring(err)
+    status.TextColor3 = Color3.fromRGB(255,90,90)
+    return
+end
+
+-- Main script loaded successfully. Remove diagnostic panel after a short delay.
+task.delay(1.5, function()
+    if boot and boot.Parent then boot:Destroy() end
 end)
