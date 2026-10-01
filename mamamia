@@ -17,10 +17,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
---// PERFORMANCE / VISUAL OPTIMIZATION
---// Best-effort FPS cap for environments/executors that expose setfpscap.
+--// LOW FPS MODE (best effort; only if the environment provides setfpscap)
 pcall(function()
-    if typeof(setfpscap) == "function" then
+    if type(setfpscap) == "function" then
         setfpscap(15)
     end
 end)
@@ -1138,12 +1137,9 @@ end)
 --// END MINIMAL UI
 
 --// SETTINGS
-local SCAN_INTERVAL = 0.75
+local SCAN_INTERVAL = 0.50
 local CATCH_INTERVAL = 0.50
 local TWEEN_SPEED = 90
-local ISLAND_CACHE_REFRESH = 5
-local IslandCenterCache = {}
-local IslandCacheTime = 0
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
 local CharacterAnchored = false
 local activeWeld = nil
@@ -1152,31 +1148,24 @@ local activeWeld = nil
 local NoClipEnabled = false
 local NoClipConnection = nil
 local NoClipStates = {}
-local NoClipParts = {}
-
-local function RefreshNoClipParts()
-    table.clear(NoClipParts)
-    local char = LocalPlayer.Character
-    if not char then return end
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            NoClipParts[#NoClipParts + 1] = part
-        end
-    end
-end
 
 local function SetNoClip(enabled)
     NoClipEnabled = enabled
+
     if enabled then
-        if NoClipConnection then NoClipConnection:Disconnect() end
-        RefreshNoClipParts()
+        if NoClipConnection then
+            NoClipConnection:Disconnect()
+        end
+
+        -- Match the old script: every Stepped frame, disable collision on every
+        -- character BasePart. This prevents terrain/parts from physically fighting
+        -- the TweenService CFrame movement.
         NoClipConnection = RunService.Stepped:Connect(function()
-            if not NoClipEnabled then return end
-            for i = #NoClipParts, 1, -1 do
-                local part = NoClipParts[i]
-                if not part or not part.Parent then
-                    table.remove(NoClipParts, i)
-                else
+            local char = LocalPlayer.Character
+            if not NoClipEnabled or not char or not char.Parent then return end
+
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
                     part.CanCollide = false
                 end
             end
@@ -1186,6 +1175,8 @@ local function SetNoClip(enabled)
             NoClipConnection:Disconnect()
             NoClipConnection = nil
         end
+
+        -- Match the old script's cleanup behavior.
         local char = LocalPlayer.Character
         if char and char.Parent then
             for _, part in ipairs(char:GetDescendants()) do
@@ -1195,7 +1186,6 @@ local function SetNoClip(enabled)
             end
         end
         table.clear(NoClipStates)
-        table.clear(NoClipParts)
     end
 end
 
@@ -1710,12 +1700,16 @@ local function isOwned(node)
     return false
 end
 
--- Only target horses whose lastPlayerToThrowLasso attribute exactly matches
--- the username running this script. Missing or different values are ignored.
+-- Allow the horse when lastPlayerToThrowLasso is missing, or when it exactly
+-- matches the username running this script. Reject only when another player
+-- is explicitly recorded as the last player to throw the lasso.
 local function isLassoedByLocalPlayer(node)
     if not node then return false end
     local lastPlayer = node:GetAttribute("lastPlayerToThrowLasso")
-    return lastPlayer ~= nil and tostring(lastPlayer) == LocalPlayer.Name
+    if lastPlayer == nil then
+        return true
+    end
+    return tostring(lastPlayer) == LocalPlayer.Name
 end
 
 local function isInShop(node)
@@ -1998,21 +1992,10 @@ local function DetectTravelRemote()
         -- Use a different known island for the detection test, then return the
         -- player to the island they started on after a remote is found.
         local testIsland = nil
-        local loadedIslands = Workspace:FindFirstChild("Islands")
-        if loadedIslands then
-            for _, island in ipairs(loadedIslands:GetChildren()) do
-                if (island:IsA("Folder") or island:IsA("Model")) and island.Name ~= originalIsland then
-                    testIsland = island.Name
-                    break
-                end
-            end
-        end
-        if not testIsland then
-            for _, islandName in ipairs(AutoTravelIslandNames) do
-                if islandName ~= originalIsland then
-                    testIsland = islandName
-                    break
-                end
+        for _, islandName in ipairs(AutoTravelIslandNames) do
+            if islandName ~= originalIsland then
+                testIsland = islandName
+                break
             end
         end
 
@@ -2058,11 +2041,6 @@ local function DetectTravelRemote()
                 local invokeOK, invokeResult = pcall(function()
                     return remote:InvokeServer("Travel", testIsland, 1)
                 end)
-                if not invokeOK then
-                    invokeOK, invokeResult = pcall(function()
-                        return remote:InvokeServer("Travel", testIsland)
-                    end)
-                end
 
                 if invokeOK then
                     -- Give the game enough time for the teleport/travel to finish.
@@ -2130,14 +2108,9 @@ local function DetectTravelRemote()
 
             local selectedRemote = Functions:FindFirstChild(foundName)
             if selectedRemote and selectedRemote:IsA("RemoteFunction") then
-                local restoreOK = pcall(function()
+                pcall(function()
                     selectedRemote:InvokeServer("Travel", originalIsland, 1)
                 end)
-                if not restoreOK then
-                    pcall(function()
-                        selectedRemote:InvokeServer("Travel", originalIsland)
-                    end)
-                end
                 waitForIsland(originalIsland, 8)
             end
         end
@@ -2287,53 +2260,40 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 --// CURRENT ISLAND
-local function BuildIslandCenterCache(force)
+GetCurrentPlayerIsland = function()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
     local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return end
-    local now = tick()
-    if not force and now - IslandCacheTime < ISLAND_CACHE_REFRESH and next(IslandCenterCache) then
-        return
-    end
-    table.clear(IslandCenterCache)
+    if not root or not islands then return nil end
+
+    local closestName, closestDistance = nil, math.huge
     for _, island in ipairs(islands:GetChildren()) do
-        if island:IsA("Model") then
-            local ok, cf = pcall(function() return island:GetPivot() end)
-            if ok and cf then IslandCenterCache[island.Name] = cf.Position end
-        elseif island:IsA("Folder") then
-            local sum = Vector3.new(0,0,0)
-            local count = 0
-            local minV = Vector3.new(math.huge, math.huge, math.huge)
-            local maxV = Vector3.new(-math.huge, -math.huge, -math.huge)
+        if island:IsA("Folder") or island:IsA("Model") then
             for _, obj in ipairs(island:GetDescendants()) do
                 if obj:IsA("BasePart") then
-                    local pos = obj.Position
-                    sum += pos; count += 1
-                    minV = Vector3.new(math.min(minV.X,pos.X), math.min(minV.Y,pos.Y), math.min(minV.Z,pos.Z))
-                    maxV = Vector3.new(math.max(maxV.X,pos.X), math.max(maxV.Y,pos.Y), math.max(maxV.Z,pos.Z))
+                    local d = (root.Position - obj.Position).Magnitude
+                    if d < closestDistance then
+                        closestDistance = d
+                        closestName = island.Name
+                    end
                 end
             end
-            if count > 0 then
-                IslandCenterCache[island.Name] = (minV + maxV) / 2
+            if island:IsA("Model") then
+                local ok, pivot = pcall(function() return island:GetPivot() end)
+                if ok and pivot then
+                    local d = (root.Position - pivot.Position).Magnitude
+                    if d < closestDistance then
+                        closestDistance = d
+                        closestName = island.Name
+                    end
+                end
             end
         end
     end
-    IslandCacheTime = now
-end
-
-GetCurrentPlayerIsland = function()
-    local root = GetRootAndPosition and select(1, GetRootAndPosition()) or nil
-    if not root then
-        local char = LocalPlayer.Character
-        root = char and char:FindFirstChild("HumanoidRootPart")
+    if closestName and closestDistance <= 2500 then
+        return closestName
     end
-    if not root then return nil end
-    BuildIslandCenterCache(false)
-    local best, bestDist = nil, math.huge
-    for name, center in pairs(IslandCenterCache) do
-        local d = (root.Position - center).Magnitude
-        if d < bestDist then bestDist = d; best = name end
-    end
-    return best
+    return nil
 end
 
 --// SCREEN CLICK INPUT
@@ -2426,3 +2386,358 @@ local function startFarm()
             for _, horse in ipairs(ScanHorses()) do
                 if horse.Model and horse.Model.Parent then
                     table.insert(candidates, horse)
+                end
+            end
+
+            table.sort(candidates, function(a,b)
+                -- Catch priority: Unique Hair (1) > Mismatched Hair (2) > Island Unique Coat (3) > Natural Dyed Hair (4) > Horned (5) > Normal (6).
+                if a.Priority ~= b.Priority then return a.Priority < b.Priority end
+                if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
+                local pa = RarityPriority[a.Rarity] or 0
+                local pb = RarityPriority[b.Rarity] or 0
+                if pa ~= pb then return pa > pb end
+                local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                if not root then return false end
+                return (root.Position-a.Position).Magnitude < (root.Position-b.Position).Magnitude
+            end)
+
+            local target = candidates[1]
+            if not target then
+                CurrentTarget = nil
+                status.Text = "Scanning this island..."
+                status.TextColor3 = Color3.fromRGB(150,155,165)
+                task.wait(0.25)
+                continue
+            end
+
+            -- Re-check immediately before committing to the target so a stale scan
+            -- cannot make the farm chase a horse that is no longer lassoed by this user.
+            if not isLassoedByLocalPlayer(target.Model) then
+                CurrentTarget = nil
+                CurrentTargetUID = nil
+                CurrentTargetIsland = nil
+                task.wait(0.05)
+                continue
+            end
+
+            CurrentTarget = target.Model
+            CurrentTargetUID = target.UID
+            CurrentTargetIsland = target.Island
+            status.Text = "Target: " .. target.Name .. (target.Priority > 0 and (" [P" .. tostring(target.Priority) .. "]") or "")
+            status.TextColor3 = Color3.fromRGB(57,255,20)
+
+            local char = LocalPlayer.Character
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+            local targetPart = target.Model:IsA("Model") and (target.Model.PrimaryPart or target.Model:FindFirstChildWhichIsA("BasePart")) or target.Model
+
+            if root and humanoid and humanoid.Health > 0 and targetPart and target.Model.Parent then
+                -- Old-script behavior: if the selected horse is on another island,
+                -- use the configured Travel Remote to travel there before tweening to it.
+                local currentIslandBeforeTravel = GetCurrentPlayerIsland()
+                if currentIslandBeforeTravel ~= target.Island then
+                    -- Horse is on a different island: travel first, then tween to it.
+                    local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
+                    if remoteName == "" then
+                        status.Text = "Set Travel Remote in Settings"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    local travelFunc = Functions:FindFirstChild(remoteName)
+                    if not travelFunc or not travelFunc:IsA("RemoteFunction") then
+                        status.Text = "Travel Remote not found: " .. remoteName
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    status.Text = "Traveling to " .. tostring(target.Island) .. "..."
+                    status.TextColor3 = Color3.fromRGB(251, 191, 36)
+                    local travelOk = pcall(function()
+                        travelFunc:InvokeServer("Travel", target.Island, 1)
+                    end)
+                    if not travelOk then
+                        travelOk = pcall(function()
+                            travelFunc:InvokeServer("Travel", target.Island)
+                        end)
+                    end
+                    if not travelOk then
+                        status.Text = "Travel Failed"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    local arrivalDeadline = tick() + 15
+                    local arrived = false
+                    while Farming and myGeneration == FarmGeneration and tick() < arrivalDeadline do
+                        local nowIsland = GetCurrentPlayerIsland()
+                        islandText.Text = "Island: " .. tostring(nowIsland or "?")
+                        if nowIsland == target.Island then
+                            arrived = true
+                            break
+                        end
+                        task.wait(0.2)
+                    end
+
+                    if not arrived then
+                        status.Text = "Travel Timeout"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    -- Travel may recreate the horse model. Refresh and reacquire a
+                    -- fresh valid horse before starting the tween.
+                    ScanCache = {}
+                    LastScan = 0
+                    task.wait(0.20)
+                    local freshTarget = nil
+                    for _, candidate in ipairs(ScanHorses()) do
+                        if candidate.Island == target.Island
+                            and candidate.Model and candidate.Model.Parent
+                            and isLassoedByLocalPlayer(candidate.Model) then
+                            if not freshTarget
+                                or candidate.Priority < freshTarget.Priority
+                                or (candidate.Priority == freshTarget.Priority and candidate.PriorityCount > freshTarget.PriorityCount) then
+                                freshTarget = candidate
+                            end
+                        end
+                    end
+                    if not freshTarget then
+                        status.Text = "No valid horse after travel"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        CurrentTargetUID = nil
+                        CurrentTargetIsland = nil
+                        task.wait(0.35)
+                        continue
+                    end
+                    target = freshTarget
+                    CurrentTarget = target.Model
+                    CurrentTargetUID = target.UID
+                    CurrentTargetIsland = target.Island
+
+                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    root = char:WaitForChild("HumanoidRootPart")
+                    humanoid = char:WaitForChild("Humanoid")
+                    targetPart = target.Model and target.Model.Parent and (target.Model:IsA("Model") and (target.Model.PrimaryPart or target.Model:FindFirstChildWhichIsA("BasePart")) or target.Model)
+                    if not targetPart then
+                        CurrentTarget = nil
+                        task.wait(0.1)
+                        continue
+                    end
+                else
+                    -- Horse is already on the island the player is currently on: no travel call.
+                    islandText.Text = "Island: " .. tostring(currentIslandBeforeTravel)
+                end
+
+                -- Copy the old tracker movement behavior: anchor the character BEFORE
+                -- tweening. This prevents physics/collision correction from making the
+                -- character shake when the route passes below terrain.
+                -- Old script movement order: NoClip + PlatformStand + anchored root,
+                -- then a pure TweenService CFrame tween. Do not repeatedly write CFrame
+                -- during the tween; that was the source of the shaky motion.
+                SetNoClip(true)
+                humanoid.PlatformStand = true
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                root.Anchored = true
+                CharacterAnchored = true
+
+                local targetCFrame = targetPart.CFrame * HORSE_OFFSET
+                local distance = (root.Position - targetCFrame.Position).Magnitude
+                local tweenTime = distance / TWEEN_SPEED
+                local tween = TweenService:Create(root, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame=targetCFrame})
+                tween:Play()
+
+                while tween.PlaybackState == Enum.PlaybackState.Playing and Farming and myGeneration == FarmGeneration do
+                    -- Do not rescan every island every 0.03s; the island was verified before tweening.
+                    if not target.Model.Parent or humanoid.Health <= 0 or not isLassoedByLocalPlayer(target.Model) then
+                        tween:Cancel()
+                        break
+                    end
+                    -- Same velocity reset cadence as the old script, without touching CFrame.
+                    root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                    task.wait(0.03)
+                end
+
+                if Farming and myGeneration == FarmGeneration and target.Model.Parent then
+                    -- The tween is finished. Snap once to the exact position above the
+                    -- horse, weld there, and keep the character anchored. No follow loop.
+                    pcall(function()
+                        root.CFrame = targetPart.CFrame * HORSE_OFFSET
+                        if activeWeld then
+                            activeWeld:Destroy()
+                            activeWeld = nil
+                        end
+                        activeWeld = Instance.new("WeldConstraint")
+                        activeWeld.Name = "HorseTrackerWeld"
+                        activeWeld.Part0 = root
+                        activeWeld.Part1 = targetPart
+                        activeWeld.Parent = root
+                    end)
+                    root.Anchored = true
+                    CharacterAnchored = true
+                    status.Text = "Locked on: " .. target.Name
+                    status.TextColor3 = Color3.fromRGB(57,255,20)
+                    task.wait(0.08)
+
+                    local caught = false
+                    local catchDeadline = tick() + 8
+                    while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
+                        -- Character stays anchored; no repeated island scan is needed here.
+                        -- Travel was already verified before the horse tween started.
+                        ScreenClick()
+                        status.Text = "Catching: " .. target.Name
+                        status.TextColor3 = Color3.fromRGB(57,255,20)
+
+                        -- Horse disappearance/ownership change is treated as success.
+                        if not target.Model.Parent or isOwned(target.Model) then
+                            caught = true
+                            break
+                        end
+
+                        -- If the lasso-owner attribute changes to another user, stop
+                        -- treating this horse as a valid target.
+                        if not isLassoedByLocalPlayer(target.Model) then
+                            break
+                        end
+
+                        task.wait(CATCH_INTERVAL)
+                    end
+                                    -- After a successful catch, stay exactly where the last horse was.
+                    -- Do not reset, respawn, teleport away, or move to another island.
+                    if caught and root and root.Parent then
+                        local lastStandCFrame = root.CFrame
+                        SetCharacterAnchored(false)
+                        pcall(function()
+                            root.CFrame = lastStandCFrame
+                            root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                        end)
+                        status.Text = "Caught: " .. target.Name .. " | Waiting for new horse..."
+                        status.TextColor3 = Color3.fromRGB(57,255,20)
+                    else
+                        SetCharacterAnchored(false)
+                    end
+                    invalidate()
+                end
+            end
+
+            -- No horse available is NOT a reason to reset or respawn.
+            -- The character simply stays at the last position and the background
+            -- scanner keeps checking until a new horse appears on this island.
+            if not CurrentTarget then
+                status.Text = "Waiting for new horse..."
+                status.TextColor3 = Color3.fromRGB(150,155,165)
+            end
+            CurrentTarget = nil
+            CurrentTargetUID = nil
+            CurrentTargetIsland = nil
+            task.wait(0.08)
+        end
+    end)
+end
+
+button.Activated:Connect(function()
+    local ok, err = pcall(function()
+        if Farming then stopFarm() else startFarm() end
+    end)
+    if not ok then
+        Farming = false
+        SetMinimized(false)
+        button.Text = "START"
+        button.BackgroundColor3 = Color3.fromRGB(57,255,20)
+        button.TextColor3 = Color3.fromRGB(10,10,10)
+        status.Text = "Start error: " .. tostring(err)
+        status.TextColor3 = Color3.fromRGB(239,68,68)
+        warn("[NORMS START ERROR]", err)
+    end
+end)
+
+--// BUTTON SANITY CHECK
+pcall(function()
+    assert(button and button:IsA("TextButton"), "Start button was not created")
+    assert(AutoTravelButton and AutoTravelButton:IsA("TextButton"), "Travel finder button was not created")
+    assert(AutoSellRemoteButton and AutoSellRemoteButton:IsA("TextButton"), "Sell finder button was not created")
+end)
+
+--// FARM SCAN LOOP
+-- Only scan horses while farming is actually running. This avoids a constant
+-- Workspace descendant scan when the UI is idle and prevents unnecessary lag.
+task.spawn(function()
+    while gui.Parent do
+        if Farming then
+            ScanHorses()
+            local island = GetCurrentPlayerIsland()
+            islandText.Text = "Island: " .. tostring(island or "?")
+        end
+        task.wait(SCAN_INTERVAL)
+    end
+end)
+
+--// Cleanly stop on character removal so movement state is never left active.
+LocalPlayer.CharacterAdded:Connect(function(char)
+    task.defer(function()
+        if Farming then
+            SetNoClip(true)
+        end
+    end)
+end)
+
+LocalPlayer.CharacterRemoving:Connect(function()
+    CharacterAnchored = false
+    CurrentTarget = nil
+    CurrentTargetUID = nil
+    CurrentTargetIsland = nil
+end)
+
+
+--// LOW-LOAD VISUAL CLEANUP
+-- Remove common image/effect objects and make world parts white SmoothPlastic.
+-- This is deliberately delayed and batched so execution does not freeze the UI.
+local function OptimizeVisuals()
+    local destroyClasses = {
+        Decal=true, Texture=true, SurfaceAppearance=true, ParticleEmitter=true,
+        Trail=true, Beam=true, Smoke=true, Fire=true, Sparkles=true, Highlight=true
+    }
+    local processed = 0
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            pcall(function()
+                obj.Material = Enum.Material.SmoothPlastic
+                obj.Color = Color3.new(1,1,1)
+                if obj:IsA("MeshPart") then obj.TextureID = "" end
+            end)
+        elseif obj:IsA("SpecialMesh") then
+            pcall(function() obj.TextureId = "" end)
+        elseif destroyClasses[obj.ClassName] then
+            pcall(function() obj:Destroy() end)
+        end
+        processed += 1
+        if processed % 150 == 0 then task.wait() end
+    end
+
+    local Lighting = game:GetService("Lighting")
+    for _, obj in ipairs(Lighting:GetChildren()) do
+        if obj:IsA("BloomEffect") or obj:IsA("BlurEffect") or obj:IsA("ColorCorrectionEffect")
+            or obj:IsA("SunRaysEffect") or obj:IsA("DepthOfFieldEffect") or obj:IsA("Atmosphere") then
+            pcall(function() obj:Destroy() end)
+        end
+    end
+end
+
+task.delay(2, function()
+    pcall(OptimizeVisuals)
+end)
+
+print("[NORMS] Minimal farmer loaded. Inventory refresh is manual; Sell Remote detection refreshes once after each Event test.")
+print("[NORMS] Scans all loaded islands in the current server; Travel Remote can move to the selected island automatically.")
