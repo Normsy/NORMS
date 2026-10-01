@@ -2284,6 +2284,9 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 --// CURRENT ISLAND
+--// The horse scanner is intentionally NOT limited by this island.
+--// ScanHorses() scans every loaded island, including very distant islands.
+--// If the chosen horse belongs to another island, startFarm() travels there first.
 GetCurrentPlayerIsland = function()
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -2401,9 +2404,11 @@ local function startFarm()
                 continue
             end
 
-            -- ScanHorses() already scans every island loaded in the current server.
-            -- Do not restrict candidates to the current island: the old tracker would
-            -- select a horse from another island and use the Travel Remote to reach it.
+            -- ScanHorses() scans EVERY loaded island in Workspace.Islands.
+            -- Distance does NOT disqualify a horse. The closest horse is only used as
+            -- the final tie-breaker after all rarity/category priorities.
+            -- If the selected horse is on another island, travel there FIRST, then
+            -- reacquire its target part and move to the horse.
             local candidates = {}
             for _, horse in ipairs(ScanHorses()) do
                 if horse.Model and horse.Model.Parent then
@@ -2426,7 +2431,7 @@ local function startFarm()
             local target = candidates[1]
             if not target then
                 CurrentTarget = nil
-                status.Text = "Scanning this island..."
+                status.Text = "Scanning all islands..."
                 status.TextColor3 = Color3.fromRGB(150,155,165)
                 task.wait(0.25)
                 continue
@@ -2458,7 +2463,7 @@ local function startFarm()
                 -- use the configured Travel Remote to travel there before tweening to it.
                 local currentIslandBeforeTravel = GetCurrentPlayerIsland()
                 if currentIslandBeforeTravel ~= target.Island then
-                    -- Horse is on a different island: travel first, then tween to it.
+                    -- Horse is on a different island, no matter how far away: travel FIRST, then tween to it.
                     local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
                     if remoteName == "" then
                         status.Text = "Set Travel Remote in Settings"
