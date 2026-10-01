@@ -17,6 +17,13 @@ local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
 
+-- Forward declarations for controls referenced by callbacks later in the file.
+local AutoTravelButton
+local AutoTravelStatus
+local AutoSellRemoteButton
+local AutoSellRemoteStatus
+local GetCurrentPlayerIsland
+
 --// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
 --// Matches the old NORMS script: blank RemoteFunctions become Function1, Function2, ...
 --// and blank RemoteEvents become Event1, Event2, ...
@@ -148,7 +155,7 @@ local function selectOo()
     hindiBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 end
 
-ooBox.MouseButton1Click:Connect(function()
+ooBox.Activated:Connect(function()
     -- Only one checkbox can be selected at a time.
     selectOo()
 
@@ -161,7 +168,7 @@ ooBox.MouseButton1Click:Connect(function()
     end
 end)
 
-hindiBox.MouseButton1Click:Connect(function()
+hindiBox.Activated:Connect(function()
     -- Select Hindi exclusively, then kick before the main NORMS UI loads.
     selectedAnswer = "Hindi"
     ooBox.Text = "[ ]  Oo"
@@ -428,7 +435,7 @@ for i = 1, 90 do
     b.ZIndex = 101
     b.LayoutOrder = i
     b.Parent = RemoteList
-    b.MouseButton1Click:Connect(function()
+    b.Activated:Connect(function()
         SelectedSellRemote = name
         RemoteDrop.Text = "Remote: " .. name
         SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
@@ -463,7 +470,7 @@ for i, rarity in ipairs(rarityOptions) do
     b.ZIndex = 101
     b.LayoutOrder = i
     b.Parent = RarityList
-    b.MouseButton1Click:Connect(function()
+    b.Activated:Connect(function()
         SelectedSellRarity = rarity
         RarityDrop.Text = "Rarity: " .. rarity
         SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
@@ -519,11 +526,11 @@ AutoSellRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
 AutoSellRemoteStatus.TextWrapped = true
 AutoSellRemoteStatus.Parent = SellingFrame
 
-RemoteDrop.MouseButton1Click:Connect(function()
+RemoteDrop.Activated:Connect(function()
     RarityList.Visible = false
     RemoteList.Visible = not RemoteList.Visible
 end)
-RarityDrop.MouseButton1Click:Connect(function()
+RarityDrop.Activated:Connect(function()
     RemoteList.Visible = false
     RarityList.Visible = not RarityList.Visible
 end)
@@ -650,13 +657,13 @@ for i = 1, 90 do
     opt.TextSize = 8
     opt.Font = Enum.Font.Gotham
     opt.Parent = TravelList
-    opt.MouseButton1Click:Connect(function()
+    opt.Activated:Connect(function()
         TravelRemoteBox.Text = funcName
         TravelList.Visible = false
     end)
 end
 
-TravelDropdown.MouseButton1Click:Connect(function()
+TravelDropdown.Activated:Connect(function()
     TravelList.Visible = not TravelList.Visible
 end)
 
@@ -802,7 +809,7 @@ local function FindHopServer()
     return nil
 end
 
-HopButton.MouseButton1Click:Connect(function()
+HopButton.Activated:Connect(function()
     if HopButton:GetAttribute("Hopping") then return end
 
     HopButton:SetAttribute("Hopping", true)
@@ -858,7 +865,7 @@ local function SetMinimized(value)
     end
 end
 
-minimizeButton.MouseButton1Click:Connect(function()
+minimizeButton.Activated:Connect(function()
     SetMinimized(not minimized)
 end)
 
@@ -1024,14 +1031,14 @@ SetTab = function(tabName)
     SettingsTab.TextColor3 = settingsVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
 end
 
-MainTab.MouseButton1Click:Connect(function()
+MainTab.Activated:Connect(function()
     SetTab("Main")
 end)
-SellingTab.MouseButton1Click:Connect(function()
+SellingTab.Activated:Connect(function()
     SetTab("Selling")
 end)
 
-SettingsTab.MouseButton1Click:Connect(function()
+SettingsTab.Activated:Connect(function()
     SetTab("Settings")
 end)
 
@@ -1260,11 +1267,6 @@ end
 local SellingReferences
 local SellingInventory
 local SellingInventoryLoaded = false
-local AutoTravelButton
-local AutoTravelStatus
-local AutoSellRemoteButton
-local AutoSellRemoteStatus
-local GetCurrentPlayerIsland
 
 local BreedDisplayNames = {
     ["akhal teke"] = "Akhal-Teke Horse", ["akhal-teke"] = "Akhal-Teke Horse",
@@ -1437,7 +1439,7 @@ local function GetSelectedSellRemote()
     return remote
 end
 
-SellButton.MouseButton1Click:Connect(function()
+SellButton.Activated:Connect(function()
     local remote, err = GetSelectedSellRemote()
     if not remote then
         SellStatus.Text = err
@@ -1850,6 +1852,7 @@ local function IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
 end
 
 local function DetectTravelRemote()
+    if not AutoTravelButton then return end
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
     AutoTravelButton.Text = "FINDING TRAVEL REMOTE..."
@@ -1889,39 +1892,25 @@ local function DetectTravelRemote()
                 local beforePosition = beforeRoot and beforeRoot.Position
 
                 local invokeOK = pcall(function()
-                    return remote:InvokeServer("Travel", currentIsland, 1)
+                    remote:InvokeServer("Travel", currentIsland, 1)
                 end)
 
                 local moved = false
                 local elapsed = 0
 
-                -- Watch the character for the remainder of this 1-second test.
-                -- A CFrame change OR a position change means this Function moved
-                -- the character and is therefore treated as the Travel Remote.
+                -- One-second observation window. A position OR orientation change
+                -- identifies the Function that actually moved the character.
                 while elapsed < 1 do
                     task.wait(0.05)
                     elapsed += 0.05
 
                     local char = LocalPlayer.Character
                     local root = char and char:FindFirstChild("HumanoidRootPart")
-                    if root and beforeRoot and root == beforeRoot then
-                        local cframeChanged = false
-                        local positionChanged = false
-
-                        if beforeCFrame then
-                            cframeChanged = (root.CFrame ~= beforeCFrame)
-                        end
-                        if beforePosition then
-                            positionChanged = ((root.Position - beforePosition).Magnitude > 0.05)
-                        end
-
-                        if cframeChanged or positionChanged then
-                            moved = true
-                            break
-                        end
-                    elseif root and beforePosition then
-                        -- Character/root was replaced: compare the new position.
-                        if (root.Position - beforePosition).Magnitude > 0.05 then
+                    if root and beforePosition and beforeCFrame then
+                        local positionChanged = (root.Position - beforePosition).Magnitude > 0.05
+                        local orientationChanged = (root.CFrame.LookVector - beforeCFrame.LookVector).Magnitude > 0.001
+                            or (root.CFrame.UpVector - beforeCFrame.UpVector).Magnitude > 0.001
+                        if positionChanged or orientationChanged then
                             moved = true
                             break
                         end
@@ -1961,6 +1950,7 @@ local function InventoryHasUID(inv, uid)
 end
 
 local function DetectSellRemote()
+    if not AutoSellRemoteButton then return end
     if AutoSellRemoteButton:GetAttribute("Busy") then return end
     AutoSellRemoteButton:SetAttribute("Busy", true)
     AutoSellRemoteButton.Text = "TESTING EVENT1-90..."
@@ -2075,8 +2065,24 @@ local function DetectSellRemote()
     end)
 end
 
-AutoTravelButton.MouseButton1Click:Connect(DetectTravelRemote)
-AutoSellRemoteButton.MouseButton1Click:Connect(DetectSellRemote)
+AutoTravelButton.Activated:Connect(function()
+    local ok, err = pcall(DetectTravelRemote)
+    if not ok then
+        AutoTravelButton:SetAttribute("Busy", false)
+        AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
+        AutoTravelStatus.Text = "Error: " .. tostring(err)
+        warn("[NORMS TRAVEL FINDER ERROR]", err)
+    end
+end)
+AutoSellRemoteButton.Activated:Connect(function()
+    local ok, err = pcall(DetectSellRemote)
+    if not ok then
+        AutoSellRemoteButton:SetAttribute("Busy", false)
+        AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
+        AutoSellRemoteStatus.Text = "Error: " .. tostring(err)
+        warn("[NORMS SELL FINDER ERROR]", err)
+    end
+end)
 
 local function invalidate()
     ScanCache = {}
@@ -2107,16 +2113,23 @@ GetCurrentPlayerIsland = function()
     local closestName, closestDistance = nil, math.huge
     for _, island in ipairs(islands:GetChildren()) do
         if island:IsA("Folder") or island:IsA("Model") then
-            local pivot
-            if island:IsA("Model") then
-                pcall(function() pivot = island:GetPivot() end)
+            for _, obj in ipairs(island:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    local d = (root.Position - obj.Position).Magnitude
+                    if d < closestDistance then
+                        closestDistance = d
+                        closestName = island.Name
+                    end
+                end
             end
-            pivot = pivot or (island:FindFirstChildWhichIsA("BasePart", true) and island:FindFirstChildWhichIsA("BasePart", true).CFrame)
-            if pivot then
-                local d = (root.Position - pivot.Position).Magnitude
-                if d < closestDistance then
-                    closestDistance = d
-                    closestName = island.Name
+            if island:IsA("Model") then
+                local ok, pivot = pcall(function() return island:GetPivot() end)
+                if ok and pivot then
+                    local d = (root.Position - pivot.Position).Magnitude
+                    if d < closestDistance then
+                        closestDistance = d
+                        closestName = island.Name
+                    end
                 end
             end
         end
@@ -2416,8 +2429,26 @@ local function startFarm()
     end)
 end
 
-button.MouseButton1Click:Connect(function()
-    if Farming then stopFarm() else startFarm() end
+button.Activated:Connect(function()
+    local ok, err = pcall(function()
+        if Farming then stopFarm() else startFarm() end
+    end)
+    if not ok then
+        Farming = false
+        button.Text = "START"
+        button.BackgroundColor3 = Color3.fromRGB(57,255,20)
+        button.TextColor3 = Color3.fromRGB(10,10,10)
+        status.Text = "Start error: " .. tostring(err)
+        status.TextColor3 = Color3.fromRGB(239,68,68)
+        warn("[NORMS START ERROR]", err)
+    end
+end)
+
+--// BUTTON SANITY CHECK
+pcall(function()
+    assert(button and button:IsA("TextButton"), "Start button was not created")
+    assert(AutoTravelButton and AutoTravelButton:IsA("TextButton"), "Travel finder button was not created")
+    assert(AutoSellRemoteButton and AutoSellRemoteButton:IsA("TextButton"), "Sell finder button was not created")
 end)
 
 --// BACKGROUND SCAN LOOP: always scans, but does not create a tracker/list UI.
