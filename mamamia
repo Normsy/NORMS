@@ -2649,6 +2649,11 @@ print("[NORMS] Scans all loaded islands in the current server; Travel Remote can
 -- Source: Selling..txt
 --==================================================
 
+-- Run the large inventory scanner in its own function scope.
+-- This prevents Lua/Delta from hitting the 200-local-register limit
+-- of the main chunk when both systems are combined.
+task.spawn(function()
+
 
 
 local Players = game:GetService("Players")
@@ -4999,6 +5004,8 @@ DisplayHorses()
 
 print("[HORSE SCANNER] Total inventory entries:",totalEntries)
 print("[HORSE SCANNER] Horse profiles found:",#HorseList)
+
+end)
 ]=]
 
 status("compiling combined script...")
