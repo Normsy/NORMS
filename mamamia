@@ -1,11 +1,3 @@
--- V29 UPDATE: Keep V27 UI/behavior. Selling inventory is manually refreshable (no periodic inventory scan).
--- Selling filters are category-based: All, Normal Horse, Natural Dyed Hair, Island Unique Hair,
--- Island Unique Coat, Mismatched Hair, Horned. Low/Mid/High/Special rarity filters were removed.
---// NORMS MINIMAL HORSE FARMER
---// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
---// Background horse scan + manual island travel + manual lasso + screen clicking.
---// Press START after manually travelling to the island you want to farm.
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CollectionService = game:GetService("CollectionService")
@@ -298,12 +290,19 @@ for _, tab in ipairs({MainTab, SellingTab, SettingsTab}) do
     c.Parent = tab
 end
 
-local SellingFrame = Instance.new("Frame")
+local SellingFrame = Instance.new("ScrollingFrame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -12, 0, 298)
+SellingFrame.Size = UDim2.new(1, -12, 0, 184)
 SellingFrame.Position = UDim2.fromOffset(6, 59)
 SellingFrame.BackgroundTransparency = 1
+SellingFrame.BorderSizePixel = 0
 SellingFrame.Visible = false
+SellingFrame.CanvasSize = UDim2.fromOffset(0, 330)
+SellingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SellingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+SellingFrame.ScrollBarThickness = 4
+SellingFrame.ScrollBarImageTransparency = 0.25
+SellingFrame.ScrollingEnabled = true
 SellingFrame.Parent = frame
 
 local SellingTitle = Instance.new("TextLabel")
@@ -1721,11 +1720,28 @@ end
 
 -- Keep horse models and their parent containers, while removing unrelated
 -- visual models from Workspace. This is client-side and does not affect the server.
+local function IsLassoProtected(instance)
+    -- Protect the model itself AND every model inside a Lasso-named model.
+    -- This prevents a parent Lasso model from being deleted before its children
+    -- are checked by the cleanup loop.
+    local current = instance
+    while current and current ~= Workspace do
+        if current:IsA("Model") then
+            local name = tostring(current.Name):lower()
+            if name:find("lasso", 1, true) then
+                return true
+            end
+        end
+        current = current.Parent
+    end
+    return false
+end
+
 local function IsHorseOrHorseContainer(model)
     if not model:IsA("Model") then return false end
     if isHorse(model) then return true end
     for _, descendant in ipairs(model:GetDescendants()) do
-        if descendant:IsA("Model") and isHorse(descendant) then
+        if descendant:IsA("Model") and (isHorse(descendant) or IsLassoProtected(descendant)) then
             return true
         end
     end
@@ -1737,11 +1753,11 @@ local function RemoveNonHorseModels()
         if model:IsA("Model") and model.Parent then
             local keep = false
             pcall(function()
-                local modelName = tostring(model.Name):lower()
                 if model == LocalPlayer.Character then
                     keep = true
-                elseif modelName:find("lasso", 1, true) then
-                    -- Keep any model with "Lasso" in its name.
+                elseif IsLassoProtected(model) then
+                    -- NEVER delete a model named Lasso/lasso, or anything
+                    -- contained inside a Lasso-named model.
                     keep = true
                 elseif IsHorseOrHorseContainer(model) then
                     keep = true
@@ -1770,7 +1786,7 @@ Workspace.DescendantAdded:Connect(function(obj)
                 or obj:IsA("SurfaceLight") then
                 obj:Destroy()
             elseif obj:IsA("Model") and obj.Parent and obj ~= LocalPlayer.Character then
-                if not IsHorseOrHorseContainer(obj) then
+                if not IsLassoProtected(obj) and not IsHorseOrHorseContainer(obj) then
                     obj:Destroy()
                 end
             end
