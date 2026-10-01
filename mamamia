@@ -1,3 +1,4 @@
+-- V20 UPDATE: Manual selling only. NO automatic 5-minute auto-sell loop.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
