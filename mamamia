@@ -122,7 +122,7 @@ gui.Enabled = true
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(270, 380)
+frame.Size = UDim2.fromOffset(270, 320)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
@@ -131,7 +131,7 @@ frame.Parent = gui
 
 local function CenterMainFrame()
     frame.AnchorPoint = Vector2.new(0.5, 0)
-    frame.Position = UDim2.new(0.5, 0, 0.5, -190)
+    frame.Position = UDim2.new(0.5, 0, 0, 10)
 end
 CenterMainFrame()
 if Workspace.CurrentCamera then
@@ -977,7 +977,7 @@ local Theme = {
     danger  = Color3.fromRGB(153, 40, 44),
     dangerHover = Color3.fromRGB(185, 52, 56),
 }
-local W, H = 270, 380
+local W, H = 270, 320
 
 local function tween(obj, props, t)
     TweenService:Create(obj, TweenInfo.new(t or 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
@@ -1094,7 +1094,7 @@ button.TextSize = 13
 button.AutoButtonColor = false
 Round(button, 10)
 
-local infoCard = Box(frame, 10, 122, 250, 66, Theme.surface, 10)
+local infoCard = Box(frame, 10, 122, 250, 48, Theme.surface, 10)
 infoCard.ZIndex = 0
 Stroke(infoCard, Theme.stroke, 1)
 
@@ -1105,14 +1105,14 @@ islandText.TextSize = 11
 islandText.TextColor3 = Theme.muted
 
 status.Position = UDim2.fromOffset(24, 150)
-status.Size = UDim2.fromOffset(222, 36)
+status.Size = UDim2.fromOffset(222, 20)
 status.Font = Enum.Font.GothamMedium
 status.TextSize = 12
 status.TextYAlignment = Enum.TextYAlignment.Top
 
 local hint = Instance.new("TextLabel")
 hint.BackgroundTransparency = 1
-hint.Position = UDim2.fromOffset(12, 346)
+hint.Position = UDim2.fromOffset(12, 290)
 hint.Size = UDim2.fromOffset(246, 28)
 hint.Font = Enum.Font.Gotham
 hint.TextSize = 10
@@ -2727,8 +2727,8 @@ do
 
     local dash = Instance.new("Frame")
     dash.Name = "Dashboard"
-    dash.Position = UDim2.fromOffset(10, 196)
-    dash.Size = UDim2.fromOffset(250, 146)
+    dash.Position = UDim2.fromOffset(10, 178)
+    dash.Size = UDim2.fromOffset(250, 108)
     dash.BackgroundColor3 = Color3.fromRGB(24, 24, 29)
     dash.BorderSizePixel = 0
     dash.Parent = frame
@@ -2750,7 +2750,7 @@ do
     list.BackgroundTransparency = 1
     list.BorderSizePixel = 0
     list.Position = UDim2.fromOffset(4, 22)
-    list.Size = UDim2.fromOffset(242, 120)
+    list.Size = UDim2.fromOffset(242, 82)
     list.ScrollBarThickness = 3
     list.CanvasSize = UDim2.new()
     list.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -2847,6 +2847,19 @@ do
     SetMinimized = function(v)
         baseSetMinimized(v)
         dash.Visible = (not v) and ActiveTab == "Main"
+    end
+
+    -- Auto-fit the whole window to the screen (small phone screens)
+    local uiScale = frame:FindFirstChildOfClass("UIScale")
+    local function Fit()
+        local cam = Workspace.CurrentCamera
+        if not cam or not uiScale then return end
+        local vs = cam.ViewportSize
+        uiScale.Scale = math.clamp(math.min((vs.Y - 20) / 320, (vs.X - 20) / 270), 0.5, 1)
+    end
+    task.delay(0.4, Fit)
+    if Workspace.CurrentCamera then
+        Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(Fit)
     end
 end
 
