@@ -1253,7 +1253,7 @@ end)
 --// SETTINGS
 local SCAN_INTERVAL = 0.50
 local CATCH_INTERVAL = 0.50
-local TWEEN_SPEED = 95
+local TWEEN_SPEED = 90
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
 local CharacterAnchored = false
 local activeWeld = nil
@@ -1866,9 +1866,7 @@ local function ScanHorses()
                         PriorityCount = priorityStats.Count,
                         Position = pivot.Position,
                         Pivot = pivot,
-                        -- The horse Model name is the actual horse UID used by the
-                        -- catching RemoteEvent. Do not manufacture a UID from position.
-                        UID = tostring(node.Name)
+                        UID = node.Name .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
                     })
                 end
             end
@@ -2337,56 +2335,24 @@ end
 --// REMOTE CATCHING
 -- Catching no longer uses simulated screen/mouse clicks. The selected RemoteEvent
 -- is fired directly with the configured lasso UID and current horse model.
-function FireCatchRemote(horseModel, horseUID)
-    -- Exact catching structure:
-    -- RemoteEvent:FireServer(LassoUID, "Activate", TargetHorseModel)
-    -- The target model is resolved from the horse UID when possible, matching
-    -- the captured getNil("Target horse uid", "Model") structure.
+function FireCatchRemote(horseModel)
     local remoteName = tostring(CatchConfig.SelectedCatchRemote or (CatchConfig.CatchRemoteBox and CatchConfig.CatchRemoteBox.Text) or ""):match("^%s*(.-)%s*$")
     if remoteName == "" then
         return false, "Select a Catch Remote in Settings"
     end
-
-    local lassoUID = tostring(CatchConfig.ConfiguredLassoUID or ""):match("^%s*(.-)%s*$")
-    if lassoUID == "" then
+    if tostring(CatchConfig.ConfiguredLassoUID or "") == "" then
         return false, "Generate Lasso UID in Settings"
     end
 
     local comm = ReplicatedStorage:FindFirstChild("Communication")
     local eventsFolder = comm and comm:FindFirstChild("Events")
-    if not eventsFolder then
-        return false, "Communication.Events not found"
-    end
-
-    local catchEvent = eventsFolder:FindFirstChild(remoteName)
+    local catchEvent = eventsFolder and eventsFolder:FindFirstChild(remoteName)
     if not catchEvent or not catchEvent:IsA("RemoteEvent") then
         return false, "Catch Remote not found: " .. remoteName
     end
 
-    local targetModel = horseModel
-    local uid = tostring(horseUID or (horseModel and horseModel.Name) or ""):match("^%s*(.-)%s*$")
-
-    -- Prefer the live model already found by the scanner. If it disappeared
-    -- from that reference, resolve it again by its actual UID/name.
-    if (not targetModel or not targetModel:IsA("Model")) and uid ~= "" then
-        pcall(function()
-            if type(getnilinstances) == "function" then
-                for _, v in ipairs(getnilinstances()) do
-                    if v:IsA("Model") and v.Name == uid then
-                        targetModel = v
-                        break
-                    end
-                end
-            end
-        end)
-    end
-
-    if not targetModel or not targetModel:IsA("Model") then
-        return false, "Target horse model not found: " .. (uid ~= "" and uid or "unknown")
-    end
-
     local ok, err = pcall(function()
-        catchEvent:FireServer(lassoUID, "Activate", targetModel)
+        catchEvent:FireServer(CatchConfig.ConfiguredLassoUID, "Activate", horseModel)
     end)
     if not ok then
         return false, tostring(err)
@@ -2635,11 +2601,11 @@ local function startFarm()
                     status.TextColor3 = Color3.fromRGB(57,255,20)
                     task.wait(0.08)
 
-                    local caught = false
-                    local catchDeadline = tick() + 8
-                    while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
-                        -- Character stays anchored; no repeated island scan is needed here.
-                        -- Travel was already verified before the horse tween started.
+                    -- OLD NORMS CATCH STRUCTURE:
+                    -- Start catching only after the tween has fully reached the horse.
+                    -- Keep the character locked on the horse and repeatedly fire:
+                    -- CatchRemote:FireServer(LassoUID, "Activate", TargetHorseModel)
+                    while Farming and myGeneration == FarmGeneration and target.Model.Parent and humanoid.Health > 0 do
                         local catchOK, catchErr = FireCatchRemote(target.Model, target.UID)
                         if not catchOK then
                             status.Text = "Catch Error: " .. tostring(catchErr)
@@ -2647,20 +2613,16 @@ local function startFarm()
                             task.wait(0.5)
                             break
                         end
+
                         status.Text = "Catching: " .. target.Name .. " (Remote)"
                         status.TextColor3 = Color3.fromRGB(57,255,20)
 
-                        -- Horse disappearance/ownership change is treated as success.
-                        if not target.Model.Parent or isOwned(target.Model) then
-                            caught = true
-                            break
-                        end
-
-                        task.wait(CATCH_INTERVAL)
+                        -- Match the old script's catch interval.
+                        task.wait(0.2)
                     end
-                                    -- After a successful catch, stay exactly where the last horse was.
-                    -- Do not reset, respawn, teleport away, or move to another island.
-                    if caught and root and root.Parent then
+
+                    -- Old script cleanup: release the character after the catch loop.
+                    if root and root.Parent then
                         local lastStandCFrame = root.CFrame
                         SetCharacterAnchored(false)
                         pcall(function()
@@ -2668,11 +2630,11 @@ local function startFarm()
                             root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                             root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                         end)
-                        status.Text = "Caught: " .. target.Name .. " | Waiting for new horse..."
-                        status.TextColor3 = Color3.fromRGB(57,255,20)
                     else
                         SetCharacterAnchored(false)
                     end
+                    status.Text = "Caught: " .. target.Name .. " | Waiting for new horse..."
+                    status.TextColor3 = Color3.fromRGB(57,255,20)
                     invalidate()
                 end
             end
