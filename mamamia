@@ -1,3 +1,35 @@
+-- NORMS SAFE LAUNCHER
+-- This wrapper guarantees a visible status panel and catches startup errors.
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+if not player then return end
+
+local pg = player:WaitForChild("PlayerGui")
+local old = pg:FindFirstChild("NORMSLauncherStatus")
+if old then old:Destroy() end
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "NORMSLauncherStatus"
+sg.ResetOnSpawn = false
+sg.IgnoreGuiInset = true
+sg.Parent = pg
+
+local box = Instance.new("TextLabel")
+box.Size = UDim2.fromOffset(430, 70)
+box.Position = UDim2.new(0.5, -215, 0, 30)
+box.BackgroundColor3 = Color3.fromRGB(20,20,24)
+box.TextColor3 = Color3.fromRGB(255,255,255)
+box.TextSize = 13
+box.Font = Enum.Font.Gotham
+box.TextWrapped = true
+box.Text = "NORMS: starting..."
+box.Parent = sg
+
+local function status(t)
+    box.Text = "NORMS: " .. tostring(t)
+end
+
+local source = [=[
 --[[
 NORMS COMBINED HORSE FARM + INVENTORY MANAGER
 Base: My Script.txt
@@ -4967,3 +4999,28 @@ DisplayHorses()
 
 print("[HORSE SCANNER] Total inventory entries:",totalEntries)
 print("[HORSE SCANNER] Horse profiles found:",#HorseList)
+]=]
+
+status("compiling combined script...")
+local fn, compileErr = loadstring(source)
+if not fn then
+    status("COMPILE ERROR:\n" .. tostring(compileErr))
+    warn("[NORMS] COMPILE ERROR:", compileErr)
+    return
+end
+
+status("running combined script...")
+local ok, runErr = xpcall(fn, function(err)
+    return debug.traceback(tostring(err), 2)
+end)
+
+if not ok then
+    status("RUNTIME ERROR:\n" .. tostring(runErr))
+    warn("[NORMS] RUNTIME ERROR:\n" .. tostring(runErr))
+    return
+end
+
+status("NORMS started successfully")
+task.delay(3, function()
+    if sg then sg:Destroy() end
+end)
