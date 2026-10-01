@@ -1127,7 +1127,7 @@ end)
 --// SETTINGS
 local SCAN_INTERVAL = 0.50
 local CATCH_INTERVAL = 0.50
-local TWEEN_SPEED = 90
+local TWEEN_SPEED = 95
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
 local CharacterAnchored = false
 local activeWeld = nil
@@ -1720,6 +1720,12 @@ end
 
 -- Keep horse models and their parent containers, while removing unrelated
 -- visual models from Workspace. This is client-side and does not affect the server.
+local function IsIslandProtected(instance)
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands or not instance then return false end
+    return instance == islands or instance:IsDescendantOf(islands)
+end
+
 local function IsLassoProtected(instance)
     -- Protect the model itself AND every model inside a Lasso-named model.
     -- This prevents a parent Lasso model from being deleted before its children
@@ -1755,6 +1761,9 @@ local function RemoveNonHorseModels()
             pcall(function()
                 if model == LocalPlayer.Character then
                     keep = true
+                elseif IsIslandProtected(model) then
+                    -- Never delete island containers/geometry; the scanner needs every island.
+                    keep = true
                 elseif IsLassoProtected(model) then
                     -- NEVER delete a model named Lasso/lasso, or anything
                     -- contained inside a Lasso-named model.
@@ -1786,7 +1795,7 @@ Workspace.DescendantAdded:Connect(function(obj)
                 or obj:IsA("SurfaceLight") then
                 obj:Destroy()
             elseif obj:IsA("Model") and obj.Parent and obj ~= LocalPlayer.Character then
-                if not IsLassoProtected(obj) and not IsHorseOrHorseContainer(obj) then
+                if not IsIslandProtected(obj) and not IsLassoProtected(obj) and not IsHorseOrHorseContainer(obj) then
                     obj:Destroy()
                 end
             end
@@ -1795,8 +1804,11 @@ Workspace.DescendantAdded:Connect(function(obj)
 end)
 
 local function isOwned(node)
-    for attrKey, attrVal in pairs(node:GetAttributes()) do
-        if attrKey:lower() == "owner" and attrVal ~= nil and tostring(attrVal) ~= "" then
+    if not node then return false end
+    -- Any Owner attribute means this is not a wild/unowned horse.
+    -- The attribute is rejected even when its value is empty.
+    for attrKey in pairs(node:GetAttributes()) do
+        if tostring(attrKey):lower() == "owner" then
             return true
         end
     end
@@ -1835,7 +1847,7 @@ local function ScanHorses()
         for _, node in ipairs(container:GetChildren()) do
             if (node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal"))) and not isHorse(node) then
                 ScanContainer(node, islandName)
-            elseif not seen[node] and isHorse(node) and CanGoToHorse(node) and not isOwned(node) and not isInShop(node) then
+            elseif not seen[node] and isHorse(node) and not isOwned(node) and CanGoToHorse(node) and not isInShop(node) then
                 seen[node] = true
                 local pivot = getHorsePivot(node)
                 if pivot then
@@ -2284,9 +2296,6 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 --// CURRENT ISLAND
---// The horse scanner is intentionally NOT limited by this island.
---// ScanHorses() scans every loaded island, including very distant islands.
---// If the chosen horse belongs to another island, startFarm() travels there first.
 GetCurrentPlayerIsland = function()
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -2404,11 +2413,9 @@ local function startFarm()
                 continue
             end
 
-            -- ScanHorses() scans EVERY loaded island in Workspace.Islands.
-            -- Distance does NOT disqualify a horse. The closest horse is only used as
-            -- the final tie-breaker after all rarity/category priorities.
-            -- If the selected horse is on another island, travel there FIRST, then
-            -- reacquire its target part and move to the horse.
+            -- ScanHorses() already scans every island loaded in the current server.
+            -- Do not restrict candidates to the current island: the old tracker would
+            -- select a horse from another island and use the Travel Remote to reach it.
             local candidates = {}
             for _, horse in ipairs(ScanHorses()) do
                 if horse.Model and horse.Model.Parent then
@@ -2431,7 +2438,7 @@ local function startFarm()
             local target = candidates[1]
             if not target then
                 CurrentTarget = nil
-                status.Text = "Scanning all islands..."
+                status.Text = "Scanning this island..."
                 status.TextColor3 = Color3.fromRGB(150,155,165)
                 task.wait(0.25)
                 continue
@@ -2463,7 +2470,7 @@ local function startFarm()
                 -- use the configured Travel Remote to travel there before tweening to it.
                 local currentIslandBeforeTravel = GetCurrentPlayerIsland()
                 if currentIslandBeforeTravel ~= target.Island then
-                    -- Horse is on a different island, no matter how far away: travel FIRST, then tween to it.
+                    -- Horse is on a different island: travel first, then tween to it.
                     local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
                     if remoteName == "" then
                         status.Text = "Set Travel Remote in Settings"
