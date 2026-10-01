@@ -1,4 +1,6 @@
--- V28 UPDATE: Keep V27 UI/behavior. Inventory is NOT auto-refreshed. Selling tab has a manual REFRESH INVENTORY button. Auto Find Sell Remote refreshes inventory once after each Event test and checks whether the target Normal Horse UID disappeared.
+-- V29 UPDATE: Keep V27 UI/behavior. Selling inventory is manually refreshable (no periodic inventory scan).
+-- Selling filters are category-based: All, Normal Horse, Natural Dyed Hair, Island Unique Hair,
+-- Island Unique Coat, Mismatched Hair, Horned. Low/Mid/High/Special rarity filters were removed.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
@@ -200,7 +202,7 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(320, 360)
+frame.Size = UDim2.fromOffset(285, 335)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
@@ -222,11 +224,11 @@ corner.Parent = frame
 
 local title = Instance.new("TextLabel")
 title.BackgroundTransparency = 1
-title.Size = UDim2.new(1, -20, 0, 28)
-title.Position = UDim2.fromOffset(10, 6)
+title.Size = UDim2.new(1, -18, 0, 25)
+title.Position = UDim2.fromOffset(8, 5)
 title.Font = Enum.Font.GothamBold
 title.Text = "NORMS FARM"
-title.TextSize = 16
+title.TextSize = 14
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = frame
@@ -234,13 +236,13 @@ title.Parent = frame
 --// MINIMIZE BUTTON
 local minimizeButton = Instance.new("TextButton")
 minimizeButton.Name = "MinimizeButton"
-minimizeButton.Size = UDim2.fromOffset(28, 26)
-minimizeButton.Position = UDim2.new(1, -34, 0, 7)
+minimizeButton.Size = UDim2.fromOffset(24, 22)
+minimizeButton.Position = UDim2.new(1, -29, 0, 6)
 minimizeButton.BackgroundTransparency = 1
 minimizeButton.Text = "-"
 minimizeButton.TextColor3 = Color3.fromRGB(220,220,225)
 minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.TextSize = 20
+minimizeButton.TextSize = 17
 minimizeButton.AutoButtonColor = true
 minimizeButton.ZIndex = 10
 minimizeButton.Parent = frame
@@ -256,37 +258,37 @@ local SetTab
 --// TABS
 local MainTab = Instance.new("TextButton")
 MainTab.Name = "MainTab"
-MainTab.Size = UDim2.fromOffset(68, 24)
-MainTab.Position = UDim2.fromOffset(8, 36)
+MainTab.Size = UDim2.fromOffset(60, 22)
+MainTab.Position = UDim2.fromOffset(6, 32)
 MainTab.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
 MainTab.TextColor3 = Color3.fromRGB(10, 10, 10)
 MainTab.BorderSizePixel = 0
 MainTab.Font = Enum.Font.GothamBold
-MainTab.TextSize = 10
+MainTab.TextSize = 9
 MainTab.Text = "MAIN"
 MainTab.Parent = frame
 
 local SellingTab = Instance.new("TextButton")
 SellingTab.Name = "SellingTab"
-SellingTab.Size = UDim2.fromOffset(88, 24)
-SellingTab.Position = UDim2.fromOffset(82, 36)
+SellingTab.Size = UDim2.fromOffset(76, 22)
+SellingTab.Position = UDim2.fromOffset(70, 32)
 SellingTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
 SellingTab.Font = Enum.Font.GothamBold
-SellingTab.TextSize = 10
+SellingTab.TextSize = 9
 SellingTab.Text = "SELLING"
 SellingTab.Parent = frame
 
 local SettingsTab = Instance.new("TextButton")
 SettingsTab.Name = "SettingsTab"
-SettingsTab.Size = UDim2.fromOffset(88, 24)
-SettingsTab.Position = UDim2.fromOffset(176, 36)
+SettingsTab.Size = UDim2.fromOffset(76, 22)
+SettingsTab.Position = UDim2.fromOffset(150, 32)
 SettingsTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SettingsTab.BorderSizePixel = 0
 SettingsTab.Font = Enum.Font.GothamBold
-SettingsTab.TextSize = 10
+SettingsTab.TextSize = 9
 SettingsTab.Text = "SETTINGS"
 SettingsTab.Parent = frame
 
@@ -298,8 +300,8 @@ end
 
 local SellingFrame = Instance.new("Frame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -16, 0, 285)
-SellingFrame.Position = UDim2.fromOffset(8, 66)
+SellingFrame.Size = UDim2.new(1, -12, 0, 298)
+SellingFrame.Position = UDim2.fromOffset(6, 59)
 SellingFrame.BackgroundTransparency = 1
 SellingFrame.Visible = false
 SellingFrame.Parent = frame
@@ -310,7 +312,7 @@ SellingTitle.Position = UDim2.fromOffset(0, 0)
 SellingTitle.BackgroundTransparency = 1
 SellingTitle.Text = "INVENTORY PRIORITY COUNTS"
 SellingTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellingTitle.TextSize = 12
+SellingTitle.TextSize = 10
 SellingTitle.Font = Enum.Font.GothamBold
 SellingTitle.TextXAlignment = Enum.TextXAlignment.Left
 SellingTitle.Parent = SellingFrame
@@ -321,21 +323,29 @@ SellingStatus.Position = UDim2.fromOffset(0, 22)
 SellingStatus.BackgroundTransparency = 1
 SellingStatus.Text = "Loading inventory..."
 SellingStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
-SellingStatus.TextSize = 9
+SellingStatus.TextSize = 8
 SellingStatus.Font = Enum.Font.Gotham
 SellingStatus.TextXAlignment = Enum.TextXAlignment.Left
 SellingStatus.Parent = SellingFrame
 
+-- Forward declarations used by the manual refresh callback. These MUST be above
+-- the callback so Lua closes over the correct locals instead of globals.
+local SellingReferences
+local SellingInventory
+local SellingInventoryLoaded = false
+local SellingLabels = {}
+local RefreshSellingStats
+
 -- Manual inventory refresh only. No background inventory refresh loop.
 local RefreshInventoryButton = Instance.new("TextButton")
 RefreshInventoryButton.Name = "RefreshInventoryButton"
-RefreshInventoryButton.Size = UDim2.fromOffset(112, 24)
+RefreshInventoryButton.Size = UDim2.fromOffset(100, 21)
 RefreshInventoryButton.Position = UDim2.new(1, -112, 0, 0)
 RefreshInventoryButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 RefreshInventoryButton.BorderSizePixel = 0
 RefreshInventoryButton.Text = "REFRESH INVENTORY"
 RefreshInventoryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-RefreshInventoryButton.TextSize = 8
+RefreshInventoryButton.TextSize = 7
 RefreshInventoryButton.Font = Enum.Font.GothamBold
 RefreshInventoryButton.AutoButtonColor = true
 RefreshInventoryButton.Parent = SellingFrame
@@ -372,7 +382,6 @@ end
 
 RefreshInventoryButton.Activated:Connect(RefreshInventoryManually)
 
-local SellingLabels = {}
 local sellingNames = {
     {"Normal Horse", Color3.fromRGB(180, 185, 195)},
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
@@ -385,8 +394,8 @@ local sellingNames = {
 
 for i, entry in ipairs(sellingNames) do
     local row = Instance.new("Frame")
-    row.Size = UDim2.new(1, 0, 0, 19)
-    row.Position = UDim2.fromOffset(0, 40 + ((i - 1) * 20))
+    row.Size = UDim2.new(1, 0, 0, 16)
+    row.Position = UDim2.fromOffset(0, 34 + ((i - 1) * 17))
     row.BackgroundColor3 = Color3.fromRGB(30, 30, 37)
     row.BorderSizePixel = 0
     row.Parent = SellingFrame
@@ -400,18 +409,18 @@ for i, entry in ipairs(sellingNames) do
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = entry[1]
     nameLabel.TextColor3 = entry[2]
-    nameLabel.TextSize = 9
+    nameLabel.TextSize = 8
     nameLabel.Font = Enum.Font.GothamBold
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
     nameLabel.Parent = row
 
     local valueLabel = Instance.new("TextLabel")
-    valueLabel.Size = UDim2.fromOffset(45, 19)
-    valueLabel.Position = UDim2.new(1, -50, 0, 0)
+    valueLabel.Size = UDim2.fromOffset(40, 16)
+    valueLabel.Position = UDim2.new(1, -44, 0, 0)
     valueLabel.BackgroundTransparency = 1
     valueLabel.Text = "0"
     valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    valueLabel.TextSize = 10
+    valueLabel.TextSize = 9
     valueLabel.Font = Enum.Font.GothamBold
     valueLabel.TextXAlignment = Enum.TextXAlignment.Right
     valueLabel.Parent = row
@@ -421,17 +430,17 @@ end
 --// SELL FILTER
 local SellFilterTitle = Instance.new("TextLabel")
 SellFilterTitle.Size = UDim2.new(1, 0, 0, 18)
-SellFilterTitle.Position = UDim2.fromOffset(0, 184)
+SellFilterTitle.Position = UDim2.fromOffset(0, 157)
 SellFilterTitle.BackgroundTransparency = 1
 SellFilterTitle.Text = "SELL FILTER"
 SellFilterTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellFilterTitle.TextSize = 11
+SellFilterTitle.TextSize = 9
 SellFilterTitle.Font = Enum.Font.GothamBold
 SellFilterTitle.TextXAlignment = Enum.TextXAlignment.Left
 SellFilterTitle.Parent = SellingFrame
 
 local SelectedSellRemote = "Event1"
-local SelectedSellRarity = "All"
+local SelectedSellCategory = "All"
 local SellStatus
 
 local function makeDropButton(text, position, width)
@@ -452,12 +461,12 @@ local function makeDropButton(text, position, width)
     return b
 end
 
-local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 205), 112)
-local RarityDrop = makeDropButton("Rarity: All", UDim2.fromOffset(116, 205), 112)
+local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 177), 100)
+local RarityDrop = makeDropButton("Filter: All", UDim2.fromOffset(104, 177), 100)
 
 local RemoteList = Instance.new("ScrollingFrame")
-RemoteList.Size = UDim2.fromOffset(112, 150)
-RemoteList.Position = UDim2.fromOffset(0, 232)
+RemoteList.Size = UDim2.fromOffset(100, 125)
+RemoteList.Position = UDim2.fromOffset(0, 204)
 RemoteList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
 RemoteList.BorderSizePixel = 0
 RemoteList.Visible = false
@@ -484,7 +493,7 @@ for i = 1, 90 do
     b.Activated:Connect(function()
         SelectedSellRemote = name
         RemoteDrop.Text = "Remote: " .. name
-        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Filter: " .. SelectedSellCategory
         RemoteList.Visible = false
     end)
 end
@@ -493,8 +502,8 @@ remoteLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 end)
 
 local RarityList = Instance.new("Frame")
-RarityList.Size = UDim2.fromOffset(112, 130)
-RarityList.Position = UDim2.fromOffset(116, 232)
+RarityList.Size = UDim2.fromOffset(100, 110)
+RarityList.Position = UDim2.fromOffset(104, 204)
 RarityList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
 RarityList.BorderSizePixel = 0
 RarityList.Visible = false
@@ -503,44 +512,55 @@ RarityList.Parent = SellingFrame
 local rarc = Instance.new("UICorner"); rarc.CornerRadius = UDim.new(0, 6); rarc.Parent = RarityList
 local rarityLayout = Instance.new("UIListLayout"); rarityLayout.SortOrder = Enum.SortOrder.LayoutOrder; rarityLayout.Parent = RarityList
 
-local rarityOptions = {"All", "Low", "Mid", "High", "Special"}
-for i, rarity in ipairs(rarityOptions) do
+local sellCategoryOptions = {
+    "All",
+    "Normal Horse",
+    "Natural Dyed Hair",
+    "Island Unique Hair",
+    "Island Unique Coat",
+    "Mismatched Hair",
+    "Horned"
+}
+
+for i, category in ipairs(sellCategoryOptions) do
     local b = Instance.new("TextButton")
-    b.Size = UDim2.new(1, 0, 0, 25)
+    b.Size = UDim2.new(1, 0, 0, 21)
     b.BackgroundColor3 = Color3.fromRGB(27, 27, 34)
     b.BorderSizePixel = 0
-    b.Text = rarity
+    b.Text = category
     b.TextColor3 = Color3.fromRGB(225, 225, 230)
-    b.TextSize = 9
+    b.TextSize = 8
     b.Font = Enum.Font.Gotham
     b.ZIndex = 101
     b.LayoutOrder = i
     b.Parent = RarityList
     b.Activated:Connect(function()
-        SelectedSellRarity = rarity
-        RarityDrop.Text = "Rarity: " .. rarity
-        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+        SelectedSellCategory = category
+        RarityDrop.Text = "Filter: " .. category
+        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Filter: " .. SelectedSellCategory
         RarityList.Visible = false
     end)
 end
 
+RarityList.Size = UDim2.fromOffset(100, 150)
+
 local SellButton = Instance.new("TextButton")
 SellButton.Size = UDim2.new(1, 0, 0, 28)
-SellButton.Position = UDim2.fromOffset(0, 234)
+SellButton.Position = UDim2.fromOffset(0, 207)
 SellButton.BackgroundColor3 = Color3.fromRGB(125, 35, 40)
 SellButton.BorderSizePixel = 0
 SellButton.Text = "SELL FILTERED"
 SellButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellButton.TextSize = 10
+SellButton.TextSize = 9
 SellButton.Font = Enum.Font.GothamBold
 SellButton.Parent = SellingFrame
 local sbc = Instance.new("UICorner"); sbc.CornerRadius = UDim.new(0, 6); sbc.Parent = SellButton
 
 SellStatus = Instance.new("TextLabel")
 SellStatus.Size = UDim2.new(1, 0, 0, 16)
-SellStatus.Position = UDim2.fromOffset(0, 263)
+SellStatus.Position = UDim2.fromOffset(0, 237)
 SellStatus.BackgroundTransparency = 1
-SellStatus.Text = "Remote: Event1 | Rarity: All"
+SellStatus.Text = "Remote: Event1 | Filter: All"
 SellStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
 SellStatus.TextSize = 8
 SellStatus.Font = Enum.Font.Gotham
@@ -550,7 +570,7 @@ SellStatus.Parent = SellingFrame
 AutoSellRemoteButton = Instance.new("TextButton")
 AutoSellRemoteButton.Name = "AutoFindSellRemote"
 AutoSellRemoteButton.Size = UDim2.new(1, 0, 0, 30)
-AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 257)
 AutoSellRemoteButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoSellRemoteButton.BorderSizePixel = 0
 AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
@@ -562,7 +582,7 @@ local asbc = Instance.new("UICorner"); asbc.CornerRadius = UDim.new(0, 6); asbc.
 
 AutoSellRemoteStatus = Instance.new("TextLabel")
 AutoSellRemoteStatus.Size = UDim2.new(1, 0, 0, 24)
-AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 314)
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 286)
 AutoSellRemoteStatus.BackgroundTransparency = 1
 AutoSellRemoteStatus.Text = "Sell remote: not tested"
 AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -584,8 +604,8 @@ end)
 --// SETTINGS TAB
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -16, 0, 285)
-SettingsFrame.Position = UDim2.fromOffset(8, 66)
+SettingsFrame.Size = UDim2.new(1, -12, 0, 298)
+SettingsFrame.Position = UDim2.fromOffset(6, 59)
 SettingsFrame.BackgroundTransparency = 1
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
@@ -902,10 +922,10 @@ local function SetMinimized(value)
     SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
-        frame.Size = UDim2.fromOffset(320, 42)
+        frame.Size = UDim2.fromOffset(285, 40)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(320, 360)
+        frame.Size = UDim2.fromOffset(285, 335)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
@@ -1183,7 +1203,7 @@ local RarityPriority = {Special=4, High=3, Mid=2, Low=1}
 
 --// UNIQUE HAIR VALUES FROM THE ORIGINAL TRACKER
 --// UNIQUE HAIR + PRIORITY DATA FROM Selling..txt
---// Priority order: Unique Hair > Island Unique Coat > Mismatched > Natural Dyed > Horned
+--// Catch priority: 1 Unique Hair, 2 Mismatched Hair, 3 Island Unique Coat, 4 Natural Dyed Hair, 5 Horned, 6 Normal
 local UniqueHairValues = {
     iceyblack=true, iceyblue=true, iceypink=true, iceywhite=true,
     winterstreaks=true, leafy=true, flowery=true, pearly=true, pearlygreen=true,
@@ -1256,12 +1276,12 @@ end
 local function GetHorsePriorityStats(horse)
     local data = DecodeHorseData(horse)
     if not data then
-        return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=0, Count=0}
+        return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=6, Count=0}
     end
 
     local variants = data.variants
     if type(variants) ~= "table" then
-        return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=0, Count=0}
+        return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=6, Count=0}
     end
 
     local main = variants.colour or variants.mainColour or variants.MainColour
@@ -1274,12 +1294,13 @@ local function GetHorsePriorityStats(horse)
     local hornColour = variants.hornColour
     local horned = hornColour ~= nil and tostring(hornColour) ~= ""
 
-    local priority = 0
-    if unique then priority = 5
-    elseif uniqueCoat then priority = 4
-    elseif mismatch then priority = 3
-    elseif naturalDyed then priority = 2
-    elseif horned then priority = 1
+    -- Lower number = higher catch priority.
+    local priority = 6
+    if unique then priority = 1
+    elseif mismatch then priority = 2
+    elseif uniqueCoat then priority = 3
+    elseif naturalDyed then priority = 4
+    elseif horned then priority = 5
     end
 
     local count = 0
@@ -1310,9 +1331,6 @@ end
 
 --// SELLING TAB INVENTORY STATS
 --// These definitions are adapted directly from Selling..txt.
-local SellingReferences
-local SellingInventory
-local SellingInventoryLoaded = false
 
 local BreedDisplayNames = {
     ["akhal teke"] = "Akhal-Teke Horse", ["akhal-teke"] = "Akhal-Teke Horse",
@@ -1420,7 +1438,7 @@ local function SellingColoursMatch(a,b)
     return tostring(a or ""):lower():gsub("^%s+",""):gsub("%s+$","") == tostring(b or ""):lower():gsub("^%s+",""):gsub("%s+$","")
 end
 
-local function RefreshSellingStats()
+RefreshSellingStats = function()
     local stats = {normal=0, uniqueHair=0, uniqueCoat=0, mismatched=0, naturalDyed=0, horned=0, total=0}
     if not SellingInventoryLoaded or type(SellingInventory) ~= "table" then
         SellingStatus.Text = "Inventory unavailable"
@@ -1459,20 +1477,33 @@ local function RefreshSellingStats()
     SellingLabels["Horned"].Text = tostring(stats.horned)
     SellingLabels["Total Horse"].Text = tostring(stats.total)
     SellingStatus.Text = "Inventory counts"
-    SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+    SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Filter: " .. SelectedSellCategory
     return stats
 end
 
-local function SellingItemMatchesRarity(item, info)
-    if SelectedSellRarity == "All" then return true end
+local function SellingItemMatchesCategory(item, info)
+    if type(item) ~= "table" then return false end
+
     local breed = SellingGetBreed(item, info)
     if not breed then return false end
-    local raw = tostring(breed):lower()
-    for breedName, data in pairs(RarityData) do
-        if raw == tostring(breedName):lower() or raw:find(tostring(breedName):lower(), 1, true) or tostring(breedName):lower():find(raw, 1, true) then
-            return data.Rarity == SelectedSellRarity
-        end
+
+    local main, mane, tail = SellingGetColours(item)
+    local variants = item.variants or item.Variants or {}
+    local uniqueHair = UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)]
+    local uniqueCoat = IsOrangeMainColour(main)
+    local mismatched = not SellingColoursMatch(mane, tail)
+    local naturalDyed = item.isNatDyed ~= nil
+    local horned = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+
+    if SelectedSellCategory == "All" then return true end
+    if SelectedSellCategory == "Normal Horse" then
+        return not uniqueHair and not uniqueCoat and not mismatched and not naturalDyed and not horned
     end
+    if SelectedSellCategory == "Natural Dyed Hair" then return naturalDyed end
+    if SelectedSellCategory == "Island Unique Hair" then return uniqueHair == true end
+    if SelectedSellCategory == "Island Unique Coat" then return uniqueCoat == true end
+    if SelectedSellCategory == "Mismatched Hair" then return mismatched == true end
+    if SelectedSellCategory == "Horned" then return horned == true end
     return false
 end
 
@@ -1504,7 +1535,7 @@ SellButton.Activated:Connect(function()
     for uid, item in pairs(SellingInventory) do
         if type(item) == "table" then
             local info = SellingGetItemInfo(item)
-            if SellingGetBreed(item, info) and SellingItemMatchesRarity(item, info) then
+            if SellingGetBreed(item, info) and SellingItemMatchesCategory(item, info) then
                 itemsToSell[tostring(uid)] = 1
                 count += 1
             end
@@ -1512,7 +1543,7 @@ SellButton.Activated:Connect(function()
     end
 
     if count == 0 then
-        SellStatus.Text = "Nothing matches: " .. SelectedSellRarity
+        SellStatus.Text = "Nothing matches: " .. SelectedSellCategory
         SellStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
         return
     end
@@ -1526,7 +1557,7 @@ SellButton.Activated:Connect(function()
         return
     end
 
-    SellStatus.Text = "Sent sell request: " .. tostring(count) .. " horse(s) | " .. SelectedSellRarity .. " | " .. SelectedSellRemote
+    SellStatus.Text = "Sent sell request: " .. tostring(count) .. " horse(s) | " .. SelectedSellCategory .. " | " .. SelectedSellRemote
     SellStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
     task.delay(0.75, function()
         local ok2, newInv = pcall(function()
@@ -1550,9 +1581,12 @@ task.spawn(function()
         local Data = require(SellingReferences.PlayerScripts.Priority.Data)
         SellingInventory = Data.GetLocal({"inventory"})
         SellingInventoryLoaded = type(SellingInventory) == "table"
+        if SellingInventoryLoaded then
+            RefreshSellingStats()
+        end
     end)
-    if not ok then
-        SellingStatus.Text = "Inventory unavailable"
+    if not ok or not SellingInventoryLoaded then
+        SellingStatus.Text = "Inventory unavailable - press REFRESH INVENTORY"
     end
     -- No periodic inventory refresh. Use the REFRESH INVENTORY button in the Selling tab.
 end)
@@ -2053,7 +2087,7 @@ local function DetectSellRemote()
                 if fireOK and sold then
                     SelectedSellRemote = eventName
                     RemoteDrop.Text = "Remote: " .. eventName
-                    SellStatus.Text = "Remote: " .. eventName .. " | Rarity: " .. SelectedSellRarity
+                    SellStatus.Text = "Remote: " .. eventName .. " | Filter: " .. SelectedSellCategory
                     AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | Target UID is gone"
                     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
                     AutoSellRemoteButton.Text = "SELL REMOTE FOUND"
@@ -2148,7 +2182,10 @@ GetCurrentPlayerIsland = function()
             end
         end
     end
-    return closestName
+    if closestName and closestDistance <= 2500 then
+        return closestName
+    end
+    return nil
 end
 
 --// SCREEN CLICK INPUT
@@ -2243,8 +2280,8 @@ local function startFarm()
             end
 
             table.sort(candidates, function(a,b)
-                -- Selling..txt priority: Unique Hair > Island Unique Coat > Mismatched > Natural Dyed > Horned.
-                if a.Priority ~= b.Priority then return a.Priority > b.Priority end
+                -- Catch priority: Unique Hair (1) > Mismatched Hair (2) > Island Unique Coat (3) > Natural Dyed Hair (4) > Horned (5) > Normal (6).
+                if a.Priority ~= b.Priority then return a.Priority < b.Priority end
                 if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
                 local pa = RarityPriority[a.Rarity] or 0
                 local pb = RarityPriority[b.Rarity] or 0
@@ -2277,7 +2314,9 @@ local function startFarm()
             if root and humanoid and humanoid.Health > 0 and targetPart and target.Model.Parent then
                 -- Old-script behavior: if the selected horse is on another island,
                 -- use the configured Travel Remote to travel there before tweening to it.
-                if GetCurrentPlayerIsland() ~= target.Island then
+                local currentIslandBeforeTravel = GetCurrentPlayerIsland()
+                if currentIslandBeforeTravel ~= target.Island then
+                    -- Horse is on a different island: travel first, then tween to it.
                     local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
                     if remoteName == "" then
                         status.Text = "Set Travel Remote in Settings"
@@ -2338,6 +2377,9 @@ local function startFarm()
                         task.wait(0.1)
                         continue
                     end
+                else
+                    -- Horse is already on the island the player is currently on: no travel call.
+                    islandText.Text = "Island: " .. tostring(currentIslandBeforeTravel)
                 end
 
                 -- Copy the old tracker movement behavior: anchor the character BEFORE
@@ -2360,7 +2402,8 @@ local function startFarm()
                 tween:Play()
 
                 while tween.PlaybackState == Enum.PlaybackState.Playing and Farming and myGeneration == FarmGeneration do
-                    if not target.Model.Parent or GetCurrentPlayerIsland() ~= target.Island or humanoid.Health <= 0 then
+                    -- Do not rescan every island every 0.03s; the island was verified before tweening.
+                    if not target.Model.Parent or humanoid.Health <= 0 then
                         tween:Cancel()
                         break
                     end
@@ -2370,7 +2413,7 @@ local function startFarm()
                     task.wait(0.03)
                 end
 
-                if Farming and myGeneration == FarmGeneration and target.Model.Parent and GetCurrentPlayerIsland() == target.Island then
+                if Farming and myGeneration == FarmGeneration and target.Model.Parent then
                     -- The tween is finished. Snap once to the exact position above the
                     -- horse, weld there, and keep the character anchored. No follow loop.
                     pcall(function()
@@ -2394,9 +2437,8 @@ local function startFarm()
                     local caught = false
                     local catchDeadline = tick() + 8
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
-                        if GetCurrentPlayerIsland() ~= target.Island then break end
-
-                        -- Character stays anchored; no CFrame follow loop is needed.
+                        -- Character stays anchored; no repeated island scan is needed here.
+                        -- Travel was already verified before the horse tween started.
                         ScreenClick()
                         status.Text = "Catching: " .. target.Name
                         status.TextColor3 = Color3.fromRGB(57,255,20)
