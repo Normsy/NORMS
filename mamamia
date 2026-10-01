@@ -1,4 +1,4 @@
--- V20 UPDATE: Manual selling only. NO automatic 5-minute auto-sell loop.
+-- V21 UPDATE: Manual selling only. No automatic 5-minute auto-sell. Fixed horse scanning, travel detection, and centered UI.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
@@ -193,7 +193,8 @@ gui.Enabled = false
 local frame = Instance.new("Frame")
 frame.Name = "Main"
 frame.Size = UDim2.fromOffset(250, 380)
-frame.Position = UDim2.new(0, 20, 0.5, -58)
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
 frame.BorderSizePixel = 0
 frame.Parent = gui
@@ -508,6 +509,17 @@ AutoSellRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
 AutoSellRemoteStatus.TextWrapped = true
 AutoSellRemoteStatus.Parent = SellingFrame
 
+-- Sell remote controls belong in Settings; selling itself remains manual from the Selling tab.
+RemoteDrop.Parent = SettingsFrame
+RemoteDrop.Position = UDim2.fromOffset(112, 224)
+RemoteList.Parent = SettingsFrame
+RemoteList.Position = UDim2.fromOffset(112, 251)
+RemoteList.ZIndex = 100
+AutoSellRemoteButton.Parent = SettingsFrame
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
+AutoSellRemoteStatus.Parent = SettingsFrame
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 316)
+
 RemoteDrop.MouseButton1Click:Connect(function()
     RarityList.Visible = false
     RemoteList.Visible = not RemoteList.Visible
@@ -520,7 +532,7 @@ end)
 --// SETTINGS TAB
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -20, 0, 320)
+SettingsFrame.Size = UDim2.new(1, -20, 0, 430)
 SettingsFrame.Position = UDim2.fromOffset(10, 66)
 SettingsFrame.BackgroundTransparency = 1
 SettingsFrame.Visible = false
@@ -662,10 +674,21 @@ AutoTravelStatus.TextXAlignment = Enum.TextXAlignment.Left
 AutoTravelStatus.TextWrapped = true
 AutoTravelStatus.Parent = SettingsFrame
 
+local SellRemoteLabel = Instance.new("TextLabel")
+SellRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+SellRemoteLabel.Position = UDim2.fromOffset(0, 226)
+SellRemoteLabel.BackgroundTransparency = 1
+SellRemoteLabel.Text = "SELL REMOTE"
+SellRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
+SellRemoteLabel.TextSize = 9
+SellRemoteLabel.Font = Enum.Font.GothamBold
+SellRemoteLabel.TextXAlignment = Enum.TextXAlignment.Left
+SellRemoteLabel.Parent = SettingsFrame
+
 local HopButton = Instance.new("TextButton")
 HopButton.Name = "HopServer"
 HopButton.Size = UDim2.new(1, 0, 0, 34)
-HopButton.Position = UDim2.fromOffset(0, 164)
+HopButton.Position = UDim2.fromOffset(0, 350)
 HopButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 HopButton.BorderSizePixel = 0
 HopButton.Text = "HOP SERVER"
@@ -680,7 +703,7 @@ HopCorner.Parent = HopButton
 
 local HopStatus = Instance.new("TextLabel")
 HopStatus.Size = UDim2.new(1, 0, 0, 28)
-HopStatus.Position = UDim2.fromOffset(0, 204)
+HopStatus.Position = UDim2.fromOffset(0, 390)
 HopStatus.BackgroundTransparency = 1
 HopStatus.Text = "Ready"
 HopStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -1558,6 +1581,7 @@ local function ScanHorses()
     end
 
     local results = {}
+    local seen = {}
     local islands = Workspace:FindFirstChild("Islands")
     if not islands then
         ScanCache = results
@@ -1565,44 +1589,41 @@ local function ScanHorses()
         return results
     end
 
-    local function scanContainer(container, islandName)
-        for _, node in ipairs(container:GetChildren()) do
-            if isHorse(node) and not isOwned(node) and not isInShop(node) then
-                local pivot = getHorsePivot(node)
-                if pivot then
-                    local breed, rarity = getHorseBreed(node)
-                    local unique = checkUniqueHair(node)
-                    local priorityStats = GetHorsePriorityStats(node)
-                    table.insert(results, {
-                        Model=node,
-                        Island=islandName,
-                        Name=breed,
-                        Rarity=rarity,
-                        Unique=unique,
-                        UniqueCoat=priorityStats.UniqueCoat,
-                        Mismatched=priorityStats.Mismatched,
-                        NaturalDyed=priorityStats.NaturalDyed,
-                        Horned=priorityStats.Horned,
-                        Priority=priorityStats.Priority,
-                        PriorityCount=priorityStats.Count,
-                        Position=pivot.Position,
-                        Pivot=pivot,
-                        UID=(function()
-                        local ok, id = pcall(function() return node:GetDebugId() end)
-                        if ok and id then return id end
-                        return node:GetFullName() .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
-                    end)()
-                    })
-                end
-            elseif node:IsA("Folder") or node:IsA("Model") then
-                scanContainer(node, islandName)
-            end
-        end
-    end
-
+    -- Scan every descendant instead of only walking Folder/Model children.
+    -- This catches horses even when the game's hierarchy changes.
     for _, island in ipairs(islands:GetChildren()) do
         if island:IsA("Folder") or island:IsA("Model") then
-            scanContainer(island, island.Name)
+            for _, node in ipairs(island:GetDescendants()) do
+                if not seen[node] and isHorse(node) and not isOwned(node) and not isInShop(node) then
+                    seen[node] = true
+                    local pivot = getHorsePivot(node)
+                    if pivot then
+                        local breed, rarity = getHorseBreed(node)
+                        local unique = checkUniqueHair(node)
+                        local priorityStats = GetHorsePriorityStats(node)
+                        table.insert(results, {
+                            Model = node,
+                            Island = island.Name,
+                            Name = breed,
+                            Rarity = rarity,
+                            Unique = unique,
+                            UniqueCoat = priorityStats.UniqueCoat,
+                            Mismatched = priorityStats.Mismatched,
+                            NaturalDyed = priorityStats.NaturalDyed,
+                            Horned = priorityStats.Horned,
+                            Priority = priorityStats.Priority,
+                            PriorityCount = priorityStats.Count,
+                            Position = pivot.Position,
+                            Pivot = pivot,
+                            UID = (function()
+                                local ok, id = pcall(function() return node:GetDebugId() end)
+                                if ok and id then return id end
+                                return node:GetFullName() .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
+                            end)()
+                        })
+                    end
+                end
+            end
         end
     end
 
@@ -1647,19 +1668,27 @@ end
 local function DetectTravelRemote()
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
-    AutoTravelButton.Text = "TESTING FUNCTION1-36..."
-    AutoTravelStatus.Text = "Finding a horse on another island..."
+    AutoTravelButton.Text = "FINDING HORSE..."
+    AutoTravelStatus.Text = "Scanning loaded islands for a horse..."
     AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        local currentIsland = GetCurrentPlayerIsland()
-        local targets = ScanHorses()
         local target
-        for _, horse in ipairs(targets) do
-            if horse.Island and horse.Island ~= currentIsland then
-                target = horse
-                break
+        local originalIsland = GetCurrentPlayerIsland()
+
+        -- Give the game time to populate island/horse objects.
+        for attempt = 1, 20 do
+            invalidate()
+            local currentIsland = GetCurrentPlayerIsland()
+            for _, horse in ipairs(ScanHorses()) do
+                if horse.Model and horse.Model.Parent and horse.Island and horse.Island ~= currentIsland then
+                    target = horse
+                    break
+                end
             end
+            if target then break end
+            AutoTravelStatus.Text = "Waiting for another-island horse... (" .. attempt .. "/20)"
+            task.wait(0.5)
         end
 
         if not target then
@@ -1671,19 +1700,26 @@ local function DetectTravelRemote()
         end
 
         local targetIsland = tostring(target.Island)
-        AutoTravelStatus.Text = "Testing against: " .. targetIsland
+        local targetPosition = target.Position
+        AutoTravelStatus.Text = "Testing Function1-36 -> " .. targetIsland
 
         for i = 1, 36 do
             local remote = Functions:FindFirstChild("Function" .. i)
             if remote and remote:IsA("RemoteFunction") then
                 local name = remote.Name
+                AutoTravelStatus.Text = "Testing " .. name .. "..."
                 pcall(function()
                     remote:InvokeServer("Travel", targetIsland, 1)
                 end)
+
                 local started = tick()
-                while tick() - started < 5 do
+                while tick() - started < 6 do
                     task.wait(0.15)
-                    if GetCurrentPlayerIsland() == targetIsland then
+                    local char = LocalPlayer.Character
+                    local root = char and char:FindFirstChild("HumanoidRootPart")
+                    local reachedByPosition = root and (root.Position - targetPosition).Magnitude < 500
+                    local reachedByIsland = GetCurrentPlayerIsland() == targetIsland
+                    if reachedByPosition or reachedByIsland then
                         TravelRemoteBox.Text = name
                         TravelDropdown.Text = name
                         AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
