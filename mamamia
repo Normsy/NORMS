@@ -180,6 +180,7 @@ gui = Instance.new("ScreenGui")
 gui.Name = "NORMSMinimalFarmer"
 gui.ResetOnSpawn = false
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset = true
 
 local parentOk = pcall(function()
     gui.Parent = game:GetService("CoreGui")
@@ -192,12 +193,21 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(250, 380)
+frame.Size = UDim2.fromOffset(360, 430)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
+frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
 frame.BorderSizePixel = 0
 frame.Parent = gui
+
+local function CenterMainFrame()
+    frame.AnchorPoint = Vector2.new(0.5, 0.5)
+    frame.Position = UDim2.fromScale(0.5, 0.5)
+end
+CenterMainFrame()
+if Workspace.CurrentCamera then
+    Workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(CenterMainFrame)
+end
 
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
@@ -251,8 +261,8 @@ MainTab.Parent = frame
 
 local SellingTab = Instance.new("TextButton")
 SellingTab.Name = "SellingTab"
-SellingTab.Size = UDim2.fromOffset(72, 24)
-SellingTab.Position = UDim2.fromOffset(89, 36)
+SellingTab.Size = UDim2.fromOffset(105, 24)
+SellingTab.Position = UDim2.fromOffset(122, 36)
 SellingTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
@@ -263,8 +273,8 @@ SellingTab.Parent = frame
 
 local SettingsTab = Instance.new("TextButton")
 SettingsTab.Name = "SettingsTab"
-SettingsTab.Size = UDim2.fromOffset(72, 24)
-SettingsTab.Position = UDim2.fromOffset(168, 36)
+SettingsTab.Size = UDim2.fromOffset(105, 24)
+SettingsTab.Position = UDim2.fromOffset(235, 36)
 SettingsTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SettingsTab.BorderSizePixel = 0
@@ -281,7 +291,7 @@ end
 
 local SellingFrame = Instance.new("Frame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -20, 0, 350)
+SellingFrame.Size = UDim2.new(1, -20, 0, 390)
 SellingFrame.Position = UDim2.fromOffset(10, 66)
 SellingFrame.BackgroundTransparency = 1
 SellingFrame.Visible = false
@@ -462,7 +472,7 @@ for i, rarity in ipairs(rarityOptions) do
 end
 
 local SellButton = Instance.new("TextButton")
-SellButton.Size = UDim2.fromOffset(240, 27)
+SellButton.Size = UDim2.fromOffset(340, 30)
 SellButton.Position = UDim2.fromOffset(0, 234)
 SellButton.BackgroundColor3 = Color3.fromRGB(125, 35, 40)
 SellButton.BorderSizePixel = 0
@@ -486,7 +496,7 @@ SellStatus.Parent = SellingFrame
 
 AutoSellRemoteButton = Instance.new("TextButton")
 AutoSellRemoteButton.Name = "AutoFindSellRemote"
-AutoSellRemoteButton.Size = UDim2.fromOffset(240, 27)
+AutoSellRemoteButton.Size = UDim2.fromOffset(340, 30)
 AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
 AutoSellRemoteButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoSellRemoteButton.BorderSizePixel = 0
@@ -509,17 +519,6 @@ AutoSellRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
 AutoSellRemoteStatus.TextWrapped = true
 AutoSellRemoteStatus.Parent = SellingFrame
 
--- Sell remote controls belong in Settings; selling itself remains manual from the Selling tab.
-RemoteDrop.Parent = SettingsFrame
-RemoteDrop.Position = UDim2.fromOffset(112, 224)
-RemoteList.Parent = SettingsFrame
-RemoteList.Position = UDim2.fromOffset(112, 251)
-RemoteList.ZIndex = 100
-AutoSellRemoteButton.Parent = SettingsFrame
-AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
-AutoSellRemoteStatus.Parent = SettingsFrame
-AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 316)
-
 RemoteDrop.MouseButton1Click:Connect(function()
     RarityList.Visible = false
     RemoteList.Visible = not RemoteList.Visible
@@ -532,11 +531,23 @@ end)
 --// SETTINGS TAB
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -20, 0, 430)
+SettingsFrame.Size = UDim2.new(1, -20, 0, 410)
 SettingsFrame.Position = UDim2.fromOffset(10, 66)
 SettingsFrame.BackgroundTransparency = 1
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
+
+-- Sell remote controls live in Settings.  Move them only after SettingsFrame
+-- has been created so the UI does not error during startup.
+RemoteDrop.Parent = SettingsFrame
+RemoteDrop.Position = UDim2.fromOffset(110, 218)
+RemoteList.Parent = SettingsFrame
+RemoteList.Position = UDim2.fromOffset(110, 245)
+RemoteList.ZIndex = 100
+AutoSellRemoteButton.Parent = SettingsFrame
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 276)
+AutoSellRemoteStatus.Parent = SettingsFrame
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 310)
 
 local SettingsTitle = Instance.new("TextLabel")
 SettingsTitle.Size = UDim2.new(1, 0, 0, 22)
@@ -594,8 +605,8 @@ TravelBoxCorner.Parent = TravelRemoteBox
 
 local TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Name = "TravelRemoteDropdown"
-TravelDropdown.Size = UDim2.new(0, 70, 0, 26)
-TravelDropdown.Position = UDim2.fromOffset(238, 56)
+TravelDropdown.Size = UDim2.new(0, 95, 0, 26)
+TravelDropdown.Position = UDim2.fromOffset(237, 56)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "SELECT v"
@@ -652,7 +663,7 @@ end)
 AutoTravelButton = Instance.new("TextButton")
 AutoTravelButton.Name = "AutoFindTravelRemote"
 AutoTravelButton.Size = UDim2.new(1, 0, 0, 34)
-AutoTravelButton.Position = UDim2.fromOffset(0, 94)
+AutoTravelButton.Position = UDim2.fromOffset(0, 96)
 AutoTravelButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoTravelButton.BorderSizePixel = 0
 AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
@@ -664,7 +675,7 @@ local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0, 7); atbc.
 
 AutoTravelStatus = Instance.new("TextLabel")
 AutoTravelStatus.Size = UDim2.new(1, 0, 0, 28)
-AutoTravelStatus.Position = UDim2.fromOffset(0, 130)
+AutoTravelStatus.Position = UDim2.fromOffset(0, 132)
 AutoTravelStatus.BackgroundTransparency = 1
 AutoTravelStatus.Text = "Travel remote: not tested"
 AutoTravelStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -676,7 +687,7 @@ AutoTravelStatus.Parent = SettingsFrame
 
 local SellRemoteLabel = Instance.new("TextLabel")
 SellRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
-SellRemoteLabel.Position = UDim2.fromOffset(0, 226)
+SellRemoteLabel.Position = UDim2.fromOffset(0, 218)
 SellRemoteLabel.BackgroundTransparency = 1
 SellRemoteLabel.Text = "SELL REMOTE"
 SellRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
@@ -838,10 +849,10 @@ local function SetMinimized(value)
     SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
-        frame.Size = UDim2.fromOffset(250, 42)
+        frame.Size = UDim2.fromOffset(360, 42)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(250, 380)
+        frame.Size = UDim2.fromOffset(360, 430)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
@@ -880,7 +891,7 @@ islandText.Parent = frame
 
 status = Instance.new("TextLabel")
 status.BackgroundTransparency = 1
-status.Size = UDim2.fromOffset(225, 30)
+status.Size = UDim2.fromOffset(335, 30)
 status.Position = UDim2.fromOffset(10, 106)
 status.Font = Enum.Font.Gotham
 status.Text = "Idle"
@@ -1547,9 +1558,31 @@ end
 
 local function isHorse(node)
     if not node or not node.Parent then return false end
+    if not node:IsA("Model") and not node:IsA("BasePart") then return false end
+
     local tagged = CollectionService:HasTag(node, "Animal")
     local behaviour = node:GetAttribute("behaviour")
-    return tagged or behaviour == "WanderingAnimal"
+    if tagged or behaviour == "WanderingAnimal" then
+        return true
+    end
+
+    -- Fallbacks for servers where the Animal tag/behaviour is not present.
+    if node:IsA("Model") then
+        local overheadPart = node:FindFirstChild("OverheadPart")
+        local overhead = overheadPart and overheadPart:FindFirstChild("Overhead")
+        local breedLabel = overhead and overhead:FindFirstChild("BreedLabel")
+        if breedLabel and breedLabel:IsA("TextLabel") and tostring(breedLabel.Text) ~= "" then
+            return true
+        end
+        local lower = node.Name:lower()
+        for breedName in pairs(RarityData) do
+            local b = tostring(breedName):lower()
+            if lower == b or lower:find(b, 1, true) then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 local function isOwned(node)
@@ -1565,7 +1598,7 @@ local function isInShop(node)
     local current = node
     while current and current ~= Workspace do
         local n = current.Name:lower()
-        if n:find("shop", 1, true) or n:find("stable", 1, true) then
+        if n:find("shop", 1, true) or n:find("stable", 1, true) or n:find("barn", 1, true) or n:find("store", 1, true) then
             return true
         end
         current = current.Parent
@@ -1589,41 +1622,41 @@ local function ScanHorses()
         return results
     end
 
-    -- Scan every descendant instead of only walking Folder/Model children.
-    -- This catches horses even when the game's hierarchy changes.
-    for _, island in ipairs(islands:GetChildren()) do
-        if island:IsA("Folder") or island:IsA("Model") then
-            for _, node in ipairs(island:GetDescendants()) do
-                if not seen[node] and isHorse(node) and not isOwned(node) and not isInShop(node) then
-                    seen[node] = true
-                    local pivot = getHorsePivot(node)
-                    if pivot then
-                        local breed, rarity = getHorseBreed(node)
-                        local unique = checkUniqueHair(node)
-                        local priorityStats = GetHorsePriorityStats(node)
-                        table.insert(results, {
-                            Model = node,
-                            Island = island.Name,
-                            Name = breed,
-                            Rarity = rarity,
-                            Unique = unique,
-                            UniqueCoat = priorityStats.UniqueCoat,
-                            Mismatched = priorityStats.Mismatched,
-                            NaturalDyed = priorityStats.NaturalDyed,
-                            Horned = priorityStats.Horned,
-                            Priority = priorityStats.Priority,
-                            PriorityCount = priorityStats.Count,
-                            Position = pivot.Position,
-                            Pivot = pivot,
-                            UID = (function()
-                                local ok, id = pcall(function() return node:GetDebugId() end)
-                                if ok and id then return id end
-                                return node:GetFullName() .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
-                            end)()
-                        })
-                    end
+    local function ScanContainer(container, islandName)
+        for _, node in ipairs(container:GetChildren()) do
+            if (node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal"))) and not isHorse(node) then
+                ScanContainer(node, islandName)
+            elseif not seen[node] and isHorse(node) and not isOwned(node) and not isInShop(node) then
+                seen[node] = true
+                local pivot = getHorsePivot(node)
+                if pivot then
+                    local breed, rarity = getHorseBreed(node)
+                    local unique = checkUniqueHair(node)
+                    local priorityStats = GetHorsePriorityStats(node)
+                    table.insert(results, {
+                        Model = node,
+                        Island = islandName,
+                        Name = breed,
+                        Rarity = rarity,
+                        Unique = unique,
+                        UniqueCoat = priorityStats.UniqueCoat,
+                        Mismatched = priorityStats.Mismatched,
+                        NaturalDyed = priorityStats.NaturalDyed,
+                        Horned = priorityStats.Horned,
+                        Priority = priorityStats.Priority,
+                        PriorityCount = priorityStats.Count,
+                        Position = pivot.Position,
+                        Pivot = pivot,
+                        UID = node.Name .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
+                    })
                 end
             end
+        end
+    end
+
+    for _, island in ipairs(islands:GetChildren()) do
+        if island:IsA("Folder") or island:IsA("Model") then
+            ScanContainer(island, island.Name)
         end
     end
 
@@ -1700,7 +1733,6 @@ local function DetectTravelRemote()
         end
 
         local targetIsland = tostring(target.Island)
-        local targetPosition = target.Position
         AutoTravelStatus.Text = "Testing Function1-36 -> " .. targetIsland
 
         for i = 1, 36 do
@@ -1716,10 +1748,8 @@ local function DetectTravelRemote()
                 while tick() - started < 6 do
                     task.wait(0.15)
                     local char = LocalPlayer.Character
-                    local root = char and char:FindFirstChild("HumanoidRootPart")
-                    local reachedByPosition = root and (root.Position - targetPosition).Magnitude < 500
                     local reachedByIsland = GetCurrentPlayerIsland() == targetIsland
-                    if reachedByPosition or reachedByIsland then
+                    if reachedByIsland then
                         TravelRemoteBox.Text = name
                         TravelDropdown.Text = name
                         AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
