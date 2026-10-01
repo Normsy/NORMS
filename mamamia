@@ -1,33 +1,38 @@
---// THIS IS PH
+﻿﻿--// THIS IS PH
 --// THIS IS PH
 
---// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
+--// OPTIONAL REMOTE RENAMING SETUP
+-- Never block script startup waiting for game objects that may not exist.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Communication = ReplicatedStorage:WaitForChild("Communication")
-local Functions = Communication:WaitForChild("Functions")
-local Events = Communication:WaitForChild("Events")
 
-local functionIndex = 0
-for _, obj in ipairs(Functions:GetChildren()) do
-    if obj:IsA("RemoteFunction") and obj.Name == "" then
-        functionIndex += 1
-        obj.Name = "Function" .. functionIndex
-    end
-end
+task.spawn(function()
+    pcall(function()
+        local Communication = ReplicatedStorage:FindFirstChild("Communication")
+        if not Communication then return end
 
-local eventIndex = 0
-for _, obj in ipairs(Events:GetChildren()) do
-    if obj:IsA("RemoteEvent") and obj.Name == "" then
-        eventIndex += 1
-        obj.Name = "Event" .. eventIndex
-    end
-end
+        local Functions = Communication:FindFirstChild("Functions")
+        local Events = Communication:FindFirstChild("Events")
+        if not Functions or not Events then return end
 
-print("================================")
-print("REMOTE RENAME COMPLETE")
-print("Functions renamed:", functionIndex)
-print("Events renamed:", eventIndex)
-print("================================")
+        local functionIndex = 0
+        for _, obj in ipairs(Functions:GetChildren()) do
+            if obj:IsA("RemoteFunction") and obj.Name == "" then
+                functionIndex += 1
+                obj.Name = "Function" .. functionIndex
+            end
+        end
+
+        local eventIndex = 0
+        for _, obj in ipairs(Events:GetChildren()) do
+            if obj:IsA("RemoteEvent") and obj.Name == "" then
+                eventIndex += 1
+                obj.Name = "Event" .. eventIndex
+            end
+        end
+
+        print("[Norms] Optional remote setup complete.")
+    end)
+end)
 
 --// NORMS TRACKER: TWEEN TELEPORT, UNLIMITED ANCHOR & REFINED DETECTION
 local Players = game:GetService("Players")
@@ -40,6 +45,7 @@ local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
+print("[Norms] Script started - building UI...")
 local ActiveWalkTarget = nil
 local ActiveTargetIsland = nil
 local TargetUID = nil
@@ -269,7 +275,22 @@ local function DisableNoClip(char)
 end
 
 --// UI CREATION
-local guiParent = pcall(function() return game:GetService("CoreGui") end) and game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
+local guiParent
+do
+    local coreGuiOK, coreGui = pcall(function()
+        return game:GetService("CoreGui")
+    end)
+    if coreGuiOK and coreGui then
+        guiParent = coreGui
+    else
+        guiParent = LocalPlayer:WaitForChild("PlayerGui", 10)
+    end
+end
+
+if not guiParent then
+    warn("[Norms] Could not find a valid GUI parent.")
+    return
+end
 if guiParent:FindFirstChild("HorseTrackerUI") then
     guiParent.HorseTrackerUI:Destroy()
 end
@@ -4517,4 +4538,5 @@ task.spawn(function()
     end
 end)
 
+--// THIS IS PH
 --// THIS IS PH
