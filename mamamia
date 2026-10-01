@@ -1758,77 +1758,164 @@ local function IsPlayerAtTravelIsland(islandName)
     return nearest <= 1800
 end
 
-local function DetectTravelRemote()
-    if AutoTravelButton:GetAttribute("Busy") then return end
-    AutoTravelButton:SetAttribute("Busy", true)
-    AutoTravelButton.Text = "TESTING FUNCTION1-36..."
-    AutoTravelStatus.Text = "Reading old island list and checking current island..."
-    AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+local function FindOtherIslandHorse()
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands then return nil end
 
-    task.spawn(function()
-        local currentIsland = GetCurrentPlayerIsland()
-        local targetIsland
+    local currentIsland = GetCurrentPlayerIsland()
+    local found = nil
+    local seen = {}
 
-        -- Pick a real island name from the original script that is NOT the
-        -- island the player is currently on.
-        for _, islandName in ipairs(AutoTravelIslandNames) do
-            if islandName ~= currentIsland and GetTravelIslandObject(islandName) then
-                targetIsland = islandName
-                break
-            end
-        end
+    local function scan(container, islandName)
+        if found then return end
+        for _, node in ipairs(container:GetChildren()) do
+            if found then return end
 
-        -- If the exact island objects are not all loaded, still use the original
-        -- names. The server's Travel function is what decides whether the name
-        -- is valid; this avoids depending on a horse being loaded first.
-        if not targetIsland then
-            for _, islandName in ipairs(AutoTravelIslandNames) do
-                if islandName ~= currentIsland then
-                    targetIsland = islandName
-                    break
+            if (node:IsA("Folder") or node:IsA("Model")) and not isHorse(node) then
+                scan(node, islandName)
+            elseif isHorse(node) and not seen[node] and not isOwned(node) and not isInShop(node) then
+                seen[node] = true
+                local pivot = getHorsePivot(node)
+                if pivot and islandName ~= currentIsland then
+                    found = {
+                        Model = node,
+                        Island = islandName,
+                        Position = pivot.Position,
+                        Pivot = pivot,
+                        Name = getHorseBreed(node)
+                    }
+                    return
                 end
             end
         end
+    end
 
-        if not targetIsland then
-            AutoTravelStatus.Text = "Could not choose a target island."
+    for _, island in ipairs(islands:GetChildren()) do
+        if (island:IsA("Folder") or island:IsA("Model")) and island.Name ~= currentIsland then
+            scan(island, island.Name)
+            if found then break end
+        end
+    end
+
+    return found
+end
+
+local function IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+
+    -- The strongest check is the actual target horse's island position.
+    -- This avoids falsely accepting a Function merely because the character moved.
+    if targetHorsePosition then
+        local distanceToHorse = (root.Position - targetHorsePosition).Magnitude
+        if distanceToHorse <= 2000 then
+            return true
+        end
+    end
+
+    -- Secondary check: determine the nearest loaded island to the character.
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands then return false end
+
+    local nearestIsland = nil
+    local nearestDistance = math.huge
+
+    for _, island in ipairs(islands:GetChildren()) do
+        if (island:IsA("Folder") or island:IsA("Model")) then
+            local islandNearest = math.huge
+            for _, part in ipairs(island:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    local d = (root.Position - part.Position).Magnitude
+                    if d < islandNearest then
+                        islandNearest = d
+                    end
+                end
+            end
+            if island:IsA("Model") then
+                local ok, pivot = pcall(function() return island:GetPivot() end)
+                if ok and pivot then
+                    local d = (root.Position - pivot.Position).Magnitude
+                    if d < islandNearest then islandNearest = d end
+                end
+            end
+            if islandNearest < nearestDistance then
+                nearestDistance = islandNearest
+                nearestIsland = island.Name
+            end
+        end
+    end
+
+    return nearestIsland == targetIsland and nearestDistance <= 2500
+end
+
+local function DetectTravelRemote()
+    if AutoTravelButton:GetAttribute("Busy") then return end
+    AutoTravelButton:SetAttribute("Busy", true)
+    AutoTravelButton.Text = "FINDING HORSE..."
+    AutoTravelStatus.Text = "Scanning for a horse on another island..."
+    AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+
+    task.spawn(function()
+        -- IMPORTANT: the target is a REAL horse on another island.
+        -- We do not always use Mainland.
+        local targetHorse = nil
+        local scanDeadline = tick() + 15
+
+        while tick() < scanDeadline and not targetHorse do
+            targetHorse = FindOtherIslandHorse()
+            if not targetHorse then
+                AutoTravelStatus.Text = "No horse on another island yet... rescanning"
+                task.wait(0.5)
+            end
+        end
+
+        if not targetHorse then
+            AutoTravelStatus.Text = "No horse found on another island."
             AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
             AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
             AutoTravelButton:SetAttribute("Busy", false)
             return
         end
 
-        AutoTravelStatus.Text = "Target: " .. targetIsland .. " | testing every 0.5s"
+        local targetIsland = targetHorse.Island
+        local targetHorsePosition = targetHorse.Position
+        local currentIsland = GetCurrentPlayerIsland()
 
+        AutoTravelStatus.Text = "Horse found: " .. tostring(targetHorse.Name) .. " | Target: " .. targetIsland
+        AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+        task.wait(0.25)
+
+        -- Test exactly like the captured remote:
+        -- FunctionX:InvokeServer("Travel", targetIsland, 1)
+        -- One Function every 1 second.
         for i = 1, 36 do
             local remote = FindRemoteFunction(i)
             local name = "Function" .. tostring(i)
 
             if remote then
-                local _, beforePosition = GetRootAndPosition()
-                AutoTravelStatus.Text = "Testing " .. name .. " -> " .. targetIsland
+                AutoTravelButton.Text = "TESTING " .. name
+                AutoTravelStatus.Text = "Trying " .. name .. " -> " .. targetIsland
 
-                -- EXACT captured travel payload:
-                -- FunctionX:InvokeServer("Travel", targetIsland, 1)
-                local invokeOK, invokeErr = pcall(function()
-                    remote:InvokeServer("Travel", targetIsland, 1)
+                local beforeRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local beforePosition = beforeRoot and beforeRoot.Position
+
+                local invokeOK, invokeResult = pcall(function()
+                    return remote:InvokeServer("Travel", targetIsland, 1)
                 end)
 
-                -- Requested test cadence: 0.5 seconds.
-                task.wait(0.5)
+                -- Required cadence: wait one full second before the next Function.
+                task.wait(1)
 
-                local _, afterPosition = GetRootAndPosition()
-                local reachedByName = IsPlayerAtTravelIsland(targetIsland)
-                local reachedByPosition = false
+                local afterRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                local afterPosition = afterRoot and afterRoot.Position
 
-                if beforePosition and afterPosition then
-                    -- A successful travel normally causes a very large position
-                    -- change. This is only a secondary confirmation; island
-                    -- geometry/name is the primary confirmation.
-                    reachedByPosition = (afterPosition - beforePosition).Magnitude > 500
-                end
-
-                if invokeOK and (reachedByName or reachedByPosition) then
+                local reachedTarget = IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
+                -- Only accept the Function when the character actually reaches
+                -- the island containing the selected horse. A large position
+                -- change by itself is NOT enough, because another Function could
+                -- move the character somewhere else.
+                if invokeOK and reachedTarget then
                     TravelRemoteBox.Text = name
                     TravelDropdown.Text = name
                     AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
@@ -1839,14 +1926,17 @@ local function DetectTravelRemote()
                 end
 
                 if not invokeOK then
-                    AutoTravelStatus.Text = name .. " failed: " .. tostring(invokeErr)
+                    AutoTravelStatus.Text = name .. " returned an error; continuing..."
+                else
+                    AutoTravelStatus.Text = name .. " did not reach " .. targetIsland .. "; next..."
                 end
+            else
+                AutoTravelStatus.Text = name .. " not found; next..."
+                task.wait(1)
             end
-
-            task.wait(0.5)
         end
 
-        AutoTravelStatus.Text = "No working Travel Remote in Function1-36."
+        AutoTravelStatus.Text = "No working Travel Remote found in Function1-Function36."
         AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
         AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
         AutoTravelButton:SetAttribute("Busy", false)
