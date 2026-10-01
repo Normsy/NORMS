@@ -1,10 +1,3 @@
--- V29 UPDATE: Keep V27 UI/behavior. Selling inventory is manually refreshable (no periodic inventory scan).
--- Selling filters are category-based: All, Normal Horse, Natural Dyed Hair, Island Unique Hair,
--- Island Unique Coat, Mismatched Hair, Horned. Low/Mid/High/Special rarity filters were removed.
---// NORMS MINIMAL HORSE FARMER
---// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
---// Background horse scan + manual island travel + manual lasso + screen clicking.
---// Press START after manually travelling to the island you want to farm.
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -202,14 +195,11 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(285, 335)
+frame.Size = UDim2.fromOffset(250, 250)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
 frame.BorderSizePixel = 0
-frame.Active = true
-frame.ZIndex = 1
-frame.Visible = true
 frame.Parent = gui
 
 local function CenterMainFrame()
@@ -247,8 +237,7 @@ minimizeButton.TextColor3 = Color3.fromRGB(220,220,225)
 minimizeButton.Font = Enum.Font.GothamBold
 minimizeButton.TextSize = 17
 minimizeButton.AutoButtonColor = true
-minimizeButton.ZIndex = 30
-minimizeButton.Active = true
+minimizeButton.ZIndex = 10
 minimizeButton.Parent = frame
 
 local button
@@ -269,8 +258,6 @@ MainTab.TextColor3 = Color3.fromRGB(10, 10, 10)
 MainTab.BorderSizePixel = 0
 MainTab.Font = Enum.Font.GothamBold
 MainTab.TextSize = 9
-MainTab.Active = true
-MainTab.ZIndex = 100
 MainTab.Text = "MAIN"
 MainTab.Parent = frame
 
@@ -283,8 +270,6 @@ SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
 SellingTab.Font = Enum.Font.GothamBold
 SellingTab.TextSize = 9
-SellingTab.Active = true
-SellingTab.ZIndex = 100
 SellingTab.Text = "SELLING"
 SellingTab.Parent = frame
 
@@ -297,8 +282,6 @@ SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SettingsTab.BorderSizePixel = 0
 SettingsTab.Font = Enum.Font.GothamBold
 SettingsTab.TextSize = 9
-SettingsTab.Active = true
-SettingsTab.ZIndex = 100
 SettingsTab.Text = "SETTINGS"
 SettingsTab.Parent = frame
 
@@ -308,12 +291,19 @@ for _, tab in ipairs({MainTab, SellingTab, SettingsTab}) do
     c.Parent = tab
 end
 
-local SellingFrame = Instance.new("Frame")
+local SellingFrame = Instance.new("ScrollingFrame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -12, 0, 298)
+SellingFrame.Size = UDim2.new(1, -12, 0, 184)
 SellingFrame.Position = UDim2.fromOffset(6, 59)
 SellingFrame.BackgroundTransparency = 1
+SellingFrame.BorderSizePixel = 0
 SellingFrame.Visible = false
+SellingFrame.CanvasSize = UDim2.fromOffset(0, 330)
+SellingFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SellingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+SellingFrame.ScrollBarThickness = 4
+SellingFrame.ScrollBarImageTransparency = 0.25
+SellingFrame.ScrollingEnabled = true
 SellingFrame.Parent = frame
 
 local SellingTitle = Instance.new("TextLabel")
@@ -612,13 +602,20 @@ RarityDrop.Activated:Connect(function()
 end)
 
 --// SETTINGS TAB
-local SettingsFrame = Instance.new("Frame")
+local SettingsFrame = Instance.new("ScrollingFrame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -12, 0, 298)
+SettingsFrame.Size = UDim2.new(1, -12, 0, 181)
 SettingsFrame.Position = UDim2.fromOffset(6, 59)
 SettingsFrame.BackgroundTransparency = 1
+SettingsFrame.BorderSizePixel = 0
+SettingsFrame.ScrollBarThickness = 4
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 330)
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
+
+-- Settings is intentionally scrollable so every control remains inside the 250x250 UI.
+local SettingsContentSize = 330
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, SettingsContentSize)
 
 -- Sell remote controls live in Settings.  Move them only after SettingsFrame
 -- has been created so the UI does not error during startup.
@@ -657,7 +654,7 @@ SettingsInfo.Parent = SettingsFrame
 
 --// TRAVEL REMOTE SETTING
 local TravelRemoteLabel = Instance.new("TextLabel")
-TravelRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+TravelRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
 TravelRemoteLabel.Position = UDim2.fromOffset(0, 58)
 TravelRemoteLabel.BackgroundTransparency = 1
 TravelRemoteLabel.Text = "TRAVEL REMOTE"
@@ -670,7 +667,7 @@ TravelRemoteLabel.Parent = SettingsFrame
 local TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Name = "TravelRemoteBox"
 TravelRemoteBox.Size = UDim2.new(0, 105, 0, 26)
-TravelRemoteBox.Position = UDim2.fromOffset(95, 56)
+TravelRemoteBox.Position = UDim2.fromOffset(90, 56)
 TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 TravelRemoteBox.BorderSizePixel = 0
 TravelRemoteBox.ClearTextOnFocus = false
@@ -688,8 +685,8 @@ TravelBoxCorner.Parent = TravelRemoteBox
 
 local TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Name = "TravelRemoteDropdown"
-TravelDropdown.Size = UDim2.new(0, 90, 0, 26)
-TravelDropdown.Position = UDim2.fromOffset(205, 56)
+TravelDropdown.Size = UDim2.new(0, 70, 0, 26)
+TravelDropdown.Position = UDim2.fromOffset(165, 56)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "SELECT v"
@@ -704,8 +701,8 @@ TravelDropCorner.Parent = TravelDropdown
 
 local TravelList = Instance.new("ScrollingFrame")
 TravelList.Name = "TravelRemoteList"
-TravelList.Size = UDim2.fromOffset(105, 100)
-TravelList.Position = UDim2.fromOffset(95, 84)
+TravelList.Size = UDim2.fromOffset(100, 100)
+TravelList.Position = UDim2.fromOffset(90, 84)
 TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 TravelList.BorderSizePixel = 0
 TravelList.Visible = false
@@ -769,7 +766,7 @@ AutoTravelStatus.TextWrapped = true
 AutoTravelStatus.Parent = SettingsFrame
 
 local SellRemoteLabel = Instance.new("TextLabel")
-SellRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+SellRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
 SellRemoteLabel.Position = UDim2.fromOffset(0, 155)
 SellRemoteLabel.BackgroundTransparency = 1
 SellRemoteLabel.Text = "SELL REMOTE"
@@ -928,22 +925,29 @@ local function SetMinimized(value)
     MainTab.Visible = not value
     SellingTab.Visible = not value
     SettingsTab.Visible = not value
-    SellingFrame.Visible = (not value) and (ActiveTab == "Selling")
-    SettingsFrame.Visible = (not value) and (ActiveTab == "Settings")
-    if TravelList then TravelList.Visible = false end
+    SellingFrame.Visible = (not value) and SellingFrame.Visible
+    SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
-        frame.Size = UDim2.fromOffset(285, 40)
+        frame.Size = UDim2.fromOffset(250, 40)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(285, 335)
+        frame.Size = UDim2.fromOffset(250, 250)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
 end
 
-minimizeButton.MouseButton1Click:Connect(function()
-    SetMinimized(not minimized)
+minimizeButton.Activated:Connect(function()
+    if minimized then
+        -- Opening the UI again is also a STOP command.
+        if Farming then
+            pcall(function() stopFarm() end)
+        end
+        SetMinimized(false)
+    else
+        SetMinimized(true)
+    end
 end)
 
 button = Instance.new("TextButton")
@@ -956,8 +960,6 @@ button.Font = Enum.Font.GothamBold
 button.TextSize = 14
 button.Text = "START"
 button.AutoButtonColor = true
-button.Active = true
-button.ZIndex = 100
 button.Parent = frame
 
 local buttonCorner = Instance.new("UICorner")
@@ -977,7 +979,7 @@ islandText.Parent = frame
 
 status = Instance.new("TextLabel")
 status.BackgroundTransparency = 1
-status.Size = UDim2.fromOffset(295, 30)
+status.Size = UDim2.fromOffset(230, 30)
 status.Position = UDim2.fromOffset(10, 106)
 status.Font = Enum.Font.Gotham
 status.Text = "Idle"
@@ -1077,7 +1079,7 @@ end
 
 sightHint = Instance.new("TextLabel")
 sightHint.BackgroundTransparency = 1
-sightHint.Size = UDim2.fromOffset(285, 16)
+sightHint.Size = UDim2.fromOffset(230, 16)
 sightHint.Position = UDim2.fromOffset(10, 158)
 sightHint.Font = Enum.Font.Gotham
 sightHint.Text = "Drag the crosshair to set click point"
@@ -1110,32 +1112,23 @@ SetTab = function(tabName)
     SettingsTab.TextColor3 = settingsVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
 end
 
-MainTab.MouseButton1Click:Connect(function()
+MainTab.Activated:Connect(function()
     SetTab("Main")
 end)
-SellingTab.MouseButton1Click:Connect(function()
+SellingTab.Activated:Connect(function()
     SetTab("Selling")
 end)
 
-SettingsTab.MouseButton1Click:Connect(function()
+SettingsTab.Activated:Connect(function()
     SetTab("Settings")
 end)
-
--- Force the initial visible state so the main controls cannot inherit a stale state.
-minimized = false
-MainTab.Visible = true
-SellingTab.Visible = true
-SettingsTab.Visible = true
-button.Visible = true
-frame.Visible = true
-SetTab("Main")
 
 --// END MINIMAL UI
 
 --// SETTINGS
 local SCAN_INTERVAL = 0.50
 local CATCH_INTERVAL = 0.50
-local TWEEN_SPEED = 90
+local TWEEN_SPEED = 95
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
 local CharacterAnchored = false
 local activeWeld = nil
@@ -1684,9 +1677,139 @@ local function isHorse(node)
     return false
 end
 
+--// LASSO OWNER FILTER
+--// Missing attribute = go. Own username = go. Another username = skip.
+local function CanGoToHorse(node)
+    if not node or not node.Parent then return false end
+    local owner = node:GetAttribute("lastPlayerToThrowLasso")
+    if owner == nil or tostring(owner) == "" then
+        return true
+    end
+    return tostring(owner) == tostring(LocalPlayer.Name)
+end
+
+--// FPS CAP + VISUAL CLEANUP
+--// Best-effort client FPS cap at 15.
+pcall(function()
+    if type(setfpscap) == "function" then
+        setfpscap(15)
+    end
+end)
+
+-- Remove visual decals, particles, aura/effect objects and make terrain white.
+local function CleanVisuals()
+    pcall(function()
+        local terrain = Workspace:FindFirstChildOfClass("Terrain")
+        if terrain then
+            terrain.Color = Color3.new(1, 1, 1)
+            terrain.WaterColor = Color3.new(1, 1, 1)
+        end
+    end)
+
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        pcall(function()
+            if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance")
+                or obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam")
+                or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles")
+                or obj:IsA("Highlight") or obj:IsA("PointLight") or obj:IsA("SpotLight")
+                or obj:IsA("SurfaceLight") then
+                obj:Destroy()
+            end
+        end)
+    end
+end
+
+-- Keep horse models and their parent containers, while removing unrelated
+-- visual models from Workspace. This is client-side and does not affect the server.
+local function IsIslandProtected(instance)
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands or not instance then return false end
+    return instance == islands or instance:IsDescendantOf(islands)
+end
+
+local function IsLassoProtected(instance)
+    -- Protect the model itself AND every model inside a Lasso-named model.
+    -- This prevents a parent Lasso model from being deleted before its children
+    -- are checked by the cleanup loop.
+    local current = instance
+    while current and current ~= Workspace do
+        if current:IsA("Model") then
+            local name = tostring(current.Name):lower()
+            if name:find("lasso", 1, true) then
+                return true
+            end
+        end
+        current = current.Parent
+    end
+    return false
+end
+
+local function IsHorseOrHorseContainer(model)
+    if not model:IsA("Model") then return false end
+    if isHorse(model) then return true end
+    for _, descendant in ipairs(model:GetDescendants()) do
+        if descendant:IsA("Model") and (isHorse(descendant) or IsLassoProtected(descendant)) then
+            return true
+        end
+    end
+    return false
+end
+
+local function RemoveNonHorseModels()
+    for _, model in ipairs(Workspace:GetDescendants()) do
+        if model:IsA("Model") and model.Parent then
+            local keep = false
+            pcall(function()
+                if model == LocalPlayer.Character then
+                    keep = true
+                elseif IsIslandProtected(model) then
+                    -- Never delete island containers/geometry; the scanner needs every island.
+                    keep = true
+                elseif IsLassoProtected(model) then
+                    -- NEVER delete a model named Lasso/lasso, or anything
+                    -- contained inside a Lasso-named model.
+                    keep = true
+                elseif IsHorseOrHorseContainer(model) then
+                    keep = true
+                end
+            end)
+            if not keep then
+                pcall(function()
+                    model:Destroy()
+                end)
+            end
+        end
+    end
+end
+
+CleanVisuals()
+RemoveNonHorseModels()
+
+-- Keep newly spawned visual effects cleaned as well.
+Workspace.DescendantAdded:Connect(function(obj)
+    task.defer(function()
+        pcall(function()
+            if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SurfaceAppearance")
+                or obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam")
+                or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles")
+                or obj:IsA("Highlight") or obj:IsA("PointLight") or obj:IsA("SpotLight")
+                or obj:IsA("SurfaceLight") then
+                obj:Destroy()
+            elseif obj:IsA("Model") and obj.Parent and obj ~= LocalPlayer.Character then
+                if not IsIslandProtected(obj) and not IsLassoProtected(obj) and not IsHorseOrHorseContainer(obj) then
+                    obj:Destroy()
+                end
+            end
+        end)
+    end)
+end)
+
 local function isOwned(node)
-    for attrKey, attrVal in pairs(node:GetAttributes()) do
-        if attrKey:lower() == "owner" and attrVal ~= nil and tostring(attrVal) ~= "" then
+    if not node then return false end
+    -- Any Owner attribute means this is not a wild/unowned horse.
+    -- The attribute is rejected even when its value is empty.
+    for attrKey in pairs(node:GetAttributes()) do
+        if tostring(attrKey):lower() == "owner" then
             return true
         end
     end
@@ -1725,7 +1848,7 @@ local function ScanHorses()
         for _, node in ipairs(container:GetChildren()) do
             if (node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal"))) and not isHorse(node) then
                 ScanContainer(node, islandName)
-            elseif not seen[node] and isHorse(node) and not isOwned(node) and not isInShop(node) then
+            elseif not seen[node] and isHorse(node) and not isOwned(node) and CanGoToHorse(node) and not isInShop(node) then
                 seen[node] = true
                 local pivot = getHorsePivot(node)
                 if pivot then
@@ -2322,6 +2445,16 @@ local function startFarm()
                 continue
             end
 
+            -- Recheck immediately before committing to the target, because the
+            -- lasso-owner attribute can change after the scan.
+            if not CanGoToHorse(target.Model) then
+                CurrentTarget = nil
+                status.Text = "Skipping horse: lasso owner is another player"
+                status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                task.wait(0.1)
+                continue
+            end
+
             CurrentTarget = target.Model
             CurrentTargetUID = target.UID
             CurrentTargetIsland = target.Island
@@ -2507,9 +2640,16 @@ local function startFarm()
     end)
 end
 
-button.MouseButton1Click:Connect(function()
+button.Activated:Connect(function()
     local ok, err = pcall(function()
-        if Farming then stopFarm() else startFarm() end
+        if Farming then
+            stopFarm()
+            SetMinimized(false)
+        else
+            startFarm()
+            -- Starting the farm automatically minimizes the UI.
+            SetMinimized(true)
+        end
     end)
     if not ok then
         Farming = false
