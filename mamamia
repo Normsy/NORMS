@@ -1,4 +1,3 @@
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local CollectionService = game:GetService("CollectionService")
@@ -151,9 +150,7 @@ local function selectOo()
 end
 
 ooBox.Activated:Connect(function()
-    -- Only one checkbox can be selected at a time.
     selectOo()
-
     task.wait(0.15)
     if selectedAnswer == "Oo" then
         if gui then
@@ -164,7 +161,6 @@ ooBox.Activated:Connect(function()
 end)
 
 hindiBox.Activated:Connect(function()
-    -- Select Hindi exclusively, then kick before the main NORMS UI loads.
     selectedAnswer = "Hindi"
     ooBox.Text = "[ ]  Oo"
     ooBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
@@ -190,7 +186,6 @@ end)
 if not parentOk or not gui.Parent then
     gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
--- Keep the actual NORMS UI hidden until the user selects Oo.
 gui.Enabled = false
 
 local frame = Instance.new("Frame")
@@ -248,10 +243,10 @@ local sightHint
 local ActiveTab = "Main"
 local SetTab
 
---// TABS
+--// TABS (4 Tabs: Main, Extra, Selling, Settings)
 local MainTab = Instance.new("TextButton")
 MainTab.Name = "MainTab"
-MainTab.Size = UDim2.fromOffset(60, 22)
+MainTab.Size = UDim2.fromOffset(54, 22)
 MainTab.Position = UDim2.fromOffset(6, 32)
 MainTab.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
 MainTab.TextColor3 = Color3.fromRGB(10, 10, 10)
@@ -261,10 +256,22 @@ MainTab.TextSize = 9
 MainTab.Text = "MAIN"
 MainTab.Parent = frame
 
+local ExtraTab = Instance.new("TextButton")
+ExtraTab.Name = "ExtraTab"
+ExtraTab.Size = UDim2.fromOffset(58, 22)
+ExtraTab.Position = UDim2.fromOffset(64, 32)
+ExtraTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+ExtraTab.TextColor3 = Color3.fromRGB(220, 220, 225)
+ExtraTab.BorderSizePixel = 0
+ExtraTab.Font = Enum.Font.GothamBold
+ExtraTab.TextSize = 9
+ExtraTab.Text = "EXTRA"
+ExtraTab.Parent = frame
+
 local SellingTab = Instance.new("TextButton")
 SellingTab.Name = "SellingTab"
-SellingTab.Size = UDim2.fromOffset(76, 22)
-SellingTab.Position = UDim2.fromOffset(70, 32)
+SellingTab.Size = UDim2.fromOffset(60, 22)
+SellingTab.Position = UDim2.fromOffset(126, 32)
 SellingTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
@@ -275,8 +282,8 @@ SellingTab.Parent = frame
 
 local SettingsTab = Instance.new("TextButton")
 SettingsTab.Name = "SettingsTab"
-SettingsTab.Size = UDim2.fromOffset(76, 22)
-SettingsTab.Position = UDim2.fromOffset(150, 32)
+SettingsTab.Size = UDim2.fromOffset(54, 22)
+SettingsTab.Position = UDim2.fromOffset(190, 32)
 SettingsTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SettingsTab.BorderSizePixel = 0
@@ -285,12 +292,52 @@ SettingsTab.TextSize = 9
 SettingsTab.Text = "SETTINGS"
 SettingsTab.Parent = frame
 
-for _, tab in ipairs({MainTab, SellingTab, SettingsTab}) do
+for _, tab in ipairs({MainTab, ExtraTab, SellingTab, SettingsTab}) do
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 6)
     c.Parent = tab
 end
 
+--// EXTRA TAB FRAME (New Tab Content)
+local ExtraFrame = Instance.new("ScrollingFrame")
+ExtraFrame.Name = "Extra"
+ExtraFrame.Size = UDim2.new(1, -12, 0, 184)
+ExtraFrame.Position = UDim2.fromOffset(6, 59)
+ExtraFrame.BackgroundTransparency = 1
+ExtraFrame.BorderSizePixel = 0
+ExtraFrame.Visible = false
+ExtraFrame.CanvasSize = UDim2.fromOffset(0, 200)
+ExtraFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ExtraFrame.ScrollingDirection = Enum.ScrollingDirection.Y
+ExtraFrame.ScrollBarThickness = 4
+ExtraFrame.ScrollBarImageTransparency = 0.25
+ExtraFrame.ScrollingEnabled = true
+ExtraFrame.Parent = frame
+
+local ExtraTitle = Instance.new("TextLabel")
+ExtraTitle.Size = UDim2.new(1, 0, 0, 22)
+ExtraTitle.Position = UDim2.fromOffset(0, 0)
+ExtraTitle.BackgroundTransparency = 1
+ExtraTitle.Text = "EXTRA UTILITIES"
+ExtraTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExtraTitle.TextSize = 10
+ExtraTitle.Font = Enum.Font.GothamBold
+ExtraTitle.TextXAlignment = Enum.TextXAlignment.Left
+ExtraTitle.Parent = ExtraFrame
+
+local ExtraInfo = Instance.new("TextLabel")
+ExtraInfo.Size = UDim2.new(1, 0, 0, 30)
+ExtraInfo.Position = UDim2.fromOffset(0, 25)
+ExtraInfo.BackgroundTransparency = 1
+ExtraInfo.Text = "Additional helper features and utilities."
+ExtraInfo.TextColor3 = Color3.fromRGB(130, 135, 145)
+ExtraInfo.TextSize = 9
+ExtraInfo.Font = Enum.Font.Gotham
+ExtraInfo.TextXAlignment = Enum.TextXAlignment.Left
+ExtraInfo.TextWrapped = true
+ExtraInfo.Parent = ExtraFrame
+
+--// SELLING TAB FRAME
 local SellingFrame = Instance.new("ScrollingFrame")
 SellingFrame.Name = "Selling"
 SellingFrame.Size = UDim2.new(1, -12, 0, 184)
@@ -328,15 +375,13 @@ SellingStatus.Font = Enum.Font.Gotham
 SellingStatus.TextXAlignment = Enum.TextXAlignment.Left
 SellingStatus.Parent = SellingFrame
 
--- Forward declarations used by the manual refresh callback. These MUST be above
--- the callback so Lua closes over the correct locals instead of globals.
+-- Forward declarations used by the manual refresh callback.
 local SellingReferences
 local SellingInventory
 local SellingInventoryLoaded = false
 local SellingLabels = {}
 local RefreshSellingStats
 
--- Manual inventory refresh only. No background inventory refresh loop.
 local RefreshInventoryButton = Instance.new("TextButton")
 RefreshInventoryButton.Name = "RefreshInventoryButton"
 RefreshInventoryButton.Size = UDim2.fromOffset(100, 21)
@@ -613,12 +658,9 @@ SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 330)
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
 
--- Settings is intentionally scrollable so every control remains inside the 250x250 UI.
 local SettingsContentSize = 330
 SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, SettingsContentSize)
 
--- Sell remote controls live in Settings.  Move them only after SettingsFrame
--- has been created so the UI does not error during startup.
 RemoteDrop.Parent = SettingsFrame
 RemoteDrop.Position = UDim2.fromOffset(105, 155)
 RemoteList.Parent = SettingsFrame
@@ -923,8 +965,10 @@ local function SetMinimized(value)
     RemoteList.Visible = false
     RarityList.Visible = false
     MainTab.Visible = not value
+    ExtraTab.Visible = not value
     SellingTab.Visible = not value
     SettingsTab.Visible = not value
+    ExtraFrame.Visible = (not value) and ExtraFrame.Visible
     SellingFrame.Visible = (not value) and SellingFrame.Visible
     SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
@@ -940,7 +984,6 @@ end
 
 minimizeButton.Activated:Connect(function()
     if minimized then
-        -- Opening the UI again is also a STOP command.
         if Farming then
             pcall(function() stopFarm() end)
         end
@@ -1091,6 +1134,7 @@ sightHint.Parent = frame
 SetTab = function(tabName)
     ActiveTab = tabName
     local mainVisible = tabName == "Main"
+    local extraVisible = tabName == "Extra"
     local sellingVisible = tabName == "Selling"
     local settingsVisible = tabName == "Settings"
 
@@ -1099,11 +1143,15 @@ SetTab = function(tabName)
     status.Visible = mainVisible and not minimized
     sight.Visible = mainVisible and not minimized
     sightHint.Visible = mainVisible and not minimized
+    ExtraFrame.Visible = extraVisible and not minimized
     SellingFrame.Visible = sellingVisible and not minimized
     SettingsFrame.Visible = settingsVisible and not minimized
 
     MainTab.BackgroundColor3 = mainVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
     MainTab.TextColor3 = mainVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
+
+    ExtraTab.BackgroundColor3 = extraVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
+    ExtraTab.TextColor3 = extraVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
 
     SellingTab.BackgroundColor3 = sellingVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
     SellingTab.TextColor3 = sellingVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
@@ -1112,18 +1160,10 @@ SetTab = function(tabName)
     SettingsTab.TextColor3 = settingsVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
 end
 
-MainTab.Activated:Connect(function()
-    SetTab("Main")
-end)
-SellingTab.Activated:Connect(function()
-    SetTab("Selling")
-end)
-
-SettingsTab.Activated:Connect(function()
-    SetTab("Settings")
-end)
-
---// END MINIMAL UI
+MainTab.Activated:Connect(function() SetTab("Main") end)
+ExtraTab.Activated:Connect(function() SetTab("Extra") end)
+SellingTab.Activated:Connect(function() SetTab("Selling") end)
+SettingsTab.Activated:Connect(function() SetTab("Settings") end)
 
 --// SETTINGS
 local SCAN_INTERVAL = 0.50
@@ -1133,7 +1173,6 @@ local HORSE_OFFSET = CFrame.new(0, 3, 0)
 local CharacterAnchored = false
 local activeWeld = nil
 
---// NOCLIP (from the original tracker behavior)
 local NoClipEnabled = false
 local NoClipConnection = nil
 local NoClipStates = {}
@@ -1146,9 +1185,6 @@ local function SetNoClip(enabled)
             NoClipConnection:Disconnect()
         end
 
-        -- Match the old script: every Stepped frame, disable collision on every
-        -- character BasePart. This prevents terrain/parts from physically fighting
-        -- the TweenService CFrame movement.
         NoClipConnection = RunService.Stepped:Connect(function()
             local char = LocalPlayer.Character
             if not NoClipEnabled or not char or not char.Parent then return end
@@ -1165,7 +1201,6 @@ local function SetNoClip(enabled)
             NoClipConnection = nil
         end
 
-        -- Match the old script's cleanup behavior.
         local char = LocalPlayer.Character
         if char and char.Parent then
             for _, part in ipairs(char:GetDescendants()) do
@@ -1178,8 +1213,6 @@ local function SetNoClip(enabled)
     end
 end
 
---// ANTI-AFK
---// Uses Roblox's normal client-side idle notification path; no remotes are fired.
 local AntiAFKConnection = LocalPlayer.Idled:Connect(function()
     pcall(function()
         VirtualUser:CaptureController()
@@ -1189,7 +1222,6 @@ end)
 
 local Farming = false
 
--- Always initialize the visible control as START/idle.
 button.Text = "START"
 button.BackgroundColor3 = Color3.fromRGB(57,255,20)
 button.TextColor3 = Color3.fromRGB(10,10,10)
@@ -1200,7 +1232,6 @@ local FarmGeneration = 0
 local ScanCache = {}
 local LastScan = 0
 
---// RARITY DATABASE
 local RarityData = {
     ["Fjord"]={Rarity="Low"}, ["Mustang"]={Rarity="Low"}, ["Appaloosa"]={Rarity="Low"},
     ["Paint Horse"]={Rarity="Low"}, ["Paint"]={Rarity="Low"}, ["Morgan"]={Rarity="Low"},
@@ -1216,9 +1247,6 @@ local RarityData = {
 
 local RarityPriority = {Special=4, High=3, Mid=2, Low=1}
 
---// UNIQUE HAIR VALUES FROM THE ORIGINAL TRACKER
---// UNIQUE HAIR + PRIORITY DATA FROM Selling..txt
---// Catch priority: 1 Unique Hair, 2 Mismatched Hair, 3 Island Unique Coat, 4 Natural Dyed Hair, 5 Horned, 6 Normal
 local UniqueHairValues = {
     iceyblack=true, iceyblue=true, iceypink=true, iceywhite=true,
     winterstreaks=true, leafy=true, flowery=true, pearly=true, pearlygreen=true,
@@ -1309,7 +1337,6 @@ local function GetHorsePriorityStats(horse)
     local hornColour = variants.hornColour
     local horned = hornColour ~= nil and tostring(hornColour) ~= ""
 
-    -- Lower number = higher catch priority.
     local priority = 6
     if unique then priority = 1
     elseif mismatch then priority = 2
@@ -1339,13 +1366,10 @@ end
 local function checkUniqueHair(horse)
     local stats = GetHorsePriorityStats(horse)
     if stats.UniqueHair then
-        return true, "â"
+        return true, "✓"
     end
     return false, "X"
 end
-
---// SELLING TAB INVENTORY STATS
---// These definitions are adapted directly from Selling..txt.
 
 local BreedDisplayNames = {
     ["akhal teke"] = "Akhal-Teke Horse", ["akhal-teke"] = "Akhal-Teke Horse",
@@ -1603,7 +1627,6 @@ task.spawn(function()
     if not ok or not SellingInventoryLoaded then
         SellingStatus.Text = "Inventory unavailable - press REFRESH INVENTORY"
     end
-    -- No periodic inventory refresh. Use the REFRESH INVENTORY button in the Selling tab.
 end)
 
 local function GetHorseInfo(rawName)
@@ -1658,7 +1681,6 @@ local function isHorse(node)
         return true
     end
 
-    -- Fallbacks for servers where the Animal tag/behaviour is not present.
     if node:IsA("Model") then
         local overheadPart = node:FindFirstChild("OverheadPart")
         local overhead = overheadPart and overheadPart:FindFirstChild("Overhead")
@@ -1677,8 +1699,6 @@ local function isHorse(node)
     return false
 end
 
---// LASSO OWNER FILTER
---// Missing attribute = go. Own username = go. Another username = skip.
 local function CanGoToHorse(node)
     if not node or not node.Parent then return false end
     local owner = node:GetAttribute("lastPlayerToThrowLasso")
@@ -1688,15 +1708,12 @@ local function CanGoToHorse(node)
     return tostring(owner) == tostring(LocalPlayer.Name)
 end
 
---// FPS CAP + VISUAL CLEANUP
---// Best-effort client FPS cap at 15.
 pcall(function()
     if type(setfpscap) == "function" then
         setfpscap(15)
     end
 end)
 
--- Remove visual decals, particles, aura/effect objects and make terrain white.
 local function CleanVisuals()
     pcall(function()
         local terrain = Workspace:FindFirstChildOfClass("Terrain")
@@ -1721,7 +1738,6 @@ end
 
 CleanVisuals()
 
--- Keep newly spawned visual effects cleaned as well.
 Workspace.DescendantAdded:Connect(function(obj)
     task.defer(function()
         pcall(function()
@@ -1738,8 +1754,6 @@ end)
 
 local function isOwned(node)
     if not node then return false end
-    -- Any Owner attribute means this is not a wild/unowned horse.
-    -- The attribute is rejected even when its value is empty.
     for attrKey in pairs(node:GetAttributes()) do
         if tostring(attrKey):lower() == "owner" then
             return true
@@ -1760,7 +1774,6 @@ local function isInShop(node)
     return false
 end
 
---// BACKGROUND SCANNER
 local function ScanHorses()
     local now = tick()
     if now - LastScan < SCAN_INTERVAL and #ScanCache > 0 then
@@ -1819,7 +1832,6 @@ local function ScanHorses()
     return results
 end
 
---// AUTO REMOTE GENERATORS
 local function ReadLocalInventory()
     local ok, inv = pcall(function()
         local refs = require(ReplicatedStorage:WaitForChild("References"))
@@ -1874,7 +1886,6 @@ local function FindRemoteEvent(index)
     return nil
 end
 
--- Exact island names from the original script.
 local AutoTravelIslandNames = {
     "Mainland", "Blizzard Island", "Forest Island", "Royal Island", "Desert Island",
     "Glacier Island", "Mountain Island", "Jungle Island", "Lunar Islands", "Volcano Island"
@@ -1893,7 +1904,6 @@ local function IsPlayerAtTravelIsland(islandName)
     local island = GetTravelIslandObject(islandName)
     if not island then return false end
 
-    -- Prefer the island model/folder geometry instead of relying only on its pivot.
     local nearest = math.huge
     for _, part in ipairs(island:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -1959,8 +1969,6 @@ local function IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
     local root = char and char:FindFirstChild("HumanoidRootPart")
     if not root then return false end
 
-    -- The strongest check is the actual target horse's island position.
-    -- This avoids falsely accepting a Function merely because the character moved.
     if targetHorsePosition then
         local distanceToHorse = (root.Position - targetHorsePosition).Magnitude
         if distanceToHorse <= 2000 then
@@ -1968,7 +1976,6 @@ local function IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
         end
     end
 
-    -- Secondary check: determine the nearest loaded island to the character.
     local islands = Workspace:FindFirstChild("Islands")
     if not islands then return false end
 
@@ -2012,8 +2019,6 @@ local function DetectTravelRemote()
     AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        -- The target argument is ALWAYS the island the player is currently on.
-        -- We are not looking for a horse and we are not forcing Mainland.
         local currentIsland = GetCurrentPlayerIsland()
 
         if not currentIsland or currentIsland == "" then
@@ -2028,9 +2033,6 @@ local function DetectTravelRemote()
         AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
         task.wait(0.25)
 
-        -- Test exactly like the captured remote:
-        -- FunctionX:InvokeServer("Travel", currentIsland, 1)
-        -- One test every 1 second.
         for i = 1, 36 do
             local remote = FindRemoteFunction(i)
             local name = "Function" .. tostring(i)
@@ -2050,8 +2052,6 @@ local function DetectTravelRemote()
                 local moved = false
                 local elapsed = 0
 
-                -- One-second observation window. A position OR orientation change
-                -- identifies the Function that actually moved the character.
                 while elapsed < 1 do
                     task.wait(0.05)
                     elapsed += 0.05
@@ -2110,7 +2110,6 @@ local function DetectSellRemote()
     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        -- Get one fresh inventory snapshot only when the detector starts.
         local testUID
         for attempt = 1, 40 do
             local inv = ReadLocalInventory()
@@ -2139,18 +2138,12 @@ local function DetectSellRemote()
             local eventName = "Event" .. tostring(i)
 
             if event then
-                -- IMPORTANT: each Event test uses the SAME target Normal Horse UID.
-                -- Do not spam inventory refreshes before the test.
                 AutoSellRemoteStatus.Text = "Testing " .. eventName .. " with target Normal Horse..."
 
-                -- Exact captured sell payload.
                 local fireOK, fireErr = pcall(function()
                     event:FireServer("SellItems", {[testUID] = 1})
                 end)
 
-                -- AFTER EVERY TEST: wait briefly for the inventory state to
-                -- replicate, then take ONE fresh inventory snapshot. Do not
-                -- recalculate all inventory statistics during remote detection.
                 task.wait(0.35)
                 local refreshedInventory = ReadLocalInventory()
                 local sold = false
@@ -2179,7 +2172,6 @@ local function DetectSellRemote()
                 end
             end
 
-            -- Keep the existing interval between Event tests.
             task.wait(0.5)
         end
 
@@ -2228,7 +2220,6 @@ Workspace.ChildAdded:Connect(function(child)
     end
 end)
 
---// CURRENT ISLAND
 GetCurrentPlayerIsland = function()
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
@@ -2265,9 +2256,6 @@ GetCurrentPlayerIsland = function()
     return nil
 end
 
---// SCREEN CLICK INPUT
---// The player manually equips the lasso. This script does not search for, equip,
---// or activate a Tool. It only sends a primary screen/mouse click at 0.5s intervals.
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
 local function ScreenClick()
@@ -2323,7 +2311,6 @@ local function stopFarm()
     status.TextColor3 = Color3.fromRGB(150,155,165)
 end
 
-
 local function startFarm()
     if Farming then return end
     Farming = true
@@ -2346,9 +2333,6 @@ local function startFarm()
                 continue
             end
 
-            -- ScanHorses() already scans every island loaded in the current server.
-            -- Do not restrict candidates to the current island: the old tracker would
-            -- select a horse from another island and use the Travel Remote to reach it.
             local candidates = {}
             for _, horse in ipairs(ScanHorses()) do
                 if horse.Model and horse.Model.Parent then
@@ -2357,7 +2341,6 @@ local function startFarm()
             end
 
             table.sort(candidates, function(a,b)
-                -- Catch priority: Unique Hair (1) > Mismatched Hair (2) > Island Unique Coat (3) > Natural Dyed Hair (4) > Horned (5) > Normal (6).
                 if a.Priority ~= b.Priority then return a.Priority < b.Priority end
                 if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
                 local pa = RarityPriority[a.Rarity] or 0
@@ -2377,8 +2360,6 @@ local function startFarm()
                 continue
             end
 
-            -- Recheck immediately before committing to the target, because the
-            -- lasso-owner attribute can change after the scan.
             if not CanGoToHorse(target.Model) then
                 CurrentTarget = nil
                 status.Text = "Skipping horse: lasso owner is another player"
@@ -2399,11 +2380,8 @@ local function startFarm()
             local targetPart = target.Model:IsA("Model") and (target.Model.PrimaryPart or target.Model:FindFirstChildWhichIsA("BasePart")) or target.Model
 
             if root and humanoid and humanoid.Health > 0 and targetPart and target.Model.Parent then
-                -- Old-script behavior: if the selected horse is on another island,
-                -- use the configured Travel Remote to travel there before tweening to it.
                 local currentIslandBeforeTravel = GetCurrentPlayerIsland()
                 if currentIslandBeforeTravel ~= target.Island then
-                    -- Horse is on a different island: travel first, then tween to it.
                     local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
                     if remoteName == "" then
                         status.Text = "Set Travel Remote in Settings"
@@ -2465,16 +2443,9 @@ local function startFarm()
                         continue
                     end
                 else
-                    -- Horse is already on the island the player is currently on: no travel call.
                     islandText.Text = "Island: " .. tostring(currentIslandBeforeTravel)
                 end
 
-                -- Copy the old tracker movement behavior: anchor the character BEFORE
-                -- tweening. This prevents physics/collision correction from making the
-                -- character shake when the route passes below terrain.
-                -- Old script movement order: NoClip + PlatformStand + anchored root,
-                -- then a pure TweenService CFrame tween. Do not repeatedly write CFrame
-                -- during the tween; that was the source of the shaky motion.
                 SetNoClip(true)
                 humanoid.PlatformStand = true
                 root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -2489,20 +2460,16 @@ local function startFarm()
                 tween:Play()
 
                 while tween.PlaybackState == Enum.PlaybackState.Playing and Farming and myGeneration == FarmGeneration do
-                    -- Do not rescan every island every 0.03s; the island was verified before tweening.
                     if not target.Model.Parent or humanoid.Health <= 0 then
                         tween:Cancel()
                         break
                     end
-                    -- Same velocity reset cadence as the old script, without touching CFrame.
                     root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
                     task.wait(0.03)
                 end
 
                 if Farming and myGeneration == FarmGeneration and target.Model.Parent then
-                    -- The tween is finished. Snap once to the exact position above the
-                    -- horse, weld there, and keep the character anchored. No follow loop.
                     pcall(function()
                         root.CFrame = targetPart.CFrame * HORSE_OFFSET
                         if activeWeld then
@@ -2524,13 +2491,10 @@ local function startFarm()
                     local caught = false
                     local catchDeadline = tick() + 8
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
-                        -- Character stays anchored; no repeated island scan is needed here.
-                        -- Travel was already verified before the horse tween started.
                         ScreenClick()
                         status.Text = "Catching: " .. target.Name
                         status.TextColor3 = Color3.fromRGB(57,255,20)
 
-                        -- Horse disappearance/ownership change is treated as success.
                         if not target.Model.Parent or isOwned(target.Model) then
                             caught = true
                             break
@@ -2538,8 +2502,7 @@ local function startFarm()
 
                         task.wait(CATCH_INTERVAL)
                     end
-                                    -- After a successful catch, stay exactly where the last horse was.
-                    -- Do not reset, respawn, teleport away, or move to another island.
+
                     if caught and root and root.Parent then
                         local lastStandCFrame = root.CFrame
                         SetCharacterAnchored(false)
@@ -2557,9 +2520,6 @@ local function startFarm()
                 end
             end
 
-            -- No horse available is NOT a reason to reset or respawn.
-            -- The character simply stays at the last position and the background
-            -- scanner keeps checking until a new horse appears on this island.
             if not CurrentTarget then
                 status.Text = "Waiting for new horse..."
                 status.TextColor3 = Color3.fromRGB(150,155,165)
@@ -2579,7 +2539,6 @@ button.Activated:Connect(function()
             SetMinimized(false)
         else
             startFarm()
-            -- Starting the farm automatically minimizes the UI.
             SetMinimized(true)
         end
     end)
@@ -2594,16 +2553,12 @@ button.Activated:Connect(function()
     end
 end)
 
---// BUTTON SANITY CHECK
 pcall(function()
     assert(button and button:IsA("TextButton"), "Start button was not created")
     assert(AutoTravelButton and AutoTravelButton:IsA("TextButton"), "Travel finder button was not created")
     assert(AutoSellRemoteButton and AutoSellRemoteButton:IsA("TextButton"), "Sell finder button was not created")
 end)
 
---// FARM SCAN LOOP
--- Only scan horses while farming is actually running. This avoids a constant
--- Workspace descendant scan when the UI is idle and prevents unnecessary lag.
 task.spawn(function()
     while gui.Parent do
         if Farming then
@@ -2615,7 +2570,6 @@ task.spawn(function()
     end
 end)
 
---// Cleanly stop on character removal so movement state is never left active.
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.defer(function()
         if Farming then
@@ -2631,5 +2585,4 @@ LocalPlayer.CharacterRemoving:Connect(function()
     CurrentTargetIsland = nil
 end)
 
-print("[NORMS] Minimal farmer loaded. Inventory refresh is manual; Sell Remote detection refreshes once after each Event test.")
-print("[NORMS] Scans all loaded islands in the current server; Travel Remote can move to the selected island automatically.")
+print("[NORMS] Minimal farmer loaded with Extra tab added.")
