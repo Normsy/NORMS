@@ -311,12 +311,12 @@ end
 RefreshInventoryButton.Activated:Connect(RefreshInventoryManually)
 
 local sellingNames = {
-    {"Normal Horse", Color3.fromRGB(180, 185, 195)},
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
     {"Island Unique Coat", Color3.fromRGB(255, 150, 40)},
     {"Mismatched Hair", Color3.fromRGB(60, 175, 255)},
     {"Natural Dyed Hair", Color3.fromRGB(70, 230, 90)},
     {"Horned", Color3.fromRGB(185, 80, 255)},
+    {"Normal Horse", Color3.fromRGB(180, 185, 195)},
     {"Total Horse", Color3.fromRGB(235, 235, 240)},
 }
 
@@ -368,7 +368,7 @@ SellFilterTitle.TextXAlignment = Enum.TextXAlignment.Left
 SellFilterTitle.Parent = SellingFrame
 
 local SelectedSellRemote = "Event1"
-local SelectedSellCategory = "All"
+local SelectedSellCategory = "Normal Horse"
 local SellStatus
 
 local function makeDropButton(text, position, width)
@@ -390,7 +390,7 @@ local function makeDropButton(text, position, width)
 end
 
 local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 177), 100)
-local RarityDrop = makeDropButton("Filter: All", UDim2.fromOffset(104, 177), 100)
+local RarityDrop = makeDropButton("Filter: Normal Horse", UDim2.fromOffset(104, 177), 100)
 
 local RemoteList = Instance.new("ScrollingFrame")
 RemoteList.Size = UDim2.fromOffset(100, 125)
@@ -488,12 +488,36 @@ SellStatus = Instance.new("TextLabel")
 SellStatus.Size = UDim2.new(1, 0, 0, 16)
 SellStatus.Position = UDim2.fromOffset(0, 237)
 SellStatus.BackgroundTransparency = 1
-SellStatus.Text = "Remote: Event1 | Filter: All"
+SellStatus.Text = "Remote: Event1 | Filter: Normal Horse"
 SellStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
 SellStatus.TextSize = 8
 SellStatus.Font = Enum.Font.Gotham
 SellStatus.TextXAlignment = Enum.TextXAlignment.Left
 SellStatus.Parent = SellingFrame
+
+local AutoSellToggle = Instance.new("TextButton")
+AutoSellToggle.Name = "AutoSellToggle"
+AutoSellToggle.Size = UDim2.new(1, -8, 0, 28)
+AutoSellToggle.Position = UDim2.fromOffset(0, 272)
+AutoSellToggle.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+AutoSellToggle.BorderSizePixel = 0
+AutoSellToggle.Text = "AUTO SELL FILTER EVERY 5 MIN: OFF"
+AutoSellToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoSellToggle.TextSize = 9
+AutoSellToggle.Font = Enum.Font.GothamBold
+AutoSellToggle.Parent = SellingFrame
+local astc = Instance.new("UICorner"); astc.CornerRadius = UDim.new(0, 6); astc.Parent = AutoSellToggle
+
+local AutoSellInfo = Instance.new("TextLabel")
+AutoSellInfo.Size = UDim2.new(1, -8, 0, 16)
+AutoSellInfo.Position = UDim2.fromOffset(0, 304)
+AutoSellInfo.BackgroundTransparency = 1
+AutoSellInfo.Text = "Auto sell is off"
+AutoSellInfo.TextColor3 = Color3.fromRGB(130, 135, 145)
+AutoSellInfo.TextSize = 9
+AutoSellInfo.Font = Enum.Font.Gotham
+AutoSellInfo.TextXAlignment = Enum.TextXAlignment.Left
+AutoSellInfo.Parent = SellingFrame
 
 AutoSellRemoteButton = Instance.new("TextButton")
 AutoSellRemoteButton.Name = "AutoFindSellRemote"
@@ -1726,7 +1750,24 @@ local function GetSelectedSellRemote()
     return remote
 end
 
-SellButton.Activated:Connect(function()
+local function SellFiltered(isAuto)
+    if isAuto and SelectedSellCategory == "All" then
+        -- safety: never auto-sell everything (would include priority horses)
+        SellStatus.Text = "Auto sell skipped: filter is All"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+        return
+    end
+    if isAuto then
+        local okA, freshInv = pcall(function()
+            local refs = require(ReplicatedStorage:WaitForChild("References"))
+            local data = require(refs.PlayerScripts.Priority.Data)
+            return data.GetLocal({"inventory"})
+        end)
+        if okA and type(freshInv) == "table" then
+            SellingInventory = freshInv
+            SellingInventoryLoaded = true
+        end
+    end
     local remote, err = GetSelectedSellRemote()
     if not remote then
         SellStatus.Text = err
@@ -1783,6 +1824,45 @@ SellButton.Activated:Connect(function()
             end
         end
     end)
+end
+
+SellButton.Activated:Connect(function()
+    SellFiltered(false)
+end)
+
+--// AUTO SELL FILTER (every 5 minutes)
+local AutoSellEnabled = false
+local AutoSellInterval = 300
+local AutoSellNext = 0
+
+AutoSellToggle.Activated:Connect(function()
+    AutoSellEnabled = not AutoSellEnabled
+    if AutoSellEnabled then
+        AutoSellNext = tick() + AutoSellInterval
+        AutoSellToggle.Text = "AUTO SELL FILTER EVERY 5 MIN: ON"
+        AutoSellToggle.TextColor3 = Color3.fromRGB(100, 255, 130)
+    else
+        AutoSellToggle.Text = "AUTO SELL FILTER EVERY 5 MIN: OFF"
+        AutoSellToggle.TextColor3 = Color3.fromRGB(235, 235, 240)
+        AutoSellInfo.Text = "Auto sell is off"
+    end
+end)
+
+task.spawn(function()
+    while gui.Parent do
+        task.wait(1)
+        if AutoSellEnabled then
+            local left = AutoSellNext - tick()
+            if left <= 0 then
+                AutoSellNext = tick() + AutoSellInterval
+                pcall(SellFiltered, true)
+                left = AutoSellInterval
+            end
+            if ActiveTab == "Selling" and not minimized then
+                AutoSellInfo.Text = string.format("Next auto sell (%s) in %d:%02d", SelectedSellCategory, math.floor(left / 60), math.floor(left % 60))
+            end
+        end
+    end
 end)
 
 task.spawn(function()
