@@ -554,20 +554,58 @@ SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
 
 -- Settings is intentionally scrollable so every control remains inside the 250x250 UI.
-local SettingsContentSize = 330
+local SettingsContentSize = 430
 SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, SettingsContentSize)
+
+--// CATCH / LASSO CONFIG
+CatchConfig = CatchConfig or {}
+CatchConfig.SelectedCatchRemote = CatchConfig.SelectedCatchRemote or ""
+CatchConfig.ConfiguredLassoUID = CatchConfig.ConfiguredLassoUID or ""
+CatchConfig.SelectedLasso = CatchConfig.SelectedLasso or "Lasso"
+
+CatchConfig.LassoTypes = {
+    "Lasso",
+    "Wooden Lasso",
+    "Tin Lasso",
+    "Cooper Lasso",
+    "Bronze Lasso",
+    "Iron Lasso",
+    "Silver Lasso",
+    "Clear Quartz Lasso",
+    "Gold Lasso",
+    "Ruby Lasso",
+    "Ice Lasso",
+    "Diamond Lasso",
+    "Obsidian Lasso",
+    "Moonstone Lasso"
+}
+
+function GetCatchEvents()
+    local comm = ReplicatedStorage:FindFirstChild("Communication")
+    local eventsFolder = comm and comm:FindFirstChild("Events")
+    if not eventsFolder then return {} end
+    local list = {}
+    for _, obj in ipairs(eventsFolder:GetChildren()) do
+        if obj:IsA("RemoteEvent") then
+            table.insert(list, obj)
+        end
+    end
+    table.sort(list, function(a, b) return a.Name < b.Name end)
+    return list
+end
+
 
 -- Sell remote controls live in Settings.  Move them only after SettingsFrame
 -- has been created so the UI does not error during startup.
 RemoteDrop.Parent = SettingsFrame
-RemoteDrop.Position = UDim2.fromOffset(105, 155)
+RemoteDrop.Position = UDim2.fromOffset(105, 372)
 RemoteList.Parent = SettingsFrame
-RemoteList.Position = UDim2.fromOffset(105, 182)
+RemoteList.Position = UDim2.fromOffset(105, 372)
 RemoteList.ZIndex = 100
 AutoSellRemoteButton.Parent = SettingsFrame
-AutoSellRemoteButton.Position = UDim2.fromOffset(0, 190)
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 380)
 AutoSellRemoteStatus.Parent = SettingsFrame
-AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 223)
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 413)
 
 local SettingsTitle = Instance.new("TextLabel")
 SettingsTitle.Size = UDim2.new(1, 0, 0, 22)
@@ -592,10 +630,311 @@ SettingsInfo.TextXAlignment = Enum.TextXAlignment.Left
 SettingsInfo.TextWrapped = true
 SettingsInfo.Parent = SettingsFrame
 
+--// REMOTE CATCHING
+CatchRemoteLabel = Instance.new("TextLabel")
+CatchRemoteLabel.Size = UDim2.new(0, 95, 0, 22)
+CatchRemoteLabel.Position = UDim2.fromOffset(0, 58)
+CatchRemoteLabel.BackgroundTransparency = 1
+CatchRemoteLabel.Text = "REMOTE CATCHING"
+CatchRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
+CatchRemoteLabel.TextSize = 9
+CatchRemoteLabel.Font = Enum.Font.GothamBold
+CatchRemoteLabel.TextXAlignment = Enum.TextXAlignment.Left
+CatchRemoteLabel.Parent = SettingsFrame
+
+CatchConfig.CatchRemoteBox = Instance.new("TextBox")
+CatchConfig.CatchRemoteBox.Name = "CatchRemoteBox"
+CatchConfig.CatchRemoteBox.Size = UDim2.new(0, 120, 0, 26)
+CatchConfig.CatchRemoteBox.Position = UDim2.fromOffset(92, 56)
+CatchConfig.CatchRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+CatchConfig.CatchRemoteBox.BorderSizePixel = 0
+CatchConfig.CatchRemoteBox.ClearTextOnFocus = false
+CatchConfig.CatchRemoteBox.Text = ""
+CatchConfig.CatchRemoteBox.PlaceholderText = "Select Event..."
+CatchConfig.CatchRemoteBox.TextColor3 = Color3.fromRGB(220, 220, 225)
+CatchConfig.CatchRemoteBox.PlaceholderColor3 = Color3.fromRGB(100, 105, 115)
+CatchConfig.CatchRemoteBox.TextSize = 9
+CatchConfig.CatchRemoteBox.Font = Enum.Font.Gotham
+CatchConfig.CatchRemoteBox.Parent = SettingsFrame
+CatchRemoteCorner = Instance.new("UICorner")
+CatchRemoteCorner.CornerRadius = UDim.new(0, 6)
+CatchRemoteCorner.Parent = CatchConfig.CatchRemoteBox
+
+CatchDropdown = Instance.new("TextButton")
+CatchDropdown.Name = "CatchRemoteDropdown"
+CatchDropdown.Size = UDim2.fromOffset(65, 26)
+CatchDropdown.Position = UDim2.fromOffset(217, 56)
+CatchDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+CatchDropdown.BorderSizePixel = 0
+CatchDropdown.Text = "SELECT v"
+CatchDropdown.TextColor3 = Color3.fromRGB(220, 220, 225)
+CatchDropdown.TextSize = 8
+CatchDropdown.Font = Enum.Font.GothamBold
+CatchDropdown.Parent = SettingsFrame
+CatchDropdownCorner = Instance.new("UICorner")
+CatchDropdownCorner.CornerRadius = UDim.new(0, 6)
+CatchDropdownCorner.Parent = CatchDropdown
+
+CatchConfig.CatchRemoteList = Instance.new("ScrollingFrame")
+CatchConfig.CatchRemoteList.Name = "CatchRemoteList"
+CatchConfig.CatchRemoteList.Size = UDim2.fromOffset(120, 100)
+CatchConfig.CatchRemoteList.Position = UDim2.fromOffset(92, 84)
+CatchConfig.CatchRemoteList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+CatchConfig.CatchRemoteList.BorderSizePixel = 0
+CatchConfig.CatchRemoteList.Visible = false
+CatchConfig.CatchRemoteList.ZIndex = 100
+CatchConfig.CatchRemoteList.ScrollBarThickness = 2
+CatchConfig.CatchRemoteList.CanvasSize = UDim2.new(0, 0, 0, 0)
+CatchConfig.CatchRemoteList.Parent = SettingsFrame
+CatchRemoteLayout = Instance.new("UIListLayout")
+CatchRemoteLayout.SortOrder = Enum.SortOrder.LayoutOrder
+CatchRemoteLayout.Parent = CatchConfig.CatchRemoteList
+CatchRemoteLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    CatchConfig.CatchRemoteList.CanvasSize = UDim2.new(0, 0, 0, CatchRemoteLayout.AbsoluteContentSize.Y)
+end)
+
+local function RefreshCatchRemoteList()
+    for _, child in ipairs(CatchConfig.CatchRemoteList:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    local events = GetCatchEvents()
+    for _, remote in ipairs(events) do
+        local name = remote.Name
+        local opt = Instance.new("TextButton")
+        opt.Size = UDim2.new(1, 0, 0, 18)
+        opt.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+        opt.BorderSizePixel = 0
+        opt.ZIndex = 101
+        opt.Text = name
+        opt.TextColor3 = Color3.fromRGB(190, 195, 205)
+        opt.TextSize = 8
+        opt.Font = Enum.Font.Gotham
+        opt.Parent = CatchConfig.CatchRemoteList
+        opt.Activated:Connect(function()
+            CatchConfig.SelectedCatchRemote = name
+            CatchConfig.CatchRemoteBox.Text = name
+            CatchConfig.CatchRemoteList.Visible = false
+            CatchConfig.CatchRemoteStatus.Text = "Selected: " .. name
+            CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
+        end)
+    end
+    if CatchConfig.SelectedCatchRemote == "" and #events > 0 then
+        CatchConfig.SelectedCatchRemote = events[1].Name
+        CatchConfig.CatchRemoteBox.Text = CatchConfig.SelectedCatchRemote
+    end
+end
+
+CatchDropdown.Activated:Connect(function()
+    RefreshCatchRemoteList()
+    CatchConfig.CatchRemoteList.Visible = not CatchConfig.CatchRemoteList.Visible
+end)
+
+CatchRefresh = Instance.new("TextButton")
+CatchRefresh.Size = UDim2.fromOffset(65, 22)
+CatchRefresh.Position = UDim2.fromOffset(217, 86)
+CatchRefresh.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+CatchRefresh.BorderSizePixel = 0
+CatchRefresh.Text = "REFRESH"
+CatchRefresh.TextColor3 = Color3.fromRGB(210, 210, 215)
+CatchRefresh.TextSize = 8
+CatchRefresh.Font = Enum.Font.GothamBold
+CatchRefresh.Parent = SettingsFrame
+CatchRefreshCorner = Instance.new("UICorner")
+CatchRefreshCorner.CornerRadius = UDim.new(0, 6)
+CatchRefreshCorner.Parent = CatchRefresh
+CatchRefresh.Activated:Connect(RefreshCatchRemoteList)
+
+CatchConfig.CatchRemoteStatus = Instance.new("TextLabel")
+CatchConfig.CatchRemoteStatus.Size = UDim2.new(1, 0, 0, 18)
+CatchConfig.CatchRemoteStatus.Position = UDim2.fromOffset(0, 109)
+CatchConfig.CatchRemoteStatus.BackgroundTransparency = 1
+CatchConfig.CatchRemoteStatus.Text = "Catch remote: not selected"
+CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+CatchConfig.CatchRemoteStatus.TextSize = 8
+CatchConfig.CatchRemoteStatus.Font = Enum.Font.Gotham
+CatchConfig.CatchRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
+CatchConfig.CatchRemoteStatus.Parent = SettingsFrame
+
+--// GENERATE LASSO UID
+LassoLabel = Instance.new("TextLabel")
+LassoLabel.Size = UDim2.new(0, 95, 0, 22)
+LassoLabel.Position = UDim2.fromOffset(0, 132)
+LassoLabel.BackgroundTransparency = 1
+LassoLabel.Text = "GENERATE LASSO"
+LassoLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
+LassoLabel.TextSize = 9
+LassoLabel.Font = Enum.Font.GothamBold
+LassoLabel.TextXAlignment = Enum.TextXAlignment.Left
+LassoLabel.Parent = SettingsFrame
+
+CatchConfig.LassoNameBox = Instance.new("TextBox")
+CatchConfig.LassoNameBox.Size = UDim2.fromOffset(120, 26)
+CatchConfig.LassoNameBox.Position = UDim2.fromOffset(92, 130)
+CatchConfig.LassoNameBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+CatchConfig.LassoNameBox.BorderSizePixel = 0
+CatchConfig.LassoNameBox.ClearTextOnFocus = false
+CatchConfig.LassoNameBox.Text = CatchConfig.SelectedLasso
+CatchConfig.LassoNameBox.TextColor3 = Color3.fromRGB(220, 220, 225)
+CatchConfig.LassoNameBox.TextSize = 8
+CatchConfig.LassoNameBox.Font = Enum.Font.Gotham
+CatchConfig.LassoNameBox.Parent = SettingsFrame
+LassoNameCorner = Instance.new("UICorner")
+LassoNameCorner.CornerRadius = UDim.new(0, 6)
+LassoNameCorner.Parent = CatchConfig.LassoNameBox
+
+LassoDropdown = Instance.new("TextButton")
+LassoDropdown.Size = UDim2.fromOffset(65, 26)
+LassoDropdown.Position = UDim2.fromOffset(217, 130)
+LassoDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+LassoDropdown.BorderSizePixel = 0
+LassoDropdown.Text = "SELECT v"
+LassoDropdown.TextColor3 = Color3.fromRGB(220, 220, 225)
+LassoDropdown.TextSize = 8
+LassoDropdown.Font = Enum.Font.GothamBold
+LassoDropdown.Parent = SettingsFrame
+LassoDropdownCorner = Instance.new("UICorner")
+LassoDropdownCorner.CornerRadius = UDim.new(0, 6)
+LassoDropdownCorner.Parent = LassoDropdown
+
+LassoList = Instance.new("ScrollingFrame")
+LassoList.Size = UDim2.fromOffset(120, 100)
+LassoList.Position = UDim2.fromOffset(92, 158)
+LassoList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+LassoList.BorderSizePixel = 0
+LassoList.Visible = false
+LassoList.ZIndex = 100
+LassoList.ScrollBarThickness = 2
+LassoList.CanvasSize = UDim2.new(0, 0, 0, 0)
+LassoList.Parent = SettingsFrame
+LassoLayout = Instance.new("UIListLayout")
+LassoLayout.SortOrder = Enum.SortOrder.LayoutOrder
+LassoLayout.Parent = LassoList
+LassoLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    LassoList.CanvasSize = UDim2.new(0, 0, 0, LassoLayout.AbsoluteContentSize.Y)
+end)
+for _, lassoName in ipairs(CatchConfig.LassoTypes) do
+    local opt = Instance.new("TextButton")
+    opt.Size = UDim2.new(1, 0, 0, 18)
+    opt.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    opt.BorderSizePixel = 0
+    opt.ZIndex = 101
+    opt.Text = lassoName
+    opt.TextColor3 = Color3.fromRGB(190, 195, 205)
+    opt.TextSize = 8
+    opt.Font = Enum.Font.Gotham
+    opt.Parent = LassoList
+    opt.Activated:Connect(function()
+        CatchConfig.SelectedLasso = lassoName
+        CatchConfig.LassoNameBox.Text = lassoName
+        LassoList.Visible = false
+    end)
+end
+LassoDropdown.Activated:Connect(function()
+    LassoList.Visible = not LassoList.Visible
+end)
+
+CatchConfig.LassoUIDBox = Instance.new("TextBox")
+CatchConfig.LassoUIDBox.Size = UDim2.fromOffset(120, 26)
+CatchConfig.LassoUIDBox.Position = UDim2.fromOffset(92, 188)
+CatchConfig.LassoUIDBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+CatchConfig.LassoUIDBox.BorderSizePixel = 0
+CatchConfig.LassoUIDBox.ClearTextOnFocus = false
+CatchConfig.LassoUIDBox.TextEditable = false
+CatchConfig.LassoUIDBox.Text = ""
+CatchConfig.LassoUIDBox.PlaceholderText = "Generated UID"
+CatchConfig.LassoUIDBox.TextColor3 = Color3.fromRGB(220, 220, 225)
+CatchConfig.LassoUIDBox.PlaceholderColor3 = Color3.fromRGB(100, 105, 115)
+CatchConfig.LassoUIDBox.TextSize = 8
+CatchConfig.LassoUIDBox.Font = Enum.Font.Gotham
+CatchConfig.LassoUIDBox.Parent = SettingsFrame
+LassoUIDCorner = Instance.new("UICorner")
+LassoUIDCorner.CornerRadius = UDim.new(0, 6)
+LassoUIDCorner.Parent = CatchConfig.LassoUIDBox
+
+GenerateLassoButton = Instance.new("TextButton")
+GenerateLassoButton.Size = UDim2.fromOffset(65, 26)
+GenerateLassoButton.Position = UDim2.fromOffset(217, 188)
+GenerateLassoButton.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
+GenerateLassoButton.BorderSizePixel = 0
+GenerateLassoButton.Text = "GENERATE"
+GenerateLassoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+GenerateLassoButton.TextSize = 8
+GenerateLassoButton.Font = Enum.Font.GothamBold
+GenerateLassoButton.Parent = SettingsFrame
+GenerateLassoCorner = Instance.new("UICorner")
+GenerateLassoCorner.CornerRadius = UDim.new(0, 6)
+GenerateLassoCorner.Parent = GenerateLassoButton
+
+CatchConfig.LassoStatus = Instance.new("TextLabel")
+CatchConfig.LassoStatus.Size = UDim2.new(1, 0, 0, 18)
+CatchConfig.LassoStatus.Position = UDim2.fromOffset(0, 216)
+CatchConfig.LassoStatus.BackgroundTransparency = 1
+CatchConfig.LassoStatus.Text = "Lasso UID: not generated"
+CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+CatchConfig.LassoStatus.TextSize = 8
+CatchConfig.LassoStatus.Font = Enum.Font.Gotham
+CatchConfig.LassoStatus.TextXAlignment = Enum.TextXAlignment.Left
+CatchConfig.LassoStatus.Parent = SettingsFrame
+
+function GenerateLassoUID()
+    CatchConfig.LassoStatus.Text = "Scanning inventory..."
+    CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+    local foundUID = nil
+    local targetName = tostring(CatchConfig.LassoNameBox.Text or CatchConfig.SelectedLasso):lower()
+
+    pcall(function()
+        local References = require(ReplicatedStorage:WaitForChild("References"))
+        local Data = require(References.PlayerScripts.Priority.Data)
+        local inventory = Data.GetLocal({"inventory"})
+        for uid, item in pairs(inventory or {}) do
+            if type(item) == "table" then
+                local ok, info = pcall(function() return References.Items.GetInfo(item.id) end)
+                if ok and info and info.name and tostring(info.name):lower() == targetName then
+                    foundUID = tostring(uid)
+                    break
+                end
+            end
+        end
+    end)
+
+    if not foundUID then
+        local searchSpaces = {LocalPlayer, ReplicatedStorage}
+        for _, space in ipairs(searchSpaces) do
+            for _, obj in ipairs(space:GetDescendants()) do
+                local objName = tostring(obj.Name):lower()
+                if objName == targetName or (obj:IsA("StringValue") and tostring(obj.Value):lower() == targetName) then
+                    local possibleUID = obj:GetAttribute("UID") or obj:GetAttribute("ID") or obj:GetAttribute("Id")
+                    if possibleUID then
+                        foundUID = tostring(possibleUID)
+                        break
+                    end
+                    local idChild = obj:FindFirstChild("UID") or obj:FindFirstChild("ID")
+                    if idChild and (idChild:IsA("StringValue") or idChild:IsA("NumberValue")) then
+                        foundUID = tostring(idChild.Value)
+                        break
+                    end
+                end
+            end
+            if foundUID then break end
+        end
+    end
+
+    if foundUID then
+        CatchConfig.ConfiguredLassoUID = foundUID
+        CatchConfig.LassoUIDBox.Text = foundUID
+        CatchConfig.LassoStatus.Text = "UID Found: " .. foundUID
+        CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
+    else
+        CatchConfig.LassoStatus.Text = "UID not found for " .. tostring(CatchConfig.SelectedLasso)
+        CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
+    end
+end
+GenerateLassoButton.Activated:Connect(GenerateLassoUID)
+
 --// TRAVEL REMOTE SETTING
 local TravelRemoteLabel = Instance.new("TextLabel")
 TravelRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
-TravelRemoteLabel.Position = UDim2.fromOffset(0, 58)
+TravelRemoteLabel.Position = UDim2.fromOffset(0, 246)
 TravelRemoteLabel.BackgroundTransparency = 1
 TravelRemoteLabel.Text = "TRAVEL REMOTE"
 TravelRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
@@ -607,7 +946,7 @@ TravelRemoteLabel.Parent = SettingsFrame
 local TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Name = "TravelRemoteBox"
 TravelRemoteBox.Size = UDim2.new(0, 105, 0, 26)
-TravelRemoteBox.Position = UDim2.fromOffset(90, 56)
+TravelRemoteBox.Position = UDim2.fromOffset(90, 244)
 TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 TravelRemoteBox.BorderSizePixel = 0
 TravelRemoteBox.ClearTextOnFocus = false
@@ -626,7 +965,7 @@ TravelBoxCorner.Parent = TravelRemoteBox
 local TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Name = "TravelRemoteDropdown"
 TravelDropdown.Size = UDim2.new(0, 70, 0, 26)
-TravelDropdown.Position = UDim2.fromOffset(165, 56)
+TravelDropdown.Position = UDim2.fromOffset(165, 244)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "SELECT v"
@@ -642,7 +981,7 @@ TravelDropCorner.Parent = TravelDropdown
 local TravelList = Instance.new("ScrollingFrame")
 TravelList.Name = "TravelRemoteList"
 TravelList.Size = UDim2.fromOffset(100, 100)
-TravelList.Position = UDim2.fromOffset(90, 84)
+TravelList.Position = UDim2.fromOffset(90, 272)
 TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 TravelList.BorderSizePixel = 0
 TravelList.Visible = false
@@ -683,7 +1022,7 @@ end)
 AutoTravelButton = Instance.new("TextButton")
 AutoTravelButton.Name = "AutoFindTravelRemote"
 AutoTravelButton.Size = UDim2.new(1, 0, 0, 30)
-AutoTravelButton.Position = UDim2.fromOffset(0, 92)
+AutoTravelButton.Position = UDim2.fromOffset(0, 280)
 AutoTravelButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoTravelButton.BorderSizePixel = 0
 AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
@@ -695,7 +1034,7 @@ local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0, 7); atbc.
 
 AutoTravelStatus = Instance.new("TextLabel")
 AutoTravelStatus.Size = UDim2.new(1, 0, 0, 28)
-AutoTravelStatus.Position = UDim2.fromOffset(0, 124)
+AutoTravelStatus.Position = UDim2.fromOffset(0, 312)
 AutoTravelStatus.BackgroundTransparency = 1
 AutoTravelStatus.Text = "Travel remote: not tested"
 AutoTravelStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -707,7 +1046,7 @@ AutoTravelStatus.Parent = SettingsFrame
 
 local SellRemoteLabel = Instance.new("TextLabel")
 SellRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
-SellRemoteLabel.Position = UDim2.fromOffset(0, 155)
+SellRemoteLabel.Position = UDim2.fromOffset(0, 345)
 SellRemoteLabel.BackgroundTransparency = 1
 SellRemoteLabel.Text = "SELL REMOTE"
 SellRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
@@ -719,7 +1058,7 @@ SellRemoteLabel.Parent = SettingsFrame
 local HopButton = Instance.new("TextButton")
 HopButton.Name = "HopServer"
 HopButton.Size = UDim2.new(1, 0, 0, 30)
-HopButton.Position = UDim2.fromOffset(0, 252)
+HopButton.Position = UDim2.fromOffset(0, 445)
 HopButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 HopButton.BorderSizePixel = 0
 HopButton.Text = "HOP SERVER"
@@ -734,7 +1073,7 @@ HopCorner.Parent = HopButton
 
 local HopStatus = Instance.new("TextLabel")
 HopStatus.Size = UDim2.new(1, 0, 0, 28)
-HopStatus.Position = UDim2.fromOffset(0, 284)
+HopStatus.Position = UDim2.fromOffset(0, 477)
 HopStatus.BackgroundTransparency = 1
 HopStatus.Text = "Ready"
 HopStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -2275,19 +2614,32 @@ GetCurrentPlayerIsland = function()
     return nil
 end
 
---// SCREEN CLICK INPUT
---// The player manually equips the lasso. This script does not search for, equip,
---// or activate a Tool. It only sends a primary screen/mouse click at 0.5s intervals.
-local VirtualInputManager = game:GetService("VirtualInputManager")
+--// REMOTE CATCHING
+-- Catching no longer uses simulated screen/mouse clicks. The selected RemoteEvent
+-- is fired directly with the configured lasso UID and current horse model.
+function FireCatchRemote(horseModel)
+    local remoteName = tostring(CatchConfig.SelectedCatchRemote or (CatchConfig.CatchRemoteBox and CatchConfig.CatchRemoteBox.Text) or ""):match("^%s*(.-)%s*$")
+    if remoteName == "" then
+        return false, "Select a Catch Remote in Settings"
+    end
+    if tostring(CatchConfig.ConfiguredLassoUID or "") == "" then
+        return false, "Generate Lasso UID in Settings"
+    end
 
-local function ScreenClick()
-    local x, y = GetSightScreenPosition()
+    local comm = ReplicatedStorage:FindFirstChild("Communication")
+    local eventsFolder = comm and comm:FindFirstChild("Events")
+    local catchEvent = eventsFolder and eventsFolder:FindFirstChild(remoteName)
+    if not catchEvent or not catchEvent:IsA("RemoteEvent") then
+        return false, "Catch Remote not found: " .. remoteName
+    end
 
-    return pcall(function()
-        VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
-        task.wait(0.03)
-        VirtualInputManager:SendMouseButtonEvent(x, y, 0, false, game, 0)
+    local ok, err = pcall(function()
+        catchEvent:FireServer(CatchConfig.ConfiguredLassoUID, "Activate", horseModel)
     end)
+    if not ok then
+        return false, tostring(err)
+    end
+    return true
 end
 
 local function SetCharacterAnchored(anchored)
@@ -2536,8 +2888,14 @@ local function startFarm()
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
                         -- Character stays anchored; no repeated island scan is needed here.
                         -- Travel was already verified before the horse tween started.
-                        ScreenClick()
-                        status.Text = "Catching: " .. target.Name
+                        local catchOK, catchErr = FireCatchRemote(target.Model)
+                        if not catchOK then
+                            status.Text = "Catch Error: " .. tostring(catchErr)
+                            status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                            task.wait(0.5)
+                            break
+                        end
+                        status.Text = "Catching: " .. target.Name .. " (Remote)"
                         status.TextColor3 = Color3.fromRGB(57,255,20)
 
                         -- Horse disappearance/ownership change is treated as success.
