@@ -25,6 +25,13 @@ local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
 
+if not LocalPlayer then
+    warn("[NORMS] LocalPlayer is unavailable; script stopped before UI creation.")
+    return
+end
+
+print("[NORMS] Combined script starting...")
+
 -- Forward declarations for controls referenced by callbacks later in the file.
 local AutoTravelButton
 local AutoTravelStatus
@@ -35,31 +42,35 @@ local GetCurrentPlayerIsland
 --// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
 --// Matches the old NORMS script: blank RemoteFunctions become Function1, Function2, ...
 --// and blank RemoteEvents become Event1, Event2, ...
-local Communication = ReplicatedStorage:WaitForChild("Communication")
-local Functions = Communication:WaitForChild("Functions")
-local Events = Communication:WaitForChild("Events")
+--// SAFE REMOTE DISCOVERY
+--// Never block UI startup while waiting for game remotes.
+local Communication = ReplicatedStorage:FindFirstChild("Communication")
+local Functions = Communication and Communication:FindFirstChild("Functions")
+local Events = Communication and Communication:FindFirstChild("Events")
 
 local functionIndex = 0
-for _, obj in ipairs(Functions:GetChildren()) do
-    if obj:IsA("RemoteFunction") and obj.Name == "" then
-        functionIndex += 1
-        obj.Name = "Function" .. functionIndex
-    end
-end
-
 local eventIndex = 0
-for _, obj in ipairs(Events:GetChildren()) do
-    if obj:IsA("RemoteEvent") and obj.Name == "" then
-        eventIndex += 1
-        obj.Name = "Event" .. eventIndex
+if Functions then
+    for _, obj in ipairs(Functions:GetChildren()) do
+        if obj:IsA("RemoteFunction") and obj.Name == "" then
+            functionIndex += 1
+            obj.Name = "Function" .. functionIndex
+        end
+    end
+end
+if Events then
+    for _, obj in ipairs(Events:GetChildren()) do
+        if obj:IsA("RemoteEvent") and obj.Name == "" then
+            eventIndex += 1
+            obj.Name = "Event" .. eventIndex
+        end
     end
 end
 
-print("================================")
-print("REMOTE RENAME COMPLETE")
-print("Functions renamed:", functionIndex)
-print("Events renamed:", eventIndex)
-print("================================")
+print("[NORMS] Remote rename complete. Functions:", functionIndex, "Events:", eventIndex)
+if not Communication or not Functions or not Events then
+    warn("[NORMS] Communication remotes are not ready. Main UI will still load.")
+end
 
 --// Remove an older copy so the START button/state cannot be left on STOP
 pcall(function()
@@ -71,125 +82,9 @@ pcall(function()
     if oldGui then oldGui:Destroy() end
 end)
 
---// QUESTION GATE
---// The main NORMS UI stays disabled until the user answers the question.
+--// QUESTION GATE REMOVED
+-- Main NORMS UI loads immediately.
 local gui
-local gateGui = Instance.new("ScreenGui")
-gateGui.Name = "NORMSQuestionGate"
-gateGui.ResetOnSpawn = false
-gateGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
-local gateParentOk = pcall(function()
-    gateGui.Parent = game:GetService("CoreGui")
-end)
-if not gateParentOk or not gateGui.Parent then
-    gateGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-end
-
-local gateFrame = Instance.new("Frame")
-gateFrame.Name = "QuestionFrame"
-gateFrame.Size = UDim2.fromOffset(310, 190)
-gateFrame.Position = UDim2.new(0.5, -155, 0.5, -95)
-gateFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
-gateFrame.BorderSizePixel = 0
-gateFrame.Parent = gateGui
-
-local gateCorner = Instance.new("UICorner")
-gateCorner.CornerRadius = UDim.new(0, 12)
-gateCorner.Parent = gateFrame
-
-local question = Instance.new("TextLabel")
-question.BackgroundTransparency = 1
-question.Size = UDim2.new(1, -30, 0, 55)
-question.Position = UDim2.fromOffset(15, 18)
-question.Font = Enum.Font.GothamBold
-question.Text = "Pogi ba si Clark?"
-question.TextSize = 22
-question.TextColor3 = Color3.fromRGB(255,255,255)
-question.TextWrapped = true
-question.Parent = gateFrame
-
-local instruction = Instance.new("TextLabel")
-instruction.BackgroundTransparency = 1
-instruction.Size = UDim2.new(1, -30, 0, 24)
-instruction.Position = UDim2.fromOffset(15, 68)
-instruction.Font = Enum.Font.Gotham
-instruction.Text = "Pumili ng isang sagot:"
-instruction.TextSize = 13
-instruction.TextColor3 = Color3.fromRGB(175,175,185)
-instruction.Parent = gateFrame
-
-local ooBox = Instance.new("TextButton")
-ooBox.Name = "OoCheckbox"
-ooBox.Size = UDim2.fromOffset(125, 48)
-ooBox.Position = UDim2.fromOffset(20, 108)
-ooBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-ooBox.BorderSizePixel = 0
-ooBox.AutoButtonColor = true
-ooBox.Font = Enum.Font.GothamBold
-ooBox.TextSize = 15
-ooBox.TextColor3 = Color3.fromRGB(255,255,255)
-ooBox.Text = "[ ]  Oo"
-ooBox.Parent = gateFrame
-
-local hindiBox = Instance.new("TextButton")
-hindiBox.Name = "HindiCheckbox"
-hindiBox.Size = UDim2.fromOffset(125, 48)
-hindiBox.Position = UDim2.fromOffset(165, 108)
-hindiBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-hindiBox.BorderSizePixel = 0
-hindiBox.AutoButtonColor = true
-hindiBox.Font = Enum.Font.GothamBold
-hindiBox.TextSize = 15
-hindiBox.TextColor3 = Color3.fromRGB(255,255,255)
-hindiBox.Text = "[ ]  Hindi"
-hindiBox.Parent = gateFrame
-
-local ooCorner = Instance.new("UICorner")
-ooCorner.CornerRadius = UDim.new(0, 8)
-ooCorner.Parent = ooBox
-
-local hindiCorner = Instance.new("UICorner")
-hindiCorner.CornerRadius = UDim.new(0, 8)
-hindiCorner.Parent = hindiBox
-
-local selectedAnswer = nil
-
-local function selectOo()
-    selectedAnswer = "Oo"
-    ooBox.Text = "[X]  Oo"
-    ooBox.BackgroundColor3 = Color3.fromRGB(57, 150, 70)
-    hindiBox.Text = "[ ]  Hindi"
-    hindiBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-end
-
-ooBox.Activated:Connect(function()
-    -- Only one checkbox can be selected at a time.
-    selectOo()
-
-    task.wait(0.15)
-    if selectedAnswer == "Oo" then
-        if gui then
-            gui.Enabled = true
-        end
-        gateGui:Destroy()
-    end
-end)
-
-hindiBox.Activated:Connect(function()
-    -- Select Hindi exclusively, then kick before the main NORMS UI loads.
-    selectedAnswer = "Hindi"
-    ooBox.Text = "[ ]  Oo"
-    ooBox.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-    hindiBox.Text = "[X]  Hindi"
-    hindiBox.BackgroundColor3 = Color3.fromRGB(150, 60, 60)
-
-    task.wait(0.15)
-    if selectedAnswer == "Hindi" then
-        LocalPlayer:Kick("You selected Hindi.")
-    end
-end)
-
 --// MINIMAL UI
 gui = Instance.new("ScreenGui")
 gui.Name = "NORMSMinimalFarmer"
@@ -204,7 +99,7 @@ if not parentOk or not gui.Parent then
     gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
 -- Keep the actual NORMS UI hidden until the user selects Oo.
-gui.Enabled = false
+gui.Enabled = true
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
@@ -1940,6 +1835,7 @@ local function GetRootAndPosition()
 end
 
 local function FindRemoteFunction(index)
+    if not Functions then return nil end
     local remote = Functions:FindFirstChild("Function" .. tostring(index))
     if remote and remote:IsA("RemoteFunction") then
         return remote
@@ -1948,6 +1844,7 @@ local function FindRemoteFunction(index)
 end
 
 local function FindRemoteEvent(index)
+    if not Events then return nil end
     local remote = Events:FindFirstChild("Event" .. tostring(index))
     if remote and remote:IsA("RemoteEvent") then
         return remote
@@ -2494,7 +2391,7 @@ local function startFarm()
                         continue
                     end
 
-                    local travelFunc = Functions:FindFirstChild(remoteName)
+                    local travelFunc = Functions and Functions:FindFirstChild(remoteName)
                     if not travelFunc or not travelFunc:IsA("RemoteFunction") then
                         status.Text = "Travel Remote not found: " .. remoteName
                         status.TextColor3 = Color3.fromRGB(239, 68, 68)
@@ -2753,12 +2650,12 @@ end)
 
 if not success then
     warn("[HORSE SCANNER] Failed to load inventory:", err)
-    return
+    Inventory = {}
 end
 
 if type(Inventory) ~= "table" then
-    warn("[HORSE SCANNER] Inventory is not a table.")
-    return
+    warn("[HORSE SCANNER] Inventory is not a table. Using an empty inventory.")
+    Inventory = {}
 end
 
 --==================================================
@@ -3423,7 +3320,7 @@ end
 
 local old =
     guiParent:FindFirstChild(
-        "HorseInventoryScanner"
+        "NORMSHorseInventoryScanner"
     )
 
 if old then
@@ -3434,7 +3331,7 @@ local ScreenGui =
     Instance.new("ScreenGui")
 
 ScreenGui.Name =
-    "HorseInventoryScanner"
+    "NORMSHorseInventoryScanner"
 
 ScreenGui.ResetOnSpawn = false
 
@@ -4961,7 +4858,9 @@ end
 local function GetSellRemote()
     local name=tostring(RemoteNameBox.Text or ""):match("^%s*(.-)%s*$")
     if name=="" then return nil,"Enter the RemoteEvent name first." end
-    local Events=ReplicatedStorage:WaitForChild("Communication"):WaitForChild("Events")
+    local communication=ReplicatedStorage:FindFirstChild("Communication")
+    local Events=communication and communication:FindFirstChild("Events")
+    if not Events then return nil,"Communication.Events not found." end
     local remote=Events:FindFirstChild(name)
     if not remote then return nil,"RemoteEvent not found: "..name end
     if not remote:IsA("RemoteEvent") then return nil,name.." is not a RemoteEvent." end
