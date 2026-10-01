@@ -1895,7 +1895,7 @@ local SellStatus = Instance.new("TextLabel")
 SellStatus.Size = UDim2.new(1, 0, 0, 22)
 SellStatus.Position = UDim2.new(0, 0, 0, 88)
 SellStatus.BackgroundTransparency = 1
-SellStatus.Text = "Inventory ready. Select a filter and find the sell remote."
+SellStatus.Text = "Selling ready. Tap Refresh Inventory first."
 SellStatus.TextColor3 = Color3.fromRGB(150, 155, 170)
 SellStatus.TextSize = 5
 SellStatus.Font = Enum.Font.Gotham
@@ -1919,14 +1919,49 @@ local SellReferences, SellData
 local SellHorseList = {}
 local SelectedSellFilter = "All"
 local SellRemote = nil
-local okSellRefs, sellRefResult, sellDataResult = pcall(function()
-    local refs = require(ReplicatedStorage:WaitForChild("References"))
-    local data = require(refs.PlayerScripts.Priority.Data)
-    return refs, data
-end)
-if okSellRefs then
-    SellReferences = sellRefResult
-    SellData = sellDataResult
+local SellDataLoaded = false
+
+-- Load selling dependencies only when the Selling tab is used.
+-- This prevents a missing/late References module from stopping the whole NORMS UI.
+local function SellLoadData()
+    if SellDataLoaded and SellReferences and SellData then
+        return true
+    end
+
+    local refsModule = ReplicatedStorage:FindFirstChild("References")
+    if not refsModule then
+        SellStatus.Text = "Selling data: References not found"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+        return false
+    end
+
+    local okRefs, refs = pcall(require, refsModule)
+    if not okRefs or not refs then
+        SellStatus.Text = "Selling data: failed to load References"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return false
+    end
+
+    local playerScripts = refs.PlayerScripts
+    local priority = playerScripts and playerScripts.Priority
+    local dataModule = priority and priority.Data
+    if not dataModule then
+        SellStatus.Text = "Selling data: Data module not found"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return false
+    end
+
+    local okData, data = pcall(require, dataModule)
+    if not okData or not data then
+        SellStatus.Text = "Selling data: failed to load Data"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return false
+    end
+
+    SellReferences = refs
+    SellData = data
+    SellDataLoaded = true
+    return true
 end
 
 local SellBreedNames = { ["akhal teke"]="Akhal-Teke Horse",["akhal-teke"]="Akhal-Teke Horse",["andalusian"]="Andalusian Horse",["appaloosa"]="Appaloosa Horse",["arabian"]="Arabian Horse",["clydesdale"]="Clydesdale Horse",["connemara"]="Connemara Horse",["dutch warmblood"]="Dutch Warmblood",["fjord"]="Fjord Horse",["friesian"]="Friesian Horse",["hinny"]="Hinny",["icelandic"]="Icelandic Horse",["mammoth donkey"]="Mammoth Donkey",["marwari"]="Marwari Horse",["morgan"]="Morgan Horse",["mule"]="Mule",["mustang"]="Mustang Horse",["paint horse"]="Paint Horse",["percheron"]="Percheron Horse",["quarter horse"]="Quarter Horse",["reindeer"]="Reindeer",["shire"]="Shire Horse",["standard donkey"]="Standard Donkey",["standardbred"]="Standardbred Horse",["tennessee walking horse"]="Tennessee Walking Horse",["thoroughbred"]="Thoroughbred Horse",["welsh cob"]="Welsh Cob",["unicorn"]="Unicorn",["donkey"]="Donkey" }
@@ -1950,8 +1985,18 @@ local function SellIsUnique(v)return SellUnique[SellHairKey(v)]==true end
 local SellOrange={blowingSnow=true,motherOfPearl=true,royalDun=true,dustyBrindle=true,glacierChimera=true,mountainSunrise=true,jaguar=true,deepSpace=true,crackedLava=true}
 local function SellIsOrange(v)return SellOrange[tostring(v or ""):gsub("%s+","")]==true end
 local function SellScan()
-    table.clear(SellHorseList); if not SellData then return 0 end
-    local ok,inv=pcall(function()return SellData.GetLocal({"inventory"})end); if not ok or type(inv)~="table" then return 0 end
+    table.clear(SellHorseList)
+    if not SellLoadData() then
+        SellCountLabel.Text = "Horses: 0"
+        return 0
+    end
+    local ok,inv=pcall(function()return SellData.GetLocal({"inventory"})end)
+    if not ok or type(inv)~="table" then
+        SellStatus.Text = "Could not read inventory."
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        SellCountLabel.Text = "Horses: 0"
+        return 0
+    end
     for uid,item in pairs(inv) do if type(item)=="table" then local info=SellGetInfo(item); local breed=SellGetBreed(item,info); if breed then table.insert(SellHorseList,{uid=uid,item=item,info=info,breed=breed}) end end end
     SellCountLabel.Text="Horses: "..tostring(#SellHorseList); return #SellHorseList
 end
@@ -1972,8 +2017,7 @@ for i,opt in ipairs(sellFilters) do local b=Instance.new("TextButton"); b.Size=U
 SellFilterButton.MouseButton1Click:Connect(function()SellFilterList.Visible=not SellFilterList.Visible end)
 SellAutoFindButton.MouseButton1Click:Connect(function() SellAutoFindButton.Text="FINDING..."; task.spawn(function() local r,e=SellAutoFindRemote(); if r then SellRemote=r;SellRemoteLabel.Text="Remote: "..r:GetFullName();SellRemoteLabel.TextColor3=Color3.fromRGB(100,255,130);SellStatus.Text="Sell remote found automatically.";SellStatus.TextColor3=Color3.fromRGB(100,255,130) else SellRemote=nil;SellRemoteLabel.Text="Remote: Not found";SellRemoteLabel.TextColor3=Color3.fromRGB(255,110,110);SellStatus.Text=tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,190,100) end;SellAutoFindButton.Text="AUTO FIND REMOTE" end) end)
 SellButton.MouseButton1Click:Connect(function() if not SellRemote or not SellRemote.Parent then local r,e=SellAutoFindRemote();if r then SellRemote=r else SellStatus.Text=tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,110,110);return end end; local items,count={},0;for _,h in ipairs(SellHorseList)do if SellMatches(h)then items[tostring(h.uid)]=1;count+=1 end end;if count==0 then SellStatus.Text="Nothing matches: "..SelectedSellFilter;SellStatus.TextColor3=Color3.fromRGB(255,190,100);return end;local ok,e=pcall(function()SellRemote:FireServer("SellItems",items)end);if not ok then SellStatus.Text="Sell failed: "..tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,110,110);return end;SellStatus.Text="Sell request sent: "..tostring(count).." horse(s) ["..SelectedSellFilter.."]";SellStatus.TextColor3=Color3.fromRGB(100,255,130);task.delay(0.5,SellScan) end)
-SellRefreshButton.MouseButton1Click:Connect(function()SellRefreshButton.Text="...";task.spawn(function()local n=SellScan();SellStatus.Text="Inventory refreshed: "..tostring(n).." horses.";SellStatus.TextColor3=Color3.fromRGB(100,255,130);task.wait(1);SellRefreshButton.Text="REFRESH INVENTORY" end)end)
-SellScan()
+SellRefreshButton.MouseButton1Click:Connect(function()SellRefreshButton.Text="...";task.spawn(function()local n=SellScan();if n>0 then SellStatus.Text="Inventory refreshed: "..tostring(n).." horses." end;task.wait(1);SellRefreshButton.Text="REFRESH INVENTORY" end)end)
 
 --// UI TABS & SORTING
 local SortContainer = Instance.new("Frame")
@@ -2155,6 +2199,9 @@ end
 MainTabBtn.MouseButton1Click:Connect(function() SwitchTab("Main") end)
 SellingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Selling") end)
 SettingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Setting") end)
+
+-- Explicitly restore the original Main view after all three tabs are wired.
+SwitchTab("Main")
 
 local function ToggleMinimize()
     if IsAnimating then return end
