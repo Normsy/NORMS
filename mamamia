@@ -35,6 +35,7 @@ NORMS COMBINED HORSE FARM + INVENTORY MANAGER
 Base: My Script.txt
 Selling controls retained; standalone horse scanner removed.
 Main tab now has a dashboard of every horse scanned on all loaded islands.
+UPDATED: no-click while UI open, abandon for higher priority horse, anti-lag.
 ]]
 
 
@@ -172,7 +173,7 @@ local islandText
 local status
 local ActiveTab = "Main"
 local SetTab
--- Declared early so the minimize/"+" button can stop the farm.
+-- Declared early so the minimize/"+" button can reference the farm.
 local Farming = false
 local stopFarm
 
@@ -878,10 +879,8 @@ end
 
 minimizeButton.Activated:Connect(function()
     if minimized then
-        -- Opening the UI again is also a STOP command.
-        if Farming then
-            pcall(function() stopFarm() end)
-        end
+        -- UPDATED: opening the UI no longer stops the farm.
+        -- The farm keeps running; clicking is paused while the UI is open.
         SetMinimized(false)
     else
         SetMinimized(true)
@@ -1312,7 +1311,7 @@ end
 
 
 --// SETTINGS
-local SCAN_INTERVAL = 0.50
+local SCAN_INTERVAL = 0.75
 local CATCH_INTERVAL = 0.50
 local TWEEN_SPEED = 95
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
@@ -1321,6 +1320,7 @@ local activeWeld = nil
 
 --// NOCLIP
 local NoClipEnabled = false
+local NoClipLast = 0
 local NoClipConnection = nil
 local NoClipStates = {}
 
@@ -1332,7 +1332,12 @@ local function SetNoClip(enabled)
             NoClipConnection:Disconnect()
         end
 
+        -- UPDATED: throttled to every 0.15s instead of every frame (anti-lag)
         NoClipConnection = RunService.Stepped:Connect(function()
+            local nowT = tick()
+            if nowT - NoClipLast < 0.15 then return end
+            NoClipLast = nowT
+
             local char = LocalPlayer.Character
             if not NoClipEnabled or not char or not char.Parent then return end
 
@@ -1468,7 +1473,7 @@ local function ColoursMatchPriority(a, b)
     return NormalizeColour(a) == NormalizeColour(b)
 end
 
-local function GetHorsePriorityStats(horse)
+local function ComputeHorsePriorityStats(horse)
     local data = DecodeHorseData(horse)
     if not data then
         return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=6, Count=0}
@@ -1514,6 +1519,17 @@ local function GetHorsePriorityStats(horse)
         Priority=priority,
         Count=count
     }
+end
+
+-- UPDATED: cache priority stats per horse so JSON isn't re-decoded every scan (anti-lag)
+local StatsCache = setmetatable({}, {__mode = "k"})
+local function GetHorsePriorityStats(horse)
+    local raw = horse:GetAttribute("Data")
+    local cached = StatsCache[horse]
+    if cached and cached.raw == raw then return cached.stats end
+    local stats = ComputeHorsePriorityStats(horse)
+    StatsCache[horse] = {raw = raw, stats = stats}
+    return stats
 end
 
 local function checkUniqueHair(horse)
@@ -1865,10 +1881,10 @@ local function CanGoToHorse(node)
     return tostring(owner) == tostring(LocalPlayer.Name)
 end
 
---// FPS CAP
+--// FPS CAP (UPDATED: 30 instead of 15 - 15 looked like blinking)
 pcall(function()
     if type(setfpscap) == "function" then
-        setfpscap(15)
+        setfpscap(30)
     end
 end)
 
@@ -1901,7 +1917,8 @@ end
 --// BACKGROUND SCANNER (scans every island folder in Workspace.Islands)
 local function ScanHorses()
     local now = tick()
-    if now - LastScan < SCAN_INTERVAL and #ScanCache > 0 then
+    -- UPDATED: an empty result no longer forces a rescan on every call
+    if now - LastScan < SCAN_INTERVAL then
         return ScanCache
     end
 
@@ -1912,6 +1929,45 @@ local function ScanHorses()
         ScanCache = results
         LastScan = now
         return results
+    end
+
+    -- UPDATED: use the "Animal" tag list instead of walking every island's full tree.
+    -- Falls back to the old tree walk if nothing is tagged.
+    local usedTagged = false
+    do
+        local tagged = CollectionService:GetTagged("Animal")
+        if #tagged > 0 then
+            usedTagged = true
+            for _, node in ipairs(tagged) do
+                if not seen[node] and node.Parent and node:IsDescendantOf(islands)
+                    and not isOwned(node) and CanGoToHorse(node) and not isInShop(node) then
+                    seen[node] = true
+                    local top = node
+                    while top.Parent and top.Parent ~= islands do top = top.Parent end
+                    local pivot = getHorsePivot(node)
+                    if pivot then
+                        local breed, rarity = getHorseBreed(node)
+                        local ps = GetHorsePriorityStats(node)
+                        table.insert(results, {
+                            Model = node,
+                            Island = top.Name,
+                            Name = breed,
+                            Rarity = rarity,
+                            Unique = ps.UniqueHair,
+                            UniqueCoat = ps.UniqueCoat,
+                            Mismatched = ps.Mismatched,
+                            NaturalDyed = ps.NaturalDyed,
+                            Horned = ps.Horned,
+                            Priority = ps.Priority,
+                            PriorityCount = ps.Count,
+                            Position = pivot.Position,
+                            Pivot = pivot,
+                            UID = node.Name .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
+                        })
+                    end
+                end
+            end
+        end
     end
 
     local function ScanContainer(container, islandName)
@@ -1948,7 +2004,7 @@ local function ScanHorses()
 
     for _, island in ipairs(islands:GetChildren()) do
         if island:IsA("Folder") or island:IsA("Model") then
-            ScanContainer(island, island.Name)
+            if not usedTagged then ScanContainer(island, island.Name) end
         end
     end
 
@@ -2334,55 +2390,75 @@ local function invalidate()
     LastScan = 0
 end
 
-local islandsFolder = Workspace:FindFirstChild("Islands")
-if islandsFolder then
-    islandsFolder.DescendantAdded:Connect(invalidate)
-    islandsFolder.DescendantRemoving:Connect(invalidate)
-end
+-- UPDATED: removed the DescendantAdded/DescendantRemoving -> invalidate hooks.
+-- They forced a full rescan on every tiny change in the world (major lag source).
+-- The scanner already refreshes itself every SCAN_INTERVAL.
 
-Workspace.ChildAdded:Connect(function(child)
-    if child.Name == "Islands" then
-        child.DescendantAdded:Connect(invalidate)
-        child.DescendantRemoving:Connect(invalidate)
-        invalidate()
-    end
-end)
+--// CURRENT ISLAND (UPDATED: cached island points instead of looping every part every call)
+local IslandPoints = {}
+local IslandPointsTime = 0
+local IslandRebuilding = false
+local IslandLastName, IslandLastTime, IslandLastPos = nil, 0, nil
 
---// CURRENT ISLAND
-GetCurrentPlayerIsland = function()
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    local islands = Workspace:FindFirstChild("Islands")
-    if not root or not islands then return nil end
-
-    local closestName, closestDistance = nil, math.huge
-    for _, island in ipairs(islands:GetChildren()) do
-        if island:IsA("Folder") or island:IsA("Model") then
-            for _, obj in ipairs(island:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    local d = (root.Position - obj.Position).Magnitude
-                    if d < closestDistance then
-                        closestDistance = d
-                        closestName = island.Name
+local function RebuildIslandPoints(async)
+    if IslandRebuilding then return end
+    IslandRebuilding = true
+    pcall(function()
+        local cache = {}
+        local islands = Workspace:FindFirstChild("Islands")
+        if islands then
+            for _, island in ipairs(islands:GetChildren()) do
+                if island:IsA("Folder") or island:IsA("Model") then
+                    local pts, n = {}, 0
+                    for i, obj in ipairs(island:GetDescendants()) do
+                        if async and i % 2500 == 0 then task.wait() end
+                        if obj:IsA("BasePart") then
+                            n += 1
+                            if n % 6 == 1 then pts[#pts + 1] = obj.Position end
+                        end
                     end
-                end
-            end
-            if island:IsA("Model") then
-                local ok, pivot = pcall(function() return island:GetPivot() end)
-                if ok and pivot then
-                    local d = (root.Position - pivot.Position).Magnitude
-                    if d < closestDistance then
-                        closestDistance = d
-                        closestName = island.Name
+                    if island:IsA("Model") then
+                        local ok, pivot = pcall(function() return island:GetPivot() end)
+                        if ok and pivot then pts[#pts + 1] = pivot.Position end
                     end
+                    cache[island.Name] = pts
                 end
             end
         end
+        IslandPoints = cache
+        IslandPointsTime = tick()
+    end)
+    IslandRebuilding = false
+end
+
+GetCurrentPlayerIsland = function()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local pos = root.Position
+    local now = tick()
+    if IslandLastPos and now - IslandLastTime < 0.4 and (pos - IslandLastPos).Magnitude < 40 then
+        return IslandLastName
     end
-    if closestName and closestDistance <= 2500 then
-        return closestName
+    if next(IslandPoints) == nil then
+        RebuildIslandPoints(false)
+    elseif now - IslandPointsTime > 45 and not IslandRebuilding then
+        task.spawn(RebuildIslandPoints, true)
     end
-    return nil
+    local bestName, bestDist = nil, math.huge
+    for name, pts in pairs(IslandPoints) do
+        for i = 1, #pts do
+            local d = (pos - pts[i]).Magnitude
+            if d < bestDist then
+                bestDist = d
+                bestName = name
+            end
+        end
+    end
+    IslandLastName = (bestName and bestDist <= 2800) and bestName or nil
+    IslandLastTime = now
+    IslandLastPos = pos
+    return IslandLastName
 end
 
 --// SCREEN CLICK INPUT
@@ -2398,6 +2474,8 @@ local function GetSightScreenPosition()
 end
 
 local function ScreenClick()
+    -- UPDATED: no clicking while the UI is open (farm keeps running)
+    if not minimized then return true end
     local x, y = GetSightScreenPosition()
 
     return pcall(function()
@@ -2450,6 +2528,50 @@ stopFarm = function()
     status.TextColor3 = Color3.fromRGB(150,155,165)
 end
 
+--// NEW: true if a strictly higher-priority horse exists than the current target
+--// (1 Unique Hair > 2 Mismatched > 3 Unique Coat > 4 Natural Dyed > 5 Horned > 6 Normal)
+local function BetterTargetExists(target)
+    if not target or target.Priority <= 1 then return false end
+    for _, h in ipairs(ScanHorses()) do
+        if h.Model ~= target.Model and h.Model and h.Model.Parent and h.Priority < target.Priority then
+            return true
+        end
+    end
+    return false
+end
+
+--// NEW: one-time low graphics pass when farming starts (anti-lag)
+local LowGfxApplied = false
+local function ApplyLowGraphics()
+    if LowGfxApplied then return end
+    LowGfxApplied = true
+    pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+    pcall(function()
+        local Lighting = game:GetService("Lighting")
+        Lighting.GlobalShadows = false
+        for _, e in ipairs(Lighting:GetChildren()) do
+            if e:IsA("PostEffect") or e:IsA("Clouds") then e.Enabled = false end
+        end
+    end)
+    pcall(function()
+        local terrain = Workspace:FindFirstChildOfClass("Terrain")
+        if terrain then
+            terrain.WaterWaveSize = 0
+            terrain.WaterWaveSpeed = 0
+        end
+    end)
+    task.spawn(function()
+        pcall(function()
+            for i, obj in ipairs(Workspace:GetDescendants()) do
+                if i % 2000 == 0 then task.wait() end
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam")
+                    or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                    obj.Enabled = false
+                end
+            end
+        end)
+    end)
+end
 
 local function startFarm()
     if Farming then return end
@@ -2457,6 +2579,7 @@ local function startFarm()
     SetNoClip(true)
     FarmGeneration += 1
     local myGeneration = FarmGeneration
+    ApplyLowGraphics()
     button.Text = "STOP"
     button.BackgroundColor3 = Color3.fromRGB(239,68,68)
     button.TextColor3 = Color3.fromRGB(255,255,255)
@@ -2601,9 +2724,20 @@ local function startFarm()
                 local distance = (root.Position - targetCFrame.Position).Magnitude
                 local tweenTime = distance / TWEEN_SPEED
                 local tween = TweenService:Create(root, TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), {CFrame=targetCFrame})
+                local abandoned = false
+                local lastBetterCheck = 0
                 tween:Play()
 
                 while tween.PlaybackState == Enum.PlaybackState.Playing and Farming and myGeneration == FarmGeneration do
+                    -- NEW: drop this horse if a higher-priority one appeared
+                    if tick() - lastBetterCheck > 0.25 then
+                        lastBetterCheck = tick()
+                        if BetterTargetExists(target) then
+                            abandoned = true
+                            tween:Cancel()
+                            break
+                        end
+                    end
                     if not target.Model.Parent or humanoid.Health <= 0 then
                         tween:Cancel()
                         break
@@ -2613,7 +2747,12 @@ local function startFarm()
                     task.wait(0.03)
                 end
 
-                if Farming and myGeneration == FarmGeneration and target.Model.Parent then
+                if abandoned then
+                    status.Text = "Switching to higher priority horse..."
+                    status.TextColor3 = Color3.fromRGB(251, 191, 36)
+                    SetCharacterAnchored(false)
+                    invalidate()
+                elseif Farming and myGeneration == FarmGeneration and target.Model.Parent then
                     pcall(function()
                         root.CFrame = targetPart.CFrame * HORSE_OFFSET
                         if activeWeld then
@@ -2634,9 +2773,22 @@ local function startFarm()
 
                     local caught = false
                     local catchDeadline = tick() + 8
+                    local lastBetter2 = 0
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
+                        -- NEW: drop this horse if a higher-priority one appeared
+                        if tick() - lastBetter2 > 0.25 then
+                            lastBetter2 = tick()
+                            if BetterTargetExists(target) then
+                                abandoned = true
+                                status.Text = "Switching to higher priority horse..."
+                                break
+                            end
+                        end
+
+                        -- ScreenClick() itself skips the click while the UI is open.
                         ScreenClick()
-                        status.Text = "Catching: " .. target.Name
+                        status.Text = (minimized and "Catching: " or "Click paused (UI open): ") .. target.Name
+                        if not minimized then catchDeadline = tick() + 8 end
                         status.TextColor3 = Color3.fromRGB(52,211,153)
 
                         if not target.Model.Parent or isOwned(target.Model) then
@@ -2839,6 +2991,8 @@ do
         rar.Parent = row
     end
 
+    -- UPDATED: only rebuild rows when something actually changed (anti-lag)
+    local DashLastSig = ""
     local function RefreshDashboard()
         local horses = {}
         for _, h in ipairs(ScanHorses()) do
@@ -2851,6 +3005,15 @@ do
             return tostring(a.Island) < tostring(b.Island)
         end)
 
+        local sigParts = {}
+        for i, h in ipairs(horses) do
+            if i > 40 then break end
+            sigParts[#sigParts + 1] = tostring(h.Name) .. tostring(h.Island) .. tostring(h.Priority) .. tostring(h.Rarity)
+        end
+        local sig = #horses .. "|" .. table.concat(sigParts, ",")
+        if sig == DashLastSig then return end
+        DashLastSig = sig
+
         for _, c in ipairs(list:GetChildren()) do
             if c:IsA("Frame") then c:Destroy() end
         end
@@ -2861,15 +3024,15 @@ do
                 islandSet[h.Island] = true
                 islandCount += 1
             end
-            if i <= 80 then MakeRow(i, h) end
+            if i <= 40 then MakeRow(i, h) end
         end
         header.Text = "SCANNED HORSES  |  " .. #horses .. " on " .. islandCount .. " islands"
     end
 
     task.spawn(function()
         while gui.Parent do
-            if dash.Visible then pcall(RefreshDashboard) end
-            task.wait(1.5)
+            if dash.Visible and not minimized then pcall(RefreshDashboard) end
+            task.wait(2.5)
         end
     end)
 
