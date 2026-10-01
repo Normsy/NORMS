@@ -147,7 +147,7 @@ local function checkUniqueHair(horseModel)
     local tailColour = normalizeValue(variants.tailColour)
 
     local hasUniqueHair = UNIQUE_HAIR_VALUES[maneColour] or UNIQUE_HAIR_VALUES[tailColour] or false
-    local uniqueHairText = hasUniqueHair and "â" or "X"
+    local uniqueHairText = hasUniqueHair and "Ã¢ÂÂ" or "X"
     return hasUniqueHair, uniqueHairText
 end
 
@@ -335,7 +335,7 @@ MinimizeBtn.Name = "MinimizeBtn"
 MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
 MinimizeBtn.Position = UDim2.new(1, -22, 0, 1)
 MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.Text = "â"
+MinimizeBtn.Text = "Ã¢ÂÂ"
 MinimizeBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
 MinimizeBtn.TextSize = 8
 MinimizeBtn.Font = Enum.Font.GothamBold
@@ -712,7 +712,7 @@ local function CreateCheckbox(name, color, key, order, container, filterTable, c
     local checkMark = Instance.new("TextLabel")
     checkMark.Size = UDim2.new(1, 0, 1, 0)
     checkMark.BackgroundTransparency = 1
-    checkMark.Text = "â"
+    checkMark.Text = "Ã¢ÂÂ"
     checkMark.TextColor3 = Color3.fromRGB(255, 255, 255)
     checkMark.TextSize = 5
     checkMark.Font = Enum.Font.GothamBold
@@ -1145,7 +1145,7 @@ local BulletLabel = Instance.new("TextLabel")
 BulletLabel.Name = "BulletLabel"
 BulletLabel.Size = UDim2.new(0, 10, 1, 0)
 BulletLabel.BackgroundTransparency = 1
-BulletLabel.Text = "â¢"
+BulletLabel.Text = "Ã¢ÂÂ¢"
 BulletLabel.TextColor3 = Color3.fromRGB(57, 255, 20)
 BulletLabel.TextSize = 8
 BulletLabel.Font = Enum.Font.GothamBold
@@ -2563,8 +2563,8 @@ local function RefreshList()
     TrackerTextLabel.Text = "Live Horse Tracker (" .. tostring(#horses) .. ")"
 
     table.sort(horses, function(a, b)
-        local uniqueA = (a.UniqueHairText == "â")
-        local uniqueB = (b.UniqueHairText == "â")
+        local uniqueA = (a.UniqueHairText == "Ã¢ÂÂ")
+        local uniqueB = (b.UniqueHairText == "Ã¢ÂÂ")
         if uniqueA ~= uniqueB then
             return uniqueA
         end
@@ -2594,7 +2594,7 @@ local function RefreshList()
         entry.NameLabel.Text = horseData.Name
         entry.IslandLabel.Text = horseData.Island
         entry.UniqueHairLabel.Text = horseData.UniqueHairText
-        entry.UniqueHairLabel.TextColor3 = (horseData.UniqueHairText == "â") and Color3.fromRGB(57, 255, 20) or Color3.fromRGB(239, 68, 68)
+        entry.UniqueHairLabel.TextColor3 = (horseData.UniqueHairText == "Ã¢ÂÂ") and Color3.fromRGB(57, 255, 20) or Color3.fromRGB(239, 68, 68)
 
         local isTargeting = (ActiveWalkTarget == horseData.Model)
         local themeColor = Color3.fromRGB(57, 255, 20)
@@ -2792,8 +2792,8 @@ task.spawn(function()
             local horses = GetWorldHorses()
             if #horses > 0 then
                 table.sort(horses, function(a, b)
-                    local uniqueA = (a.UniqueHairText == "â")
-                    local uniqueB = (b.UniqueHairText == "â")
+                    local uniqueA = (a.UniqueHairText == "Ã¢ÂÂ")
+                    local uniqueB = (b.UniqueHairText == "Ã¢ÂÂ")
                     if uniqueA ~= uniqueB then
                         return uniqueA
                     end
