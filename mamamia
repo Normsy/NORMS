@@ -122,7 +122,7 @@ gui.Enabled = true
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(270, 260)
+frame.Size = UDim2.fromOffset(270, 270)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
@@ -977,7 +977,7 @@ local Theme = {
     danger  = Color3.fromRGB(153, 40, 44),
     dangerHover = Color3.fromRGB(185, 52, 56),
 }
-local W, H = 270, 260
+local W, H = 270, 270
 
 local function tween(obj, props, t)
     TweenService:Create(obj, TweenInfo.new(t or 0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
@@ -2728,7 +2728,7 @@ do
     local dash = Instance.new("Frame")
     dash.Name = "Dashboard"
     dash.Position = UDim2.fromOffset(10, 160)
-    dash.Size = UDim2.fromOffset(250, 94)
+    dash.Size = UDim2.fromOffset(250, 104)
     dash.BackgroundColor3 = Color3.fromRGB(24, 24, 29)
     dash.BorderSizePixel = 0
     dash.Parent = frame
@@ -2750,7 +2750,7 @@ do
     list.BackgroundTransparency = 1
     list.BorderSizePixel = 0
     list.Position = UDim2.fromOffset(4, 22)
-    list.Size = UDim2.fromOffset(242, 68)
+    list.Size = UDim2.fromOffset(242, 78)
     list.ScrollBarThickness = 3
     list.CanvasSize = UDim2.new()
     list.AutomaticCanvasSize = Enum.AutomaticSize.Y
@@ -2855,7 +2855,7 @@ do
         local cam = Workspace.CurrentCamera
         if not cam or not uiScale then return end
         local vs = cam.ViewportSize
-        uiScale.Scale = math.clamp(math.min((vs.Y - 20) / 260, (vs.X - 20) / 270), 0.5, 1)
+        uiScale.Scale = math.clamp(math.min((vs.Y - 20) / 270, (vs.X - 20) / 270), 0.5, 1)
     end
     task.delay(0.4, Fit)
     if Workspace.CurrentCamera then
