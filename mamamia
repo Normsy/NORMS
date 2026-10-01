@@ -1646,33 +1646,48 @@ do
 -- LOAD INVENTORY
 --==================================================
 
+-- Inventory loading is deliberately non-blocking/non-fatal.
+-- If References/Data is not ready yet, the main Norms UI and engine
+-- still continue loading; Refresh can retry the inventory later.
 local References
 local Data
-local Inventory
+local Inventory = {}
 
-local success, err = pcall(function()
+local function LoadInventoryData()
+    local success, err = pcall(function()
+        local referencesModule = ReplicatedStorage:FindFirstChild("References")
+        if not referencesModule then
+            error("References module is not available yet")
+        end
 
-    References = require(
-        ReplicatedStorage:WaitForChild("References")
-    )
+        References = require(referencesModule)
+        if not References or not References.PlayerScripts or not References.PlayerScripts.Priority or not References.PlayerScripts.Priority.Data then
+            error("References.PlayerScripts.Priority.Data is unavailable")
+        end
 
-    Data = require(
-        References.PlayerScripts.Priority.Data
-    )
+        Data = require(References.PlayerScripts.Priority.Data)
+        if not Data or type(Data.GetLocal) ~= "function" then
+            error("Inventory Data module does not expose GetLocal")
+        end
 
-    Inventory = Data.GetLocal({"inventory"})
+        local loadedInventory = Data.GetLocal({"inventory"})
+        if type(loadedInventory) ~= "table" then
+            error("Inventory is not a table")
+        end
 
-end)
+        Inventory = loadedInventory
+    end)
 
-if not success then
-    warn("[HORSE SCANNER] Failed to load inventory:", err)
-    return
+    if not success then
+        warn("[HORSE SCANNER] Inventory load skipped:", tostring(err))
+        return false
+    end
+
+    return true
 end
 
-if type(Inventory) ~= "table" then
-    warn("[HORSE SCANNER] Inventory is not a table.")
-    return
-end
+-- Inventory initialization is started later, after all Inventory UI/functions exist.
+-- It runs asynchronously so it can never hold up the main Norms engine.
 
 --==================================================
 -- BREED KEYWORDS
@@ -3479,8 +3494,9 @@ SellButton.MouseButton1Click:Connect(function()
     if not ok then SellStatus.Text="Sell failed: "..tostring(sendErr); SellStatus.TextColor3=Color3.fromRGB(255,110,110); return end
     SellStatus.Text="Sent sell request: "..tostring(count).." horse(s) ["..SelectedFilter.."]"; SellStatus.TextColor3=Color3.fromRGB(100,255,130)
     task.delay(0.5,function()
-        local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
-        if ok2 and type(newInv)=="table" then Inventory=newInv; ScanInventory(); SortHorseList(); DisplayHorses() end
+        if LoadInventoryData() and type(Inventory)=="table" then
+            ScanInventory(); SortHorseList(); DisplayHorses()
+        end
     end)
 end)
 
@@ -3494,12 +3510,9 @@ RefreshButton.MouseButton1Click:Connect(function()
     WebhookStatus.TextColor3=Color3.fromRGB(180,200,255)
 
     task.spawn(function()
-        local ok,newInv=pcall(function()
-            return Data.GetLocal({"inventory"})
-        end)
+        local ok = LoadInventoryData()
 
-        if ok and type(newInv)=="table" then
-            Inventory=newInv
+        if ok and type(Inventory)=="table" then
 
             local totalEntries=ScanInventory()
             SortHorseList()
@@ -3510,7 +3523,7 @@ RefreshButton.MouseButton1Click:Connect(function()
             print("[HORSE SCANNER] Inventory refreshed. Total entries:",totalEntries)
             print("[HORSE SCANNER] Horse profiles found:",#HorseList)
         else
-            WebhookStatus.Text="Refresh failed: "..tostring(newInv)
+            WebhookStatus.Text="Refresh failed. Inventory data is not ready."
             WebhookStatus.TextColor3=Color3.fromRGB(255,110,110)
         end
 
@@ -3545,12 +3558,20 @@ end)
 -- INITIAL SCAN
 --==================================================
 
-local totalEntries=ScanInventory()
-SortHorseList()
-DisplayHorses()
-
-print("[HORSE SCANNER] Total inventory entries:",totalEntries)
-print("[HORSE SCANNER] Horse profiles found:",#HorseList)
+-- Start inventory loading asynchronously so the main Norms script can finish loading.
+task.spawn(function()
+    local ok = LoadInventoryData()
+    if ok and type(Inventory) == "table" then
+        local totalEntries = ScanInventory()
+        SortHorseList()
+        DisplayHorses()
+        print("[HORSE SCANNER] Total inventory entries:", totalEntries)
+        print("[HORSE SCANNER] Horse profiles found:", #HorseList)
+    else
+        Status.Text = "Inventory data is not ready - press REFRESH"
+        Status.TextColor3 = Color3.fromRGB(255, 190, 100)
+    end
+end)
 end
 local function SwitchTab(tabName)
     CurrentTab = tabName
@@ -4496,5 +4517,4 @@ task.spawn(function()
     end
 end)
 
---// THIS IS PH
 --// THIS IS PH
