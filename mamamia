@@ -1,5 +1,5 @@
 --// NORMS MINIMAL HORSE FARMER
---// No RemoteEvent / RemoteFunction usage.
+--// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
 --// Press START after manually travelling to the island you want to farm.
 
@@ -12,8 +12,38 @@ local VirtualUser = game:GetService("VirtualUser")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
+
+--// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
+--// Matches the old NORMS script: blank RemoteFunctions become Function1, Function2, ...
+--// and blank RemoteEvents become Event1, Event2, ...
+local Communication = ReplicatedStorage:WaitForChild("Communication")
+local Functions = Communication:WaitForChild("Functions")
+local Events = Communication:WaitForChild("Events")
+
+local functionIndex = 0
+for _, obj in ipairs(Functions:GetChildren()) do
+    if obj:IsA("RemoteFunction") and obj.Name == "" then
+        functionIndex += 1
+        obj.Name = "Function" .. functionIndex
+    end
+end
+
+local eventIndex = 0
+for _, obj in ipairs(Events:GetChildren()) do
+    if obj:IsA("RemoteEvent") and obj.Name == "" then
+        eventIndex += 1
+        obj.Name = "Event" .. eventIndex
+    end
+end
+
+print("================================")
+print("REMOTE RENAME COMPLETE")
+print("Functions renamed:", functionIndex)
+print("Events renamed:", eventIndex)
+print("================================")
 
 --// Remove an older copy so the START button/state cannot be left on STOP
 pcall(function()
@@ -161,7 +191,7 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(250, 230)
+frame.Size = UDim2.fromOffset(250, 380)
 frame.Position = UDim2.new(0, 20, 0.5, -58)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
 frame.BorderSizePixel = 0
@@ -207,29 +237,41 @@ local SetTab
 --// TABS
 local MainTab = Instance.new("TextButton")
 MainTab.Name = "MainTab"
-MainTab.Size = UDim2.fromOffset(105, 24)
+MainTab.Size = UDim2.fromOffset(72, 24)
 MainTab.Position = UDim2.fromOffset(10, 36)
 MainTab.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
 MainTab.TextColor3 = Color3.fromRGB(10, 10, 10)
 MainTab.BorderSizePixel = 0
 MainTab.Font = Enum.Font.GothamBold
-MainTab.TextSize = 11
+MainTab.TextSize = 10
 MainTab.Text = "MAIN"
 MainTab.Parent = frame
 
 local SellingTab = Instance.new("TextButton")
 SellingTab.Name = "SellingTab"
-SellingTab.Size = UDim2.fromOffset(105, 24)
-SellingTab.Position = UDim2.fromOffset(125, 36)
+SellingTab.Size = UDim2.fromOffset(72, 24)
+SellingTab.Position = UDim2.fromOffset(89, 36)
 SellingTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
 SellingTab.Font = Enum.Font.GothamBold
-SellingTab.TextSize = 11
+SellingTab.TextSize = 10
 SellingTab.Text = "SELLING"
 SellingTab.Parent = frame
 
-for _, tab in ipairs({MainTab, SellingTab}) do
+local SettingsTab = Instance.new("TextButton")
+SettingsTab.Name = "SettingsTab"
+SettingsTab.Size = UDim2.fromOffset(72, 24)
+SettingsTab.Position = UDim2.fromOffset(168, 36)
+SettingsTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
+SettingsTab.BorderSizePixel = 0
+SettingsTab.Font = Enum.Font.GothamBold
+SettingsTab.TextSize = 10
+SettingsTab.Text = "SETTINGS"
+SettingsTab.Parent = frame
+
+for _, tab in ipairs({MainTab, SellingTab, SettingsTab}) do
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 6)
     c.Parent = tab
@@ -237,7 +279,7 @@ end
 
 local SellingFrame = Instance.new("Frame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -20, 1, -66)
+SellingFrame.Size = UDim2.new(1, -20, 0, 350)
 SellingFrame.Position = UDim2.fromOffset(10, 66)
 SellingFrame.BackgroundTransparency = 1
 SellingFrame.Visible = false
@@ -267,6 +309,7 @@ SellingStatus.Parent = SellingFrame
 
 local SellingLabels = {}
 local sellingNames = {
+    {"Normal Horse", Color3.fromRGB(180, 185, 195)},
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
     {"Island Unique Coat", Color3.fromRGB(255, 150, 40)},
     {"Mismatched Hair", Color3.fromRGB(60, 175, 255)},
@@ -310,6 +353,449 @@ for i, entry in ipairs(sellingNames) do
     SellingLabels[entry[1]] = valueLabel
 end
 
+--// SELL FILTER
+local SellFilterTitle = Instance.new("TextLabel")
+SellFilterTitle.Size = UDim2.new(1, 0, 0, 18)
+SellFilterTitle.Position = UDim2.fromOffset(0, 184)
+SellFilterTitle.BackgroundTransparency = 1
+SellFilterTitle.Text = "SELL FILTER"
+SellFilterTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SellFilterTitle.TextSize = 11
+SellFilterTitle.Font = Enum.Font.GothamBold
+SellFilterTitle.TextXAlignment = Enum.TextXAlignment.Left
+SellFilterTitle.Parent = SellingFrame
+
+local SelectedSellRemote = "Event1"
+local SelectedSellRarity = "All"
+local SellStatus
+
+local function makeDropButton(text, position, width)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.fromOffset(width, 25)
+    b.Position = position
+    b.BackgroundColor3 = Color3.fromRGB(30, 30, 37)
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = Color3.fromRGB(235, 235, 240)
+    b.TextSize = 9
+    b.Font = Enum.Font.GothamBold
+    b.AutoButtonColor = true
+    b.Parent = SellingFrame
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 6)
+    c.Parent = b
+    return b
+end
+
+local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 205), 120)
+local RarityDrop = makeDropButton("Rarity: All", UDim2.fromOffset(125, 205), 115)
+
+local RemoteList = Instance.new("ScrollingFrame")
+RemoteList.Size = UDim2.fromOffset(120, 150)
+RemoteList.Position = UDim2.fromOffset(0, 232)
+RemoteList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
+RemoteList.BorderSizePixel = 0
+RemoteList.Visible = false
+RemoteList.ZIndex = 100
+RemoteList.CanvasSize = UDim2.fromOffset(0, 0)
+RemoteList.ScrollBarThickness = 4
+RemoteList.Parent = SellingFrame
+local rlc = Instance.new("UICorner"); rlc.CornerRadius = UDim.new(0, 6); rlc.Parent = RemoteList
+local remoteLayout = Instance.new("UIListLayout"); remoteLayout.SortOrder = Enum.SortOrder.LayoutOrder; remoteLayout.Parent = RemoteList
+
+for i = 1, 90 do
+    local name = "Event" .. tostring(i)
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, -4, 0, 21)
+    b.BackgroundColor3 = Color3.fromRGB(27, 27, 34)
+    b.BorderSizePixel = 0
+    b.Text = name
+    b.TextColor3 = Color3.fromRGB(225, 225, 230)
+    b.TextSize = 8
+    b.Font = Enum.Font.Gotham
+    b.ZIndex = 101
+    b.LayoutOrder = i
+    b.Parent = RemoteList
+    b.MouseButton1Click:Connect(function()
+        SelectedSellRemote = name
+        RemoteDrop.Text = "Remote: " .. name
+        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+        RemoteList.Visible = false
+    end)
+end
+remoteLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    RemoteList.CanvasSize = UDim2.fromOffset(0, remoteLayout.AbsoluteContentSize.Y + 4)
+end)
+
+local RarityList = Instance.new("Frame")
+RarityList.Size = UDim2.fromOffset(115, 130)
+RarityList.Position = UDim2.fromOffset(125, 232)
+RarityList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
+RarityList.BorderSizePixel = 0
+RarityList.Visible = false
+RarityList.ZIndex = 100
+RarityList.Parent = SellingFrame
+local rarc = Instance.new("UICorner"); rarc.CornerRadius = UDim.new(0, 6); rarc.Parent = RarityList
+local rarityLayout = Instance.new("UIListLayout"); rarityLayout.SortOrder = Enum.SortOrder.LayoutOrder; rarityLayout.Parent = RarityList
+
+local rarityOptions = {"All", "Low", "Mid", "High", "Special"}
+for i, rarity in ipairs(rarityOptions) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1, 0, 0, 25)
+    b.BackgroundColor3 = Color3.fromRGB(27, 27, 34)
+    b.BorderSizePixel = 0
+    b.Text = rarity
+    b.TextColor3 = Color3.fromRGB(225, 225, 230)
+    b.TextSize = 9
+    b.Font = Enum.Font.Gotham
+    b.ZIndex = 101
+    b.LayoutOrder = i
+    b.Parent = RarityList
+    b.MouseButton1Click:Connect(function()
+        SelectedSellRarity = rarity
+        RarityDrop.Text = "Rarity: " .. rarity
+        SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+        RarityList.Visible = false
+    end)
+end
+
+local SellButton = Instance.new("TextButton")
+SellButton.Size = UDim2.fromOffset(240, 27)
+SellButton.Position = UDim2.fromOffset(0, 234)
+SellButton.BackgroundColor3 = Color3.fromRGB(125, 35, 40)
+SellButton.BorderSizePixel = 0
+SellButton.Text = "SELL FILTERED"
+SellButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SellButton.TextSize = 10
+SellButton.Font = Enum.Font.GothamBold
+SellButton.Parent = SellingFrame
+local sbc = Instance.new("UICorner"); sbc.CornerRadius = UDim.new(0, 6); sbc.Parent = SellButton
+
+SellStatus = Instance.new("TextLabel")
+SellStatus.Size = UDim2.new(1, 0, 0, 16)
+SellStatus.Position = UDim2.fromOffset(0, 263)
+SellStatus.BackgroundTransparency = 1
+SellStatus.Text = "Remote: Event1 | Rarity: All"
+SellStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+SellStatus.TextSize = 8
+SellStatus.Font = Enum.Font.Gotham
+SellStatus.TextXAlignment = Enum.TextXAlignment.Left
+SellStatus.Parent = SellingFrame
+
+AutoSellRemoteButton = Instance.new("TextButton")
+AutoSellRemoteButton.Name = "AutoFindSellRemote"
+AutoSellRemoteButton.Size = UDim2.fromOffset(240, 27)
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
+AutoSellRemoteButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+AutoSellRemoteButton.BorderSizePixel = 0
+AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
+AutoSellRemoteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoSellRemoteButton.TextSize = 9
+AutoSellRemoteButton.Font = Enum.Font.GothamBold
+AutoSellRemoteButton.Parent = SellingFrame
+local asbc = Instance.new("UICorner"); asbc.CornerRadius = UDim.new(0, 6); asbc.Parent = AutoSellRemoteButton
+
+AutoSellRemoteStatus = Instance.new("TextLabel")
+AutoSellRemoteStatus.Size = UDim2.new(1, 0, 0, 24)
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 314)
+AutoSellRemoteStatus.BackgroundTransparency = 1
+AutoSellRemoteStatus.Text = "Sell remote: not tested"
+AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+AutoSellRemoteStatus.TextSize = 8
+AutoSellRemoteStatus.Font = Enum.Font.Gotham
+AutoSellRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
+AutoSellRemoteStatus.TextWrapped = true
+AutoSellRemoteStatus.Parent = SellingFrame
+
+RemoteDrop.MouseButton1Click:Connect(function()
+    RarityList.Visible = false
+    RemoteList.Visible = not RemoteList.Visible
+end)
+RarityDrop.MouseButton1Click:Connect(function()
+    RemoteList.Visible = false
+    RarityList.Visible = not RarityList.Visible
+end)
+
+--// SETTINGS TAB
+local SettingsFrame = Instance.new("Frame")
+SettingsFrame.Name = "Settings"
+SettingsFrame.Size = UDim2.new(1, -20, 0, 320)
+SettingsFrame.Position = UDim2.fromOffset(10, 66)
+SettingsFrame.BackgroundTransparency = 1
+SettingsFrame.Visible = false
+SettingsFrame.Parent = frame
+
+local SettingsTitle = Instance.new("TextLabel")
+SettingsTitle.Size = UDim2.new(1, 0, 0, 22)
+SettingsTitle.Position = UDim2.fromOffset(0, 0)
+SettingsTitle.BackgroundTransparency = 1
+SettingsTitle.Text = "SETTINGS"
+SettingsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SettingsTitle.TextSize = 12
+SettingsTitle.Font = Enum.Font.GothamBold
+SettingsTitle.TextXAlignment = Enum.TextXAlignment.Left
+SettingsTitle.Parent = SettingsFrame
+
+local SettingsInfo = Instance.new("TextLabel")
+SettingsInfo.Size = UDim2.new(1, 0, 0, 34)
+SettingsInfo.Position = UDim2.fromOffset(0, 25)
+SettingsInfo.BackgroundTransparency = 1
+SettingsInfo.Text = "Server controls"
+SettingsInfo.TextColor3 = Color3.fromRGB(130, 135, 145)
+SettingsInfo.TextSize = 9
+SettingsInfo.Font = Enum.Font.Gotham
+SettingsInfo.TextXAlignment = Enum.TextXAlignment.Left
+SettingsInfo.TextWrapped = true
+SettingsInfo.Parent = SettingsFrame
+
+--// TRAVEL REMOTE SETTING
+local TravelRemoteLabel = Instance.new("TextLabel")
+TravelRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+TravelRemoteLabel.Position = UDim2.fromOffset(0, 58)
+TravelRemoteLabel.BackgroundTransparency = 1
+TravelRemoteLabel.Text = "TRAVEL REMOTE"
+TravelRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
+TravelRemoteLabel.TextSize = 9
+TravelRemoteLabel.Font = Enum.Font.GothamBold
+TravelRemoteLabel.TextXAlignment = Enum.TextXAlignment.Left
+TravelRemoteLabel.Parent = SettingsFrame
+
+local TravelRemoteBox = Instance.new("TextBox")
+TravelRemoteBox.Name = "TravelRemoteBox"
+TravelRemoteBox.Size = UDim2.new(0, 120, 0, 26)
+TravelRemoteBox.Position = UDim2.fromOffset(112, 56)
+TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+TravelRemoteBox.BorderSizePixel = 0
+TravelRemoteBox.ClearTextOnFocus = false
+TravelRemoteBox.Text = ""
+TravelRemoteBox.PlaceholderText = "Function..."
+TravelRemoteBox.TextColor3 = Color3.fromRGB(220, 220, 225)
+TravelRemoteBox.PlaceholderColor3 = Color3.fromRGB(100, 105, 115)
+TravelRemoteBox.TextSize = 9
+TravelRemoteBox.Font = Enum.Font.Gotham
+TravelRemoteBox.Parent = SettingsFrame
+
+local TravelBoxCorner = Instance.new("UICorner")
+TravelBoxCorner.CornerRadius = UDim.new(0, 6)
+TravelBoxCorner.Parent = TravelRemoteBox
+
+local TravelDropdown = Instance.new("TextButton")
+TravelDropdown.Name = "TravelRemoteDropdown"
+TravelDropdown.Size = UDim2.new(0, 70, 0, 26)
+TravelDropdown.Position = UDim2.fromOffset(238, 56)
+TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+TravelDropdown.BorderSizePixel = 0
+TravelDropdown.Text = "SELECT v"
+TravelDropdown.TextColor3 = Color3.fromRGB(220, 220, 225)
+TravelDropdown.TextSize = 8
+TravelDropdown.Font = Enum.Font.GothamBold
+TravelDropdown.Parent = SettingsFrame
+
+local TravelDropCorner = Instance.new("UICorner")
+TravelDropCorner.CornerRadius = UDim.new(0, 6)
+TravelDropCorner.Parent = TravelDropdown
+
+local TravelList = Instance.new("ScrollingFrame")
+TravelList.Name = "TravelRemoteList"
+TravelList.Size = UDim2.fromOffset(120, 120)
+TravelList.Position = UDim2.fromOffset(112, 84)
+TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+TravelList.BorderSizePixel = 0
+TravelList.Visible = false
+TravelList.ZIndex = 50
+TravelList.ScrollBarThickness = 2
+TravelList.CanvasSize = UDim2.new(0, 0, 0, 0)
+TravelList.Parent = SettingsFrame
+
+local TravelListLayout = Instance.new("UIListLayout")
+TravelListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TravelListLayout.Parent = TravelList
+TravelListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    TravelList.CanvasSize = UDim2.new(0, 0, 0, TravelListLayout.AbsoluteContentSize.Y)
+end)
+
+for i = 1, 90 do
+    local funcName = "Function" .. i
+    local opt = Instance.new("TextButton")
+    opt.Size = UDim2.new(1, 0, 0, 18)
+    opt.BackgroundColor3 = Color3.fromRGB(28, 28, 34)
+    opt.BorderSizePixel = 0
+    opt.ZIndex = 51
+    opt.Text = funcName
+    opt.TextColor3 = Color3.fromRGB(190, 195, 205)
+    opt.TextSize = 8
+    opt.Font = Enum.Font.Gotham
+    opt.Parent = TravelList
+    opt.MouseButton1Click:Connect(function()
+        TravelRemoteBox.Text = funcName
+        TravelList.Visible = false
+    end)
+end
+
+TravelDropdown.MouseButton1Click:Connect(function()
+    TravelList.Visible = not TravelList.Visible
+end)
+
+AutoTravelButton = Instance.new("TextButton")
+AutoTravelButton.Name = "AutoFindTravelRemote"
+AutoTravelButton.Size = UDim2.new(1, 0, 0, 34)
+AutoTravelButton.Position = UDim2.fromOffset(0, 94)
+AutoTravelButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+AutoTravelButton.BorderSizePixel = 0
+AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
+AutoTravelButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoTravelButton.TextSize = 10
+AutoTravelButton.Font = Enum.Font.GothamBold
+AutoTravelButton.Parent = SettingsFrame
+local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0, 7); atbc.Parent = AutoTravelButton
+
+AutoTravelStatus = Instance.new("TextLabel")
+AutoTravelStatus.Size = UDim2.new(1, 0, 0, 28)
+AutoTravelStatus.Position = UDim2.fromOffset(0, 130)
+AutoTravelStatus.BackgroundTransparency = 1
+AutoTravelStatus.Text = "Travel remote: not tested"
+AutoTravelStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+AutoTravelStatus.TextSize = 8
+AutoTravelStatus.Font = Enum.Font.Gotham
+AutoTravelStatus.TextXAlignment = Enum.TextXAlignment.Left
+AutoTravelStatus.TextWrapped = true
+AutoTravelStatus.Parent = SettingsFrame
+
+local HopButton = Instance.new("TextButton")
+HopButton.Name = "HopServer"
+HopButton.Size = UDim2.new(1, 0, 0, 34)
+HopButton.Position = UDim2.fromOffset(0, 164)
+HopButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
+HopButton.BorderSizePixel = 0
+HopButton.Text = "HOP SERVER"
+HopButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+HopButton.TextSize = 11
+HopButton.Font = Enum.Font.GothamBold
+HopButton.Parent = SettingsFrame
+
+local HopCorner = Instance.new("UICorner")
+HopCorner.CornerRadius = UDim.new(0, 7)
+HopCorner.Parent = HopButton
+
+local HopStatus = Instance.new("TextLabel")
+HopStatus.Size = UDim2.new(1, 0, 0, 28)
+HopStatus.Position = UDim2.fromOffset(0, 204)
+HopStatus.BackgroundTransparency = 1
+HopStatus.Text = "Ready"
+HopStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
+HopStatus.TextSize = 9
+HopStatus.Font = Enum.Font.Gotham
+HopStatus.TextXAlignment = Enum.TextXAlignment.Left
+HopStatus.TextWrapped = true
+HopStatus.Parent = SettingsFrame
+
+local function GetHttpRequest()
+    if typeof(request) == "function" then
+        return function(url)
+            local response = request({
+                Url = url,
+                Method = "GET"
+            })
+            return response.Body
+        end
+    end
+
+    if syn and typeof(syn.request) == "function" then
+        return function(url)
+            local response = syn.request({
+                Url = url,
+                Method = "GET"
+            })
+            return response.Body
+        end
+    end
+
+    if http and typeof(http.request) == "function" then
+        return function(url)
+            local response = http.request({
+                Url = url,
+                Method = "GET"
+            })
+            return response.Body
+        end
+    end
+
+    return function(url)
+        return game:HttpGet(url)
+    end
+end
+
+local function FindHopServer()
+    local httpGet = GetHttpRequest()
+    local placeId = game.PlaceId
+    local cursor = ""
+
+    for _ = 1, 3 do
+        local url = "https://games.roblox.com/v1/games/" .. tostring(placeId)
+            .. "/servers/Public?sortOrder=Asc&limit=100"
+        if cursor ~= "" then
+            url = url .. "&cursor=" .. HttpService:UrlEncode(cursor)
+        end
+
+        local ok, body = pcall(httpGet, url)
+        if ok and body then
+            local decodedOk, data = pcall(function()
+                return HttpService:JSONDecode(body)
+            end)
+
+            if decodedOk and data and data.data then
+                for _, server in ipairs(data.data) do
+                    if server.id
+                        and server.id ~= game.JobId
+                        and tonumber(server.playing or 0) < tonumber(server.maxPlayers or 0) then
+                        return server.id
+                    end
+                end
+
+                cursor = data.nextPageCursor or ""
+                if cursor == "" then
+                    break
+                end
+            else
+                break
+            end
+        else
+            break
+        end
+    end
+
+    return nil
+end
+
+HopButton.MouseButton1Click:Connect(function()
+    if HopButton:GetAttribute("Hopping") then return end
+
+    HopButton:SetAttribute("Hopping", true)
+    HopButton.Text = "HOPPING..."
+    HopStatus.Text = "Finding another public server..."
+
+    task.spawn(function()
+        local serverId = FindHopServer()
+
+        if serverId then
+            HopStatus.Text = "Teleporting..."
+            local ok, err = pcall(function()
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, serverId, LocalPlayer)
+            end)
+
+            if not ok then
+                HopStatus.Text = "Teleport failed: " .. tostring(err)
+                HopButton.Text = "HOP SERVER"
+                HopButton:SetAttribute("Hopping", false)
+            end
+        else
+            HopStatus.Text = "No available server found."
+            HopButton.Text = "HOP SERVER"
+            HopButton:SetAttribute("Hopping", false)
+        end
+    end)
+end)
+
 local minimized = false
 
 local function SetMinimized(value)
@@ -319,15 +805,19 @@ local function SetMinimized(value)
     status.Visible = not value
     sight.Visible = not value
     sightHint.Visible = not value
+    RemoteList.Visible = false
+    RarityList.Visible = false
     MainTab.Visible = not value
     SellingTab.Visible = not value
+    SettingsTab.Visible = not value
     SellingFrame.Visible = (not value) and SellingFrame.Visible
+    SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
         frame.Size = UDim2.fromOffset(250, 42)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(250, 230)
+        frame.Size = UDim2.fromOffset(250, 380)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
@@ -380,12 +870,12 @@ status.Parent = frame
 sight = Instance.new("Frame")
 sight.Name = "ClickSight"
 sight.Size = UDim2.fromOffset(34, 34)
-sight.Position = UDim2.new(0, 108, 0, -40)
+sight.Position = UDim2.new(0.5, -17, 0.5, -17)
 sight.BackgroundTransparency = 1
 sight.BorderSizePixel = 0
 sight.Active = true
 sight.ZIndex = 50
-sight.Parent = frame
+sight.Parent = gui
 
 local sightOuter = Instance.new("Frame")
 sightOuter.Size = UDim2.fromScale(1, 1)
@@ -478,17 +968,25 @@ sightHint.Parent = frame
 SetTab = function(tabName)
     ActiveTab = tabName
     local mainVisible = tabName == "Main"
+    local sellingVisible = tabName == "Selling"
+    local settingsVisible = tabName == "Settings"
+
     button.Visible = mainVisible and not minimized
     islandText.Visible = mainVisible and not minimized
     status.Visible = mainVisible and not minimized
     sight.Visible = mainVisible and not minimized
     sightHint.Visible = mainVisible and not minimized
-    SellingFrame.Visible = (tabName == "Selling") and not minimized
+    SellingFrame.Visible = sellingVisible and not minimized
+    SettingsFrame.Visible = settingsVisible and not minimized
 
     MainTab.BackgroundColor3 = mainVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
     MainTab.TextColor3 = mainVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
-    SellingTab.BackgroundColor3 = (not mainVisible) and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
-    SellingTab.TextColor3 = (not mainVisible) and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
+
+    SellingTab.BackgroundColor3 = sellingVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
+    SellingTab.TextColor3 = sellingVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
+
+    SettingsTab.BackgroundColor3 = settingsVisible and Color3.fromRGB(57,255,20) or Color3.fromRGB(45,45,50)
+    SettingsTab.TextColor3 = settingsVisible and Color3.fromRGB(10,10,10) or Color3.fromRGB(220,220,225)
 end
 
 MainTab.MouseButton1Click:Connect(function()
@@ -496,6 +994,10 @@ MainTab.MouseButton1Click:Connect(function()
 end)
 SellingTab.MouseButton1Click:Connect(function()
     SetTab("Selling")
+end)
+
+SettingsTab.MouseButton1Click:Connect(function()
+    SetTab("Settings")
 end)
 
 --// END MINIMAL UI
@@ -723,6 +1225,11 @@ end
 local SellingReferences
 local SellingInventory
 local SellingInventoryLoaded = false
+local AutoTravelButton
+local AutoTravelStatus
+local AutoSellRemoteButton
+local AutoSellRemoteStatus
+local GetCurrentPlayerIsland
 
 local BreedDisplayNames = {
     ["akhal teke"] = "Akhal-Teke Horse", ["akhal-teke"] = "Akhal-Teke Horse",
@@ -831,7 +1338,7 @@ local function SellingColoursMatch(a,b)
 end
 
 local function RefreshSellingStats()
-    local stats = {uniqueHair=0, uniqueCoat=0, mismatched=0, naturalDyed=0, horned=0, total=0}
+    local stats = {normal=0, uniqueHair=0, uniqueCoat=0, mismatched=0, naturalDyed=0, horned=0, total=0}
     if not SellingInventoryLoaded or type(SellingInventory) ~= "table" then
         SellingStatus.Text = "Inventory unavailable"
         for _, label in pairs(SellingLabels) do label.Text = "0" end
@@ -850,10 +1357,18 @@ local function RefreshSellingStats()
                 if not SellingColoursMatch(mane, tail) then stats.mismatched += 1 end
                 if item.isNatDyed ~= nil then stats.naturalDyed += 1 end
                 if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then stats.horned += 1 end
+                if not (UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)])
+                    and not IsOrangeMainColour(main)
+                    and SellingColoursMatch(mane, tail)
+                    and item.isNatDyed == nil
+                    and (variants.hornColour == nil or tostring(variants.hornColour) == "") then
+                    stats.normal += 1
+                end
             end
         end
     end
 
+    SellingLabels["Normal Horse"].Text = tostring(stats.normal)
     SellingLabels["Island Unique Hair"].Text = tostring(stats.uniqueHair)
     SellingLabels["Island Unique Coat"].Text = tostring(stats.uniqueCoat)
     SellingLabels["Mismatched Hair"].Text = tostring(stats.mismatched)
@@ -861,8 +1376,90 @@ local function RefreshSellingStats()
     SellingLabels["Horned"].Text = tostring(stats.horned)
     SellingLabels["Total Horse"].Text = tostring(stats.total)
     SellingStatus.Text = "Inventory counts"
+    SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
     return stats
 end
+
+local function SellingItemMatchesRarity(item, info)
+    if SelectedSellRarity == "All" then return true end
+    local breed = SellingGetBreed(item, info)
+    if not breed then return false end
+    local raw = tostring(breed):lower()
+    for breedName, data in pairs(RarityData) do
+        if raw == tostring(breedName):lower() or raw:find(tostring(breedName):lower(), 1, true) or tostring(breedName):lower():find(raw, 1, true) then
+            return data.Rarity == SelectedSellRarity
+        end
+    end
+    return false
+end
+
+local function GetSelectedSellRemote()
+    local events = ReplicatedStorage:FindFirstChild("Communication") and ReplicatedStorage.Communication:FindFirstChild("Events")
+    if not events then return nil, "Communication.Events not found" end
+    local remote = events:FindFirstChild(SelectedSellRemote)
+    if not remote then return nil, SelectedSellRemote .. " not found" end
+    if not remote:IsA("RemoteEvent") then return nil, SelectedSellRemote .. " is not a RemoteEvent" end
+    return remote
+end
+
+SellButton.MouseButton1Click:Connect(function()
+    local remote, err = GetSelectedSellRemote()
+    if not remote then
+        SellStatus.Text = err
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return
+    end
+
+    if not SellingInventoryLoaded or type(SellingInventory) ~= "table" then
+        SellStatus.Text = "Inventory unavailable"
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return
+    end
+
+    local itemsToSell = {}
+    local count = 0
+    for uid, item in pairs(SellingInventory) do
+        if type(item) == "table" then
+            local info = SellingGetItemInfo(item)
+            if SellingGetBreed(item, info) and SellingItemMatchesRarity(item, info) then
+                itemsToSell[tostring(uid)] = 1
+                count += 1
+            end
+        end
+    end
+
+    if count == 0 then
+        SellStatus.Text = "Nothing matches: " .. SelectedSellRarity
+        SellStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+        return
+    end
+
+    local ok, sendErr = pcall(function()
+        remote:FireServer("SellItems", itemsToSell)
+    end)
+    if not ok then
+        SellStatus.Text = "Sell failed: " .. tostring(sendErr)
+        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        return
+    end
+
+    SellStatus.Text = "Sent sell request: " .. tostring(count) .. " horse(s) | " .. SelectedSellRarity .. " | " .. SelectedSellRemote
+    SellStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
+    task.delay(0.75, function()
+        local ok2, newInv = pcall(function()
+            local refs = require(ReplicatedStorage:WaitForChild("References"))
+            local data = require(refs.PlayerScripts.Priority.Data)
+            return data.GetLocal({"inventory"})
+        end)
+        if ok2 and type(newInv) == "table" then
+            SellingInventory = newInv
+            SellingInventoryLoaded = true
+            if ActiveTab == "Selling" and not minimized then
+                RefreshSellingStats()
+            end
+        end
+    end)
+end)
 
 task.spawn(function()
     local ok, err = pcall(function()
@@ -1013,6 +1610,160 @@ local function ScanHorses()
     return results
 end
 
+--// AUTO REMOTE GENERATORS
+local function ReadLocalInventory()
+    local ok, inv = pcall(function()
+        local refs = require(ReplicatedStorage:WaitForChild("References"))
+        local data = require(refs.PlayerScripts.Priority.Data)
+        return data.GetLocal({"inventory"})
+    end)
+    if ok and type(inv) == "table" then return inv end
+    return nil
+end
+
+local function FindNormalHorseUID(inv)
+    if type(inv) ~= "table" then return nil end
+    for uid, item in pairs(inv) do
+        if type(item) == "table" then
+            local info = SellingGetItemInfo(item)
+            if SellingGetBreed(item, info) then
+                local main, mane, tail = SellingGetColours(item)
+                local variants = item.variants or item.Variants or {}
+                local unique = UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)]
+                local coat = IsOrangeMainColour(main)
+                local mismatch = not SellingColoursMatch(mane, tail)
+                local nat = item.isNatDyed ~= nil
+                local horn = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+                if not unique and not coat and not mismatch and not nat and not horn then
+                    return tostring(uid)
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function DetectTravelRemote()
+    if AutoTravelButton:GetAttribute("Busy") then return end
+    AutoTravelButton:SetAttribute("Busy", true)
+    AutoTravelButton.Text = "TESTING FUNCTION1-36..."
+    AutoTravelStatus.Text = "Finding a horse on another island..."
+    AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+
+    task.spawn(function()
+        local currentIsland = GetCurrentPlayerIsland()
+        local targets = ScanHorses()
+        local target
+        for _, horse in ipairs(targets) do
+            if horse.Island and horse.Island ~= currentIsland then
+                target = horse
+                break
+            end
+        end
+
+        if not target then
+            AutoTravelStatus.Text = "No horse on another loaded island found."
+            AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+            AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
+            AutoTravelButton:SetAttribute("Busy", false)
+            return
+        end
+
+        local targetIsland = tostring(target.Island)
+        AutoTravelStatus.Text = "Testing against: " .. targetIsland
+
+        for i = 1, 36 do
+            local remote = Functions:FindFirstChild("Function" .. i)
+            if remote and remote:IsA("RemoteFunction") then
+                local name = remote.Name
+                pcall(function()
+                    remote:InvokeServer("Travel", targetIsland, 1)
+                end)
+                local started = tick()
+                while tick() - started < 5 do
+                    task.wait(0.15)
+                    if GetCurrentPlayerIsland() == targetIsland then
+                        TravelRemoteBox.Text = name
+                        TravelDropdown.Text = name
+                        AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
+                        AutoTravelStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
+                        AutoTravelButton.Text = "TRAVEL REMOTE FOUND"
+                        AutoTravelButton:SetAttribute("Busy", false)
+                        return
+                    end
+                end
+            end
+        end
+
+        AutoTravelStatus.Text = "No working Travel Remote found in Function1-36."
+        AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
+        AutoTravelButton:SetAttribute("Busy", false)
+    end)
+end
+
+local function DetectSellRemote()
+    if AutoSellRemoteButton:GetAttribute("Busy") then return end
+    AutoSellRemoteButton:SetAttribute("Busy", true)
+    AutoSellRemoteButton.Text = "TESTING EVENT1-90..."
+    AutoSellRemoteStatus.Text = "Finding one Normal Horse..."
+    AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+
+    task.spawn(function()
+        local inv = ReadLocalInventory()
+        local testUID = FindNormalHorseUID(inv)
+        if not testUID then
+            AutoSellRemoteStatus.Text = "No Normal Horse is available for testing."
+            AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+            AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
+            AutoSellRemoteButton:SetAttribute("Busy", false)
+            return
+        end
+
+        for i = 1, 90 do
+            local eventName = "Event" .. i
+            local event = Events:FindFirstChild(eventName)
+            if event and event:IsA("RemoteEvent") then
+                local before = ReadLocalInventory()
+                if type(before) ~= "table" or before[testUID] == nil then
+                    AutoSellRemoteStatus.Text = "Test horse is no longer in inventory."
+                    AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+                    break
+                end
+
+                AutoSellRemoteStatus.Text = "Testing " .. eventName .. "..."
+                pcall(function()
+                    event:FireServer("SellItems", {[testUID] = 1})
+                end)
+                task.wait(0.5)
+
+                local after = ReadLocalInventory()
+                if type(after) == "table" and after[testUID] == nil then
+                    SelectedSellRemote = eventName
+                    RemoteDrop.Text = "Remote: " .. eventName
+                    SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
+                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | 1 Normal Horse sold."
+                    AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
+                    AutoSellRemoteButton.Text = "SELL REMOTE FOUND"
+                    SellingInventory = after
+                    SellingInventoryLoaded = true
+                    RefreshSellingStats()
+                    AutoSellRemoteButton:SetAttribute("Busy", false)
+                    return
+                end
+            end
+        end
+
+        AutoSellRemoteStatus.Text = "No working Sell Remote found in Event1-90."
+        AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
+        AutoSellRemoteButton:SetAttribute("Busy", false)
+    end)
+end
+
+AutoTravelButton.MouseButton1Click:Connect(DetectTravelRemote)
+AutoSellRemoteButton.MouseButton1Click:Connect(DetectSellRemote)
+
 local function invalidate()
     ScanCache = {}
     LastScan = 0
@@ -1033,7 +1784,7 @@ Workspace.ChildAdded:Connect(function(child)
 end)
 
 --// CURRENT ISLAND
-local function GetCurrentPlayerIsland()
+GetCurrentPlayerIsland = function()
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
     local islands = Workspace:FindFirstChild("Islands")
@@ -1140,9 +1891,12 @@ local function startFarm()
                 continue
             end
 
+            -- ScanHorses() already scans every island loaded in the current server.
+            -- Do not restrict candidates to the current island: the old tracker would
+            -- select a horse from another island and use the Travel Remote to reach it.
             local candidates = {}
             for _, horse in ipairs(ScanHorses()) do
-                if horse.Island == island and horse.Model and horse.Model.Parent then
+                if horse.Model and horse.Model.Parent then
                     table.insert(candidates, horse)
                 end
             end
@@ -1180,12 +1934,69 @@ local function startFarm()
             local targetPart = target.Model:IsA("Model") and (target.Model.PrimaryPart or target.Model:FindFirstChildWhichIsA("BasePart")) or target.Model
 
             if root and humanoid and humanoid.Health > 0 and targetPart and target.Model.Parent then
-                -- Never travel to another island. If the player changes islands manually,
-                -- the target is abandoned and the background scanner picks up the new island.
+                -- Old-script behavior: if the selected horse is on another island,
+                -- use the configured Travel Remote to travel there before tweening to it.
                 if GetCurrentPlayerIsland() ~= target.Island then
-                    CurrentTarget = nil
-                    task.wait(0.1)
-                    continue
+                    local remoteName = tostring(TravelRemoteBox.Text or ""):match("^%s*(.-)%s*$")
+                    if remoteName == "" then
+                        status.Text = "Set Travel Remote in Settings"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    local travelFunc = Functions:FindFirstChild(remoteName)
+                    if not travelFunc or not travelFunc:IsA("RemoteFunction") then
+                        status.Text = "Travel Remote not found: " .. remoteName
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    status.Text = "Traveling to " .. tostring(target.Island) .. "..."
+                    status.TextColor3 = Color3.fromRGB(251, 191, 36)
+                    local travelOk = pcall(function()
+                        travelFunc:InvokeServer("Travel", target.Island, 1)
+                    end)
+                    if not travelOk then
+                        status.Text = "Travel Failed"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    local arrivalDeadline = tick() + 15
+                    local arrived = false
+                    while Farming and myGeneration == FarmGeneration and tick() < arrivalDeadline do
+                        local nowIsland = GetCurrentPlayerIsland()
+                        islandText.Text = "Island: " .. tostring(nowIsland or "?")
+                        if nowIsland == target.Island then
+                            arrived = true
+                            break
+                        end
+                        task.wait(0.2)
+                    end
+
+                    if not arrived then
+                        status.Text = "Travel Timeout"
+                        status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                        CurrentTarget = nil
+                        task.wait(0.5)
+                        continue
+                    end
+
+                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                    root = char:WaitForChild("HumanoidRootPart")
+                    humanoid = char:WaitForChild("Humanoid")
+                    targetPart = target.Model and target.Model.Parent and (target.Model:IsA("Model") and (target.Model.PrimaryPart or target.Model:FindFirstChildWhichIsA("BasePart")) or target.Model)
+                    if not targetPart then
+                        CurrentTarget = nil
+                        task.wait(0.1)
+                        continue
+                    end
                 end
 
                 -- Copy the old tracker movement behavior: anchor the character BEFORE
@@ -1322,4 +2133,4 @@ LocalPlayer.CharacterRemoving:Connect(function()
 end)
 
 print("[NORMS] Minimal farmer loaded. No RemoteEvent/RemoteFunction calls are used.")
-print("[NORMS] Manually travel to an island, then press START.")
+print("[NORMS] Scans all loaded islands in the current server; Travel Remote can move to the selected island automatically.")
