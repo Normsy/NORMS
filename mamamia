@@ -1876,11 +1876,16 @@ end
 --// Missing attribute = go. Own username = go. Another username = skip.
 local function CanGoToHorse(node)
     if not node or not node.Parent then return false end
+
+    -- Old-script behavior: ANY existing lasso owner means the horse is already
+    -- claimed/owned. Do not travel to it and do not catch it again, even if
+    -- the owner is the local player. Only horses with no owner are valid.
     local owner = node:GetAttribute("lastPlayerToThrowLasso")
-    if owner == nil or tostring(owner) == "" then
-        return true
+    if owner ~= nil and tostring(owner):gsub("^%s+", ""):gsub("%s+$", "") ~= "" then
+        return false
     end
-    return tostring(owner) == tostring(LocalPlayer.Name)
+
+    return true
 end
 
 --// FPS CAP
@@ -2630,17 +2635,20 @@ local function startFarm()
 
             local candidates = {}
             for _, horse in ipairs(scanResults or {}) do
-                if horse.Model and horse.Model.Parent and not isOwned(horse.Model) and not IsOwnedByLocalPlayer(horse.Model) then
+                if horse.Model and horse.Model.Parent and not isOwned(horse.Model) and not IsOwnedByLocalPlayer(horse.Model) and CanGoToHorse(horse.Model) then
                     table.insert(candidates, horse)
                 end
             end
 
             table.sort(candidates, function(a,b)
-                -- Catch priority: Unique Hair (1) > Mismatched Hair (2) > Island Unique Coat (3) > Natural Dyed Hair (4) > Horned (5) > Normal (6).
+                -- Catch priority from the old script: Island Unique Hair > Mismatch Hair > Special Island Unique Coat > Naturally Dyed Hair > Horned > High > Mid > Low.
                 if a.Priority ~= b.Priority then return a.Priority < b.Priority end
                 if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
-                local pa = RarityPriority[a.Rarity] or 0
-                local pb = RarityPriority[b.Rarity] or 0
+                -- After the special traits, use the old rarity order: High > Mid > Low.
+                -- Special is not promoted above these catch-priority categories.
+                local rarityOrder = {High=3, Mid=2, Low=1}
+                local pa = rarityOrder[a.Rarity] or 0
+                local pb = rarityOrder[b.Rarity] or 0
                 if pa ~= pb then return pa > pb end
                 local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if not root then return false end
