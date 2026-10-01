@@ -1,31 +1,32 @@
-
---// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
+--// DELTA-SAFE REMOTE SETUP
+-- Do not block the entire script if Communication is not ready yet.
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Communication = ReplicatedStorage:WaitForChild("Communication")
-local Functions = Communication:WaitForChild("Functions")
-local Events = Communication:WaitForChild("Events")
+local Communication = ReplicatedStorage:FindFirstChild("Communication")
+local Functions = Communication and Communication:FindFirstChild("Functions")
+local Events = Communication and Communication:FindFirstChild("Events")
 
 local functionIndex = 0
-for _, obj in ipairs(Functions:GetChildren()) do
-    if obj:IsA("RemoteFunction") and obj.Name == "" then
-        functionIndex += 1
-        obj.Name = "Function" .. functionIndex
-    end
-end
-
 local eventIndex = 0
-for _, obj in ipairs(Events:GetChildren()) do
-    if obj:IsA("RemoteEvent") and obj.Name == "" then
-        eventIndex += 1
-        obj.Name = "Event" .. eventIndex
+
+if Functions then
+    for _, obj in ipairs(Functions:GetChildren()) do
+        if obj:IsA("RemoteFunction") and obj.Name == "" then
+            functionIndex += 1
+            obj.Name = "Function" .. functionIndex
+        end
     end
 end
 
-print("================================")
-print("REMOTE RENAME COMPLETE")
-print("Functions renamed:", functionIndex)
-print("Events renamed:", eventIndex)
-print("================================")
+if Events then
+    for _, obj in ipairs(Events:GetChildren()) do
+        if obj:IsA("RemoteEvent") and obj.Name == "" then
+            eventIndex += 1
+            obj.Name = "Event" .. eventIndex
+        end
+    end
+end
+
+print("[NORMS] Startup complete. Functions:", functionIndex, "Events:", eventIndex)
 
 --// NORMS TRACKER: TWEEN TELEPORT, UNLIMITED ANCHOR & REFINED DETECTION
 local Players = game:GetService("Players")
@@ -267,7 +268,11 @@ local function DisableNoClip(char)
 end
 
 --// UI CREATION
-local guiParent = pcall(function() return game:GetService("CoreGui") end) and game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
+-- Prefer PlayerGui in Delta. Fall back to CoreGui only if PlayerGui is unavailable.
+local guiParent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
+if not guiParent then
+    guiParent = game:GetService("CoreGui")
+end
 if guiParent:FindFirstChild("HorseTrackerUI") then
     guiParent.HorseTrackerUI:Destroy()
 end
