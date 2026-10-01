@@ -1,4 +1,4 @@
--- V21 UPDATE: Manual selling only. No automatic 5-minute auto-sell. Fixed horse scanning, travel detection, and centered UI.
+-- V23 UPDATE: Compact centered UI. Manual selling only. Auto remote finders test Travel Function1-36 and Sell Event1-90 at 0.5s intervals with live inventory checks.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
@@ -193,7 +193,7 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(360, 430)
+frame.Size = UDim2.fromOffset(320, 360)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
@@ -249,8 +249,8 @@ local SetTab
 --// TABS
 local MainTab = Instance.new("TextButton")
 MainTab.Name = "MainTab"
-MainTab.Size = UDim2.fromOffset(72, 24)
-MainTab.Position = UDim2.fromOffset(10, 36)
+MainTab.Size = UDim2.fromOffset(68, 24)
+MainTab.Position = UDim2.fromOffset(8, 36)
 MainTab.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
 MainTab.TextColor3 = Color3.fromRGB(10, 10, 10)
 MainTab.BorderSizePixel = 0
@@ -261,8 +261,8 @@ MainTab.Parent = frame
 
 local SellingTab = Instance.new("TextButton")
 SellingTab.Name = "SellingTab"
-SellingTab.Size = UDim2.fromOffset(105, 24)
-SellingTab.Position = UDim2.fromOffset(122, 36)
+SellingTab.Size = UDim2.fromOffset(88, 24)
+SellingTab.Position = UDim2.fromOffset(82, 36)
 SellingTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
@@ -273,8 +273,8 @@ SellingTab.Parent = frame
 
 local SettingsTab = Instance.new("TextButton")
 SettingsTab.Name = "SettingsTab"
-SettingsTab.Size = UDim2.fromOffset(105, 24)
-SettingsTab.Position = UDim2.fromOffset(235, 36)
+SettingsTab.Size = UDim2.fromOffset(88, 24)
+SettingsTab.Position = UDim2.fromOffset(176, 36)
 SettingsTab.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
 SettingsTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SettingsTab.BorderSizePixel = 0
@@ -291,8 +291,8 @@ end
 
 local SellingFrame = Instance.new("Frame")
 SellingFrame.Name = "Selling"
-SellingFrame.Size = UDim2.new(1, -20, 0, 390)
-SellingFrame.Position = UDim2.fromOffset(10, 66)
+SellingFrame.Size = UDim2.new(1, -16, 0, 285)
+SellingFrame.Position = UDim2.fromOffset(8, 66)
 SellingFrame.BackgroundTransparency = 1
 SellingFrame.Visible = false
 SellingFrame.Parent = frame
@@ -399,11 +399,11 @@ local function makeDropButton(text, position, width)
     return b
 end
 
-local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 205), 120)
-local RarityDrop = makeDropButton("Rarity: All", UDim2.fromOffset(125, 205), 115)
+local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 205), 112)
+local RarityDrop = makeDropButton("Rarity: All", UDim2.fromOffset(116, 205), 112)
 
 local RemoteList = Instance.new("ScrollingFrame")
-RemoteList.Size = UDim2.fromOffset(120, 150)
+RemoteList.Size = UDim2.fromOffset(112, 150)
 RemoteList.Position = UDim2.fromOffset(0, 232)
 RemoteList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
 RemoteList.BorderSizePixel = 0
@@ -440,8 +440,8 @@ remoteLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
 end)
 
 local RarityList = Instance.new("Frame")
-RarityList.Size = UDim2.fromOffset(115, 130)
-RarityList.Position = UDim2.fromOffset(125, 232)
+RarityList.Size = UDim2.fromOffset(112, 130)
+RarityList.Position = UDim2.fromOffset(116, 232)
 RarityList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
 RarityList.BorderSizePixel = 0
 RarityList.Visible = false
@@ -472,7 +472,7 @@ for i, rarity in ipairs(rarityOptions) do
 end
 
 local SellButton = Instance.new("TextButton")
-SellButton.Size = UDim2.fromOffset(340, 30)
+SellButton.Size = UDim2.new(1, 0, 0, 28)
 SellButton.Position = UDim2.fromOffset(0, 234)
 SellButton.BackgroundColor3 = Color3.fromRGB(125, 35, 40)
 SellButton.BorderSizePixel = 0
@@ -496,7 +496,7 @@ SellStatus.Parent = SellingFrame
 
 AutoSellRemoteButton = Instance.new("TextButton")
 AutoSellRemoteButton.Name = "AutoFindSellRemote"
-AutoSellRemoteButton.Size = UDim2.fromOffset(340, 30)
+AutoSellRemoteButton.Size = UDim2.new(1, 0, 0, 30)
 AutoSellRemoteButton.Position = UDim2.fromOffset(0, 285)
 AutoSellRemoteButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoSellRemoteButton.BorderSizePixel = 0
@@ -531,8 +531,8 @@ end)
 --// SETTINGS TAB
 local SettingsFrame = Instance.new("Frame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -20, 0, 410)
-SettingsFrame.Position = UDim2.fromOffset(10, 66)
+SettingsFrame.Size = UDim2.new(1, -16, 0, 285)
+SettingsFrame.Position = UDim2.fromOffset(8, 66)
 SettingsFrame.BackgroundTransparency = 1
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
@@ -540,14 +540,14 @@ SettingsFrame.Parent = frame
 -- Sell remote controls live in Settings.  Move them only after SettingsFrame
 -- has been created so the UI does not error during startup.
 RemoteDrop.Parent = SettingsFrame
-RemoteDrop.Position = UDim2.fromOffset(110, 218)
+RemoteDrop.Position = UDim2.fromOffset(105, 155)
 RemoteList.Parent = SettingsFrame
-RemoteList.Position = UDim2.fromOffset(110, 245)
+RemoteList.Position = UDim2.fromOffset(105, 182)
 RemoteList.ZIndex = 100
 AutoSellRemoteButton.Parent = SettingsFrame
-AutoSellRemoteButton.Position = UDim2.fromOffset(0, 276)
+AutoSellRemoteButton.Position = UDim2.fromOffset(0, 190)
 AutoSellRemoteStatus.Parent = SettingsFrame
-AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 310)
+AutoSellRemoteStatus.Position = UDim2.fromOffset(0, 223)
 
 local SettingsTitle = Instance.new("TextLabel")
 SettingsTitle.Size = UDim2.new(1, 0, 0, 22)
@@ -586,8 +586,8 @@ TravelRemoteLabel.Parent = SettingsFrame
 
 local TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Name = "TravelRemoteBox"
-TravelRemoteBox.Size = UDim2.new(0, 120, 0, 26)
-TravelRemoteBox.Position = UDim2.fromOffset(112, 56)
+TravelRemoteBox.Size = UDim2.new(0, 105, 0, 26)
+TravelRemoteBox.Position = UDim2.fromOffset(95, 56)
 TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 TravelRemoteBox.BorderSizePixel = 0
 TravelRemoteBox.ClearTextOnFocus = false
@@ -605,8 +605,8 @@ TravelBoxCorner.Parent = TravelRemoteBox
 
 local TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Name = "TravelRemoteDropdown"
-TravelDropdown.Size = UDim2.new(0, 95, 0, 26)
-TravelDropdown.Position = UDim2.fromOffset(237, 56)
+TravelDropdown.Size = UDim2.new(0, 90, 0, 26)
+TravelDropdown.Position = UDim2.fromOffset(205, 56)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "SELECT v"
@@ -621,8 +621,8 @@ TravelDropCorner.Parent = TravelDropdown
 
 local TravelList = Instance.new("ScrollingFrame")
 TravelList.Name = "TravelRemoteList"
-TravelList.Size = UDim2.fromOffset(120, 120)
-TravelList.Position = UDim2.fromOffset(112, 84)
+TravelList.Size = UDim2.fromOffset(105, 100)
+TravelList.Position = UDim2.fromOffset(95, 84)
 TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 TravelList.BorderSizePixel = 0
 TravelList.Visible = false
@@ -662,8 +662,8 @@ end)
 
 AutoTravelButton = Instance.new("TextButton")
 AutoTravelButton.Name = "AutoFindTravelRemote"
-AutoTravelButton.Size = UDim2.new(1, 0, 0, 34)
-AutoTravelButton.Position = UDim2.fromOffset(0, 96)
+AutoTravelButton.Size = UDim2.new(1, 0, 0, 30)
+AutoTravelButton.Position = UDim2.fromOffset(0, 92)
 AutoTravelButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoTravelButton.BorderSizePixel = 0
 AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
@@ -675,7 +675,7 @@ local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0, 7); atbc.
 
 AutoTravelStatus = Instance.new("TextLabel")
 AutoTravelStatus.Size = UDim2.new(1, 0, 0, 28)
-AutoTravelStatus.Position = UDim2.fromOffset(0, 132)
+AutoTravelStatus.Position = UDim2.fromOffset(0, 124)
 AutoTravelStatus.BackgroundTransparency = 1
 AutoTravelStatus.Text = "Travel remote: not tested"
 AutoTravelStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -687,7 +687,7 @@ AutoTravelStatus.Parent = SettingsFrame
 
 local SellRemoteLabel = Instance.new("TextLabel")
 SellRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
-SellRemoteLabel.Position = UDim2.fromOffset(0, 218)
+SellRemoteLabel.Position = UDim2.fromOffset(0, 155)
 SellRemoteLabel.BackgroundTransparency = 1
 SellRemoteLabel.Text = "SELL REMOTE"
 SellRemoteLabel.TextColor3 = Color3.fromRGB(190, 195, 205)
@@ -698,8 +698,8 @@ SellRemoteLabel.Parent = SettingsFrame
 
 local HopButton = Instance.new("TextButton")
 HopButton.Name = "HopServer"
-HopButton.Size = UDim2.new(1, 0, 0, 34)
-HopButton.Position = UDim2.fromOffset(0, 350)
+HopButton.Size = UDim2.new(1, 0, 0, 30)
+HopButton.Position = UDim2.fromOffset(0, 252)
 HopButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 HopButton.BorderSizePixel = 0
 HopButton.Text = "HOP SERVER"
@@ -714,7 +714,7 @@ HopCorner.Parent = HopButton
 
 local HopStatus = Instance.new("TextLabel")
 HopStatus.Size = UDim2.new(1, 0, 0, 28)
-HopStatus.Position = UDim2.fromOffset(0, 390)
+HopStatus.Position = UDim2.fromOffset(0, 284)
 HopStatus.BackgroundTransparency = 1
 HopStatus.Text = "Ready"
 HopStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -849,10 +849,10 @@ local function SetMinimized(value)
     SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
-        frame.Size = UDim2.fromOffset(360, 42)
+        frame.Size = UDim2.fromOffset(320, 42)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(360, 430)
+        frame.Size = UDim2.fromOffset(320, 360)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
@@ -864,7 +864,7 @@ end)
 
 button = Instance.new("TextButton")
 button.Name = "StartButton"
-button.Size = UDim2.fromOffset(95, 38)
+button.Size = UDim2.fromOffset(82, 34)
 button.Position = UDim2.fromOffset(10, 66)
 button.BackgroundColor3 = Color3.fromRGB(57,255,20)
 button.TextColor3 = Color3.fromRGB(10,10,10)
@@ -880,8 +880,8 @@ buttonCorner.Parent = button
 
 islandText = Instance.new("TextLabel")
 islandText.BackgroundTransparency = 1
-islandText.Size = UDim2.fromOffset(105, 22)
-islandText.Position = UDim2.fromOffset(115, 67)
+islandText.Size = UDim2.fromOffset(95, 22)
+islandText.Position = UDim2.fromOffset(100, 67)
 islandText.Font = Enum.Font.Gotham
 islandText.Text = "Island: ?"
 islandText.TextSize = 12
@@ -891,7 +891,7 @@ islandText.Parent = frame
 
 status = Instance.new("TextLabel")
 status.BackgroundTransparency = 1
-status.Size = UDim2.fromOffset(335, 30)
+status.Size = UDim2.fromOffset(295, 30)
 status.Position = UDim2.fromOffset(10, 106)
 status.Font = Enum.Font.Gotham
 status.Text = "Idle"
@@ -991,7 +991,7 @@ end
 
 sightHint = Instance.new("TextLabel")
 sightHint.BackgroundTransparency = 1
-sightHint.Size = UDim2.fromOffset(225, 16)
+sightHint.Size = UDim2.fromOffset(285, 16)
 sightHint.Position = UDim2.fromOffset(10, 158)
 sightHint.Font = Enum.Font.Gotham
 sightHint.Text = "Drag the crosshair to set click point"
@@ -1698,34 +1698,58 @@ local function FindNormalHorseUID(inv)
     return nil
 end
 
+local function GetRootAndPosition()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    return root, root and root.Position or nil
+end
+
+local function FindRemoteFunction(index)
+    local remote = Functions:FindFirstChild("Function" .. tostring(index))
+    if remote and remote:IsA("RemoteFunction") then
+        return remote
+    end
+    return nil
+end
+
+local function FindRemoteEvent(index)
+    local remote = Events:FindFirstChild("Event" .. tostring(index))
+    if remote and remote:IsA("RemoteEvent") then
+        return remote
+    end
+    return nil
+end
+
 local function DetectTravelRemote()
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
-    AutoTravelButton.Text = "FINDING HORSE..."
-    AutoTravelStatus.Text = "Scanning loaded islands for a horse..."
+    AutoTravelButton.Text = "TESTING FUNCTION1-36..."
+    AutoTravelStatus.Text = "Finding a horse on another island..."
     AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
         local target
         local originalIsland = GetCurrentPlayerIsland()
+        local originalRoot = GetRootAndPosition()
 
-        -- Give the game time to populate island/horse objects.
-        for attempt = 1, 20 do
+        -- Keep scanning until a real horse on a different loaded island is found.
+        for attempt = 1, 40 do
             invalidate()
             local currentIsland = GetCurrentPlayerIsland()
-            for _, horse in ipairs(ScanHorses()) do
+            local horses = ScanHorses()
+            for _, horse in ipairs(horses) do
                 if horse.Model and horse.Model.Parent and horse.Island and horse.Island ~= currentIsland then
                     target = horse
                     break
                 end
             end
             if target then break end
-            AutoTravelStatus.Text = "Waiting for another-island horse... (" .. attempt .. "/20)"
+            AutoTravelStatus.Text = "Waiting for another-island horse... " .. tostring(attempt) .. "/40"
             task.wait(0.5)
         end
 
         if not target then
-            AutoTravelStatus.Text = "No horse on another loaded island found."
+            AutoTravelStatus.Text = "No other-island horse found."
             AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
             AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
             AutoTravelButton:SetAttribute("Busy", false)
@@ -1733,95 +1757,177 @@ local function DetectTravelRemote()
         end
 
         local targetIsland = tostring(target.Island)
-        AutoTravelStatus.Text = "Testing Function1-36 -> " .. targetIsland
+        local targetPosition = target.Position
+        AutoTravelStatus.Text = "Target: " .. targetIsland .. " | testing every 0.5s"
 
         for i = 1, 36 do
-            local remote = Functions:FindFirstChild("Function" .. i)
-            if remote and remote:IsA("RemoteFunction") then
-                local name = remote.Name
-                AutoTravelStatus.Text = "Testing " .. name .. "..."
-                pcall(function()
+            local remote = FindRemoteFunction(i)
+            local name = "Function" .. tostring(i)
+
+            if remote then
+                local _, beforePosition = GetRootAndPosition()
+                local beforeDistance = beforePosition and targetPosition and (beforePosition - targetPosition).Magnitude or math.huge
+
+                AutoTravelStatus.Text = "Testing " .. name .. " -> " .. targetIsland
+
+                local invokeOK, invokeErr = pcall(function()
                     remote:InvokeServer("Travel", targetIsland, 1)
                 end)
 
-                local started = tick()
-                while tick() - started < 6 do
-                    task.wait(0.15)
-                    local char = LocalPlayer.Character
-                    local reachedByIsland = GetCurrentPlayerIsland() == targetIsland
-                    if reachedByIsland then
-                        TravelRemoteBox.Text = name
-                        TravelDropdown.Text = name
-                        AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
-                        AutoTravelStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
-                        AutoTravelButton.Text = "TRAVEL REMOTE FOUND"
-                        AutoTravelButton:SetAttribute("Busy", false)
-                        return
-                    end
+                -- The requested 0.5 second test interval.
+                task.wait(0.5)
+
+                local _, afterPosition = GetRootAndPosition()
+                local currentIsland = GetCurrentPlayerIsland()
+                local reachedIsland = currentIsland == targetIsland
+                local movedTowardTarget = false
+
+                if afterPosition and targetPosition then
+                    local afterDistance = (afterPosition - targetPosition).Magnitude
+                    movedTowardTarget = afterDistance + 100 < beforeDistance
+                end
+
+                -- A remote is accepted only when the player actually reaches the
+                -- target island (or clearly moves to the target island/horse).
+                if invokeOK and (reachedIsland or movedTowardTarget) then
+                    TravelRemoteBox.Text = name
+                    TravelDropdown.Text = name
+                    AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
+                    AutoTravelStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
+                    AutoTravelButton.Text = "TRAVEL REMOTE FOUND"
+                    AutoTravelButton:SetAttribute("Busy", false)
+                    return
+                end
+
+                if not invokeOK then
+                    AutoTravelStatus.Text = name .. " failed; next in 0.5s"
+                end
+
+                -- If a bad test moved the client, restore the original client
+                -- position so the next Function is tested from the same place.
+                if originalRoot and afterPosition then
+                    pcall(function()
+                        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if root and GetCurrentPlayerIsland() ~= originalIsland then
+                            root.CFrame = originalRoot.CFrame
+                        end
+                    end)
                 end
             end
         end
 
-        AutoTravelStatus.Text = "No working Travel Remote found in Function1-36."
+        AutoTravelStatus.Text = "No working Travel Remote in Function1-36."
         AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
         AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
         AutoTravelButton:SetAttribute("Busy", false)
     end)
 end
 
+local function InventoryHasUID(inv, uid)
+    return type(inv) == "table" and inv[uid] ~= nil
+end
+
 local function DetectSellRemote()
     if AutoSellRemoteButton:GetAttribute("Busy") then return end
     AutoSellRemoteButton:SetAttribute("Busy", true)
     AutoSellRemoteButton.Text = "TESTING EVENT1-90..."
-    AutoSellRemoteStatus.Text = "Finding one Normal Horse..."
+    AutoSellRemoteStatus.Text = "Scanning inventory for a Normal Horse..."
     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        local inv = ReadLocalInventory()
-        local testUID = FindNormalHorseUID(inv)
+        -- Continuously refresh the local inventory while looking for the test horse.
+        local testUID
+        for attempt = 1, 20 do
+            local inv = ReadLocalInventory()
+            if type(inv) == "table" then
+                SellingInventory = inv
+                SellingInventoryLoaded = true
+                testUID = FindNormalHorseUID(inv)
+                if testUID then break end
+            end
+            AutoSellRemoteStatus.Text = "Scanning inventory... " .. tostring(attempt) .. "/20"
+            task.wait(0.5)
+        end
+
         if not testUID then
-            AutoSellRemoteStatus.Text = "No Normal Horse is available for testing."
+            AutoSellRemoteStatus.Text = "No Normal Horse available for testing."
             AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
             AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
             AutoSellRemoteButton:SetAttribute("Busy", false)
             return
         end
 
+        AutoSellRemoteStatus.Text = "Test UID: " .. tostring(testUID) .. " | testing every 0.5s"
+
         for i = 1, 90 do
-            local eventName = "Event" .. i
-            local event = Events:FindFirstChild(eventName)
-            if event and event:IsA("RemoteEvent") then
+            local event = FindRemoteEvent(i)
+            local eventName = "Event" .. tostring(i)
+
+            if event then
+                -- Always rescan immediately before each test so we know the exact
+                -- inventory state of the test horse.
                 local before = ReadLocalInventory()
-                if type(before) ~= "table" or before[testUID] == nil then
-                    AutoSellRemoteStatus.Text = "Test horse is no longer in inventory."
-                    AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
-                    break
+                if type(before) ~= "table" then
+                    task.wait(0.5)
+                    continue
                 end
 
-                AutoSellRemoteStatus.Text = "Testing " .. eventName .. "..."
-                pcall(function()
+                SellingInventory = before
+                SellingInventoryLoaded = true
+
+                if not InventoryHasUID(before, testUID) then
+                    -- The test horse disappeared before this Event was tested.
+                    -- Do not claim the current Event caused it; refresh and choose
+                    -- another Normal Horse instead.
+                    testUID = FindNormalHorseUID(before)
+                    if not testUID then
+                        AutoSellRemoteStatus.Text = "Test horse left inventory; no replacement Normal Horse."
+                        break
+                    end
+                    before = ReadLocalInventory()
+                end
+
+                AutoSellRemoteStatus.Text = "Testing " .. eventName .. " | horse still in inventory"
+
+                local fireOK = pcall(function()
                     event:FireServer("SellItems", {[testUID] = 1})
                 end)
-                task.wait(0.5)
 
-                local after = ReadLocalInventory()
-                if type(after) == "table" and after[testUID] == nil then
+                -- Scan the inventory repeatedly for 0.5 seconds instead of checking
+                -- only once. This catches delayed inventory replication.
+                local sold = false
+                local checkStart = tick()
+                while tick() - checkStart < 0.5 do
+                    task.wait(0.1)
+                    local current = ReadLocalInventory()
+                    if type(current) == "table" then
+                        SellingInventory = current
+                        SellingInventoryLoaded = true
+                        RefreshSellingStats()
+                        if not InventoryHasUID(current, testUID) then
+                            sold = true
+                            break
+                        end
+                    end
+                end
+
+                if fireOK and sold then
                     SelectedSellRemote = eventName
                     RemoteDrop.Text = "Remote: " .. eventName
-                    SellStatus.Text = "Remote: " .. SelectedSellRemote .. " | Rarity: " .. SelectedSellRarity
-                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | 1 Normal Horse sold."
+                    SellStatus.Text = "Remote: " .. eventName .. " | Rarity: " .. SelectedSellRarity
+                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | Normal Horse left inventory."
                     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
                     AutoSellRemoteButton.Text = "SELL REMOTE FOUND"
-                    SellingInventory = after
-                    SellingInventoryLoaded = true
-                    RefreshSellingStats()
                     AutoSellRemoteButton:SetAttribute("Busy", false)
                     return
                 end
             end
+
+            -- Keep the requested 0.5-second cadence between Event tests.
+            task.wait(0.5)
         end
 
-        AutoSellRemoteStatus.Text = "No working Sell Remote found in Event1-90."
+        AutoSellRemoteStatus.Text = "No working Sell Remote in Event1-90."
         AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
         AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
         AutoSellRemoteButton:SetAttribute("Busy", false)
