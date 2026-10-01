@@ -172,6 +172,9 @@ local islandText
 local status
 local ActiveTab = "Main"
 local SetTab
+-- Declared early so the minimize/"+" button can stop the farm.
+local Farming = false
+local stopFarm
 
 --// TABS
 local MainTab = Instance.new("TextButton")
@@ -1365,7 +1368,7 @@ local AntiAFKConnection = LocalPlayer.Idled:Connect(function()
     end)
 end)
 
-local Farming = false
+Farming = false
 
 -- Always initialize the visible control as START/idle.
 button.Text = "START"
@@ -2432,7 +2435,7 @@ local function SetCharacterAnchored(anchored)
     end)
 end
 
-local function stopFarm()
+stopFarm = function()
     Farming = false
     SetNoClip(false)
     SetCharacterAnchored(false)
@@ -2772,15 +2775,47 @@ do
         local name = Instance.new("TextLabel")
         name.BackgroundTransparency = 1
         name.Position = UDim2.fromOffset(8, 1)
-        name.Size = UDim2.new(1, -60, 0, 15)
+        name.Size = UDim2.new(1, -128, 0, 15)
         name.Font = Enum.Font.GothamBold
         name.TextSize = 10
         name.TextColor3 = Color3.fromRGB(236, 236, 241)
         name.TextXAlignment = Enum.TextXAlignment.Left
         name.Text = tostring(h.Name)
+        name.TextTruncate = Enum.TextTruncate.AtEnd
         name.Parent = row
 
-        local tag = PriorityTags[h.Priority]
+        local dots = Instance.new("Frame")
+        dots.BackgroundTransparency = 1
+        dots.AnchorPoint = Vector2.new(1, 0)
+        dots.Position = UDim2.new(1, -58, 0, 3)
+        dots.Size = UDim2.fromOffset(66, 12)
+        dots.Parent = row
+        local dl = Instance.new("UIListLayout")
+        dl.FillDirection = Enum.FillDirection.Horizontal
+        dl.HorizontalAlignment = Enum.HorizontalAlignment.Right
+        dl.VerticalAlignment = Enum.VerticalAlignment.Center
+        dl.Padding = UDim.new(0, 3)
+        dl.SortOrder = Enum.SortOrder.LayoutOrder
+        dl.Parent = dots
+        local function Dot(color, order)
+            local d = Instance.new("Frame")
+            d.Size = UDim2.fromOffset(10, 10)
+            d.BackgroundColor3 = color
+            d.BorderSizePixel = 0
+            d.LayoutOrder = order
+            d.Parent = dots
+            local dcn = Instance.new("UICorner")
+            dcn.CornerRadius = UDim.new(1, 0)
+            dcn.Parent = d
+        end
+        local anyTrait = false
+        if h.Unique then Dot(Color3.fromRGB(255, 70, 70), 1); anyTrait = true end          -- Island Unique Hair = red
+        if h.UniqueCoat then Dot(Color3.fromRGB(255, 150, 40), 2); anyTrait = true end    -- Island Unique Coat = orange
+        if h.Mismatched then Dot(Color3.fromRGB(60, 175, 255), 3); anyTrait = true end    -- Mismatched Hair = blue
+        if h.NaturalDyed then Dot(Color3.fromRGB(70, 230, 90), 4); anyTrait = true end    -- Natural Dyed Hair = green
+        if h.Horned then Dot(Color3.fromRGB(185, 80, 255), 5); anyTrait = true end        -- Horned = purple
+        if not anyTrait then Dot(Color3.fromRGB(150, 155, 165), 6) end                     -- Normal = grey
+
         local isl = Instance.new("TextLabel")
         isl.BackgroundTransparency = 1
         isl.Position = UDim2.fromOffset(8, 15)
@@ -2789,7 +2824,7 @@ do
         isl.TextSize = 9
         isl.TextColor3 = Color3.fromRGB(150, 155, 165)
         isl.TextXAlignment = Enum.TextXAlignment.Left
-        isl.Text = tostring(h.Island) .. (tag and ("  |  " .. tag) or "")
+        isl.Text = tostring(h.Island)
         isl.Parent = row
 
         local rar = Instance.new("TextLabel")
