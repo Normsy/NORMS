@@ -1,84 +1,31 @@
---// NORMS DELTA SAFE LOADER
--- Creates a visible diagnostic panel BEFORE loading the main script.
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-if not player then return end
 
-local pg = player:FindFirstChildOfClass("PlayerGui") or player:WaitForChild("PlayerGui", 15)
-if not pg then return end
-
-local old = pg:FindFirstChild("NORMS_BOOT")
-if old then old:Destroy() end
-
-local boot = Instance.new("ScreenGui")
-boot.Name = "NORMS_BOOT"
-boot.ResetOnSpawn = false
-boot.IgnoreGuiInset = true
-boot.DisplayOrder = 999999
-boot.Parent = pg
-
-local box = Instance.new("Frame")
-box.Size = UDim2.fromOffset(360, 110)
-box.Position = UDim2.new(0.5, -180, 0.5, -55)
-box.BackgroundColor3 = Color3.fromRGB(18,18,26)
-box.BorderSizePixel = 0
-box.Parent = boot
-Instance.new("UICorner", box).CornerRadius = UDim.new(0,8)
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1,-20,0,26)
-title.Position = UDim2.fromOffset(10,8)
-title.BackgroundTransparency = 1
-title.Text = "NORMS • DELTA STARTUP"
-title.TextColor3 = Color3.fromRGB(255,255,255)
-title.TextSize = 14
-title.Font = Enum.Font.GothamBold
-title.Parent = box
-
-local status = Instance.new("TextLabel")
-status.Size = UDim2.new(1,-20,0,55)
-status.Position = UDim2.fromOffset(10,40)
-status.BackgroundTransparency = 1
-status.TextWrapped = true
-status.Text = "Loader started..."
-status.TextColor3 = Color3.fromRGB(180,220,255)
-status.TextSize = 11
-status.Font = Enum.Font.Gotham
-status.Parent = box
-
-local source = [[=[
---// THIS IS PH
---// THIS IS PH
-
---// DELTA-SAFE REMOTE SETUP
--- Do not block the entire script if Communication is not ready yet.
+--// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Communication = ReplicatedStorage:FindFirstChild("Communication")
-local Functions = Communication and Communication:FindFirstChild("Functions")
-local Events = Communication and Communication:FindFirstChild("Events")
+local Communication = ReplicatedStorage:WaitForChild("Communication")
+local Functions = Communication:WaitForChild("Functions")
+local Events = Communication:WaitForChild("Events")
 
 local functionIndex = 0
+for _, obj in ipairs(Functions:GetChildren()) do
+    if obj:IsA("RemoteFunction") and obj.Name == "" then
+        functionIndex += 1
+        obj.Name = "Function" .. functionIndex
+    end
+end
+
 local eventIndex = 0
-
-if Functions then
-    for _, obj in ipairs(Functions:GetChildren()) do
-        if obj:IsA("RemoteFunction") and obj.Name == "" then
-            functionIndex += 1
-            obj.Name = "Function" .. functionIndex
-        end
+for _, obj in ipairs(Events:GetChildren()) do
+    if obj:IsA("RemoteEvent") and obj.Name == "" then
+        eventIndex += 1
+        obj.Name = "Event" .. eventIndex
     end
 end
 
-if Events then
-    for _, obj in ipairs(Events:GetChildren()) do
-        if obj:IsA("RemoteEvent") and obj.Name == "" then
-            eventIndex += 1
-            obj.Name = "Event" .. eventIndex
-        end
-    end
-end
-
-print("[NORMS] Startup complete. Functions:", functionIndex, "Events:", eventIndex)
+print("================================")
+print("REMOTE RENAME COMPLETE")
+print("Functions renamed:", functionIndex)
+print("Events renamed:", eventIndex)
+print("================================")
 
 --// NORMS TRACKER: TWEEN TELEPORT, UNLIMITED ANCHOR & REFINED DETECTION
 local Players = game:GetService("Players")
@@ -320,11 +267,7 @@ local function DisableNoClip(char)
 end
 
 --// UI CREATION
--- Prefer PlayerGui in Delta. Fall back to CoreGui only if PlayerGui is unavailable.
-local guiParent = LocalPlayer:FindFirstChildOfClass("PlayerGui") or LocalPlayer:WaitForChild("PlayerGui", 10)
-if not guiParent then
-    guiParent = game:GetService("CoreGui")
-end
+local guiParent = pcall(function() return game:GetService("CoreGui") end) and game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
 if guiParent:FindFirstChild("HorseTrackerUI") then
     guiParent.HorseTrackerUI:Destroy()
 end
@@ -407,7 +350,7 @@ TabBar.Parent = Frame
 
 local MainTabBtn = Instance.new("TextButton")
 MainTabBtn.Name = "MainTabBtn"
-MainTabBtn.Size = UDim2.new(0.333333, -3, 1, 0)
+MainTabBtn.Size = UDim2.new(1/3, -3, 1, 0)
 MainTabBtn.Position = UDim2.new(0, 0, 0, 0)
 MainTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
 MainTabBtn.BorderSizePixel = 0
@@ -421,26 +364,10 @@ local MainTabCorner = Instance.new("UICorner")
 MainTabCorner.CornerRadius = UDim.new(0, 4)
 MainTabCorner.Parent = MainTabBtn
 
-local SettingTabBtn = Instance.new("TextButton")
-SettingTabBtn.Name = "SettingTabBtn"
-SettingTabBtn.Size = UDim2.new(0.333333, -3, 1, 0)
-SettingTabBtn.Position = UDim2.new(0.333333, 1, 0, 0)
-SettingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-SettingTabBtn.BorderSizePixel = 0
-SettingTabBtn.Text = "Setting"
-SettingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-SettingTabBtn.TextSize = 7
-SettingTabBtn.Font = Enum.Font.GothamBold
-SettingTabBtn.Parent = TabBar
-
-local SettingTabCorner = Instance.new("UICorner")
-SettingTabCorner.CornerRadius = UDim.new(0, 4)
-SettingTabCorner.Parent = SettingTabBtn
-
 local SellingTabBtn = Instance.new("TextButton")
 SellingTabBtn.Name = "SellingTabBtn"
-SellingTabBtn.Size = UDim2.new(0.333333, -3, 1, 0)
-SellingTabBtn.Position = UDim2.new(0.666666, 2, 0, 0)
+SellingTabBtn.Size = UDim2.new(1/3, -3, 1, 0)
+SellingTabBtn.Position = UDim2.new(1/3, 1, 0, 0)
 SellingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
 SellingTabBtn.BorderSizePixel = 0
 SellingTabBtn.Text = "Selling"
@@ -452,6 +379,22 @@ SellingTabBtn.Parent = TabBar
 local SellingTabCorner = Instance.new("UICorner")
 SellingTabCorner.CornerRadius = UDim.new(0, 4)
 SellingTabCorner.Parent = SellingTabBtn
+
+local SettingTabBtn = Instance.new("TextButton")
+SettingTabBtn.Name = "SettingTabBtn"
+SettingTabBtn.Size = UDim2.new(1/3, -3, 1, 0)
+SettingTabBtn.Position = UDim2.new(2/3, 2, 0, 0)
+SettingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
+SettingTabBtn.BorderSizePixel = 0
+SettingTabBtn.Text = "Setting"
+SettingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
+SettingTabBtn.TextSize = 7
+SettingTabBtn.Font = Enum.Font.GothamBold
+SettingTabBtn.Parent = TabBar
+
+local SettingTabCorner = Instance.new("UICorner")
+SettingTabCorner.CornerRadius = UDim.new(0, 4)
+SettingTabCorner.Parent = SettingTabBtn
 
 local LeftPanel = Instance.new("ScrollingFrame")
 LeftPanel.Name = "LeftPanel"
@@ -1021,6 +964,1122 @@ end)
 
 SettingsPanel.Parent = RightPanel
 
+
+--==================================================
+-- SELLING TAB - INVENTORY CORE
+-- Based on Selling.(1).txt. Inventory is loaded only when the tab is used.
+--==================================================
+local References = nil
+local Data = nil
+local Inventory = {}
+local HorseList = {}
+local SellingInitialized = false
+local SelectedSellFilter = "All"
+local SellRemote = nil
+
+--==================================================
+-- BREED KEYWORDS
+--==================================================
+
+local BreedDisplayNames = {
+
+    ["akhal teke"] = "Akhal-Teke Horse",
+    ["akhal-teke"] = "Akhal-Teke Horse",
+
+    ["andalusian"] = "Andalusian Horse",
+    ["appaloosa"] = "Appaloosa Horse",
+    ["arabian"] = "Arabian Horse",
+    ["clydesdale"] = "Clydesdale Horse",
+    ["connemara"] = "Connemara Horse",
+
+    ["dutch warmblood"] = "Dutch Warmblood",
+
+    ["fjord"] = "Fjord Horse",
+    ["friesian"] = "Friesian Horse",
+    ["hinny"] = "Hinny",
+    ["icelandic"] = "Icelandic Horse",
+
+    ["mammoth donkey"] = "Mammoth Donkey",
+
+    ["marwari"] = "Marwari Horse",
+    ["morgan"] = "Morgan Horse",
+    ["mule"] = "Mule",
+    ["mustang"] = "Mustang Horse",
+
+    ["paint horse"] = "Paint Horse",
+
+    ["percheron"] = "Percheron Horse",
+
+    ["quarter horse"] = "Quarter Horse",
+
+    ["reindeer"] = "Reindeer",
+
+    ["shire"] = "Shire Horse",
+
+    ["standard donkey"] = "Standard Donkey",
+
+    ["standardbred"] = "Standardbred Horse",
+
+    ["tennessee walking horse"] =
+        "Tennessee Walking Horse",
+
+    ["thoroughbred"] =
+        "Thoroughbred Horse",
+
+    ["welsh cob"] =
+        "Welsh Cob",
+
+    ["unicorn"] =
+        "Unicorn",
+
+    ["donkey"] =
+        "Donkey"
+}
+
+--==================================================
+-- KEYWORDS
+-- Longest / most specific first
+--==================================================
+
+local BreedKeywords = {
+
+    "tennessee walking horse",
+
+    "dutch warmblood",
+
+    "mammoth donkey",
+
+    "standard donkey",
+
+    "paint horse",
+
+    "quarter horse",
+
+    "akhal-teke",
+    "akhal teke",
+
+    "andalusian",
+    "appaloosa",
+    "arabian",
+    "clydesdale",
+    "connemara",
+    "fjord",
+    "friesian",
+    "hinny",
+    "icelandic",
+    "marwari",
+    "morgan",
+    "mule",
+    "mustang",
+    "percheron",
+    "reindeer",
+    "shire",
+    "standardbred",
+    "thoroughbred",
+    "welsh cob",
+    "unicorn",
+    "donkey"
+}
+
+--==================================================
+-- NORMALIZE TEXT
+--==================================================
+
+local function NormalizeText(value)
+
+    if value == nil then
+        return ""
+    end
+
+    local text = tostring(value):lower()
+
+    text = text:gsub(
+        "_",
+        " "
+    )
+
+    text = text:gsub(
+        "-",
+        " "
+    )
+
+    text = text:gsub(
+        "%s+",
+        " "
+    )
+
+    return text:match(
+        "^%s*(.-)%s*$"
+    )
+end
+
+--==================================================
+-- FIND BREED KEYWORD
+--==================================================
+
+local function FindBreedKeyword(value)
+
+    if value == nil then
+        return nil
+    end
+
+    local text =
+        NormalizeText(value)
+
+    if text == "" then
+        return nil
+    end
+
+    for _, keyword in ipairs(
+        BreedKeywords
+    ) do
+
+        local normalizedKeyword =
+            NormalizeText(keyword)
+
+        if text == normalizedKeyword then
+
+            return BreedDisplayNames[keyword]
+
+        end
+
+        if text:find(
+            normalizedKeyword,
+            1,
+            true
+        ) then
+
+            return BreedDisplayNames[keyword]
+
+        end
+
+    end
+
+    return nil
+end
+
+--==================================================
+-- BREED FIELD NAMES
+--==================================================
+
+local BreedFields = {
+
+    "breed",
+    "Breed",
+
+    "breedName",
+    "BreedName",
+
+    "horseBreed",
+    "HorseBreed",
+
+    "breedType",
+    "BreedType",
+
+    "horseType",
+    "HorseType",
+
+    "animalType",
+    "AnimalType",
+
+    "species",
+    "Species",
+
+    "type",
+    "Type",
+
+    "name",
+    "Name",
+
+    "itemName",
+    "ItemName",
+
+    "displayName",
+    "DisplayName",
+
+    "Display",
+    "display"
+}
+
+--==================================================
+-- SEARCH TABLE FOR BREED
+--==================================================
+
+local function SearchBreedData(
+    tbl,
+    depth,
+    visited
+)
+
+    if type(tbl) ~= "table" then
+        return nil
+    end
+
+    depth = depth or 0
+    visited = visited or {}
+
+    if depth > 10 then
+        return nil
+    end
+
+    if visited[tbl] then
+        return nil
+    end
+
+    visited[tbl] = true
+
+    --==============================================
+    -- CHECK EXPLICIT BREED FIELDS FIRST
+    --==============================================
+
+    for _, field in ipairs(
+        BreedFields
+    ) do
+
+        local value =
+            tbl[field]
+
+        if value ~= nil then
+
+            local breed =
+                FindBreedKeyword(value)
+
+            if breed then
+                return breed
+            end
+
+        end
+
+    end
+
+    --==============================================
+    -- SEARCH ALL NESTED DATA
+    --==============================================
+
+    for key, value in pairs(tbl) do
+
+        if type(value) == "table" then
+
+            local breed =
+                SearchBreedData(
+                    value,
+                    depth + 1,
+                    visited
+                )
+
+            if breed then
+                return breed
+            end
+
+        elseif type(value) == "string" then
+
+            local normalizedKey =
+                NormalizeText(key)
+
+            local relevant =
+                normalizedKey:find(
+                    "breed",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "horse",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "animal",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "species",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "type",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "name",
+                    1,
+                    true
+                )
+
+                or normalizedKey:find(
+                    "item",
+                    1,
+                    true
+                )
+
+            if relevant then
+
+                local breed =
+                    FindBreedKeyword(value)
+
+                if breed then
+                    return breed
+                end
+
+            end
+
+        end
+
+    end
+
+    return nil
+end
+
+--==================================================
+-- GET ITEM INFO
+--==================================================
+
+local function GetItemInfo(item)
+
+    if type(item) ~= "table" then
+        return nil
+    end
+
+    if not References
+        or not References.Items then
+
+        return nil
+    end
+
+    local itemId =
+        item.id
+        or item.ID
+        or item.Id
+
+    if not itemId then
+        return nil
+    end
+
+    local ok, result =
+        pcall(function()
+
+            return References.Items.GetInfo(
+                itemId
+            )
+
+        end)
+
+    if ok and type(result) == "table" then
+        return result
+    end
+
+    return nil
+end
+
+--==================================================
+-- GET BREED
+--==================================================
+
+local function GetBreed(
+    item,
+    info
+)
+
+    -- Search inventory item
+    local breed =
+        SearchBreedData(item)
+
+    if breed then
+        return breed
+    end
+
+    -- Search item definition
+    breed =
+        SearchBreedData(info)
+
+    if breed then
+        return breed
+    end
+
+    --==============================================
+    -- pId LOOKUP
+    --==============================================
+
+    local pId
+
+    if type(item) == "table" then
+
+        pId =
+            item.pId
+            or item.PId
+            or item.pid
+
+    end
+
+    if type(info) == "table" then
+
+        pId =
+            pId
+            or info.pId
+            or info.PId
+            or info.pid
+
+    end
+
+    if pId
+        and References
+        and References.Items
+        and type(
+            References.Items.GetInfo
+        ) == "function" then
+
+        local ok, result =
+            pcall(function()
+
+                return References.Items.GetInfo(
+                    pId
+                )
+
+            end)
+
+        if ok and type(result) == "table" then
+
+            breed =
+                SearchBreedData(result)
+
+            if breed then
+                return breed
+            end
+
+        end
+
+    end
+
+    return nil
+end
+
+--==================================================
+-- CHECK IF INVENTORY ENTRY IS A PROFILE
+--==================================================
+
+local function IsBreedProfile(
+    item,
+    info
+)
+
+    local breed =
+        GetBreed(
+            item,
+            info
+        )
+
+    if breed then
+        return true, breed
+    end
+
+    return false, nil
+end
+
+--==================================================
+-- GET COLOURS
+--==================================================
+
+local function GetColours(item)
+
+    if type(item) ~= "table" then
+
+        return
+            "Unknown",
+            "Unknown",
+            "Unknown"
+
+    end
+
+    local variants =
+        item.variants
+        or item.Variants
+
+    if type(variants) ~= "table" then
+
+        return
+            "Unknown",
+            "Unknown",
+            "Unknown"
+
+    end
+
+    local mainColour =
+        variants.colour
+        or variants.mainColour
+        or variants.MainColour
+
+    local maneColour =
+        variants.maneColour
+        or variants.ManeColour
+
+    local tailColour =
+        variants.tailColour
+        or variants.TailColour
+
+    return
+        mainColour or "Unknown",
+        maneColour or "Unknown",
+        tailColour or "Unknown"
+end
+
+-- Compare Mane and Tail only. Main Colour is intentionally NOT part of mismatch detection.
+-- This prevents identical colour tables/values from being marked blue
+-- just because tostring(table) produces different memory addresses.
+local function ColoursMatch(a, b)
+
+    if a == b then
+        return true
+    end
+
+    if type(a) == "table" and type(b) == "table" then
+
+        local function NormalizeTable(t)
+            local keys = {}
+
+            for k in pairs(t) do
+                table.insert(keys, k)
+            end
+
+            table.sort(keys, function(x, y)
+                return tostring(x) < tostring(y)
+            end)
+
+            local parts = {}
+
+            for _, k in ipairs(keys) do
+                local v = t[k]
+
+                if type(v) == "table" then
+                    v = NormalizeTable(v)
+                end
+
+                table.insert(parts, tostring(k) .. "=" .. tostring(v))
+            end
+
+            return "{" .. table.concat(parts, ";") .. "}"
+        end
+
+        return NormalizeTable(a) == NormalizeTable(b)
+    end
+
+    local function NormalizeColour(value)
+        return tostring(value or "")
+            :lower()
+            :gsub("^%s+", "")
+            :gsub("%s+$", "")
+    end
+
+    return NormalizeColour(a) == NormalizeColour(b)
+end
+
+--==================================================
+-- UNIQUE HAIR
+--==================================================
+
+local UniqueHair = {
+    iceyblack=true, iceyblue=true, iceypink=true, iceywhite=true,
+    winterstreaks=true, leafy=true, flowery=true, pearly=true, pearlygreen=true,
+    pastelstreaks=true, clearquartz=true, leathery=true, pearlypink=true, cowprint=true,
+    royalstreaks=true, ruby=true, limestone=true, sandstone=true, pearlyred=true, zebra=true,
+    dustyfade=true, iceygreen=true, glacierblue=true, glaciergreen=true, glacierpink=true,
+    snowyglacierfade=true, sapphire=true, diamond=true, pearlyorange=true, pinkcowprint=true,
+    sunrisestreaks=true, topaz=true, emerald=true, amethyst=true, mossy=true, tigerstripes=true,
+    jaguarspots=true, moonstone=true, neonpurple=true, neonblue=true, obsidian=true,
+    pearlyblue=true, deepspace=true, prismatic=true, volcanicorange=true, volcanicblack=true,
+    pearlyblack=true, crackedlavafade=true, blessed=true, pearlypurple=true, sandy=true,
+    pearlygold=true, clearseaglass=true
+}
+
+local function NormalizeUniqueHair(value)
+    return tostring(value or ""):lower():gsub("[%s_%-]", "")
+end
+
+local function IsUniqueHair(value)
+    return UniqueHair[NormalizeUniqueHair(value)] == true
+end
+
+local OrangeMainColours = {
+    blowingSnow=true, motherOfPearl=true, royalDun=true, dustyBrindle=true,
+    glacierChimera=true, mountainSunrise=true, jaguar=true, deepSpace=true, crackedLava=true
+}
+
+local function IsOrangeMainColour(mainColour)
+    local key = tostring(mainColour or ""):gsub("%s+", "")
+    return OrangeMainColours[key] == true
+end
+
+
+--==================================================
+-- SELLING TAB UI
+--==================================================
+local SellingPanel = Instance.new("Frame")
+SellingPanel.Name = "SellingPanel"
+SellingPanel.Size = UDim2.new(1, 0, 1, -20)
+SellingPanel.Position = UDim2.new(0, 0, 0, 20)
+SellingPanel.BackgroundTransparency = 1
+SellingPanel.Visible = false
+SellingPanel.Parent = RightPanel
+
+local SellingTitle = Instance.new("TextLabel")
+SellingTitle.Size = UDim2.new(1, -8, 0, 14)
+SellingTitle.Position = UDim2.new(0, 4, 0, 0)
+SellingTitle.BackgroundTransparency = 1
+SellingTitle.Text = "HORSE SELLER"
+SellingTitle.TextColor3 = Color3.fromRGB(57, 255, 20)
+SellingTitle.TextSize = 7
+SellingTitle.Font = Enum.Font.GothamBold
+SellingTitle.TextXAlignment = Enum.TextXAlignment.Left
+SellingTitle.Parent = SellingPanel
+
+local SellingRemoteBox = Instance.new("TextBox")
+SellingRemoteBox.Size = UDim2.new(0.50, -4, 0, 22)
+SellingRemoteBox.Position = UDim2.new(0, 4, 0, 16)
+SellingRemoteBox.BackgroundColor3 = Color3.fromRGB(23, 23, 31)
+SellingRemoteBox.BorderSizePixel = 0
+SellingRemoteBox.PlaceholderText = "Sell Remote (Auto Find)"
+SellingRemoteBox.Text = ""
+SellingRemoteBox.TextColor3 = Color3.fromRGB(235,235,240)
+SellingRemoteBox.TextSize = 6
+SellingRemoteBox.Font = Enum.Font.Gotham
+SellingRemoteBox.ClearTextOnFocus = false
+SellingRemoteBox.Parent = SellingPanel
+local SellingRemoteCorner = Instance.new("UICorner")
+SellingRemoteCorner.CornerRadius = UDim.new(0, 5)
+SellingRemoteCorner.Parent = SellingRemoteBox
+local SellingRemotePad = Instance.new("UIPadding")
+SellingRemotePad.PaddingLeft = UDim.new(0, 6)
+SellingRemotePad.Parent = SellingRemoteBox
+
+local AutoFindRemoteBtn = Instance.new("TextButton")
+AutoFindRemoteBtn.Size = UDim2.new(0.50, -4, 0, 22)
+AutoFindRemoteBtn.Position = UDim2.new(0.50, 0, 0, 16)
+AutoFindRemoteBtn.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
+AutoFindRemoteBtn.BorderSizePixel = 0
+AutoFindRemoteBtn.Text = "AUTO FIND REMOTE"
+AutoFindRemoteBtn.TextColor3 = Color3.fromRGB(255,255,255)
+AutoFindRemoteBtn.TextSize = 6
+AutoFindRemoteBtn.Font = Enum.Font.GothamBold
+AutoFindRemoteBtn.Parent = SellingPanel
+local AutoFindRemoteCorner = Instance.new("UICorner")
+AutoFindRemoteCorner.CornerRadius = UDim.new(0, 5)
+AutoFindRemoteCorner.Parent = AutoFindRemoteBtn
+
+local SellFilterBtn = Instance.new("TextButton")
+SellFilterBtn.Size = UDim2.new(0.58, -4, 0, 22)
+SellFilterBtn.Position = UDim2.new(0, 4, 0, 42)
+SellFilterBtn.BackgroundColor3 = Color3.fromRGB(23,23,31)
+SellFilterBtn.BorderSizePixel = 0
+SellFilterBtn.Text = "Filter: All"
+SellFilterBtn.TextColor3 = Color3.fromRGB(235,235,240)
+SellFilterBtn.TextSize = 6
+SellFilterBtn.Font = Enum.Font.GothamBold
+SellFilterBtn.Parent = SellingPanel
+local SellFilterCorner = Instance.new("UICorner")
+SellFilterCorner.CornerRadius = UDim.new(0,5)
+SellFilterCorner.Parent = SellFilterBtn
+
+local RefreshSellBtn = Instance.new("TextButton")
+RefreshSellBtn.Size = UDim2.new(0.21, -3, 0, 22)
+RefreshSellBtn.Position = UDim2.new(0.58, 0, 0, 42)
+RefreshSellBtn.BackgroundColor3 = Color3.fromRGB(55,120,75)
+RefreshSellBtn.BorderSizePixel = 0
+RefreshSellBtn.Text = "REFRESH"
+RefreshSellBtn.TextColor3 = Color3.fromRGB(255,255,255)
+RefreshSellBtn.TextSize = 5
+RefreshSellBtn.Font = Enum.Font.GothamBold
+RefreshSellBtn.Parent = SellingPanel
+local RefreshSellCorner = Instance.new("UICorner")
+RefreshSellCorner.CornerRadius = UDim.new(0,5)
+RefreshSellCorner.Parent = RefreshSellBtn
+
+local SellFilteredBtn = Instance.new("TextButton")
+SellFilteredBtn.Size = UDim2.new(0.21, -3, 0, 22)
+SellFilteredBtn.Position = UDim2.new(0.79, 0, 0, 42)
+SellFilteredBtn.BackgroundColor3 = Color3.fromRGB(125,35,40)
+SellFilteredBtn.BorderSizePixel = 0
+SellFilteredBtn.Text = "SELL"
+SellFilteredBtn.TextColor3 = Color3.fromRGB(255,255,255)
+SellFilteredBtn.TextSize = 6
+SellFilteredBtn.Font = Enum.Font.GothamBold
+SellFilteredBtn.Parent = SellingPanel
+local SellFilteredCorner = Instance.new("UICorner")
+SellFilteredCorner.CornerRadius = UDim.new(0,5)
+SellFilteredCorner.Parent = SellFilteredBtn
+
+local SellFilterList = Instance.new("Frame")
+SellFilterList.Size = UDim2.new(0.58, -4, 0, 126)
+SellFilterList.Position = UDim2.new(0, 4, 0, 65)
+SellFilterList.BackgroundColor3 = Color3.fromRGB(20,20,27)
+SellFilterList.BorderSizePixel = 0
+SellFilterList.Visible = false
+SellFilterList.ZIndex = 50
+SellFilterList.Parent = SellingPanel
+local SellFilterListCorner = Instance.new("UICorner")
+SellFilterListCorner.CornerRadius = UDim.new(0,5)
+SellFilterListCorner.Parent = SellFilterList
+local SellFilterLayout = Instance.new("UIListLayout")
+SellFilterLayout.SortOrder = Enum.SortOrder.LayoutOrder
+SellFilterLayout.Parent = SellFilterList
+
+local SellStatus = Instance.new("TextLabel")
+SellStatus.Size = UDim2.new(1, -8, 0, 12)
+SellStatus.Position = UDim2.new(0, 4, 0, 68)
+SellStatus.BackgroundTransparency = 1
+SellStatus.Text = "Inventory not loaded."
+SellStatus.TextColor3 = Color3.fromRGB(148,163,184)
+SellStatus.TextSize = 5
+SellStatus.Font = Enum.Font.GothamSemibold
+SellStatus.TextXAlignment = Enum.TextXAlignment.Left
+SellStatus.Parent = SellingPanel
+
+local SellResults = Instance.new("ScrollingFrame")
+SellResults.Name = "SellResults"
+SellResults.Size = UDim2.new(1, -8, 1, -104)
+SellResults.Position = UDim2.new(0, 4, 0, 84)
+SellResults.BackgroundTransparency = 1
+SellResults.BorderSizePixel = 0
+SellResults.ScrollBarThickness = 2
+SellResults.ScrollBarImageColor3 = Color3.fromRGB(57,255,20)
+SellResults.CanvasSize = UDim2.new(0,0,0,0)
+SellResults.Parent = SellingPanel
+local SellGrid = Instance.new("UIGridLayout")
+SellGrid.CellSize = UDim2.fromOffset(102, 58)
+SellGrid.CellPadding = UDim2.fromOffset(4,4)
+SellGrid.SortOrder = Enum.SortOrder.LayoutOrder
+SellGrid.Parent = SellResults
+SellGrid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    SellResults.CanvasSize = UDim2.new(0,0,0,SellGrid.AbsoluteContentSize.Y + 4)
+end)
+
+local SellSearch = Instance.new("TextBox")
+SellSearch.Size = UDim2.new(0.50, -4, 0, 18)
+SellSearch.Position = UDim2.new(0, 4, 1, -20)
+SellSearch.BackgroundColor3 = Color3.fromRGB(23,23,31)
+SellSearch.BorderSizePixel = 0
+SellSearch.PlaceholderText = "Search breed / UID"
+SellSearch.Text = ""
+SellSearch.TextColor3 = Color3.fromRGB(235,235,240)
+SellSearch.TextSize = 5
+SellSearch.Font = Enum.Font.Gotham
+SellSearch.ClearTextOnFocus = false
+SellSearch.Parent = SellingPanel
+local SellSearchCorner = Instance.new("UICorner")
+SellSearchCorner.CornerRadius = UDim.new(0,4)
+SellSearchCorner.Parent = SellSearch
+local SellSearchPad = Instance.new("UIPadding")
+SellSearchPad.PaddingLeft = UDim.new(0,5)
+SellSearchPad.Parent = SellSearch
+
+local SellCount = Instance.new("TextLabel")
+SellCount.Size = UDim2.new(0.50, -4, 0, 18)
+SellCount.Position = UDim2.new(0.50, 0, 1, -20)
+SellCount.BackgroundTransparency = 1
+SellCount.Text = "0 horses"
+SellCount.TextColor3 = Color3.fromRGB(120,130,150)
+SellCount.TextSize = 5
+SellCount.Font = Enum.Font.GothamBold
+SellCount.TextXAlignment = Enum.TextXAlignment.Right
+SellCount.Parent = SellingPanel
+
+local SellFilterOptions = {
+    {"All", Color3.fromRGB(235,235,240)},
+    {"Red - Unique Hair", Color3.fromRGB(255,70,70)},
+    {"Orange - Special Main Colour", Color3.fromRGB(255,170,60)},
+    {"Blue - Mismatched Hair", Color3.fromRGB(80,150,255)},
+    {"Green - Nat Dyed", Color3.fromRGB(80,220,120)},
+    {"Purple - Horn Colour", Color3.fromRGB(180,100,255)},
+    {"Grey - Normal", Color3.fromRGB(170,175,185)}
+}
+
+for i,opt in ipairs(SellFilterOptions) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(1,0,0,18)
+    b.BackgroundColor3 = Color3.fromRGB(25,25,33)
+    b.BorderSizePixel = 0
+    b.Text = opt[1]
+    b.TextColor3 = opt[2]
+    b.TextSize = 5
+    b.Font = Enum.Font.GothamBold
+    b.TextXAlignment = Enum.TextXAlignment.Left
+    b.ZIndex = 51
+    b.LayoutOrder = i
+    b.Parent = SellFilterList
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0,6)
+    pad.Parent = b
+    b.MouseButton1Click:Connect(function()
+        SelectedSellFilter = opt[1]
+        SellFilterBtn.Text = "Filter: " .. SelectedSellFilter
+        SellFilterList.Visible = false
+        if SellingInitialized then
+            -- refresh display only
+            local search = SellSearch.Text:lower()
+            for _,child in ipairs(SellResults:GetChildren()) do
+                if child:IsA("Frame") then child:Destroy() end
+            end
+            local shown = 0
+            for _,horse in ipairs(HorseList) do
+                local breed = horse.breed or "Unknown"
+                local searchable = tostring(horse.uid) .. " " .. tostring(breed)
+                if (search == "" or searchable:lower():find(search,1,true)) and MatchesSelectedFilter(horse) then
+                    shown += 1
+                    local card = Instance.new("Frame")
+                    card.Size = UDim2.fromOffset(102,58)
+                    card.BackgroundColor3 = Color3.fromRGB(24,24,32)
+                    card.BorderSizePixel = 0
+                    card.LayoutOrder = shown
+                    card.Parent = SellResults
+                    local cc=Instance.new("UICorner"); cc.CornerRadius=UDim.new(0,5); cc.Parent=card
+                    local name=Instance.new("TextLabel")
+                    name.Size=UDim2.new(1,-8,0,16); name.Position=UDim2.fromOffset(4,4); name.BackgroundTransparency=1
+                    name.Text=breed; name.TextColor3=Color3.fromRGB(235,235,240); name.TextSize=5; name.Font=Enum.Font.GothamBold
+                    name.TextXAlignment=Enum.TextXAlignment.Left; name.TextTruncate=Enum.TextTruncate.AtEnd; name.Parent=card
+                    local uid=Instance.new("TextLabel")
+                    uid.Size=UDim2.new(1,-8,0,12); uid.Position=UDim2.fromOffset(4,22); uid.BackgroundTransparency=1
+                    uid.Text="UID: "..tostring(horse.uid); uid.TextColor3=Color3.fromRGB(105,115,135); uid.TextSize=4; uid.Font=Enum.Font.Gotham
+                    uid.TextXAlignment=Enum.TextXAlignment.Left; uid.TextTruncate=Enum.TextTruncate.AtEnd; uid.Parent=card
+                    local cat=Instance.new("TextLabel")
+                    cat.Size=UDim2.new(1,-8,0,12); cat.Position=UDim2.fromOffset(4,37); cat.BackgroundTransparency=1
+                    cat.Text=SelectedSellFilter; cat.TextColor3=opt[2]; cat.TextSize=4; cat.Font=Enum.Font.GothamBold
+                    cat.TextXAlignment=Enum.TextXAlignment.Left; cat.TextTruncate=Enum.TextTruncate.AtEnd; cat.Parent=card
+                end
+            end
+            SellStatus.Text = "Showing "..tostring(shown).." / "..tostring(#HorseList)
+            SellCount.Text = tostring(shown) .. " horses"
+        end
+    end)
+end
+
+local function GetSellingHorseStats(horse)
+    local mainColour,maneColour,tailColour=GetColours(horse.item)
+    local variants=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(maneColour) or IsUniqueHair(tailColour)
+    local orange=IsOrangeMainColour(mainColour)
+    local mismatch=not ColoursMatch(maneColour,tailColour)
+    local natdyed=horse.item.isNatDyed ~= nil
+    local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    local priority=0
+    if unique then priority=5 elseif orange then priority=4 elseif mismatch then priority=3 elseif natdyed then priority=2 elseif horn then priority=1 end
+    local count=0
+    if unique then count+=1 end; if orange then count+=1 end; if mismatch then count+=1 end; if natdyed then count+=1 end; if horn then count+=1 end
+    return priority,count
+end
+
+local function SortHorseList()
+    table.sort(HorseList,function(a,b)
+        local pa,ca=GetSellingHorseStats(a); local pb,cb=GetSellingHorseStats(b)
+        if pa~=pb then return pa>pb end
+        if ca~=cb then return ca>cb end
+        local na=tostring(a.breed or ""):lower(); local nb=tostring(b.breed or ""):lower()
+        if na~=nb then return na<nb end
+        return tostring(a.uid)<tostring(b.uid)
+    end)
+end
+
+local function MatchesSelectedFilter(horse)
+    if SelectedSellFilter=="All" then return true end
+    local main,mane,tail=GetColours(horse.item)
+    local variants=horse.item.variants or horse.item.Variants or {}
+    local unique=IsUniqueHair(mane) or IsUniqueHair(tail)
+    local orange=IsOrangeMainColour(main)
+    local mismatch=not ColoursMatch(mane,tail)
+    local natdyed=horse.item.isNatDyed ~= nil
+    local horn=variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    if SelectedSellFilter=="Red - Unique Hair" then return unique end
+    if SelectedSellFilter=="Orange - Special Main Colour" then return orange end
+    if SelectedSellFilter=="Blue - Mismatched Hair" then return mismatch end
+    if SelectedSellFilter=="Green - Nat Dyed" then return natdyed end
+    if SelectedSellFilter=="Purple - Horn Colour" then return horn end
+    if SelectedSellFilter=="Grey - Normal" then return not unique and not orange and not mismatch and not natdyed and not horn end
+    return false
+end
+
+local function RenderSellingList()
+    for _,child in ipairs(SellResults:GetChildren()) do
+        if child:IsA("Frame") then child:Destroy() end
+    end
+    local search = SellSearch.Text:lower()
+    local shown = 0
+    for _,horse in ipairs(HorseList) do
+        local breed = horse.breed or "Unknown"
+        local searchable = tostring(horse.uid) .. " " .. tostring(breed)
+        if (search == "" or searchable:lower():find(search,1,true)) and MatchesSelectedFilter(horse) then
+            shown += 1
+            local card = Instance.new("Frame")
+            card.Size = UDim2.fromOffset(102,58)
+            card.BackgroundColor3 = Color3.fromRGB(24,24,32)
+            card.BorderSizePixel = 0
+            card.LayoutOrder = shown
+            card.Parent = SellResults
+            local cc=Instance.new("UICorner"); cc.CornerRadius=UDim.new(0,5); cc.Parent=card
+            local name=Instance.new("TextLabel")
+            name.Size=UDim2.new(1,-8,0,16); name.Position=UDim2.fromOffset(4,4); name.BackgroundTransparency=1
+            name.Text=breed; name.TextColor3=Color3.fromRGB(235,235,240); name.TextSize=5; name.Font=Enum.Font.GothamBold
+            name.TextXAlignment=Enum.TextXAlignment.Left; name.TextTruncate=Enum.TextTruncate.AtEnd; name.Parent=card
+            local uid=Instance.new("TextLabel")
+            uid.Size=UDim2.new(1,-8,0,12); uid.Position=UDim2.fromOffset(4,22); uid.BackgroundTransparency=1
+            uid.Text="UID: "..tostring(horse.uid); uid.TextColor3=Color3.fromRGB(105,115,135); uid.TextSize=4; uid.Font=Enum.Font.Gotham
+            uid.TextXAlignment=Enum.TextXAlignment.Left; uid.TextTruncate=Enum.TextTruncate.AtEnd; uid.Parent=card
+            local cat=Instance.new("TextLabel")
+            cat.Size=UDim2.new(1,-8,0,12); cat.Position=UDim2.fromOffset(4,37); cat.BackgroundTransparency=1
+            cat.Text=SelectedSellFilter; cat.TextColor3=Color3.fromRGB(150,160,180); cat.TextSize=4; cat.Font=Enum.Font.GothamBold
+            cat.TextXAlignment=Enum.TextXAlignment.Left; cat.TextTruncate=Enum.TextTruncate.AtEnd; cat.Parent=card
+        end
+    end
+    SellStatus.Text = "Showing "..tostring(shown).." / "..tostring(#HorseList)
+    SellCount.Text = tostring(shown) .. " horses"
+end
+
+local function LoadSellingInventory()
+    if SellingInitialized then return true end
+    SellStatus.Text = "Loading inventory..."
+    local ok,err = pcall(function()
+        References = require(ReplicatedStorage:WaitForChild("References"))
+        Data = require(References.PlayerScripts.Priority.Data)
+        Inventory = Data.GetLocal({"inventory"})
+    end)
+    if not ok then
+        SellStatus.Text = "Inventory load failed"
+        SellStatus.TextColor3 = Color3.fromRGB(255,110,110)
+        warn("[NORMS SELLING] Inventory load failed:",err)
+        return false
+    end
+    if type(Inventory) ~= "table" then
+        SellStatus.Text = "Inventory is not a table"
+        SellStatus.TextColor3 = Color3.fromRGB(255,110,110)
+        return false
+    end
+    SellingInitialized = true
+    return true
+end
+
+local function ScanSellingInventory()
+    if not SellingInitialized and not LoadSellingInventory() then return end
+    table.clear(HorseList)
+    for uid,item in pairs(Inventory) do
+        if type(item)=="table" then
+            local info = GetItemInfo(item)
+            local isHorse,breed = IsBreedProfile(item,info)
+            if isHorse then
+                table.insert(HorseList,{uid=uid,item=item,info=info,breed=breed})
+            end
+        end
+    end
+    SortHorseList()
+    RenderSellingList()
+end
+
+local function AutoFindSellRemote()
+    local events = ReplicatedStorage:FindFirstChild("Communication")
+    events = events and events:FindFirstChild("Events")
+    if not events then
+        SellStatus.Text = "Communication/Events not found"
+        SellStatus.TextColor3 = Color3.fromRGB(255,110,110)
+        return nil
+    end
+    local best,bestScore
+    for _,obj in ipairs(events:GetChildren()) do
+        if obj:IsA("RemoteEvent") then
+            local n=obj.Name:lower()
+            local score=0
+            if n:find("sell",1,true) then score += 100 end
+            if n:find("item",1,true) then score += 25 end
+            if n:find("inventory",1,true) then score += 25 end
+            if n:find("horse",1,true) then score += 10 end
+            if n:find("shop",1,true) then score += 8 end
+            if n:find("catch",1,true) or n:find("lasso",1,true) or n:find("travel",1,true) then score -= 80 end
+            if score > 0 and (not bestScore or score > bestScore) then best=obj; bestScore=score end
+        end
+    end
+    if best then
+        SellRemote=best
+        SellingRemoteBox.Text=best.Name
+        SellStatus.Text="Auto found remote: "..best.Name
+        SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+        return best
+    end
+    SellStatus.Text="No sell remote name found. Enter it manually."
+    SellStatus.TextColor3=Color3.fromRGB(255,190,100)
+    return nil
+end
+
+SellFilterBtn.MouseButton1Click:Connect(function()
+    SellFilterList.Visible = not SellFilterList.Visible
+end)
+
+AutoFindRemoteBtn.MouseButton1Click:Connect(function()
+    AutoFindRemoteBtn.Text="SEARCHING..."
+    task.spawn(function()
+        AutoFindSellRemote()
+        task.wait(0.8)
+        AutoFindRemoteBtn.Text="AUTO FIND REMOTE"
+    end)
+end)
+
+RefreshSellBtn.MouseButton1Click:Connect(function()
+    RefreshSellBtn.Text="..."
+    task.spawn(function()
+        if LoadSellingInventory() then
+            local ok,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
+            if ok and type(newInv)=="table" then Inventory=newInv end
+            ScanSellingInventory()
+            SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+        end
+        task.wait(0.8)
+        RefreshSellBtn.Text="REFRESH"
+    end)
+end)
+
+SellSearch:GetPropertyChangedSignal("Text"):Connect(function()
+    if SellingInitialized then RenderSellingList() end
+end)
+
+SellFilteredBtn.MouseButton1Click:Connect(function()
+    if not SellingInitialized and not LoadSellingInventory() then return end
+    if not SellRemote or not SellRemote.Parent then
+        SellRemote = AutoFindSellRemote()
+    end
+    if not SellRemote then return end
+    local items={}
+    local count=0
+    for _,horse in ipairs(HorseList) do
+        if MatchesSelectedFilter(horse) then
+            items[tostring(horse.uid)]=1
+            count += 1
+        end
+    end
+    if count==0 then
+        SellStatus.Text="Nothing matches: "..SelectedSellFilter
+        SellStatus.TextColor3=Color3.fromRGB(255,190,100)
+        return
+    end
+    local ok,err=pcall(function()
+        SellRemote:FireServer("SellItems",items)
+    end)
+    if ok then
+        SellStatus.Text="Sold request sent: "..tostring(count).." horse(s)"
+        SellStatus.TextColor3=Color3.fromRGB(100,255,130)
+        task.delay(0.5,function()
+            if SellingInitialized and Data then
+                local ok2,newInv=pcall(function() return Data.GetLocal({"inventory"}) end)
+                if ok2 and type(newInv)=="table" then Inventory=newInv; ScanSellingInventory() end
+            end
+        end)
+    else
+        SellStatus.Text="Sell failed: "..tostring(err)
+        SellStatus.TextColor3=Color3.fromRGB(255,110,110)
+    end
+end)
+
+-- Load the tab only after it is opened, so the working NORMS startup remains unchanged.
+
 local TweenSpeedCard = Instance.new("Frame")
 TweenSpeedCard.Name = "TweenSpeedCard"
 TweenSpeedCard.Size = UDim2.new(1, 0, 0, 24)
@@ -1587,236 +2646,6 @@ SaveTravelBtn.MouseButton1Click:Connect(function()
     end
 end)
 
---// SELLING TAB
-local SellingPanel = Instance.new("Frame")
-SellingPanel.Name = "SellingPanel"
-SellingPanel.Size = UDim2.new(1, -8, 1, -46)
-SellingPanel.Position = UDim2.new(0, 4, 0, 44)
-SellingPanel.BackgroundTransparency = 1
-SellingPanel.Visible = false
-SellingPanel.Parent = Frame
-
-local SellHeader = Instance.new("TextLabel")
-SellHeader.Size = UDim2.new(1, 0, 0, 16)
-SellHeader.BackgroundTransparency = 1
-SellHeader.Text = "SELLING"
-SellHeader.TextColor3 = Color3.fromRGB(57, 255, 20)
-SellHeader.TextSize = 7
-SellHeader.Font = Enum.Font.GothamBold
-SellHeader.TextXAlignment = Enum.TextXAlignment.Left
-SellHeader.Parent = SellingPanel
-
-local SellFilterButton = Instance.new("TextButton")
-SellFilterButton.Size = UDim2.new(0.58, -3, 0, 22)
-SellFilterButton.Position = UDim2.new(0, 0, 0, 20)
-SellFilterButton.BackgroundColor3 = Color3.fromRGB(23, 23, 31)
-SellFilterButton.BorderSizePixel = 0
-SellFilterButton.Text = "Filter: All"
-SellFilterButton.TextColor3 = Color3.fromRGB(235, 235, 240)
-SellFilterButton.TextSize = 6
-SellFilterButton.Font = Enum.Font.GothamBold
-SellFilterButton.Parent = SellingPanel
-local SellFilterCorner = Instance.new("UICorner")
-SellFilterCorner.CornerRadius = UDim.new(0, 5)
-SellFilterCorner.Parent = SellFilterButton
-
-local SellFilterList = Instance.new("Frame")
-SellFilterList.Size = UDim2.new(0.58, -3, 0, 140)
-SellFilterList.Position = UDim2.new(0, 0, 0, 44)
-SellFilterList.BackgroundColor3 = Color3.fromRGB(20, 20, 27)
-SellFilterList.BorderSizePixel = 0
-SellFilterList.Visible = false
-SellFilterList.ZIndex = 30
-SellFilterList.Parent = SellingPanel
-local SellFilterListCorner = Instance.new("UICorner")
-SellFilterListCorner.CornerRadius = UDim.new(0, 5)
-SellFilterListCorner.Parent = SellFilterList
-local SellFilterLayout = Instance.new("UIListLayout")
-SellFilterLayout.SortOrder = Enum.SortOrder.LayoutOrder
-SellFilterLayout.Parent = SellFilterList
-
-local SellAutoFindButton = Instance.new("TextButton")
-SellAutoFindButton.Size = UDim2.new(0.42, -3, 0, 22)
-SellAutoFindButton.Position = UDim2.new(0.58, 3, 0, 20)
-SellAutoFindButton.BackgroundColor3 = Color3.fromRGB(45, 90, 135)
-SellAutoFindButton.BorderSizePixel = 0
-SellAutoFindButton.Text = "AUTO FIND REMOTE"
-SellAutoFindButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellAutoFindButton.TextSize = 6
-SellAutoFindButton.Font = Enum.Font.GothamBold
-SellAutoFindButton.Parent = SellingPanel
-local SellAutoFindCorner = Instance.new("UICorner")
-SellAutoFindCorner.CornerRadius = UDim.new(0, 5)
-SellAutoFindCorner.Parent = SellAutoFindButton
-
-local SellRemoteLabel = Instance.new("TextLabel")
-SellRemoteLabel.Size = UDim2.new(1, 0, 0, 12)
-SellRemoteLabel.Position = UDim2.new(0, 0, 0, 45)
-SellRemoteLabel.BackgroundTransparency = 1
-SellRemoteLabel.Text = "Remote: Not found"
-SellRemoteLabel.TextColor3 = Color3.fromRGB(150, 155, 170)
-SellRemoteLabel.TextSize = 5
-SellRemoteLabel.Font = Enum.Font.Gotham
-SellRemoteLabel.TextXAlignment = Enum.TextXAlignment.Left
-SellRemoteLabel.TextTruncate = Enum.TextTruncate.AtEnd
-SellRemoteLabel.Parent = SellingPanel
-
-local SellButton = Instance.new("TextButton")
-SellButton.Size = UDim2.new(0.5, -3, 0, 22)
-SellButton.Position = UDim2.new(0, 0, 0, 61)
-SellButton.BackgroundColor3 = Color3.fromRGB(125, 35, 40)
-SellButton.BorderSizePixel = 0
-SellButton.Text = "SELL FILTERED"
-SellButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellButton.TextSize = 6
-SellButton.Font = Enum.Font.GothamBold
-SellButton.Parent = SellingPanel
-local SellButtonCorner = Instance.new("UICorner")
-SellButtonCorner.CornerRadius = UDim.new(0, 5)
-SellButtonCorner.Parent = SellButton
-
-local SellRefreshButton = Instance.new("TextButton")
-SellRefreshButton.Size = UDim2.new(0.5, -3, 0, 22)
-SellRefreshButton.Position = UDim2.new(0.5, 3, 0, 61)
-SellRefreshButton.BackgroundColor3 = Color3.fromRGB(55, 120, 75)
-SellRefreshButton.BorderSizePixel = 0
-SellRefreshButton.Text = "REFRESH INVENTORY"
-SellRefreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-SellRefreshButton.TextSize = 6
-SellRefreshButton.Font = Enum.Font.GothamBold
-SellRefreshButton.Parent = SellingPanel
-local SellRefreshCorner = Instance.new("UICorner")
-SellRefreshCorner.CornerRadius = UDim.new(0, 5)
-SellRefreshCorner.Parent = SellRefreshButton
-
-local SellStatus = Instance.new("TextLabel")
-SellStatus.Size = UDim2.new(1, 0, 0, 22)
-SellStatus.Position = UDim2.new(0, 0, 0, 88)
-SellStatus.BackgroundTransparency = 1
-SellStatus.Text = "Selling ready. Tap Refresh Inventory first."
-SellStatus.TextColor3 = Color3.fromRGB(150, 155, 170)
-SellStatus.TextSize = 5
-SellStatus.Font = Enum.Font.Gotham
-SellStatus.TextXAlignment = Enum.TextXAlignment.Left
-SellStatus.TextWrapped = true
-SellStatus.Parent = SellingPanel
-
-local SellCountLabel = Instance.new("TextLabel")
-SellCountLabel.Size = UDim2.new(1, 0, 0, 14)
-SellCountLabel.Position = UDim2.new(0, 0, 0, 112)
-SellCountLabel.BackgroundTransparency = 1
-SellCountLabel.Text = "Horses: 0"
-SellCountLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
-SellCountLabel.TextSize = 5
-SellCountLabel.Font = Enum.Font.GothamBold
-SellCountLabel.TextXAlignment = Enum.TextXAlignment.Left
-SellCountLabel.Parent = SellingPanel
-
--- SELLING DATA / LOGIC
-local SellReferences, SellData
-local SellHorseList = {}
-local SelectedSellFilter = "All"
-local SellRemote = nil
-local SellDataLoaded = false
-
--- Load selling dependencies only when the Selling tab is used.
--- This prevents a missing/late References module from stopping the whole NORMS UI.
-local function SellLoadData()
-    if SellDataLoaded and SellReferences and SellData then
-        return true
-    end
-
-    local refsModule = ReplicatedStorage:FindFirstChild("References")
-    if not refsModule then
-        SellStatus.Text = "Selling data: References not found"
-        SellStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
-        return false
-    end
-
-    local okRefs, refs = pcall(require, refsModule)
-    if not okRefs or not refs then
-        SellStatus.Text = "Selling data: failed to load References"
-        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
-        return false
-    end
-
-    local playerScripts = refs.PlayerScripts
-    local priority = playerScripts and playerScripts.Priority
-    local dataModule = priority and priority.Data
-    if not dataModule then
-        SellStatus.Text = "Selling data: Data module not found"
-        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
-        return false
-    end
-
-    local okData, data = pcall(require, dataModule)
-    if not okData or not data then
-        SellStatus.Text = "Selling data: failed to load Data"
-        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
-        return false
-    end
-
-    SellReferences = refs
-    SellData = data
-    SellDataLoaded = true
-    return true
-end
-
-local SellBreedNames = { ["akhal teke"]="Akhal-Teke Horse",["akhal-teke"]="Akhal-Teke Horse",["andalusian"]="Andalusian Horse",["appaloosa"]="Appaloosa Horse",["arabian"]="Arabian Horse",["clydesdale"]="Clydesdale Horse",["connemara"]="Connemara Horse",["dutch warmblood"]="Dutch Warmblood",["fjord"]="Fjord Horse",["friesian"]="Friesian Horse",["hinny"]="Hinny",["icelandic"]="Icelandic Horse",["mammoth donkey"]="Mammoth Donkey",["marwari"]="Marwari Horse",["morgan"]="Morgan Horse",["mule"]="Mule",["mustang"]="Mustang Horse",["paint horse"]="Paint Horse",["percheron"]="Percheron Horse",["quarter horse"]="Quarter Horse",["reindeer"]="Reindeer",["shire"]="Shire Horse",["standard donkey"]="Standard Donkey",["standardbred"]="Standardbred Horse",["tennessee walking horse"]="Tennessee Walking Horse",["thoroughbred"]="Thoroughbred Horse",["welsh cob"]="Welsh Cob",["unicorn"]="Unicorn",["donkey"]="Donkey" }
-local SellBreedKeywords={"tennessee walking horse","dutch warmblood","mammoth donkey","standard donkey","paint horse","quarter horse","akhal-teke","akhal teke","andalusian","appaloosa","arabian","clydesdale","connemara","fjord","friesian","hinny","icelandic","marwari","morgan","mule","mustang","percheron","reindeer","shire","standardbred","thoroughbred","welsh cob","unicorn","donkey"}
-local function SellNorm(v) return tostring(v or ""):lower():gsub("[_%-]"," "):gsub("%s+"," "):match("^%s*(.-)%s*$") end
-local function SellFindBreed(v) local t=SellNorm(v); if t=="" then return nil end; for _,k in ipairs(SellBreedKeywords) do if t==k or t:find(k,1,true) then return SellBreedNames[k] end end end
-local function SellSearchBreed(tbl,depth,seen)
-    if type(tbl)~="table" then return nil end; depth=depth or 0; seen=seen or {}; if depth>10 or seen[tbl] then return nil end; seen[tbl]=true
-    local fields={"breed","Breed","breedName","BreedName","horseBreed","HorseBreed","breedType","BreedType","horseType","HorseType","animalType","AnimalType","species","Species","type","Type","name","Name","itemName","ItemName","displayName","DisplayName","Display","display"}
-    for _,f in ipairs(fields) do local b=SellFindBreed(tbl[f]); if b then return b end end
-    for k,v in pairs(tbl) do if type(v)=="table" then local b=SellSearchBreed(v,depth+1,seen); if b then return b end elseif type(v)=="string" then local nk=SellNorm(k); if nk:find("breed",1,true) or nk:find("horse",1,true) or nk:find("animal",1,true) or nk:find("species",1,true) or nk:find("type",1,true) or nk:find("name",1,true) or nk:find("item",1,true) then local b=SellFindBreed(v); if b then return b end end end end
-end
-local function SellGetInfo(item) if not SellReferences or not SellReferences.Items or type(item)~="table" then return nil end; local id=item.id or item.ID or item.Id; if not id then return nil end; local ok,res=pcall(function() return SellReferences.Items.GetInfo(id) end); return ok and type(res)=="table" and res or nil end
-local function SellGetBreed(item,info) return SellSearchBreed(item) or SellSearchBreed(info) end
-local function SellColours(item) local v=type(item)=="table" and (item.variants or item.Variants) or nil; if type(v)~="table" then return "Unknown","Unknown","Unknown" end; return v.colour or v.mainColour or v.MainColour or "Unknown",v.maneColour or v.ManeColour or "Unknown",v.tailColour or v.TailColour or "Unknown" end
-local function SellColourKey(v) if type(v)=="table" then local k={}; for x in pairs(v) do table.insert(k,x) end; table.sort(k,function(a,b)return tostring(a)<tostring(b)end); local p={}; for _,x in ipairs(k) do table.insert(p,tostring(x).."="..tostring(v[x])) end; return table.concat(p,";") end; return tostring(v or ""):lower():gsub("^%s+",""):gsub("%s+$","") end
-local function SellMatchColours(a,b) return SellColourKey(a)==SellColourKey(b) end
-local SellUnique={iceyblack=true,iceyblue=true,iceypink=true,iceywhite=true,winterstreaks=true,leafy=true,flowery=true,pearly=true,pearlygreen=true,pastelstreaks=true,clearquartz=true,leathery=true,pearlypink=true,cowprint=true,royalstreaks=true,ruby=true,limestone=true,sandstone=true,pearlyred=true,zebra=true,dustyfade=true,iceygreen=true,glacierblue=true,glaciergreen=true,glacierpink=true,snowyglacierfade=true,sapphire=true,diamond=true,pearlyorange=true,pinkcowprint=true,sunrisestreaks=true,topaz=true,emerald=true,amethyst=true,mossy=true,tigerstripes=true,jaguarspots=true,moonstone=true,neonpurple=true,neonblue=true,obsidian=true,pearlyblue=true,deepspace=true,prismatic=true,volcanicorange=true,volcanicblack=true,pearlyblack=true,crackedlavafade=true,blessed=true,pearlypurple=true,sandy=true,pearlygold=true,clearseaglass=true}
-local function SellHairKey(v)return tostring(v or ""):lower():gsub("[%s_%-]","")end
-local function SellIsUnique(v)return SellUnique[SellHairKey(v)]==true end
-local SellOrange={blowingSnow=true,motherOfPearl=true,royalDun=true,dustyBrindle=true,glacierChimera=true,mountainSunrise=true,jaguar=true,deepSpace=true,crackedLava=true}
-local function SellIsOrange(v)return SellOrange[tostring(v or ""):gsub("%s+","")]==true end
-local function SellScan()
-    table.clear(SellHorseList)
-    if not SellLoadData() then
-        SellCountLabel.Text = "Horses: 0"
-        return 0
-    end
-    local ok,inv=pcall(function()return SellData.GetLocal({"inventory"})end)
-    if not ok or type(inv)~="table" then
-        SellStatus.Text = "Could not read inventory."
-        SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
-        SellCountLabel.Text = "Horses: 0"
-        return 0
-    end
-    for uid,item in pairs(inv) do if type(item)=="table" then local info=SellGetInfo(item); local breed=SellGetBreed(item,info); if breed then table.insert(SellHorseList,{uid=uid,item=item,info=info,breed=breed}) end end end
-    SellCountLabel.Text="Horses: "..tostring(#SellHorseList); return #SellHorseList
-end
-local function SellMatches(h)
-    if SelectedSellFilter=="All" then return true end
-    local main,mane,tail=SellColours(h.item); local v=h.item.variants or h.item.Variants or {}; local unique=SellIsUnique(mane) or SellIsUnique(tail); local orange=SellIsOrange(main); local mismatch=not SellMatchColours(mane,tail); local nat=h.item.isNatDyed~=nil; local horn=v.hornColour~=nil and tostring(v.hornColour)~=""
-    if SelectedSellFilter=="Red - Unique Hair" then return unique elseif SelectedSellFilter=="Orange - Special Main Colour" then return orange elseif SelectedSellFilter=="Blue - Mismatched Hair" then return mismatch elseif SelectedSellFilter=="Green - Nat Dyed" then return nat elseif SelectedSellFilter=="Purple - Horn Colour" then return horn elseif SelectedSellFilter=="Grey - Normal" then return not unique and not orange and not mismatch and not nat and not horn end
-    return false
-end
-local function SellAutoFindRemote()
-    local events=ReplicatedStorage:FindFirstChild("Communication") and ReplicatedStorage.Communication:FindFirstChild("Events"); if not events then return nil,"Communication.Events not found" end
-    local best,bestScore=nil,0
-    for _,obj in ipairs(events:GetDescendants()) do if obj:IsA("RemoteEvent") then local n=obj.Name:lower(); local score=0; if n:find("sell",1,true) then score+=100 end; if n:find("inventory",1,true) then score+=35 end; if n:find("item",1,true) then score+=20 end; if n:find("catch",1,true) or n:find("lasso",1,true) or n:find("travel",1,true) then score-=100 end; if score>bestScore then best,bestScore=obj,score end end end
-    if best then return best end; return nil,"No likely sell RemoteEvent found. Use RemoteSpy to identify the selling remote."
-end
-local sellFilters={{"All",Color3.fromRGB(235,235,240)},{"Red - Unique Hair",Color3.fromRGB(255,0,0)},{"Orange - Special Main Colour",Color3.fromRGB(255,140,0)},{"Blue - Mismatched Hair",Color3.fromRGB(0,170,255)},{"Green - Nat Dyed",Color3.fromRGB(0,255,0)},{"Purple - Horn Colour",Color3.fromRGB(170,0,255)},{"Grey - Normal",Color3.fromRGB(120,120,130)}}
-for i,opt in ipairs(sellFilters) do local b=Instance.new("TextButton"); b.Size=UDim2.new(1,0,0,20); b.BackgroundColor3=Color3.fromRGB(25,25,33); b.BorderSizePixel=0; b.Text=opt[1]; b.TextColor3=opt[2]; b.TextSize=6; b.Font=Enum.Font.GothamBold; b.TextXAlignment=Enum.TextXAlignment.Left; b.ZIndex=31; b.LayoutOrder=i; b.Parent=SellFilterList; local p=Instance.new("UIPadding"); p.PaddingLeft=UDim.new(0,6); p.Parent=b; b.MouseButton1Click:Connect(function()SelectedSellFilter=opt[1];SellFilterButton.Text="Filter: "..SelectedSellFilter;SellFilterList.Visible=false end) end
-SellFilterButton.MouseButton1Click:Connect(function()SellFilterList.Visible=not SellFilterList.Visible end)
-SellAutoFindButton.MouseButton1Click:Connect(function() SellAutoFindButton.Text="FINDING..."; task.spawn(function() local r,e=SellAutoFindRemote(); if r then SellRemote=r;SellRemoteLabel.Text="Remote: "..r:GetFullName();SellRemoteLabel.TextColor3=Color3.fromRGB(100,255,130);SellStatus.Text="Sell remote found automatically.";SellStatus.TextColor3=Color3.fromRGB(100,255,130) else SellRemote=nil;SellRemoteLabel.Text="Remote: Not found";SellRemoteLabel.TextColor3=Color3.fromRGB(255,110,110);SellStatus.Text=tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,190,100) end;SellAutoFindButton.Text="AUTO FIND REMOTE" end) end)
-SellButton.MouseButton1Click:Connect(function() if not SellRemote or not SellRemote.Parent then local r,e=SellAutoFindRemote();if r then SellRemote=r else SellStatus.Text=tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,110,110);return end end; local items,count={},0;for _,h in ipairs(SellHorseList)do if SellMatches(h)then items[tostring(h.uid)]=1;count+=1 end end;if count==0 then SellStatus.Text="Nothing matches: "..SelectedSellFilter;SellStatus.TextColor3=Color3.fromRGB(255,190,100);return end;local ok,e=pcall(function()SellRemote:FireServer("SellItems",items)end);if not ok then SellStatus.Text="Sell failed: "..tostring(e);SellStatus.TextColor3=Color3.fromRGB(255,110,110);return end;SellStatus.Text="Sell request sent: "..tostring(count).." horse(s) ["..SelectedSellFilter.."]";SellStatus.TextColor3=Color3.fromRGB(100,255,130);task.delay(0.5,SellScan) end)
-SellRefreshButton.MouseButton1Click:Connect(function()SellRefreshButton.Text="...";task.spawn(function()local n=SellScan();if n>0 then SellStatus.Text="Inventory refreshed: "..tostring(n).." horses." end;task.wait(1);SellRefreshButton.Text="REFRESH INVENTORY" end)end)
-
 --// UI TABS & SORTING
 local SortContainer = Instance.new("Frame")
 SortContainer.Name = "SortContainer"
@@ -1932,63 +2761,43 @@ local function SwitchTab(tabName)
     TargetUID = nil
     ClearCache()
 
-    if tabName == "Main" then
-        MainTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
-        MainTabBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
-        SettingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        SettingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        SellingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        SellingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        BulletLabel.Visible = true
-        TrackerTextLabel.Visible = true
-        HeaderCard.Visible = true
-        ScrollFrame.Visible = true
-        LeftPanel.Visible = true
-        RightPanel.Visible = true
-        SortContainer.Visible = true
-        SettingsPanel.Visible = false
-        BulletLabel.TextColor3 = Color3.fromRGB(57, 255, 20)
-        TrackerTextLabel.TextColor3 = Color3.fromRGB(57, 255, 20)
-        ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(57, 255, 20)
+    local isMain = tabName == "Main"
+    local isSelling = tabName == "Selling"
+    local isSetting = tabName == "Setting"
+
+    MainTabBtn.BackgroundColor3 = isMain and Color3.fromRGB(30,30,42) or Color3.fromRGB(20,20,28)
+    MainTabBtn.TextColor3 = isMain and Color3.fromRGB(57,255,20) or Color3.fromRGB(150,150,170)
+    SellingTabBtn.BackgroundColor3 = isSelling and Color3.fromRGB(30,30,42) or Color3.fromRGB(20,20,28)
+    SellingTabBtn.TextColor3 = isSelling and Color3.fromRGB(57,255,20) or Color3.fromRGB(150,150,170)
+    SettingTabBtn.BackgroundColor3 = isSetting and Color3.fromRGB(30,30,42) or Color3.fromRGB(20,20,28)
+    SettingTabBtn.TextColor3 = isSetting and Color3.fromRGB(57,255,20) or Color3.fromRGB(150,150,170)
+
+    BulletLabel.Visible = isMain
+    TrackerTextLabel.Visible = isMain
+    HeaderCard.Visible = isMain
+    ScrollFrame.Visible = isMain
+    SortContainer.Visible = isMain
+    SettingsPanel.Visible = isSetting
+    SellingPanel.Visible = isSelling
+
+    if isMain then
+        BulletLabel.TextColor3 = Color3.fromRGB(57,255,20)
+        TrackerTextLabel.TextColor3 = Color3.fromRGB(57,255,20)
+        ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(57,255,20)
         SortBtn.Text = "Island: " .. SelectedMainIsland .. " v"
         if AutoFarmEnabled then
-            AutoToggleBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
-            ToggleSwitch.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
+            AutoToggleBtn.TextColor3 = Color3.fromRGB(57,255,20)
+            ToggleSwitch.BackgroundColor3 = Color3.fromRGB(57,255,20)
         end
-        SellingPanel.Visible = false
-    elseif tabName == "Selling" then
-        MainTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        MainTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        SettingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        SettingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        SellingTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
-        SellingTabBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
-        LeftPanel.Visible = false
-        RightPanel.Visible = false
-        SettingsPanel.Visible = false
-        SellingPanel.Visible = true
-        BulletLabel.Visible = false
-        TrackerTextLabel.Visible = false
-        HeaderCard.Visible = false
-        ScrollFrame.Visible = false
-        SortContainer.Visible = false
-    else
-        MainTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        MainTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        SettingTabBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 42)
-        SettingTabBtn.TextColor3 = Color3.fromRGB(57, 255, 20)
-        SellingTabBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-        SellingTabBtn.TextColor3 = Color3.fromRGB(150, 150, 170)
-        BulletLabel.Visible = false
-        TrackerTextLabel.Visible = false
-        HeaderCard.Visible = false
-        ScrollFrame.Visible = false
-        LeftPanel.Visible = false
-        RightPanel.Visible = true
-        SortContainer.Visible = false
-        SettingsPanel.Visible = true
-        SellingPanel.Visible = false
+    elseif isSelling then
+        task.spawn(function()
+            if LoadSellingInventory() then
+                if #HorseList == 0 then ScanSellingInventory() else RenderSellingList() end
+                if not SellRemote then AutoFindSellRemote() end
+            end
+        end)
     end
+
     IsSortDropdownOpen = false
     SortDropdownList.Visible = false
     RebuildDropdownOptions()
@@ -1998,9 +2807,6 @@ MainTabBtn.MouseButton1Click:Connect(function() SwitchTab("Main") end)
 SellingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Selling") end)
 SettingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Setting") end)
 
--- Explicitly restore the original Main view after all three tabs are wired.
-SwitchTab("Main")
-
 local function ToggleMinimize()
     if IsAnimating then return end
     IsAnimating = true
@@ -2009,7 +2815,6 @@ local function ToggleMinimize()
         TabBar.Visible = false
         LeftPanel.Visible = false
         RightPanel.Visible = false
-        SellingPanel.Visible = false
         local tween1 = TweenService:Create(
             Frame,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
@@ -2045,14 +2850,8 @@ local function ToggleMinimize()
         tween2.Completed:Wait()
         TitleBar.Visible = true
         TabBar.Visible = true
-        if CurrentTab == "Main" then
-            LeftPanel.Visible = true
-            RightPanel.Visible = true
-        elseif CurrentTab == "Selling" then
-            SellingPanel.Visible = true
-        else
-            RightPanel.Visible = true
-        end
+        LeftPanel.Visible = true
+        RightPanel.Visible = true
         IsMinimized = false
     end
     IsAnimating = false
@@ -2883,28 +3682,4 @@ task.spawn(function()
     else
         warn("[Anti-AFK] AFKHandler module not found automatically; native Idled bypass active.")
     end
-end)
-
---// THIS IS PH
---// THIS IS PH
-]=]
-
-status.Text = "Loading main script..."
-local ok, chunk = pcall(loadstring, source)
-if not ok or not chunk then
-    status.Text = "LOADSTRING FAILED:\n" .. tostring(chunk)
-    status.TextColor3 = Color3.fromRGB(255,90,90)
-    return
-end
-
-local ran, err = pcall(chunk)
-if not ran then
-    status.Text = "SCRIPT ERROR:\n" .. tostring(err)
-    status.TextColor3 = Color3.fromRGB(255,90,90)
-    return
-end
-
--- Main script loaded successfully. Remove diagnostic panel after a short delay.
-task.delay(1.5, function()
-    if boot and boot.Parent then boot:Destroy() end
 end)
