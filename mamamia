@@ -1866,7 +1866,9 @@ local function ScanHorses()
                         PriorityCount = priorityStats.Count,
                         Position = pivot.Position,
                         Pivot = pivot,
-                        UID = node.Name .. "_" .. math.floor(pivot.Position.X) .. "_" .. math.floor(pivot.Position.Z)
+                        -- The horse Model name is the actual horse UID used by the
+                        -- catching RemoteEvent. Do not manufacture a UID from position.
+                        UID = tostring(node.Name)
                     })
                 end
             end
@@ -2335,24 +2337,56 @@ end
 --// REMOTE CATCHING
 -- Catching no longer uses simulated screen/mouse clicks. The selected RemoteEvent
 -- is fired directly with the configured lasso UID and current horse model.
-function FireCatchRemote(horseModel)
+function FireCatchRemote(horseModel, horseUID)
+    -- Exact catching structure:
+    -- RemoteEvent:FireServer(LassoUID, "Activate", TargetHorseModel)
+    -- The target model is resolved from the horse UID when possible, matching
+    -- the captured getNil("Target horse uid", "Model") structure.
     local remoteName = tostring(CatchConfig.SelectedCatchRemote or (CatchConfig.CatchRemoteBox and CatchConfig.CatchRemoteBox.Text) or ""):match("^%s*(.-)%s*$")
     if remoteName == "" then
         return false, "Select a Catch Remote in Settings"
     end
-    if tostring(CatchConfig.ConfiguredLassoUID or "") == "" then
+
+    local lassoUID = tostring(CatchConfig.ConfiguredLassoUID or ""):match("^%s*(.-)%s*$")
+    if lassoUID == "" then
         return false, "Generate Lasso UID in Settings"
     end
 
     local comm = ReplicatedStorage:FindFirstChild("Communication")
     local eventsFolder = comm and comm:FindFirstChild("Events")
-    local catchEvent = eventsFolder and eventsFolder:FindFirstChild(remoteName)
+    if not eventsFolder then
+        return false, "Communication.Events not found"
+    end
+
+    local catchEvent = eventsFolder:FindFirstChild(remoteName)
     if not catchEvent or not catchEvent:IsA("RemoteEvent") then
         return false, "Catch Remote not found: " .. remoteName
     end
 
+    local targetModel = horseModel
+    local uid = tostring(horseUID or (horseModel and horseModel.Name) or ""):match("^%s*(.-)%s*$")
+
+    -- Prefer the live model already found by the scanner. If it disappeared
+    -- from that reference, resolve it again by its actual UID/name.
+    if (not targetModel or not targetModel:IsA("Model")) and uid ~= "" then
+        pcall(function()
+            if type(getnilinstances) == "function" then
+                for _, v in ipairs(getnilinstances()) do
+                    if v:IsA("Model") and v.Name == uid then
+                        targetModel = v
+                        break
+                    end
+                end
+            end
+        end)
+    end
+
+    if not targetModel or not targetModel:IsA("Model") then
+        return false, "Target horse model not found: " .. (uid ~= "" and uid or "unknown")
+    end
+
     local ok, err = pcall(function()
-        catchEvent:FireServer(CatchConfig.ConfiguredLassoUID, "Activate", horseModel)
+        catchEvent:FireServer(lassoUID, "Activate", targetModel)
     end)
     if not ok then
         return false, tostring(err)
@@ -2606,7 +2640,7 @@ local function startFarm()
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and tick() < catchDeadline do
                         -- Character stays anchored; no repeated island scan is needed here.
                         -- Travel was already verified before the horse tween started.
-                        local catchOK, catchErr = FireCatchRemote(target.Model)
+                        local catchOK, catchErr = FireCatchRemote(target.Model, target.UID)
                         if not catchOK then
                             status.Text = "Catch Error: " .. tostring(catchErr)
                             status.TextColor3 = Color3.fromRGB(239, 68, 68)
