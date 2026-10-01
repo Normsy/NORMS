@@ -547,7 +547,7 @@ SettingsFrame.BackgroundTransparency = 1
 SettingsFrame.BorderSizePixel = 0
 SettingsFrame.ScrollBarThickness = 3
 SettingsFrame.ScrollBarImageColor3 = Color3.fromRGB(90, 90, 105)
-SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 520)
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 545)
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
 
@@ -556,6 +556,22 @@ CatchConfig = CatchConfig or {}
 CatchConfig.SelectedCatchRemote = CatchConfig.SelectedCatchRemote or ""
 CatchConfig.ConfiguredLassoUID = CatchConfig.ConfiguredLassoUID or ""
 CatchConfig.SelectedLasso = CatchConfig.SelectedLasso or "Lasso"
+
+--// CATCH CONFIG PERSISTENCE
+local CONFIG_FILE_NAME = "NORMS_Catch_Config.json"
+local function SaveCatchRemoteConfig()
+    pcall(function()
+        if writefile then
+            local data = {
+                CatchRemote = tostring(CatchConfig.SelectedCatchRemote or ""),
+                LassoType = tostring(CatchConfig.SelectedLasso or "Lasso"),
+                LassoUID = tostring(CatchConfig.ConfiguredLassoUID or ""),
+                TravelRemote = tostring(TravelRemoteBox and TravelRemoteBox.Text or "")
+            }
+            writefile(CONFIG_FILE_NAME, HttpService:JSONEncode(data))
+        end
+    end)
+end
 
 CatchConfig.LassoTypes = {
     "Lasso", "Wooden Lasso", "Tin Lasso", "Cooper Lasso", "Bronze Lasso",
@@ -689,7 +705,7 @@ local function RefreshCatchRemoteList()
             CatchConfig.CatchRemoteList.Visible = false
             CatchConfig.CatchRemoteStatus.Text = "Selected: " .. name
             CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
-            SavePersistentConfig()
+            SaveCatchRemoteConfig()
         end)
     end
     if CatchConfig.SelectedCatchRemote == "" and #events > 0 then
@@ -716,9 +732,38 @@ CatchRefresh.Parent = SettingsFrame
 SettingsBoxCorner(CatchRefresh)
 CatchRefresh.Activated:Connect(RefreshCatchRemoteList)
 
+CatchSave = Instance.new("TextButton")
+CatchSave.Name = "SaveCatchRemote"
+CatchSave.Size = UDim2.fromOffset(70, 20)
+CatchSave.Position = UDim2.fromOffset(6, 122)
+CatchSave.BackgroundColor3 = Color3.fromRGB(57, 255, 20)
+CatchSave.BorderSizePixel = 0
+CatchSave.Text = "SAVE REMOTE"
+CatchSave.TextColor3 = Color3.fromRGB(10, 10, 10)
+CatchSave.TextSize = 8
+CatchSave.Font = Enum.Font.GothamBold
+CatchSave.Parent = SettingsFrame
+SettingsBoxCorner(CatchSave)
+CatchSave.Activated:Connect(function()
+    local remoteName = tostring(CatchConfig.CatchRemoteBox.Text or ""):match("^%s*(.-)%s*$")
+    if remoteName == "" then
+        CatchConfig.CatchRemoteStatus.Text = "Select a catch remote first"
+        CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
+        return
+    end
+    CatchConfig.SelectedCatchRemote = remoteName
+    SaveCatchRemoteConfig()
+    CatchSave.Text = "SAVED"
+    CatchConfig.CatchRemoteStatus.Text = "Saved: " .. remoteName
+    CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
+    task.delay(1.2, function()
+        if CatchSave and CatchSave.Parent then CatchSave.Text = "SAVE REMOTE" end
+    end)
+end)
+
 CatchConfig.CatchRemoteStatus = Instance.new("TextLabel")
 CatchConfig.CatchRemoteStatus.Size = UDim2.new(1, -12, 0, 18)
-CatchConfig.CatchRemoteStatus.Position = UDim2.fromOffset(SettingsLeft, 122)
+CatchConfig.CatchRemoteStatus.Position = UDim2.fromOffset(SettingsLeft, 145)
 CatchConfig.CatchRemoteStatus.BackgroundTransparency = 1
 CatchConfig.CatchRemoteStatus.Text = "Catch remote: not selected"
 CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -728,11 +773,11 @@ CatchConfig.CatchRemoteStatus.TextXAlignment = Enum.TextXAlignment.Left
 CatchConfig.CatchRemoteStatus.Parent = SettingsFrame
 
 --// GENERATE LASSO UID
-LassoLabel = SettingsLabel("LassoLabel", "GENERATE LASSO", 143, 18)
+LassoLabel = SettingsLabel("LassoLabel", "GENERATE LASSO", 166, 18)
 
 CatchConfig.LassoNameBox = Instance.new("TextBox")
 CatchConfig.LassoNameBox.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
-CatchConfig.LassoNameBox.Position = UDim2.fromOffset(SettingsFieldX, 163)
+CatchConfig.LassoNameBox.Position = UDim2.fromOffset(SettingsFieldX, 186)
 CatchConfig.LassoNameBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 CatchConfig.LassoNameBox.BorderSizePixel = 0
 CatchConfig.LassoNameBox.ClearTextOnFocus = false
@@ -746,7 +791,7 @@ SettingsBoxCorner(CatchConfig.LassoNameBox)
 
 LassoDropdown = Instance.new("TextButton")
 LassoDropdown.Size = UDim2.fromOffset(SettingsButtonWidth, 26)
-LassoDropdown.Position = UDim2.fromOffset(SettingsButtonX, 163)
+LassoDropdown.Position = UDim2.fromOffset(SettingsButtonX, 186)
 LassoDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 LassoDropdown.BorderSizePixel = 0
 LassoDropdown.Text = "â¼"
@@ -787,7 +832,7 @@ for _, lassoName in ipairs(CatchConfig.LassoTypes) do
         CatchConfig.SelectedLasso = lassoName
         CatchConfig.LassoNameBox.Text = lassoName
         LassoList.Visible = false
-        SavePersistentConfig()
+        SaveCatchRemoteConfig()
     end)
 end
 LassoDropdown.Activated:Connect(function()
@@ -796,7 +841,7 @@ end)
 
 CatchConfig.LassoUIDBox = Instance.new("TextBox")
 CatchConfig.LassoUIDBox.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
-CatchConfig.LassoUIDBox.Position = UDim2.fromOffset(SettingsFieldX, 195)
+CatchConfig.LassoUIDBox.Position = UDim2.fromOffset(SettingsFieldX, 218)
 CatchConfig.LassoUIDBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 CatchConfig.LassoUIDBox.BorderSizePixel = 0
 CatchConfig.LassoUIDBox.ClearTextOnFocus = false
@@ -813,7 +858,7 @@ SettingsBoxCorner(CatchConfig.LassoUIDBox)
 
 GenerateLassoButton = Instance.new("TextButton")
 GenerateLassoButton.Size = UDim2.fromOffset(SettingsButtonWidth, 26)
-GenerateLassoButton.Position = UDim2.fromOffset(SettingsButtonX, 195)
+GenerateLassoButton.Position = UDim2.fromOffset(SettingsButtonX, 218)
 GenerateLassoButton.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
 GenerateLassoButton.BorderSizePixel = 0
 GenerateLassoButton.Text = "GEN"
@@ -825,7 +870,7 @@ SettingsBoxCorner(GenerateLassoButton)
 
 CatchConfig.LassoStatus = Instance.new("TextLabel")
 CatchConfig.LassoStatus.Size = UDim2.new(1, -12, 0, 18)
-CatchConfig.LassoStatus.Position = UDim2.fromOffset(SettingsLeft, 224)
+CatchConfig.LassoStatus.Position = UDim2.fromOffset(SettingsLeft, 247)
 CatchConfig.LassoStatus.BackgroundTransparency = 1
 CatchConfig.LassoStatus.Text = "Lasso UID: not generated"
 CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -882,7 +927,7 @@ function GenerateLassoUID()
         CatchConfig.LassoUIDBox.Text = foundUID
         CatchConfig.LassoStatus.Text = "UID Found: " .. foundUID
         CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
-        SavePersistentConfig()
+        SaveCatchRemoteConfig()
     else
         CatchConfig.LassoStatus.Text = "UID not found for " .. tostring(CatchConfig.SelectedLasso)
         CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
@@ -890,12 +935,37 @@ function GenerateLassoUID()
 end
 GenerateLassoButton.Activated:Connect(GenerateLassoUID)
 
+-- Load the saved catch remote/lasso configuration once the controls exist.
+pcall(function()
+    if isfile and isfile(CONFIG_FILE_NAME) and readfile then
+        local decoded = HttpService:JSONDecode(readfile(CONFIG_FILE_NAME))
+        if type(decoded) == "table" then
+            if decoded.CatchRemote and tostring(decoded.CatchRemote) ~= "" then
+                CatchConfig.SelectedCatchRemote = tostring(decoded.CatchRemote)
+                CatchConfig.CatchRemoteBox.Text = CatchConfig.SelectedCatchRemote
+                CatchConfig.CatchRemoteStatus.Text = "Saved: " .. CatchConfig.SelectedCatchRemote
+                CatchConfig.CatchRemoteStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
+            end
+            if decoded.LassoType and tostring(decoded.LassoType) ~= "" then
+                CatchConfig.SelectedLasso = tostring(decoded.LassoType)
+                CatchConfig.LassoNameBox.Text = CatchConfig.SelectedLasso
+            end
+            if decoded.LassoUID and tostring(decoded.LassoUID) ~= "" then
+                CatchConfig.ConfiguredLassoUID = tostring(decoded.LassoUID)
+                CatchConfig.LassoUIDBox.Text = CatchConfig.ConfiguredLassoUID
+                CatchConfig.LassoStatus.Text = "UID Loaded"
+                CatchConfig.LassoStatus.TextColor3 = Color3.fromRGB(57, 255, 20)
+            end
+        end
+    end
+end)
+
 --// TRAVEL REMOTE SETTING
-TravelRemoteLabel = SettingsLabel("TravelRemoteLabel", "TRAVEL REMOTE", 250, 18)
+TravelRemoteLabel = SettingsLabel("TravelRemoteLabel", "TRAVEL REMOTE", 273, 18)
 
 TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
-TravelRemoteBox.Position = UDim2.fromOffset(SettingsFieldX, 270)
+TravelRemoteBox.Position = UDim2.fromOffset(SettingsFieldX, 293)
 TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 TravelRemoteBox.BorderSizePixel = 0
 TravelRemoteBox.ClearTextOnFocus = false
@@ -911,7 +981,7 @@ SettingsBoxCorner(TravelRemoteBox)
 
 TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Size = UDim2.fromOffset(SettingsButtonWidth, 26)
-TravelDropdown.Position = UDim2.fromOffset(SettingsButtonX, 270)
+TravelDropdown.Position = UDim2.fromOffset(SettingsButtonX, 293)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "â¼"
@@ -923,7 +993,7 @@ SettingsBoxCorner(TravelDropdown)
 
 TravelList = Instance.new("ScrollingFrame")
 TravelList.Size = UDim2.fromOffset(130, 105)
-TravelList.Position = UDim2.fromOffset(SettingsFieldX, 298)
+TravelList.Position = UDim2.fromOffset(SettingsFieldX, 321)
 TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 TravelList.BorderSizePixel = 0
 TravelList.Visible = false
@@ -952,7 +1022,7 @@ for i = 1, 90 do
     opt.Activated:Connect(function()
         TravelRemoteBox.Text = funcName
         TravelList.Visible = false
-        SavePersistentConfig()
+        SaveCatchRemoteConfig()
     end)
 end
 TravelDropdown.Activated:Connect(function()
@@ -962,7 +1032,7 @@ end)
 AutoTravelButton = Instance.new("TextButton")
 AutoTravelButton.Name = "AutoFindTravelRemote"
 AutoTravelButton.Size = UDim2.new(1, -12, 0, 28)
-AutoTravelButton.Position = UDim2.fromOffset(SettingsLeft, 301)
+AutoTravelButton.Position = UDim2.fromOffset(SettingsLeft, 324)
 AutoTravelButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 AutoTravelButton.BorderSizePixel = 0
 AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
@@ -974,7 +1044,7 @@ local atbc = Instance.new("UICorner"); atbc.CornerRadius = UDim.new(0, 6); atbc.
 
 AutoTravelStatus = Instance.new("TextLabel")
 AutoTravelStatus.Size = UDim2.new(1, -12, 0, 22)
-AutoTravelStatus.Position = UDim2.fromOffset(SettingsLeft, 333)
+AutoTravelStatus.Position = UDim2.fromOffset(SettingsLeft, 356)
 AutoTravelStatus.BackgroundTransparency = 1
 AutoTravelStatus.Text = "Travel remote: not tested"
 AutoTravelStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
@@ -985,28 +1055,28 @@ AutoTravelStatus.TextWrapped = true
 AutoTravelStatus.Parent = SettingsFrame
 
 --// SELL REMOTE / SERVER HOP
-SellRemoteLabel = SettingsLabel("SellRemoteLabel", "SELL REMOTE", 360, 18)
+SellRemoteLabel = SettingsLabel("SellRemoteLabel", "SELL REMOTE", 383, 18)
 RemoteDrop.Parent = SettingsFrame
-RemoteDrop.Position = UDim2.fromOffset(SettingsFieldX, 380)
+RemoteDrop.Position = UDim2.fromOffset(SettingsFieldX, 403)
 RemoteDrop.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
 RemoteDrop.TextSize = 8
 RemoteList.Parent = SettingsFrame
-RemoteList.Position = UDim2.fromOffset(SettingsFieldX, 408)
+RemoteList.Position = UDim2.fromOffset(SettingsFieldX, 431)
 RemoteList.Size = UDim2.fromOffset(130, 105)
 RemoteList.ZIndex = 100
 AutoSellRemoteButton.Parent = SettingsFrame
-AutoSellRemoteButton.Position = UDim2.fromOffset(SettingsLeft, 409)
+AutoSellRemoteButton.Position = UDim2.fromOffset(SettingsLeft, 432)
 AutoSellRemoteButton.Size = UDim2.new(1, -12, 0, 28)
 AutoSellRemoteButton.TextSize = 9
 AutoSellRemoteStatus.Parent = SettingsFrame
-AutoSellRemoteStatus.Position = UDim2.fromOffset(SettingsLeft, 441)
+AutoSellRemoteStatus.Position = UDim2.fromOffset(SettingsLeft, 464)
 AutoSellRemoteStatus.Size = UDim2.new(1, -12, 0, 22)
 AutoSellRemoteStatus.TextSize = 8
 
 HopButton = Instance.new("TextButton")
 HopButton.Name = "HopServer"
 HopButton.Size = UDim2.new(1, -12, 0, 28)
-HopButton.Position = UDim2.fromOffset(SettingsLeft, 468)
+HopButton.Position = UDim2.fromOffset(SettingsLeft, 491)
 HopButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 HopButton.BorderSizePixel = 0
 HopButton.Text = "HOP SERVER"
@@ -1030,7 +1100,7 @@ HopStatus.TextXAlignment = Enum.TextXAlignment.Left
 HopStatus.TextWrapped = true
 HopStatus.Parent = SettingsFrame
 
-SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 530)
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 545)
 
 local function GetHttpRequest()
     if typeof(request) == "function" then
@@ -1831,28 +1901,86 @@ end)
 local function isOwned(node)
     if not node then return false end
 
-    -- Treat a populated Owner/OwnerUserId as already owned.
-    local owner = node:GetAttribute("Owner")
-    if owner ~= nil and tostring(owner) ~= "" and tostring(owner) ~= "0" then
+    -- IMPORTANT: never select a horse that is already owned.
+    -- Different versions of the game have exposed ownership as either
+    -- Owner, OwnerUserId, or a nested ValueBase. Treat all of those as
+    -- ownership markers. If OwnerUserId matches this client, it is
+    -- definitely the player's horse and must be skipped.
+    local myUserId = tostring(LocalPlayer.UserId)
+
+    local function valueMeansOwned(v)
+        if v == nil then return false end
+        local text = tostring(v):gsub("^%s+", ""):gsub("%s+$", "")
+        if text == "" or text == "0" or text == "nil" then return false end
         return true
     end
 
-    local ownerUserId = node:GetAttribute("OwnerUserId")
-    if ownerUserId ~= nil and tostring(ownerUserId) ~= "" and tostring(ownerUserId) ~= "0" then
-        return true
-    end
-
-    -- Some versions expose ownership as a child value.
-    for _, key in ipairs({"OwnerUserId", "Owner"}) do
-        local value = node:FindFirstChild(key, true)
-        if value and value:IsA("ValueBase") then
-            local v = value.Value
-            if v ~= nil and tostring(v) ~= "" and tostring(v) ~= "0" then
-                return true
+    local function inspect(instance)
+        for attrKey, attrVal in pairs(instance:GetAttributes()) do
+            local key = tostring(attrKey):lower():gsub("[%s_%-]", "")
+            if key == "owneruserid" or key == "ownerid" then
+                if valueMeansOwned(attrVal) then
+                    return true
+                end
+            elseif key == "owner" then
+                if valueMeansOwned(attrVal) then
+                    return true
+                end
             end
+        end
+
+        if instance:IsA("ValueBase") then
+            local key = tostring(instance.Name):lower():gsub("[%s_%-]", "")
+            if key == "owneruserid" or key == "ownerid" or key == "owner" then
+                if valueMeansOwned(instance.Value) then
+                    return true
+                end
+            end
+        end
+
+        return false
+    end
+
+    -- Check the horse itself first.
+    if inspect(node) then
+        return true
+    end
+
+    -- Some servers put OwnerUserId/Owner inside the horse model.
+    -- Only inspect ownership-named attributes/values, not arbitrary children.
+    for _, descendant in ipairs(node:GetDescendants()) do
+        if inspect(descendant) then
+            return true
         end
     end
 
+    return false
+end
+
+local function IsOwnedByLocalPlayer(node)
+    if not node then return false end
+    local myUserId = tostring(LocalPlayer.UserId)
+
+    local function check(instance)
+        for attrKey, attrVal in pairs(instance:GetAttributes()) do
+            local key = tostring(attrKey):lower():gsub("[%s_%-]", "")
+            if (key == "owneruserid" or key == "ownerid") and tostring(attrVal) == myUserId then
+                return true
+            end
+        end
+        if instance:IsA("ValueBase") then
+            local key = tostring(instance.Name):lower():gsub("[%s_%-]", "")
+            if (key == "owneruserid" or key == "ownerid") and tostring(instance.Value) == myUserId then
+                return true
+            end
+        end
+        return false
+    end
+
+    if check(node) then return true end
+    for _, descendant in ipairs(node:GetDescendants()) do
+        if check(descendant) then return true end
+    end
     return false
 end
 
@@ -2382,23 +2510,31 @@ end
 -- Catching no longer uses simulated screen/mouse clicks. The selected RemoteEvent
 -- is fired directly with the configured lasso UID and current horse model.
 function FireCatchRemote(horseModel)
-    local remoteName = tostring(CatchConfig.SelectedCatchRemote or (CatchConfig.CatchRemoteBox and CatchConfig.CatchRemoteBox.Text) or ""):match("^%s*(.-)%s*$")
-    if remoteName == "" then
-        return false, "Select a Catch Remote in Settings"
-    end
-    if tostring(CatchConfig.ConfiguredLassoUID or "") == "" then
-        return false, "Generate Lasso UID in Settings"
+    if not horseModel or not horseModel.Parent then
+        return false, "Target horse model is gone"
     end
 
-    local comm = ReplicatedStorage:FindFirstChild("Communication")
-    local eventsFolder = comm and comm:FindFirstChild("Events")
-    local catchEvent = eventsFolder and eventsFolder:FindFirstChild(remoteName)
+    local remoteName = tostring(CatchConfig.SelectedCatchRemote or (CatchConfig.CatchRemoteBox and CatchConfig.CatchRemoteBox.Text) or ""):match("^%s*(.-)%s*$")
+    if remoteName == "" then
+        return false, "Select and SAVE a Catch Remote in Settings"
+    end
+
+    local lassoUID = tostring(CatchConfig.ConfiguredLassoUID or ""):match("^%s*(.-)%s*$")
+    if lassoUID == "" then
+        return false, "Generate Lasso UID in Settings first"
+    end
+
+    local comm = ReplicatedStorage:WaitForChild("Communication")
+    local eventsFolder = comm:WaitForChild("Events")
+    local catchEvent = eventsFolder:FindFirstChild(remoteName)
     if not catchEvent or not catchEvent:IsA("RemoteEvent") then
         return false, "Catch Remote not found: " .. remoteName
     end
 
+    -- Exact captured catch structure:
+    -- RemoteEvent:FireServer(LassoUID, "Activate", TargetHorseModel)
     local ok, err = pcall(function()
-        catchEvent:FireServer(CatchConfig.ConfiguredLassoUID, "Activate", horseModel)
+        catchEvent:FireServer(lassoUID, "Activate", horseModel)
     end)
     if not ok then
         return false, tostring(err)
@@ -2494,7 +2630,7 @@ local function startFarm()
 
             local candidates = {}
             for _, horse in ipairs(scanResults or {}) do
-                if horse.Model and horse.Model.Parent then
+                if horse.Model and horse.Model.Parent and not isOwned(horse.Model) and not IsOwnedByLocalPlayer(horse.Model) then
                     table.insert(candidates, horse)
                 end
             end
@@ -2669,6 +2805,17 @@ local function startFarm()
                     -- Keep the character locked on the horse and repeatedly fire:
                     -- CatchRemote:FireServer(LassoUID, "Activate", TargetHorseModel)
                     while Farming and myGeneration == FarmGeneration and target.Model.Parent and humanoid.Health > 0 do
+                        -- Re-check ownership before EVERY catch attempt. The server can
+                        -- update OwnerUserId/Owner immediately after a successful catch.
+                        -- Once that happens, stop targeting this model immediately so the
+                        -- script can never continue firing the catch remote at the player's
+                        -- own horse.
+                        if isOwned(target.Model) or IsOwnedByLocalPlayer(target.Model) then
+                            status.Text = "Skipping owned horse"
+                            status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                            break
+                        end
+
                         local catchOK, catchErr = FireCatchRemote(target.Model, target.UID)
                         if not catchOK then
                             status.Text = "Catch Error: " .. tostring(catchErr)
