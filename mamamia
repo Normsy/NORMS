@@ -1,3 +1,10 @@
+-- V29 UPDATE: Keep V27 UI/behavior. Selling inventory is manually refreshable (no periodic inventory scan).
+-- Selling filters are category-based: All, Normal Horse, Natural Dyed Hair, Island Unique Hair,
+-- Island Unique Coat, Mismatched Hair, Horned. Low/Mid/High/Special rarity filters were removed.
+--// NORMS MINIMAL HORSE FARMER
+--// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
+--// Background horse scan + manual island travel + manual lasso + screen clicking.
+--// Press START after manually travelling to the island you want to farm.
 
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
@@ -195,7 +202,7 @@ gui.Enabled = false
 
 local frame = Instance.new("Frame")
 frame.Name = "Main"
-frame.Size = UDim2.fromOffset(285, 335)
+frame.Size = UDim2.fromOffset(250, 250)
 frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.Position = UDim2.fromScale(0.5, 0.5)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 28)
@@ -595,13 +602,20 @@ RarityDrop.Activated:Connect(function()
 end)
 
 --// SETTINGS TAB
-local SettingsFrame = Instance.new("Frame")
+local SettingsFrame = Instance.new("ScrollingFrame")
 SettingsFrame.Name = "Settings"
-SettingsFrame.Size = UDim2.new(1, -12, 0, 298)
+SettingsFrame.Size = UDim2.new(1, -12, 0, 181)
 SettingsFrame.Position = UDim2.fromOffset(6, 59)
 SettingsFrame.BackgroundTransparency = 1
+SettingsFrame.BorderSizePixel = 0
+SettingsFrame.ScrollBarThickness = 4
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 330)
 SettingsFrame.Visible = false
 SettingsFrame.Parent = frame
+
+-- Settings is intentionally scrollable so every control remains inside the 250x250 UI.
+local SettingsContentSize = 330
+SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, SettingsContentSize)
 
 -- Sell remote controls live in Settings.  Move them only after SettingsFrame
 -- has been created so the UI does not error during startup.
@@ -640,7 +654,7 @@ SettingsInfo.Parent = SettingsFrame
 
 --// TRAVEL REMOTE SETTING
 local TravelRemoteLabel = Instance.new("TextLabel")
-TravelRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+TravelRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
 TravelRemoteLabel.Position = UDim2.fromOffset(0, 58)
 TravelRemoteLabel.BackgroundTransparency = 1
 TravelRemoteLabel.Text = "TRAVEL REMOTE"
@@ -653,7 +667,7 @@ TravelRemoteLabel.Parent = SettingsFrame
 local TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Name = "TravelRemoteBox"
 TravelRemoteBox.Size = UDim2.new(0, 105, 0, 26)
-TravelRemoteBox.Position = UDim2.fromOffset(95, 56)
+TravelRemoteBox.Position = UDim2.fromOffset(90, 56)
 TravelRemoteBox.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
 TravelRemoteBox.BorderSizePixel = 0
 TravelRemoteBox.ClearTextOnFocus = false
@@ -671,8 +685,8 @@ TravelBoxCorner.Parent = TravelRemoteBox
 
 local TravelDropdown = Instance.new("TextButton")
 TravelDropdown.Name = "TravelRemoteDropdown"
-TravelDropdown.Size = UDim2.new(0, 90, 0, 26)
-TravelDropdown.Position = UDim2.fromOffset(205, 56)
+TravelDropdown.Size = UDim2.new(0, 70, 0, 26)
+TravelDropdown.Position = UDim2.fromOffset(165, 56)
 TravelDropdown.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 TravelDropdown.BorderSizePixel = 0
 TravelDropdown.Text = "SELECT v"
@@ -687,8 +701,8 @@ TravelDropCorner.Parent = TravelDropdown
 
 local TravelList = Instance.new("ScrollingFrame")
 TravelList.Name = "TravelRemoteList"
-TravelList.Size = UDim2.fromOffset(105, 100)
-TravelList.Position = UDim2.fromOffset(95, 84)
+TravelList.Size = UDim2.fromOffset(100, 100)
+TravelList.Position = UDim2.fromOffset(90, 84)
 TravelList.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 TravelList.BorderSizePixel = 0
 TravelList.Visible = false
@@ -752,7 +766,7 @@ AutoTravelStatus.TextWrapped = true
 AutoTravelStatus.Parent = SettingsFrame
 
 local SellRemoteLabel = Instance.new("TextLabel")
-SellRemoteLabel.Size = UDim2.new(0, 110, 0, 24)
+SellRemoteLabel.Size = UDim2.new(0, 90, 0, 24)
 SellRemoteLabel.Position = UDim2.fromOffset(0, 155)
 SellRemoteLabel.BackgroundTransparency = 1
 SellRemoteLabel.Text = "SELL REMOTE"
@@ -915,17 +929,25 @@ local function SetMinimized(value)
     SettingsFrame.Visible = (not value) and SettingsFrame.Visible
 
     if value then
-        frame.Size = UDim2.fromOffset(285, 40)
+        frame.Size = UDim2.fromOffset(250, 40)
         minimizeButton.Text = "+"
     else
-        frame.Size = UDim2.fromOffset(285, 335)
+        frame.Size = UDim2.fromOffset(250, 250)
         minimizeButton.Text = "-"
         SetTab(ActiveTab)
     end
 end
 
 minimizeButton.Activated:Connect(function()
-    SetMinimized(not minimized)
+    if minimized then
+        -- Opening the UI again is also a STOP command.
+        if Farming then
+            pcall(function() stopFarm() end)
+        end
+        SetMinimized(false)
+    else
+        SetMinimized(true)
+    end
 end)
 
 button = Instance.new("TextButton")
@@ -957,7 +979,7 @@ islandText.Parent = frame
 
 status = Instance.new("TextLabel")
 status.BackgroundTransparency = 1
-status.Size = UDim2.fromOffset(295, 30)
+status.Size = UDim2.fromOffset(230, 30)
 status.Position = UDim2.fromOffset(10, 106)
 status.Font = Enum.Font.Gotham
 status.Text = "Idle"
@@ -1057,7 +1079,7 @@ end
 
 sightHint = Instance.new("TextLabel")
 sightHint.BackgroundTransparency = 1
-sightHint.Size = UDim2.fromOffset(285, 16)
+sightHint.Size = UDim2.fromOffset(230, 16)
 sightHint.Position = UDim2.fromOffset(10, 158)
 sightHint.Font = Enum.Font.Gotham
 sightHint.Text = "Drag the crosshair to set click point"
@@ -1715,7 +1737,11 @@ local function RemoveNonHorseModels()
         if model:IsA("Model") and model.Parent then
             local keep = false
             pcall(function()
+                local modelName = tostring(model.Name):lower()
                 if model == LocalPlayer.Character then
+                    keep = true
+                elseif modelName:find("lasso", 1, true) then
+                    -- Keep any model with "Lasso" in its name.
                     keep = true
                 elseif IsHorseOrHorseContainer(model) then
                     keep = true
@@ -2587,7 +2613,14 @@ end
 
 button.Activated:Connect(function()
     local ok, err = pcall(function()
-        if Farming then stopFarm() else startFarm() end
+        if Farming then
+            stopFarm()
+            SetMinimized(false)
+        else
+            startFarm()
+            -- Starting the farm automatically minimizes the UI.
+            SetMinimized(true)
+        end
     end)
     if not ok then
         Farming = false
