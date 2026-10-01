@@ -1,4 +1,4 @@
--- V24 UPDATE: Compact centered UI. Manual selling only. Auto remote finders test Travel Function1-36 and Sell Event1-90; inventory is manual-refresh only except during sell-remote detection.
+-- V28 UPDATE: Keep V27 UI/behavior. Inventory is NOT auto-refreshed. Selling tab has a manual REFRESH INVENTORY button. Auto Find Sell Remote refreshes inventory once after each Event test and checks whether the target Normal Horse UID disappeared.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
@@ -275,7 +275,7 @@ SellingTab.TextColor3 = Color3.fromRGB(220, 220, 225)
 SellingTab.BorderSizePixel = 0
 SellingTab.Font = Enum.Font.GothamBold
 SellingTab.TextSize = 10
-SellingTab.Text = "INVENTORY"
+SellingTab.Text = "SELLING"
 SellingTab.Parent = frame
 
 local SettingsTab = Instance.new("TextButton")
@@ -319,27 +319,58 @@ local SellingStatus = Instance.new("TextLabel")
 SellingStatus.Size = UDim2.new(1, 0, 0, 16)
 SellingStatus.Position = UDim2.fromOffset(0, 22)
 SellingStatus.BackgroundTransparency = 1
-SellingStatus.Text = "Press REFRESH to scan inventory"
+SellingStatus.Text = "Loading inventory..."
 SellingStatus.TextColor3 = Color3.fromRGB(130, 135, 145)
 SellingStatus.TextSize = 9
 SellingStatus.Font = Enum.Font.Gotham
 SellingStatus.TextXAlignment = Enum.TextXAlignment.Left
 SellingStatus.Parent = SellingFrame
 
+-- Manual inventory refresh only. No background inventory refresh loop.
 local RefreshInventoryButton = Instance.new("TextButton")
-RefreshInventoryButton.Name = "RefreshInventory"
-RefreshInventoryButton.Size = UDim2.fromOffset(82, 22)
-RefreshInventoryButton.Position = UDim2.new(1, -82, 0, 0)
+RefreshInventoryButton.Name = "RefreshInventoryButton"
+RefreshInventoryButton.Size = UDim2.fromOffset(112, 24)
+RefreshInventoryButton.Position = UDim2.new(1, -112, 0, 0)
 RefreshInventoryButton.BackgroundColor3 = Color3.fromRGB(55, 55, 62)
 RefreshInventoryButton.BorderSizePixel = 0
-RefreshInventoryButton.Text = "REFRESH"
+RefreshInventoryButton.Text = "REFRESH INVENTORY"
 RefreshInventoryButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-RefreshInventoryButton.TextSize = 9
+RefreshInventoryButton.TextSize = 8
 RefreshInventoryButton.Font = Enum.Font.GothamBold
+RefreshInventoryButton.AutoButtonColor = true
 RefreshInventoryButton.Parent = SellingFrame
 local ribc = Instance.new("UICorner")
 ribc.CornerRadius = UDim.new(0, 6)
 ribc.Parent = RefreshInventoryButton
+
+local function RefreshInventoryManually()
+    RefreshInventoryButton.Text = "REFRESHING..."
+    SellingStatus.Text = "Refreshing inventory..."
+    SellingStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
+
+    task.spawn(function()
+        local inv = nil
+        local ok, result = pcall(function()
+            local refs = require(ReplicatedStorage:WaitForChild("References"))
+            local data = require(refs.PlayerScripts.Priority.Data)
+            return data.GetLocal({"inventory"})
+        end)
+        if ok and type(result) == "table" then inv = result end
+        if type(inv) == "table" then
+            SellingInventory = inv
+            SellingInventoryLoaded = true
+            RefreshSellingStats()
+            SellingStatus.Text = "Inventory refreshed"
+            SellingStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
+        else
+            SellingStatus.Text = "Inventory refresh failed"
+            SellingStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
+        end
+        RefreshInventoryButton.Text = "REFRESH INVENTORY"
+    end)
+end
+
+RefreshInventoryButton.Activated:Connect(RefreshInventoryManually)
 
 local SellingLabels = {}
 local sellingNames = {
@@ -1513,39 +1544,17 @@ SellButton.Activated:Connect(function()
     end)
 end)
 
-RefreshInventoryButton.Activated:Connect(function()
-    if RefreshInventoryButton:GetAttribute("Busy") then return end
-    RefreshInventoryButton:SetAttribute("Busy", true)
-    RefreshInventoryButton.Text = "SCANNING..."
-    SellingStatus.Text = "Scanning inventory..."
-    SellingStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
-
-    task.spawn(function()
-        local ok, err = pcall(function()
-            if not SellingReferences then
-                SellingReferences = require(ReplicatedStorage:WaitForChild("References"))
-            end
-            local Data = require(SellingReferences.PlayerScripts.Priority.Data)
-            local inv = Data.GetLocal({"inventory"})
-            if type(inv) ~= "table" then
-                error("inventory data unavailable")
-            end
-            SellingInventory = inv
-            SellingInventoryLoaded = true
-            RefreshSellingStats()
-        end)
-
-        if ok then
-            SellingStatus.Text = "Inventory refreshed"
-            SellingStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
-        else
-            SellingStatus.Text = "Refresh failed: " .. tostring(err)
-            SellingStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
-        end
-
-        RefreshInventoryButton.Text = "REFRESH"
-        RefreshInventoryButton:SetAttribute("Busy", false)
+task.spawn(function()
+    local ok, err = pcall(function()
+        SellingReferences = require(ReplicatedStorage:WaitForChild("References"))
+        local Data = require(SellingReferences.PlayerScripts.Priority.Data)
+        SellingInventory = Data.GetLocal({"inventory"})
+        SellingInventoryLoaded = type(SellingInventory) == "table"
     end)
+    if not ok then
+        SellingStatus.Text = "Inventory unavailable"
+    end
+    -- No periodic inventory refresh. Use the REFRESH INVENTORY button in the Selling tab.
 end)
 
 local function GetHorseInfo(rawName)
@@ -1985,24 +1994,22 @@ local function DetectSellRemote()
     if not AutoSellRemoteButton then return end
     if AutoSellRemoteButton:GetAttribute("Busy") then return end
     AutoSellRemoteButton:SetAttribute("Busy", true)
-    AutoSellRemoteButton.Text = "TESTING EVENT1-90..."
-    AutoSellRemoteStatus.Text = "Scanning inventory continuously for a Normal Horse..."
+    AutoSellRemoteButton.Text = "FINDING SELL REMOTE..."
+    AutoSellRemoteStatus.Text = "Getting one Normal Horse to use as the test target..."
     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
+        -- Get one fresh inventory snapshot only when the detector starts.
         local testUID
-
-        -- Always pull a fresh inventory snapshot before selecting the test horse.
         for attempt = 1, 40 do
             local inv = ReadLocalInventory()
             if type(inv) == "table" then
                 SellingInventory = inv
                 SellingInventoryLoaded = true
-                RefreshSellingStats()
                 testUID = FindNormalHorseUID(inv)
                 if testUID then break end
             end
-            AutoSellRemoteStatus.Text = "Scanning inventory... " .. tostring(attempt) .. "/40"
+            AutoSellRemoteStatus.Text = "Looking for Normal Horse... " .. tostring(attempt) .. "/40"
             task.wait(0.5)
         end
 
@@ -2014,72 +2021,58 @@ local function DetectSellRemote()
             return
         end
 
-        AutoSellRemoteStatus.Text = "Test UID: " .. tostring(testUID) .. " | Event1-90"
+        AutoSellRemoteStatus.Text = "Target UID: " .. tostring(testUID) .. " | Testing Event1-90"
 
         for i = 1, 90 do
             local event = FindRemoteEvent(i)
             local eventName = "Event" .. tostring(i)
 
             if event then
-                -- Fresh snapshot immediately before every event test.
-                local before = ReadLocalInventory()
-                if type(before) ~= "table" then
-                    AutoSellRemoteStatus.Text = "Inventory scan failed; retrying " .. eventName
-                    task.wait(0.5)
-                    continue
-                end
+                -- IMPORTANT: each Event test uses the SAME target Normal Horse UID.
+                -- Do not spam inventory refreshes before the test.
+                AutoSellRemoteStatus.Text = "Testing " .. eventName .. " with target Normal Horse..."
 
-                SellingInventory = before
-                SellingInventoryLoaded = true
-                RefreshSellingStats()
-
-                -- If the chosen test UID has disappeared for any reason, choose
-                -- another Normal Horse from the latest inventory snapshot.
-                if not InventoryHasUID(before, testUID) then
-                    testUID = FindNormalHorseUID(before)
-                    if not testUID then
-                        AutoSellRemoteStatus.Text = "Test horse disappeared and no replacement Normal Horse exists."
-                        break
-                    end
-                    AutoSellRemoteStatus.Text = "New test UID: " .. tostring(testUID)
-                end
-
-                AutoSellRemoteStatus.Text = "Testing " .. eventName .. " with Normal Horse..."
-
-                -- EXACT captured sell payload:
-                -- EventX:FireServer("SellItems", {[testUID] = 1})
+                -- Exact captured sell payload.
                 local fireOK, fireErr = pcall(function()
                     event:FireServer("SellItems", {[testUID] = 1})
                 end)
 
-                -- Scan the inventory AFTER every event test. There is no
-                -- background inventory scan; only this detector performs a
-                -- scan when checking whether the test UID disappeared.
-                task.wait(0.1)
-                local after = ReadLocalInventory()
-                local sold = type(after) == "table" and not InventoryHasUID(after, testUID)
-                if type(after) == "table" then
-                    SellingInventory = after
+                -- AFTER EVERY TEST: refresh the inventory once, then check whether
+                -- the target UID disappeared. If it disappeared, this is the
+                -- working Sell Remote.
+                task.wait(0.25)
+                local refreshedInventory = ReadLocalInventory()
+                local sold = false
+
+                if type(refreshedInventory) == "table" then
+                    SellingInventory = refreshedInventory
                     SellingInventoryLoaded = true
+                    sold = not InventoryHasUID(refreshedInventory, testUID)
+
+                    if ActiveTab == "Selling" and not minimized then
+                        RefreshSellingStats()
+                    end
                 end
 
                 if fireOK and sold then
                     SelectedSellRemote = eventName
                     RemoteDrop.Text = "Remote: " .. eventName
                     SellStatus.Text = "Remote: " .. eventName .. " | Rarity: " .. SelectedSellRarity
-                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | UID left inventory"
+                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | Target UID is gone"
                     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
                     AutoSellRemoteButton.Text = "SELL REMOTE FOUND"
                     AutoSellRemoteButton:SetAttribute("Busy", false)
                     return
                 elseif not fireOK then
                     AutoSellRemoteStatus.Text = eventName .. " failed: " .. tostring(fireErr)
+                elseif type(refreshedInventory) ~= "table" then
+                    AutoSellRemoteStatus.Text = eventName .. " tested | inventory refresh failed"
                 else
-                    AutoSellRemoteStatus.Text = eventName .. " tested | horse still in inventory"
+                    AutoSellRemoteStatus.Text = eventName .. " tested | target still in inventory"
                 end
             end
 
-            -- Requested 0.5-second interval between Event tests.
+            -- Keep the existing interval between Event tests.
             task.wait(0.5)
         end
 
@@ -2502,5 +2495,5 @@ LocalPlayer.CharacterRemoving:Connect(function()
     CurrentTargetIsland = nil
 end)
 
-print("[NORMS] Minimal farmer loaded.")
+print("[NORMS] Minimal farmer loaded. Inventory refresh is manual; Sell Remote detection refreshes once after each Event test.")
 print("[NORMS] Scans all loaded islands in the current server; Travel Remote can move to the selected island automatically.")
