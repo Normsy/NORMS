@@ -1825,6 +1825,52 @@ end)
 --// The script no longer deletes Workspace models or forces terrain/water to white.
 
 
+--// HORSE FILTER HELPERS
+-- These are required by ScanHorses. A previous cleanup accidentally removed
+-- them, which made the START worker stop when it reached the first scan.
+local function isOwned(node)
+    if not node then return false end
+
+    -- Treat a populated Owner/OwnerUserId as already owned.
+    local owner = node:GetAttribute("Owner")
+    if owner ~= nil and tostring(owner) ~= "" and tostring(owner) ~= "0" then
+        return true
+    end
+
+    local ownerUserId = node:GetAttribute("OwnerUserId")
+    if ownerUserId ~= nil and tostring(ownerUserId) ~= "" and tostring(ownerUserId) ~= "0" then
+        return true
+    end
+
+    -- Some versions expose ownership as a child value.
+    for _, key in ipairs({"OwnerUserId", "Owner"}) do
+        local value = node:FindFirstChild(key, true)
+        if value and value:IsA("ValueBase") then
+            local v = value.Value
+            if v ~= nil and tostring(v) ~= "" and tostring(v) ~= "0" then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
+local function isInShop(node)
+    local current = node
+    while current and current ~= Workspace do
+        local n = tostring(current.Name):lower()
+        if n:find("shop", 1, true)
+            or n:find("stable", 1, true)
+            or n:find("barn", 1, true)
+            or n:find("store", 1, true) then
+            return true
+        end
+        current = current.Parent
+    end
+    return false
+end
+
 --// BACKGROUND SCANNER
 local function ScanHorses()
     local now = tick()
@@ -2406,7 +2452,12 @@ end
 
 local function startFarm()
     if Farming then return end
+
     Farming = true
+    status.Text = "Starting farm..."
+    status.TextColor3 = Color3.fromRGB(251, 191, 36)
+    islandText.Text = "Island: detecting..."
+
     SetNoClip(true)
     FarmGeneration += 1
     local myGeneration = FarmGeneration
@@ -2429,8 +2480,20 @@ local function startFarm()
             -- ScanHorses() already scans every island loaded in the current server.
             -- Do not restrict candidates to the current island: the old tracker would
             -- select a horse from another island and use the Travel Remote to reach it.
+            status.Text = "Scanning for horses..."
+            status.TextColor3 = Color3.fromRGB(251, 191, 36)
+
+            local scanOK, scanResults = pcall(ScanHorses)
+            if not scanOK then
+                status.Text = "Scan error: " .. tostring(scanResults)
+                status.TextColor3 = Color3.fromRGB(239, 68, 68)
+                warn("[NORMS SCAN ERROR]", scanResults)
+                task.wait(0.5)
+                continue
+            end
+
             local candidates = {}
-            for _, horse in ipairs(ScanHorses()) do
+            for _, horse in ipairs(scanResults or {}) do
                 if horse.Model and horse.Model.Parent then
                     table.insert(candidates, horse)
                 end
@@ -2661,8 +2724,8 @@ button.Activated:Connect(function()
             SetMinimized(false)
         else
             startFarm()
-            -- Starting the farm automatically minimizes the UI.
-            SetMinimized(true)
+            -- Keep the UI open so the live farm status is visible.
+            SetMinimized(false)
         end
     end)
     if not ok then
