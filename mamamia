@@ -1,4 +1,4 @@
--- V23 UPDATE: Compact centered UI. Manual selling only. Auto remote finders test Travel Function1-36 and Sell Event1-90 at 0.5s intervals with live inventory checks.
+-- V24 UPDATE: Compact centered UI. Manual selling only. Auto remote finders test Travel Function1-36 and Sell Event1-90 at 0.5s intervals with live inventory checks.
 --// NORMS MINIMAL HORSE FARMER
 --// Uses the same blank RemoteEvent / RemoteFunction renaming setup as the old NORMS script.
 --// Background horse scan + manual island travel + manual lasso + screen clicking.
@@ -1720,44 +1720,84 @@ local function FindRemoteEvent(index)
     return nil
 end
 
+-- Exact island names from the original script.
+local AutoTravelIslandNames = {
+    "Mainland", "Blizzard Island", "Forest Island", "Royal Island", "Desert Island",
+    "Glacier Island", "Mountain Island", "Jungle Island", "Lunar Islands", "Volcano Island"
+}
+
+local function GetTravelIslandObject(islandName)
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands then return nil end
+    return islands:FindFirstChild(islandName)
+end
+
+local function IsPlayerAtTravelIsland(islandName)
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return false end
+    local island = GetTravelIslandObject(islandName)
+    if not island then return false end
+
+    -- Prefer the island model/folder geometry instead of relying only on its pivot.
+    local nearest = math.huge
+    for _, part in ipairs(island:GetDescendants()) do
+        if part:IsA("BasePart") then
+            local d = (root.Position - part.Position).Magnitude
+            if d < nearest then nearest = d end
+            if d <= 1800 then return true end
+        end
+    end
+
+    local ok, pivot = pcall(function()
+        if island:IsA("Model") then return island:GetPivot() end
+    end)
+    if ok and pivot and (root.Position - pivot.Position).Magnitude <= 1800 then
+        return true
+    end
+    return nearest <= 1800
+end
+
 local function DetectTravelRemote()
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
     AutoTravelButton.Text = "TESTING FUNCTION1-36..."
-    AutoTravelStatus.Text = "Finding a horse on another island..."
+    AutoTravelStatus.Text = "Reading old island list and checking current island..."
     AutoTravelStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        local target
-        local originalIsland = GetCurrentPlayerIsland()
-        local originalRoot = GetRootAndPosition()
+        local currentIsland = GetCurrentPlayerIsland()
+        local targetIsland
 
-        -- Keep scanning until a real horse on a different loaded island is found.
-        for attempt = 1, 40 do
-            invalidate()
-            local currentIsland = GetCurrentPlayerIsland()
-            local horses = ScanHorses()
-            for _, horse in ipairs(horses) do
-                if horse.Model and horse.Model.Parent and horse.Island and horse.Island ~= currentIsland then
-                    target = horse
+        -- Pick a real island name from the original script that is NOT the
+        -- island the player is currently on.
+        for _, islandName in ipairs(AutoTravelIslandNames) do
+            if islandName ~= currentIsland and GetTravelIslandObject(islandName) then
+                targetIsland = islandName
+                break
+            end
+        end
+
+        -- If the exact island objects are not all loaded, still use the original
+        -- names. The server's Travel function is what decides whether the name
+        -- is valid; this avoids depending on a horse being loaded first.
+        if not targetIsland then
+            for _, islandName in ipairs(AutoTravelIslandNames) do
+                if islandName ~= currentIsland then
+                    targetIsland = islandName
                     break
                 end
             end
-            if target then break end
-            AutoTravelStatus.Text = "Waiting for another-island horse... " .. tostring(attempt) .. "/40"
-            task.wait(0.5)
         end
 
-        if not target then
-            AutoTravelStatus.Text = "No other-island horse found."
-            AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 190, 100)
+        if not targetIsland then
+            AutoTravelStatus.Text = "Could not choose a target island."
+            AutoTravelStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
             AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
             AutoTravelButton:SetAttribute("Busy", false)
             return
         end
 
-        local targetIsland = tostring(target.Island)
-        local targetPosition = target.Position
         AutoTravelStatus.Text = "Target: " .. targetIsland .. " | testing every 0.5s"
 
         for i = 1, 36 do
@@ -1766,30 +1806,29 @@ local function DetectTravelRemote()
 
             if remote then
                 local _, beforePosition = GetRootAndPosition()
-                local beforeDistance = beforePosition and targetPosition and (beforePosition - targetPosition).Magnitude or math.huge
-
                 AutoTravelStatus.Text = "Testing " .. name .. " -> " .. targetIsland
 
+                -- EXACT captured travel payload:
+                -- FunctionX:InvokeServer("Travel", targetIsland, 1)
                 local invokeOK, invokeErr = pcall(function()
                     remote:InvokeServer("Travel", targetIsland, 1)
                 end)
 
-                -- The requested 0.5 second test interval.
+                -- Requested test cadence: 0.5 seconds.
                 task.wait(0.5)
 
                 local _, afterPosition = GetRootAndPosition()
-                local currentIsland = GetCurrentPlayerIsland()
-                local reachedIsland = currentIsland == targetIsland
-                local movedTowardTarget = false
+                local reachedByName = IsPlayerAtTravelIsland(targetIsland)
+                local reachedByPosition = false
 
-                if afterPosition and targetPosition then
-                    local afterDistance = (afterPosition - targetPosition).Magnitude
-                    movedTowardTarget = afterDistance + 100 < beforeDistance
+                if beforePosition and afterPosition then
+                    -- A successful travel normally causes a very large position
+                    -- change. This is only a secondary confirmation; island
+                    -- geometry/name is the primary confirmation.
+                    reachedByPosition = (afterPosition - beforePosition).Magnitude > 500
                 end
 
-                -- A remote is accepted only when the player actually reaches the
-                -- target island (or clearly moves to the target island/horse).
-                if invokeOK and (reachedIsland or movedTowardTarget) then
+                if invokeOK and (reachedByName or reachedByPosition) then
                     TravelRemoteBox.Text = name
                     TravelDropdown.Text = name
                     AutoTravelStatus.Text = "FOUND: " .. name .. " -> " .. targetIsland
@@ -1800,20 +1839,11 @@ local function DetectTravelRemote()
                 end
 
                 if not invokeOK then
-                    AutoTravelStatus.Text = name .. " failed; next in 0.5s"
-                end
-
-                -- If a bad test moved the client, restore the original client
-                -- position so the next Function is tested from the same place.
-                if originalRoot and afterPosition then
-                    pcall(function()
-                        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                        if root and GetCurrentPlayerIsland() ~= originalIsland then
-                            root.CFrame = originalRoot.CFrame
-                        end
-                    end)
+                    AutoTravelStatus.Text = name .. " failed: " .. tostring(invokeErr)
                 end
             end
+
+            task.wait(0.5)
         end
 
         AutoTravelStatus.Text = "No working Travel Remote in Function1-36."
@@ -1831,21 +1861,23 @@ local function DetectSellRemote()
     if AutoSellRemoteButton:GetAttribute("Busy") then return end
     AutoSellRemoteButton:SetAttribute("Busy", true)
     AutoSellRemoteButton.Text = "TESTING EVENT1-90..."
-    AutoSellRemoteStatus.Text = "Scanning inventory for a Normal Horse..."
+    AutoSellRemoteStatus.Text = "Scanning inventory continuously for a Normal Horse..."
     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
 
     task.spawn(function()
-        -- Continuously refresh the local inventory while looking for the test horse.
         local testUID
-        for attempt = 1, 20 do
+
+        -- Always pull a fresh inventory snapshot before selecting the test horse.
+        for attempt = 1, 40 do
             local inv = ReadLocalInventory()
             if type(inv) == "table" then
                 SellingInventory = inv
                 SellingInventoryLoaded = true
+                RefreshSellingStats()
                 testUID = FindNormalHorseUID(inv)
                 if testUID then break end
             end
-            AutoSellRemoteStatus.Text = "Scanning inventory... " .. tostring(attempt) .. "/20"
+            AutoSellRemoteStatus.Text = "Scanning inventory... " .. tostring(attempt) .. "/40"
             task.wait(0.5)
         end
 
@@ -1857,48 +1889,49 @@ local function DetectSellRemote()
             return
         end
 
-        AutoSellRemoteStatus.Text = "Test UID: " .. tostring(testUID) .. " | testing every 0.5s"
+        AutoSellRemoteStatus.Text = "Test UID: " .. tostring(testUID) .. " | Event1-90"
 
         for i = 1, 90 do
             local event = FindRemoteEvent(i)
             local eventName = "Event" .. tostring(i)
 
             if event then
-                -- Always rescan immediately before each test so we know the exact
-                -- inventory state of the test horse.
+                -- Fresh snapshot immediately before every event test.
                 local before = ReadLocalInventory()
                 if type(before) ~= "table" then
+                    AutoSellRemoteStatus.Text = "Inventory scan failed; retrying " .. eventName
                     task.wait(0.5)
                     continue
                 end
 
                 SellingInventory = before
                 SellingInventoryLoaded = true
+                RefreshSellingStats()
 
+                -- If the chosen test UID has disappeared for any reason, choose
+                -- another Normal Horse from the latest inventory snapshot.
                 if not InventoryHasUID(before, testUID) then
-                    -- The test horse disappeared before this Event was tested.
-                    -- Do not claim the current Event caused it; refresh and choose
-                    -- another Normal Horse instead.
                     testUID = FindNormalHorseUID(before)
                     if not testUID then
-                        AutoSellRemoteStatus.Text = "Test horse left inventory; no replacement Normal Horse."
+                        AutoSellRemoteStatus.Text = "Test horse disappeared and no replacement Normal Horse exists."
                         break
                     end
-                    before = ReadLocalInventory()
+                    AutoSellRemoteStatus.Text = "New test UID: " .. tostring(testUID)
                 end
 
-                AutoSellRemoteStatus.Text = "Testing " .. eventName .. " | horse still in inventory"
+                AutoSellRemoteStatus.Text = "Testing " .. eventName .. " with Normal Horse..."
 
-                local fireOK = pcall(function()
+                -- EXACT captured sell payload:
+                -- EventX:FireServer("SellItems", {[testUID] = 1})
+                local fireOK, fireErr = pcall(function()
                     event:FireServer("SellItems", {[testUID] = 1})
                 end)
 
-                -- Scan the inventory repeatedly for 0.5 seconds instead of checking
-                -- only once. This catches delayed inventory replication.
+                -- Continuously rescan for up to 0.5s so delayed inventory
+                -- replication is detected reliably.
                 local sold = false
-                local checkStart = tick()
-                while tick() - checkStart < 0.5 do
-                    task.wait(0.1)
+                local deadline = tick() + 0.5
+                while tick() < deadline do
                     local current = ReadLocalInventory()
                     if type(current) == "table" then
                         SellingInventory = current
@@ -1909,21 +1942,26 @@ local function DetectSellRemote()
                             break
                         end
                     end
+                    task.wait(0.1)
                 end
 
                 if fireOK and sold then
                     SelectedSellRemote = eventName
                     RemoteDrop.Text = "Remote: " .. eventName
                     SellStatus.Text = "Remote: " .. eventName .. " | Rarity: " .. SelectedSellRarity
-                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | Normal Horse left inventory."
+                    AutoSellRemoteStatus.Text = "FOUND: " .. eventName .. " | UID left inventory"
                     AutoSellRemoteStatus.TextColor3 = Color3.fromRGB(100, 255, 130)
                     AutoSellRemoteButton.Text = "SELL REMOTE FOUND"
                     AutoSellRemoteButton:SetAttribute("Busy", false)
                     return
+                elseif not fireOK then
+                    AutoSellRemoteStatus.Text = eventName .. " failed: " .. tostring(fireErr)
+                else
+                    AutoSellRemoteStatus.Text = eventName .. " tested | horse still in inventory"
                 end
             end
 
-            -- Keep the requested 0.5-second cadence between Event tests.
+            -- Requested 0.5-second interval between Event tests.
             task.wait(0.5)
         end
 
