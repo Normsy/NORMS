@@ -1091,7 +1091,7 @@ end)
 --// END MINIMAL UI
 
 --// SETTINGS
-local SCAN_INTERVAL = 0.20
+local SCAN_INTERVAL = 0.50
 local CATCH_INTERVAL = 0.50
 local TWEEN_SPEED = 90
 local HORSE_OFFSET = CFrame.new(0, 3, 0)
@@ -2037,10 +2037,10 @@ local function DetectSellRemote()
                     event:FireServer("SellItems", {[testUID] = 1})
                 end)
 
-                -- AFTER EVERY TEST: refresh the inventory once, then check whether
-                -- the target UID disappeared. If it disappeared, this is the
-                -- working Sell Remote.
-                task.wait(0.25)
+                -- AFTER EVERY TEST: wait briefly for the inventory state to
+                -- replicate, then take ONE fresh inventory snapshot. Do not
+                -- recalculate all inventory statistics during remote detection.
+                task.wait(0.35)
                 local refreshedInventory = ReadLocalInventory()
                 local sold = false
 
@@ -2048,10 +2048,6 @@ local function DetectSellRemote()
                     SellingInventory = refreshedInventory
                     SellingInventoryLoaded = true
                     sold = not InventoryHasUID(refreshedInventory, testUID)
-
-                    if ActiveTab == "Selling" and not minimized then
-                        RefreshSellingStats()
-                    end
                 end
 
                 if fireOK and sold then
@@ -2469,12 +2465,16 @@ pcall(function()
     assert(AutoSellRemoteButton and AutoSellRemoteButton:IsA("TextButton"), "Sell finder button was not created")
 end)
 
---// BACKGROUND SCAN LOOP: always scans, but does not create a tracker/list UI.
+--// FARM SCAN LOOP
+-- Only scan horses while farming is actually running. This avoids a constant
+-- Workspace descendant scan when the UI is idle and prevents unnecessary lag.
 task.spawn(function()
     while gui.Parent do
-        ScanHorses()
-        local island = GetCurrentPlayerIsland()
-        islandText.Text = "Island: " .. tostring(island or "?")
+        if Farming then
+            ScanHorses()
+            local island = GetCurrentPlayerIsland()
+            islandText.Text = "Island: " .. tostring(island or "?")
+        end
         task.wait(SCAN_INTERVAL)
     end
 end)
