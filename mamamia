@@ -283,11 +283,31 @@ ScreenGui.Parent = guiParent
 local Frame = Instance.new("Frame")
 Frame.Name = "MainFrame"
 Frame.Size = UDim2.fromOffset(580, 380)
-Frame.Position = UDim2.new(0.5, -290, 0.5, -190)
+-- Centered with an anchor point so the UIScale below shrinks it around the middle
+Frame.AnchorPoint = Vector2.new(0.5, 0.5)
+Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
 Frame.BorderSizePixel = 0
 Frame.Active = true
 Frame.Parent = ScreenGui
+
+--// UI SIZE (auto-fits small screens). Change MAX_UI_SCALE to make it bigger/smaller.
+do
+    local MAX_UI_SCALE = 0.85
+    local MIN_UI_SCALE = 0.5
+    local scale = MAX_UI_SCALE
+    pcall(function()
+        local cam = Workspace.CurrentCamera
+        local vp = cam and cam.ViewportSize
+        if vp then
+            scale = math.clamp(math.min(vp.X / 760, vp.Y / 540), MIN_UI_SCALE, MAX_UI_SCALE)
+        end
+    end)
+    local uiScale = Instance.new("UIScale")
+    uiScale.Name = "UISizeScale"
+    uiScale.Scale = scale
+    uiScale.Parent = Frame
+end
 
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Color = Color3.fromRGB(44, 48, 62)
@@ -373,7 +393,7 @@ SettingTabBtn.Size = UDim2.new(0.5, -2, 1, 0)
 SettingTabBtn.Position = UDim2.new(0.5, 2, 0, 0)
 SettingTabBtn.BackgroundColor3 = Color3.fromRGB(17, 19, 26)
 SettingTabBtn.BorderSizePixel = 0
-SettingTabBtn.Text = "Setting"
+SettingTabBtn.Text = "Settings"
 SettingTabBtn.TextColor3 = Color3.fromRGB(139, 146, 165)
 SettingTabBtn.TextSize = 13
 SettingTabBtn.Font = Enum.Font.GothamBold
@@ -1420,6 +1440,7 @@ local function CreateActionRow(parent, yPos)
     StatusLbl.TextSize = 11
     StatusLbl.Font = Enum.Font.Gotham
     StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
+    StatusLbl.TextTruncate = Enum.TextTruncate.AtEnd
     StatusLbl.Parent = parent
     return GenerateBtn, StatusLbl
 end
@@ -1639,7 +1660,7 @@ LassoGenBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- 2. Catch Remote Configuration (Dropdown pops ABOVE)
+-- 2. Catch Remote Configuration (Generate button auto-detects + auto-saves; wired up in the add-on)
 local CatchConfigCard = CreateSettingsGroup("Catch Remote", 4, 96)
 local CatchRemoteBox = CreateInputRow(CatchConfigCard, "Catch Remote", 28, true, "", "Select Event...")
 CatchRemoteBox.Size = UDim2.new(0.7, -100, 0, 24)
@@ -1705,33 +1726,13 @@ CatchDropdownBtn.MouseButton1Click:Connect(function()
     CatchDropdownList.Visible = IsCatchOpen
 end)
 
-local SaveCatchBtn = Instance.new("TextButton")
+-- Generate button (replaces the old Save button)
+local SaveCatchBtn, CatchGenStatus = CreateActionRow(CatchConfigCard, 60)
 SaveCatchBtn.Size = UDim2.new(0, 72, 0, 24)
 SaveCatchBtn.Position = UDim2.new(1, -82, 0, 60)
-SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
-SaveCatchBtn.BorderSizePixel = 0
-SaveCatchBtn.Text = "Save"
-SaveCatchBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SaveCatchBtn.TextSize = 12
-SaveCatchBtn.Font = Enum.Font.GothamBold
-SaveCatchBtn.Parent = CatchConfigCard
+CatchGenStatus.Text = "Equip lasso, press Generate"
 
-local SaveCatchCorner = Instance.new("UICorner")
-SaveCatchCorner.CornerRadius = UDim.new(0, 7)
-SaveCatchCorner.Parent = SaveCatchBtn
-
-SaveCatchBtn.MouseButton1Click:Connect(function()
-    if CatchRemoteBox.Text ~= "" then
-        CatchRemoteBox.TextEditable = false
-        MakeUncopyable(CatchRemoteBox)
-        SaveCatchBtn.Text = "Saved"
-        SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        SaveCatchBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        SavePersistentConfig()
-    end
-end)
-
--- 3. Travel Remote Configuration (Dropdown pops ABOVE)
+-- 3. Travel Remote Configuration (Generate button auto-finds + auto-saves; wired up in the add-on)
 local TravelConfigCard = CreateSettingsGroup("Travel Remote", 5, 96)
 local TravelRemoteBox = CreateInputRow(TravelConfigCard, "Travel Remote", 28, true, "", "Select Function...")
 TravelRemoteBox.Size = UDim2.new(0.7, -100, 0, 24)
@@ -1797,31 +1798,11 @@ TravelDropdownBtn.MouseButton1Click:Connect(function()
     TravelDropdownList.Visible = IsTravelOpen
 end)
 
-local SaveTravelBtn = Instance.new("TextButton")
+-- Generate button (replaces the old Save button)
+local SaveTravelBtn, TravelGenStatus = CreateActionRow(TravelConfigCard, 60)
 SaveTravelBtn.Size = UDim2.new(0, 72, 0, 24)
 SaveTravelBtn.Position = UDim2.new(1, -82, 0, 60)
-SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
-SaveTravelBtn.BorderSizePixel = 0
-SaveTravelBtn.Text = "Save"
-SaveTravelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SaveTravelBtn.TextSize = 12
-SaveTravelBtn.Font = Enum.Font.GothamBold
-SaveTravelBtn.Parent = TravelConfigCard
-
-local SaveTravelCorner = Instance.new("UICorner")
-SaveTravelCorner.CornerRadius = UDim.new(0, 7)
-SaveTravelCorner.Parent = SaveTravelBtn
-
-SaveTravelBtn.MouseButton1Click:Connect(function()
-    if TravelRemoteBox.Text ~= "" then
-        TravelRemoteBox.TextEditable = false
-        MakeUncopyable(TravelRemoteBox)
-        SaveTravelBtn.Text = "Saved"
-        SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        SaveTravelBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        SavePersistentConfig()
-    end
-end)
+TravelGenStatus.Text = "Stand on any island, press Generate"
 
 --// UI TABS & SORTING
 local SortContainer = Instance.new("Frame")
@@ -1975,8 +1956,10 @@ local function SwitchTab(tabName)
 end
 
 MainTabBtn.MouseButton1Click:Connect(function() SwitchTab("Main") end)
-SettingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Setting") end)
+SettingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Settings") end)
 
+-- Minimize/restore only animates the SIZE now (the frame is center-anchored),
+-- so it stays wherever you dragged it.
 local function ToggleMinimize()
     if IsAnimating then return end
     IsAnimating = true
@@ -1988,14 +1971,14 @@ local function ToggleMinimize()
         local tween1 = TweenService:Create(
             Frame,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(2, 380), Position = UDim2.new(0.5, -1, 0.5, -190) }
+            { Size = UDim2.fromOffset(2, 380) }
         )
         tween1:Play()
         tween1.Completed:Wait()
         local tween2 = TweenService:Create(
             Frame,
             TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Size = UDim2.fromOffset(60, 60), Position = UDim2.new(0.5, -30, 0.5, -30) }
+            { Size = UDim2.fromOffset(60, 60) }
         )
         tween2:Play()
         tween2.Completed:Wait()
@@ -2007,14 +1990,14 @@ local function ToggleMinimize()
         local tween1 = TweenService:Create(
             Frame,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(2, 380), Position = UDim2.new(0.5, -1, 0.5, -190) }
+            { Size = UDim2.fromOffset(2, 380) }
         )
         tween1:Play()
         tween1.Completed:Wait()
         local tween2 = TweenService:Create(
             Frame,
             TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(580, 380), Position = UDim2.new(0.5, -290, 0.5, -190) }
+            { Size = UDim2.fromOffset(580, 380) }
         )
         tween2:Play()
         tween2.Completed:Wait()
@@ -2435,21 +2418,15 @@ LoadPersistentConfig = function()
                 if decoded.CatchRemote then
                     CatchRemoteBox.Text = decoded.CatchRemote
                     if decoded.CatchRemote ~= "" then
-                        CatchRemoteBox.TextEditable = false
-                        MakeUncopyable(CatchRemoteBox)
-                        SaveCatchBtn.Text = "Saved"
-                        SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                        SaveCatchBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+                        CatchGenStatus.Text = "Saved: " .. decoded.CatchRemote
+                        CatchGenStatus.TextColor3 = Color3.fromRGB(52, 211, 153)
                     end
                 end
                 if decoded.TravelRemote then
                     TravelRemoteBox.Text = decoded.TravelRemote
                     if decoded.TravelRemote ~= "" then
-                        TravelRemoteBox.TextEditable = false
-                        MakeUncopyable(TravelRemoteBox)
-                        SaveTravelBtn.Text = "Saved"
-                        SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                        SaveTravelBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+                        TravelGenStatus.Text = "Saved: " .. decoded.TravelRemote
+                        TravelGenStatus.TextColor3 = Color3.fromRGB(52, 211, 153)
                     end
                 end
                 if decoded.LassoType then
@@ -2549,18 +2526,15 @@ end
 LoadPersistentConfig()
 
 --// ============================================================================
---// NORMS ADD-ON  (paste directly BELOW the line:   LoadPersistentConfig()
---//                and ABOVE the line:               --// MAIN ENGINE LOOP )
---//
---// Adds to the new tracker, ported from the old script:
---//   * Selling tab   (inventory counts, sell filter, auto sell every 5 min, auto find sell remote)
---//   * Servers tab   (players in this server, server list, tap to join)
+--// NORMS ADD-ON
+--//   Tabs: Main | Inventory | Server | Settings
+--//   * Inventory tab  (counts, sell filter, auto sell)  -- kept clean
+--//   * Server tab     (players in this server, server list, tap to join)
 --//   * Smart priority (Unique Hair > Mismatched > Unique Coat > Natural Dyed > Horned > Normal)
---//                    + drops the current horse if a higher priority one appears
---//   * Settings cards: Auto find Travel remote, Auto detect Catch remote, Anti-lag
+--//   * Settings tab   (Catch / Travel / Sell remotes: press Generate, it finds + saves by itself)
 --//   * Better "current island" detection (nearest-point, cached)
 --//
---// It is wrapped in a function so it does not use any of the main chunk's
+--// Wrapped in a function so it does not use any of the main chunk's
 --// 200 local slots.
 --// ============================================================================
 ;(function()
@@ -2683,30 +2657,30 @@ function A.save()
 end
 
 --// ============================================================================
---// 1) TABS (Main | Setting | Selling | Servers)
+--// 1) TABS (Main | Inventory | Server | Settings)
 --// ============================================================================
-local SellPanel = newPanel("SellingPanel")
-local SrvPanel = newPanel("ServersPanel")
+local SellPanel = newPanel("InventoryPanel")
+local SrvPanel = newPanel("ServerPanel")
 
 local SellTabBtn = MainTabBtn:Clone()
-SellTabBtn.Name = "SellTabBtn"
-SellTabBtn.Text = "Selling"
+SellTabBtn.Name = "InventoryTabBtn"
+SellTabBtn.Text = "Inventory"
 SellTabBtn.Parent = TabBar
 
 local SrvTabBtn = MainTabBtn:Clone()
-SrvTabBtn.Name = "SrvTabBtn"
-SrvTabBtn.Text = "Servers"
+SrvTabBtn.Name = "ServerTabBtn"
+SrvTabBtn.Text = "Server"
 SrvTabBtn.Parent = TabBar
 
 TabBar.Size = UDim2.new(0, 340, 0, 32)
-for i, b in ipairs({MainTabBtn, SettingTabBtn, SellTabBtn, SrvTabBtn}) do
+for i, b in ipairs({MainTabBtn, SellTabBtn, SrvTabBtn, SettingTabBtn}) do
     b.Size = UDim2.new(0.25, -3, 1, 0)
     b.Position = UDim2.new(0.25 * (i - 1), 0, 0, 0)
     b.TextSize = 12
 end
 
 local function setTabColors(active)
-    local map = {Main = MainTabBtn, Setting = SettingTabBtn, Selling = SellTabBtn, Servers = SrvTabBtn}
+    local map = {Main = MainTabBtn, Inventory = SellTabBtn, Server = SrvTabBtn, Settings = SettingTabBtn}
     for name, b in pairs(map) do
         local on = (name == active)
         b.BackgroundColor3 = on and C.btn or Color3.fromRGB(17, 19, 26)
@@ -2720,11 +2694,11 @@ SwitchTab = function(tabName)
     origSwitchTab(tabName)
     SellPanel.Visible = false
     SrvPanel.Visible = false
-    if tabName == "Selling" then
+    if tabName == "Inventory" then
         SettingsPanel.Visible = false
         SellPanel.Visible = true
         if not S.Loaded then A.refreshInv() end
-    elseif tabName == "Servers" then
+    elseif tabName == "Server" then
         SettingsPanel.Visible = false
         SrvPanel.Visible = true
         A.updateHere()
@@ -2736,8 +2710,8 @@ SwitchTab = function(tabName)
     setTabColors(tabName)
 end
 
-SellTabBtn.MouseButton1Click:Connect(function() SwitchTab("Selling") end)
-SrvTabBtn.MouseButton1Click:Connect(function() SwitchTab("Servers") end)
+SellTabBtn.MouseButton1Click:Connect(function() SwitchTab("Inventory") end)
+SrvTabBtn.MouseButton1Click:Connect(function() SwitchTab("Server") end)
 
 --// ============================================================================
 --// 2) SMART PRIORITY
@@ -2997,7 +2971,7 @@ GetCurrentPlayerIsland = function()
 end
 
 --// ============================================================================
---// 4) SELLING TAB
+--// 4) INVENTORY TAB  (counts + sell filter + auto sell only; remote lives in Settings)
 --// ============================================================================
 local BREED_KEYWORDS = {
     "tennessee walking horse", "dutch warmblood", "mammoth donkey", "standard donkey", "paint horse",
@@ -3101,7 +3075,7 @@ function A.readInv()
     return nil
 end
 
---// ---- selling UI
+--// ---- inventory UI
 local CATS = {"Normal Horse", "Natural Dyed Hair", "Island Unique Hair", "Island Unique Coat", "Mismatched Hair", "Horned", "All"}
 local COUNT_ROWS = {
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
@@ -3125,38 +3099,26 @@ for i, r in ipairs(COUNT_ROWS) do
 end
 S.InvStatus = lbl(countsCard, "Inventory not loaded yet", UDim2.new(0, 10, 0, 154), UDim2.new(1, -20, 0, 14), 10, C.dim)
 
-local sellCard = cardFrame(SellPanel, 2, 172)
+local sellCard = cardFrame(SellPanel, 2, 132)
 cardTitle(sellCard, "SELL FILTER")
 S.CatBtn = btn(sellCard, "Filter: " .. S.Category .. " (tap to change)", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 26))
-lbl(sellCard, "Sell Remote", UDim2.new(0, 10, 0, 64), UDim2.new(0, 90, 0, 20), 12, C.text)
-S.RemoteBox = mk("TextBox", {
-    Position = UDim2.new(0, 104, 0, 60),
-    Size = UDim2.new(1, -114, 0, 26),
-    BackgroundColor3 = C.field,
-    BorderSizePixel = 0,
-    ClearTextOnFocus = false,
-    Text = S.Remote,
-    PlaceholderText = "Event1",
-    TextColor3 = C.white,
-    TextSize = 12,
-    Font = Enum.Font.Gotham,
-    TextXAlignment = Enum.TextXAlignment.Left,
-}, sellCard)
-corner(S.RemoteBox, 7)
-mk("UIPadding", {PaddingLeft = UDim.new(0, 8)}, S.RemoteBox)
-S.SellBtn = btn(sellCard, "SELL FILTERED", UDim2.new(0, 10, 0, 94), UDim2.new(1, -20, 0, 30), C.dark)
-S.SellStatus = lbl(sellCard, "Remote: " .. S.Remote .. " | Filter: " .. S.Category, UDim2.new(0, 10, 0, 130), UDim2.new(1, -20, 0, 38), 10, C.dim)
+S.SellBtn = btn(sellCard, "SELL FILTERED", UDim2.new(0, 10, 0, 58), UDim2.new(1, -20, 0, 30), C.dark)
+S.SellStatus = lbl(sellCard, "Remote: " .. S.Remote .. " | Filter: " .. S.Category, UDim2.new(0, 10, 0, 94), UDim2.new(1, -20, 0, 34), 10, C.dim)
 
 local autoCard = cardFrame(SellPanel, 3, 92)
 cardTitle(autoCard, "AUTO SELL")
 S.AutoBtn = btn(autoCard, "Auto sell filter every 5 min: OFF", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 28))
 S.AutoInfo = lbl(autoCard, "Auto sell is off. It never runs when the filter is All.", UDim2.new(0, 10, 0, 60), UDim2.new(1, -20, 0, 28), 10, C.dim)
 
-local findCard = cardFrame(SellPanel, 4, 108)
-cardTitle(findCard, "FIND SELL REMOTE")
-S.FindBtn = btn(findCard, "Auto Find Sell Remote (sells 1 Normal Horse)", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 28))
-S.FindBtn.TextSize = 11
-S.FindStatus = lbl(findCard, "Not tested", UDim2.new(0, 10, 0, 60), UDim2.new(1, -20, 0, 44), 10, C.dim)
+--// ---- Sell Remote card lives in SETTINGS (Generate = auto find + auto save)
+local sellRemCard = cardFrame(SettingsPanel, 6, 96)
+cardTitle(sellRemCard, "SELL REMOTE")
+S.RemoteBox = CreateInputRow(sellRemCard, "Sell Remote", 28, true, S.Remote)
+S.RemoteBox.Size = UDim2.new(0.7, -100, 0, 24)
+S.FindBtn, S.FindStatus = CreateActionRow(sellRemCard, 60)
+S.FindBtn.Size = UDim2.new(0, 72, 0, 24)
+S.FindBtn.Position = UDim2.new(1, -82, 0, 60)
+S.FindStatus.Text = "Sells 1 Normal Horse to test"
 
 --// ---- selling logic
 function A.refreshCounts()
@@ -3227,7 +3189,7 @@ function A.sell(isAuto)
     end
     local remote = Events:FindFirstChild(S.Remote)
     if not remote or not remote:IsA("RemoteEvent") then
-        setStatus(st, S.Remote .. " is not a RemoteEvent. Use Auto Find Sell Remote.", C.red)
+        setStatus(st, S.Remote .. " is not a RemoteEvent. Press Generate in Settings > Sell Remote.", C.red)
         return
     end
     local items, count = {}, 0
@@ -3271,16 +3233,6 @@ S.CatBtn.MouseButton1Click:Connect(function()
     A.save()
 end)
 
-S.RemoteBox.FocusLost:Connect(function()
-    local name = S.RemoteBox.Text:match("^%s*(.-)%s*$")
-    if name ~= "" and Events:FindFirstChild(name) then
-        S.Remote = name
-        A.save()
-    end
-    S.RemoteBox.Text = S.Remote
-    A.updateSellStatus()
-end)
-
 S.SellBtn.MouseButton1Click:Connect(function()
     if S.Category == "All" then
         if not S.ConfirmAll or tick() - S.ConfirmAll > 3 then
@@ -3316,7 +3268,7 @@ task.spawn(function()
                 pcall(A.sell, true)
                 left = 300
             end
-            if CurrentTab == "Selling" then
+            if CurrentTab == "Inventory" then
                 S.AutoInfo.Text = string.format("Next auto sell (%s) in %d:%02d", S.Category, math.floor(left / 60), math.floor(left % 60))
             end
         end
@@ -3336,12 +3288,12 @@ end
 function A.findSellRemote()
     if S.FindBusy then return end
     S.FindBusy = true
-    S.FindBtn.Text = "Finding sell remote..."
+    S.FindBtn.Text = "..."
     setStatus(S.FindStatus, "Getting a Normal Horse as the test target...", C.amber)
 
     local function finish(msg, color)
         setStatus(S.FindStatus, msg, color)
-        S.FindBtn.Text = "Auto Find Sell Remote (sells 1 Normal Horse)"
+        S.FindBtn.Text = "Generate"
         S.FindBusy = false
     end
 
@@ -3379,7 +3331,7 @@ function A.findSellRemote()
                         A.updateSellStatus()
                         A.refreshCounts()
                         A.save()
-                        finish("FOUND: " .. S.Remote .. " (test horse is gone)", C.green)
+                        finish("Saved: " .. S.Remote, C.green)
                         return
                     end
                 end
@@ -3392,7 +3344,7 @@ end
 S.FindBtn.MouseButton1Click:Connect(A.findSellRemote)
 
 --// ============================================================================
---// 5) SERVERS TAB
+--// 5) SERVER TAB
 --// ============================================================================
 A.tried = {}
 
@@ -3510,22 +3462,20 @@ end
 A.SrvRefreshBtn.MouseButton1Click:Connect(A.refreshServers)
 
 --// ============================================================================
---// 6) SETTINGS CARDS: auto-find remotes + anti-lag
+--// 6) SETTINGS: Generate buttons for Travel + Catch remotes (find + auto save), anti-lag
 --// ============================================================================
-local findRemCard = cardFrame(SettingsPanel, 6, 160)
-cardTitle(findRemCard, "AUTO FIND REMOTES")
-A.TravelBtn = btn(findRemCard, "Auto Find Travel Remote", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 26))
-A.TravelStatus = lbl(findRemCard, "Travel remote: not tested", UDim2.new(0, 10, 0, 54), UDim2.new(1, -20, 0, 26), 10, C.dim)
-A.CatchBtn = btn(findRemCard, "Auto Detect Catch Remote (20s)", UDim2.new(0, 10, 0, 86), UDim2.new(1, -20, 0, 26))
-A.CatchStatus = lbl(findRemCard, "Equip your lasso, press this, then catch any horse by hand.", UDim2.new(0, 10, 0, 114), UDim2.new(1, -20, 0, 42), 10, C.dim)
+A.TravelBtn = SaveTravelBtn
+A.TravelStatus = TravelGenStatus
+A.CatchBtn = SaveCatchBtn
+A.CatchStatus = CatchGenStatus
 
 function A.findTravel()
     if A.travelBusy then return end
     A.travelBusy = true
-    A.TravelBtn.Text = "Finding travel remote..."
+    A.TravelBtn.Text = "..."
     local function finish(msg, color)
         setStatus(A.TravelStatus, msg, color)
-        A.TravelBtn.Text = "Auto Find Travel Remote"
+        A.TravelBtn.Text = "Generate"
         A.travelBusy = false
     end
     task.spawn(function()
@@ -3536,11 +3486,11 @@ function A.findTravel()
         end
         setStatus(A.TravelStatus, "Testing Travel on: " .. island, C.amber)
         task.wait(0.25)
-        for i = 1, 36 do
+        for i = 1, 90 do
             local name = "Function" .. i
             local remote = Functions:FindFirstChild(name)
             if remote and remote:IsA("RemoteFunction") then
-                A.TravelBtn.Text = "Testing " .. name
+                setStatus(A.TravelStatus, "Testing " .. name .. " ...", C.amber)
                 local char = LocalPlayer.Character
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 local beforePos = root and root.Position
@@ -3566,26 +3516,22 @@ function A.findTravel()
                 end
                 if invokeOK and moved then
                     TravelRemoteBox.Text = name
-                    SaveTravelBtn.Text = "Saved"
-                    SaveTravelBtn.BackgroundColor3 = C.green
-                    SaveTravelBtn.TextColor3 = C.black
-                    SavePersistentConfig()
-                    finish("FOUND: " .. name .. " (character moved on " .. island .. ")", C.green)
+                    SavePersistentConfig()           -- auto save
+                    finish("Saved: " .. name, C.green)
                     return
                 end
-                setStatus(A.TravelStatus, name .. (invokeOK and " did not move you; next..." or " errored; next..."), C.amber)
             else
-                task.wait(0.3)
+                task.wait(0.1)
             end
         end
-        finish("No travel remote found in Function1-Function36.", C.red)
+        finish("No travel remote found in Function1-90.", C.red)
     end)
 end
 A.TravelBtn.MouseButton1Click:Connect(function()
     local ok, err = pcall(A.findTravel)
     if not ok then
         A.travelBusy = false
-        A.TravelBtn.Text = "Auto Find Travel Remote"
+        A.TravelBtn.Text = "Generate"
         setStatus(A.TravelStatus, "Error: " .. tostring(err), C.red)
     end
 end)
@@ -3617,23 +3563,25 @@ end
 A.CatchBtn.MouseButton1Click:Connect(function()
     if A.detecting then return end
     if not A.installHook() then
-        setStatus(A.CatchStatus, "Your executor does not support hookmetamethod. Use the RemoteSpy toggle instead.", C.red)
+        setStatus(A.CatchStatus, "Executor has no hookmetamethod. Use RemoteSpy.", C.red)
         return
     end
     A.seen = nil
     A.detecting = true
+    setStatus(A.CatchStatus, "Equip lasso, catch a horse by hand!", C.amber)
     task.spawn(function()
         local found = nil
-        for t = 20, 1, -1 do
-            A.CatchBtn.Text = "NOW CATCH A HORSE... " .. t .. "s"
+        local deadline = tick() + 20
+        while tick() < deadline do
+            A.CatchBtn.Text = math.ceil(deadline - tick()) .. "s"
             if A.seen then
                 found = A.seen
                 break
             end
-            task.wait(1)
+            task.wait(0.1)
         end
         A.detecting = false
-        A.CatchBtn.Text = "Auto Detect Catch Remote (20s)"
+        A.CatchBtn.Text = "Generate"
         if found then
             CatchRemoteBox.Text = found.name
             if type(found.uid) == "string" or type(found.uid) == "number" then
@@ -3642,13 +3590,10 @@ A.CatchBtn.MouseButton1Click:Connect(function()
                 LassoStatus.Text = "UID Found"
                 LassoStatus.TextColor3 = C.green
             end
-            SaveCatchBtn.Text = "Saved"
-            SaveCatchBtn.BackgroundColor3 = C.green
-            SaveCatchBtn.TextColor3 = C.black
-            SavePersistentConfig()
-            setStatus(A.CatchStatus, "FOUND: " .. found.name .. " (lasso UID filled in too)", C.green)
+            SavePersistentConfig()                   -- auto save
+            setStatus(A.CatchStatus, "Saved: " .. found.name .. " (+ lasso UID)", C.green)
         else
-            setStatus(A.CatchStatus, "Nothing seen. Make sure the lasso is equipped and try again.", C.amber)
+            setStatus(A.CatchStatus, "Nothing seen. Equip lasso and retry.", C.amber)
         end
     end)
 end)
@@ -3739,6 +3684,7 @@ pcall(function()
             if type(d.SellRemote) == "string" and d.SellRemote ~= "" then
                 S.Remote = d.SellRemote
                 S.RemoteBox.Text = S.Remote
+                setStatus(S.FindStatus, "Saved: " .. S.Remote, C.green)
             end
             A.updateSellStatus()
         end
@@ -3748,8 +3694,6 @@ end)
 task.spawn(A.refreshInv)
 
 end)()
-
-
 
 --// MAIN ENGINE LOOP
 task.spawn(function()
