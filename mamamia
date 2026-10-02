@@ -1,2879 +1,1200 @@
---// THIS IS PH
---// THIS IS PH
+--// ============================================================================
+--// NORMS ADD-ON  (paste directly BELOW the line:   LoadPersistentConfig()
+--//                and ABOVE the line:               --// MAIN ENGINE LOOP )
+--//
+--// Adds to the new tracker, ported from the old script:
+--//   * Selling tab   (inventory counts, sell filter, auto sell every 5 min, auto find sell remote)
+--//   * Servers tab   (players in this server, server list, tap to join)
+--//   * Smart priority (Unique Hair > Mismatched > Unique Coat > Natural Dyed > Horned > Normal)
+--//                    + drops the current horse if a higher priority one appears
+--//   * Settings cards: Auto find Travel remote, Auto detect Catch remote, Anti-lag
+--//   * Better "current island" detection (nearest-point, cached)
+--//
+--// It is wrapped in a function so it does not use any of the main chunk's
+--// 200 local slots.
+--// ============================================================================
+;(function()
 
---// REMOTE RENAMING SETUP (RUNS FIRST UPON EXECUTION)
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Communication = ReplicatedStorage:WaitForChild("Communication")
-local Functions = Communication:WaitForChild("Functions")
-local Events = Communication:WaitForChild("Events")
-
-local functionIndex = 0
-for _, obj in ipairs(Functions:GetChildren()) do
-    if obj:IsA("RemoteFunction") and obj.Name == "" then
-        functionIndex += 1
-        obj.Name = "Function" .. functionIndex
-    end
-end
-
-local eventIndex = 0
-for _, obj in ipairs(Events:GetChildren()) do
-    if obj:IsA("RemoteEvent") and obj.Name == "" then
-        eventIndex += 1
-        obj.Name = "Event" .. eventIndex
-    end
-end
-
-print("================================")
-print("REMOTE RENAME COMPLETE")
-print("Functions renamed:", functionIndex)
-print("Events renamed:", eventIndex)
-print("================================")
-
---// NORMS TRACKER: TWEEN TELEPORT, UNLIMITED ANCHOR & REFINED DETECTION
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local CollectionService = game:GetService("CollectionService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-
-local LocalPlayer = Players.LocalPlayer
-local ActiveWalkTarget = nil
-local ActiveTargetIsland = nil
-local TargetUID = nil
-
---// GLOBAL CONFIGURATION VARIABLES (PERSISTENT SESSION)
-local ConfiguredLassoUID = nil
-
---// TWEEN SPEED & SMOOTHNESS
-local TWEEN_SPEED = 90
-
---// STATUS TEXT REFERENCE
-local StatusText
-local TrackerTextLabel
-
---// RARITY DATABASE
-local RarityData = {
-    ["Fjord"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Mustang"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Appaloosa"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Paint Horse"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Paint"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Morgan"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Quarter"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Quarter Horse"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Standard Donkey"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    ["Donkey"] = {Rarity = "Low", Color = Color3.fromRGB(52, 211, 153)},
-    
-    ["Connemara"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    ["Thoroughbred"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    ["Dutch Warmblood"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    ["Akhal-Teke"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    ["Icelandic"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    ["Andalusian"] = {Rarity = "Mid", Color = Color3.fromRGB(251, 191, 36)},
-    
-    ["Mammoth Donkey"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Percheron"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Friesian"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Arabian"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Tennessee Walker"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Clydesdale"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Clydesdale Horse"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Marwari"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    ["Shire"] = {Rarity = "High", Color = Color3.fromRGB(239, 68, 68)},
-    
-    ["Mule"] = {Rarity = "Special", Color = Color3.fromRGB(255, 215, 0)},
-    ["Hinny"] = {Rarity = "Special", Color = Color3.fromRGB(255, 215, 0)},
-    ["Reindeer"] = {Rarity = "Special", Color = Color3.fromRGB(255, 215, 0)},
+local C = {
+    card = Color3.fromRGB(22, 24, 33),
+    btn = Color3.fromRGB(36, 39, 52),
+    field = Color3.fromRGB(14, 15, 21),
+    text = Color3.fromRGB(222, 225, 236),
+    muted = Color3.fromRGB(110, 118, 140),
+    dim = Color3.fromRGB(139, 146, 165),
+    green = Color3.fromRGB(52, 211, 153),
+    red = Color3.fromRGB(239, 68, 68),
+    amber = Color3.fromRGB(251, 191, 36),
+    indigo = Color3.fromRGB(99, 102, 241),
+    dark = Color3.fromRGB(125, 35, 40),
+    black = Color3.fromRGB(0, 0, 0),
+    white = Color3.fromRGB(255, 255, 255),
 }
 
-local RarityPriority = {
-    ["Special"] = 4,
-    ["High"] = 3,
-    ["Mid"] = 2,
-    ["Low"] = 1,
+local A = {}                       -- add-on functions / state
+local S = {                        -- selling state
+    Remote = "Event1",
+    Category = "Normal Horse",
+    Loaded = false,
+    AutoOn = false,
+    AutoNext = 0,
 }
 
-local RarityFilters = {
-    Special = true,
-    High = true,
-    Mid = true,
-    Low = true
-}
-
-local SelectedLasso = "Lasso"
-
---// UNIQUE HAIR DETECTION LOGIC
-local UNIQUE_HAIR_VALUES = {
-    ["amethyst"] = true, ["blessed"] = true, ["clearquartz"] = true, ["clearseaglass"] = true,
-    ["cowprint"] = true, ["crackedlavafade"] = true, ["deepspace"] = true, ["diamond"] = true,
-    ["dustyfade"] = true, ["emerald"] = true, ["flowery"] = true, ["glacierblue"] = true,
-    ["glaciergreen"] = true, ["glacierpink"] = true, ["iceyblack"] = true, ["iceyblue"] = true,
-    ["iceygreen"] = true, ["iceypink"] = true, ["iceywhite"] = true, ["jaguarspots"] = true,
-    ["leafy"] = true, ["leathery"] = true, ["limestone"] = true, ["moonstone"] = true,
-    ["mossy"] = true, ["neonblue"] = true, ["neonpurple"] = true, ["obsidian"] = true,
-    ["pastelstreaks"] = true, ["pearly"] = true, ["pearlyblack"] = true, ["pearlyblue"] = true,
-    ["pearlygold"] = true, ["pearlygreen"] = true, ["pearlyorange"] = true, ["pearlypink"] = true,
-    ["pearlypurple"] = true, ["pearlyred"] = true, ["pinkcowprint"] = true, ["prismatic"] = true,
-    ["royalstreaks"] = true, ["ruby"] = true, ["sandstone"] = true, ["sandy"] = true,
-    ["sapphire"] = true, ["snowyglacierfade"] = true, ["sunrisestreaks"] = true, ["tigerstripes"] = true,
-    ["topaz"] = true, ["volcanicblack"] = true, ["volcanicorange"] = true, ["winterstreaks"] = true,
-    ["zebra"] = true,
-}
-
-local function normalizeValue(val)
-    if type(val) ~= "string" then return "" end
-    return string.lower(string.gsub(val, "%s+", ""))
+--// ---------------------------------------------------------------- UI helpers
+local function mk(class, props, parent)
+    local o = Instance.new(class)
+    for k, v in pairs(props) do o[k] = v end
+    if parent then o.Parent = parent end
+    return o
 end
 
-local function checkUniqueHair(horseModel)
-    local dataAttr = horseModel:GetAttribute("Data")
-    if not dataAttr then return false, "X" end
-
-    local data
-    if type(dataAttr) == "string" then
-        local success, decoded = pcall(HttpService.JSONDecode, HttpService, dataAttr)
-        if success and type(decoded) == "table" then data = decoded else return false, "X" end
-    elseif type(dataAttr) == "table" then
-        data = dataAttr
-    else
-        return false, "X"
-    end
-
-    local variants = data and data.variants
-    if type(variants) ~= "table" then return false, "X" end
-
-    local maneColour = normalizeValue(variants.maneColour)
-    local tailColour = normalizeValue(variants.tailColour)
-
-    local hasUniqueHair = UNIQUE_HAIR_VALUES[maneColour] or UNIQUE_HAIR_VALUES[tailColour] or false
-    local uniqueHairText = hasUniqueHair and "✓" or "X"
-    return hasUniqueHair, uniqueHairText
+local function corner(o, r)
+    mk("UICorner", {CornerRadius = UDim.new(0, r or 7)}, o)
 end
 
-local function GetHorseInfo(rawName)
-    local cleaned = rawName:gsub("^%s*", ""):gsub("%s*$", "")
-    if RarityData[cleaned] then
-        local info = RarityData[cleaned]
-        local displayName = cleaned
-        if not cleaned:lower():find("horse") and not cleaned:lower():find("donkey") and not cleaned:lower():find("mule") and not cleaned:lower():find("hinny") and not cleaned:lower():find("reindeer") then
-            displayName = cleaned .. " Horse"
-        end
-        return displayName, info.Rarity, info.Color
-    end
-    local withHorse = cleaned .. " Horse"
-    if RarityData[withHorse] then
-        local info = RarityData[withHorse]
-        return withHorse, info.Rarity, info.Color
-    end
-    for breed, info in pairs(RarityData) do
-        if cleaned:lower():find(breed:lower()) then
-            local displayName = breed
-            if not breed:lower():find("horse") and not breed:lower():find("donkey") and not breed:lower():find("mule") and not breed:lower():find("hinny") and not breed:lower():find("reindeer") then
-                displayName = breed .. " Horse"
-            end
-            return displayName, info.Rarity, info.Color
-        end
-    end
-    return cleaned, "Low", Color3.fromRGB(52, 211, 153)
+local function cardFrame(parent, order, h)
+    local f = mk("Frame", {
+        Size = UDim2.new(1, 0, 0, h),
+        BackgroundColor3 = C.card,
+        BorderSizePixel = 0,
+        LayoutOrder = order,
+    }, parent)
+    corner(f, 10)
+    return f
 end
 
---// VOLCANO ISLAND - REMOVE LAVAPARTS ON EXECUTION
--- Removes Workspace.Islands["Volcano Island"].LavaParts when the script starts.
-local function RemoveVolcanoLavaParts()
+local function lbl(parent, str, pos, size, ts, color, font, align)
+    return mk("TextLabel", {
+        BackgroundTransparency = 1,
+        Text = str,
+        Position = pos,
+        Size = size,
+        TextSize = ts or 11,
+        TextColor3 = color or C.text,
+        Font = font or Enum.Font.Gotham,
+        TextXAlignment = align or Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        TextWrapped = true,
+    }, parent)
+end
+
+local function btn(parent, str, pos, size, bg, fg)
+    local b = mk("TextButton", {
+        Text = str,
+        Position = pos,
+        Size = size,
+        BackgroundColor3 = bg or C.btn,
+        TextColor3 = fg or C.white,
+        TextSize = 12,
+        Font = Enum.Font.GothamBold,
+        BorderSizePixel = 0,
+    }, parent)
+    corner(b, 7)
+    return b
+end
+
+local function cardTitle(parent, str)
+    return lbl(parent, str, UDim2.new(0, 10, 0, 6), UDim2.new(1, -20, 0, 16), 10, C.muted, Enum.Font.GothamBold)
+end
+
+local function setStatus(l, str, color)
+    l.Text = str
+    l.TextColor3 = color or C.dim
+end
+
+local function newPanel(name)
+    local p = mk("ScrollingFrame", {
+        Name = name,
+        Size = UDim2.new(1, 0, 1, -40),
+        Position = UDim2.new(0, 0, 0, 40),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        Visible = false,
+        CanvasSize = UDim2.new(0, 0, 0, 0),
+        AutomaticCanvasSize = Enum.AutomaticSize.Y,
+        ScrollBarThickness = 3,
+        ScrollBarImageColor3 = C.green,
+    }, RightPanel)
+    mk("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder, Padding = UDim.new(0, 8)}, p)
+    return p
+end
+
+--// ---------------------------------------------------------------- config
+local ADDON_CFG = "NORMS_Addon_Config.json"
+function A.save()
     pcall(function()
-        local islands = Workspace:FindFirstChild("Islands")
-        if not islands then return end
-
-        local volcano = islands:FindFirstChild("Volcano Island")
-        if not volcano then return end
-
-        local lavaParts = volcano:FindFirstChild("LavaParts")
-        if lavaParts then
-            lavaParts:Destroy()
-            print("[Volcano] LavaParts removed.")
+        if writefile then
+            writefile(ADDON_CFG, HttpService:JSONEncode({
+                SellRemote = S.Remote,
+                SellCategory = S.Category,
+            }))
         end
     end)
 end
 
-RemoveVolcanoLavaParts()
+--// ============================================================================
+--// 1) TABS (Main | Setting | Selling | Servers)
+--// ============================================================================
+local SellPanel = newPanel("SellingPanel")
+local SrvPanel = newPanel("ServersPanel")
 
---// VOLCANO ISLAND - CONTINUOUS LAVAPARTS CLEANUP
--- Re-checks periodically so LavaParts is removed again if the game recreates it.
-task.spawn(function()
-    while true do
-        RemoveVolcanoLavaParts()
-        task.wait(0.5)
+local SellTabBtn = MainTabBtn:Clone()
+SellTabBtn.Name = "SellTabBtn"
+SellTabBtn.Text = "Selling"
+SellTabBtn.Parent = TabBar
+
+local SrvTabBtn = MainTabBtn:Clone()
+SrvTabBtn.Name = "SrvTabBtn"
+SrvTabBtn.Text = "Servers"
+SrvTabBtn.Parent = TabBar
+
+TabBar.Size = UDim2.new(0, 340, 0, 32)
+for i, b in ipairs({MainTabBtn, SettingTabBtn, SellTabBtn, SrvTabBtn}) do
+    b.Size = UDim2.new(0.25, -3, 1, 0)
+    b.Position = UDim2.new(0.25 * (i - 1), 0, 0, 0)
+    b.TextSize = 12
+end
+
+local function setTabColors(active)
+    local map = {Main = MainTabBtn, Setting = SettingTabBtn, Selling = SellTabBtn, Servers = SrvTabBtn}
+    for name, b in pairs(map) do
+        local on = (name == active)
+        b.BackgroundColor3 = on and C.btn or Color3.fromRGB(17, 19, 26)
+        b.TextColor3 = on and C.green or C.dim
     end
-end)
+end
+setTabColors("Main")
 
---// SETTINGS & STATE
-local AutoFarmEnabled = false
-local CatchWatchdogToken = 0
-local CatchWatchdogRunning = false
-local CatchCountdownRemaining = nil
-local CATCH_TIMEOUT_SECONDS = 6
-local CurrentTab = "Main"
-local IsMinimized = false
-local IsAnimating = false
+local origSwitchTab = SwitchTab
+SwitchTab = function(tabName)
+    origSwitchTab(tabName)
+    SellPanel.Visible = false
+    SrvPanel.Visible = false
+    if tabName == "Selling" then
+        SettingsPanel.Visible = false
+        SellPanel.Visible = true
+        if not S.Loaded then A.refreshInv() end
+    elseif tabName == "Servers" then
+        SettingsPanel.Visible = false
+        SrvPanel.Visible = true
+        A.updateHere()
+        if not A.srvLoaded then
+            A.srvLoaded = true
+            A.refreshServers()
+        end
+    end
+    setTabColors(tabName)
+end
 
-local SelectedMainIsland = "All Islands"
+SellTabBtn.MouseButton1Click:Connect(function() SwitchTab("Selling") end)
+SrvTabBtn.MouseButton1Click:Connect(function() SwitchTab("Servers") end)
 
-local ManualIslandList = {
-    "Mainland", "Blizzard Island", "Forest Island", "Royal Island", "Desert Island",
-    "Glacier Island", "Mountain Island", "Jungle Island", "Lunar Islands", "Volcano Island"
+--// ============================================================================
+--// 2) SMART PRIORITY
+--//    1 Unique Hair, 2 Mismatched Hair, 3 Island Unique Coat, 4 Natural Dyed,
+--//    5 Horned, 6 Normal.   Main list tags: C=coat M=mismatch D=dyed H=horned
+--// ============================================================================
+local UNIQUE = UNIQUE_HAIR_VALUES
+local ORANGE = {
+    blowingSnow = true, motherOfPearl = true, royalDun = true, dustyBrindle = true,
+    glacierChimera = true, mountainSunrise = true, jaguar = true, deepSpace = true, crackedLava = true,
 }
 
-local HorseCache = {}
-local LastScanTick = 0
-
-local function ClearCache()
-    table.clear(HorseCache)
-    LastScanTick = 0
+local function norm(v)
+    if v == nil then return "" end
+    return (tostring(v):lower():gsub("[%s_%-]", ""))
 end
 
---// FORWARD DECLARATIONS FOR CONFIG FUNCTIONS
-local SavePersistentConfig
-local LoadPersistentConfig
-local CONFIG_FILE_NAME = "HorseTracker_Config.json"
-
---// NO-CLIP FUNCTIONS
-local noclipConnection = nil
-local function EnableNoClip(char)
-    if noclipConnection then noclipConnection:Disconnect() end
-    noclipConnection = RunService.Stepped:Connect(function()
-        if char and char.Parent then
-            for _, part in ipairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-        end
-    end)
+local function tableSig(t)
+    local keys = {}
+    for k in pairs(t) do keys[#keys + 1] = k end
+    table.sort(keys, function(x, y) return tostring(x) < tostring(y) end)
+    local parts = {}
+    for _, k in ipairs(keys) do
+        local v = t[k]
+        if type(v) == "table" then v = tableSig(v) end
+        parts[#parts + 1] = tostring(k) .. "=" .. tostring(v)
+    end
+    return "{" .. table.concat(parts, ";") .. "}"
 end
 
-local function DisableNoClip(char)
-    if noclipConnection then
-        noclipConnection:Disconnect()
-        noclipConnection = nil
+local function trimLower(v)
+    return (tostring(v or ""):lower():gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
+local function coloursMatch(a, b)
+    if a == b then return true end
+    if type(a) == "table" and type(b) == "table" then return tableSig(a) == tableSig(b) end
+    return trimLower(a) == trimLower(b)
+end
+
+local function isOrange(main)
+    return ORANGE[(tostring(main or ""):gsub("%s+", ""))] == true
+end
+
+-- returns unique, coat, mismatch, natDyed, horned
+local function traitsFrom(variants, natDyed)
+    if type(variants) ~= "table" then variants = {} end
+    local main = variants.colour or variants.mainColour or variants.MainColour
+    local mane = variants.maneColour or variants.ManeColour
+    local tail = variants.tailColour or variants.TailColour
+    local unique = (UNIQUE[norm(mane)] or UNIQUE[norm(tail)]) and true or false
+    local coat = isOrange(main)
+    local mismatch = not coloursMatch(mane, tail)
+    local dyed = natDyed ~= nil
+    local horned = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
+    return unique, coat, mismatch, dyed, horned
+end
+
+local function priorityOf(u, co, m, d, h)
+    local p = 6
+    if u then p = 1
+    elseif m then p = 2
+    elseif co then p = 3
+    elseif d then p = 4
+    elseif h then p = 5 end
+    local n = 0
+    for _, f in ipairs({u, co, m, d, h}) do
+        if f then n += 1 end
     end
-    if char and char.Parent then
-        for _, part in ipairs(char:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.CanCollide = true
+    return p, n
+end
+
+local statsCache = setmetatable({}, {__mode = "k"})
+local function horseStats(model)
+    local raw = model:GetAttribute("Data")
+    local c = statsCache[model]
+    if c and c.raw == raw then return c end
+    local data = raw
+    if type(raw) == "string" then
+        local ok, dec = pcall(function() return HttpService:JSONDecode(raw) end)
+        data = ok and dec or nil
+    end
+    local u, co, m, d, h = false, false, false, false, false
+    if type(data) == "table" and type(data.variants) == "table" then
+        u, co, m, d, h = traitsFrom(data.variants, data.isNatDyed)
+    end
+    local p, n = priorityOf(u, co, m, d, h)
+    c = {raw = raw, Unique = u, Coat = co, Mismatch = m, Dyed = d, Horned = h, Priority = p, Count = n}
+    statsCache[model] = c
+    return c
+end
+
+-- The tracker sorts with:  unique-hair first -> RarityPriority -> Distance.
+-- To get the full priority order WITHOUT touching that sort code we:
+--   (a) flatten RarityPriority so rarity no longer decides the order, and
+--   (b) fold priority / trait count / rarity into the "Distance" sort key
+--       (real distance is kept in RealDistance).
+local RANK = {}
+for k, v in pairs(RarityPriority) do RANK[k] = v end
+for k in pairs(RarityPriority) do RarityPriority[k] = 0 end
+
+local origGetHorses = GetWorldHorses
+local origClearCache = ClearCache
+A.wrapCache = nil
+A.lastWrap = 0
+
+ClearCache = function()
+    origClearCache()
+    A.lastWrap = 0
+end
+
+-- also throttles the world scan to every 0.5s (the original rescanned every 0.03s = lag)
+GetWorldHorses = function()
+    local now = tick()
+    if A.wrapCache and now - A.lastWrap < 0.5 then
+        return A.wrapCache
+    end
+    local list = origGetHorses()
+    for _, h in ipairs(list) do
+        local st = horseStats(h.Model)
+        h.Stats = st
+        local real = h.RealDistance or h.Distance or 0
+        h.RealDistance = real
+        h.Distance = st.Priority * 1e9
+            + (9 - st.Count) * 1e8
+            + (5 - (RANK[h.Rarity] or 0)) * 1e7
+            + math.min(real, 9e6)
+    end
+    A.wrapCache = table.move(list, 1, #list, 1, {})
+    A.lastWrap = now
+    return A.wrapCache
+end
+
+local origRefreshList = RefreshList
+RefreshList = function()
+    origRefreshList()
+    local list = A.wrapCache
+    if not list then return end
+    for _, h in ipairs(list) do
+        local st = h.Stats
+        if st and st.Priority < 6 then
+            local entry = ScrollFrame:FindFirstChild(tostring(h.UID))
+            local nl = entry and entry:FindFirstChild("NameLabel")
+            if nl then
+                local tags = ""
+                if st.Coat then tags = tags .. "C" end
+                if st.Mismatch then tags = tags .. "M" end
+                if st.Dyed then tags = tags .. "D" end
+                if st.Horned then tags = tags .. "H" end
+                if tags ~= "" then nl.Text = h.Name .. " [" .. tags .. "]" end
             end
         end
     end
 end
 
---// UI CREATION
-local guiParent = pcall(function() return game:GetService("CoreGui") end) and game:GetService("CoreGui") or LocalPlayer:WaitForChild("PlayerGui")
-if guiParent:FindFirstChild("HorseTrackerUI") then
-    guiParent.HorseTrackerUI:Destroy()
-end
-
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "HorseTrackerUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.Parent = guiParent
-
-local Frame = Instance.new("Frame")
-Frame.Name = "MainFrame"
-Frame.Size = UDim2.fromOffset(580, 380)
-Frame.Position = UDim2.new(0.5, -290, 0.5, -190)
-Frame.BackgroundColor3 = Color3.fromRGB(12, 13, 18)
-Frame.BorderSizePixel = 0
-Frame.Active = true
-Frame.Parent = ScreenGui
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(44, 48, 62)
-UIStroke.Thickness = 1
-UIStroke.Parent = Frame
-
-local UICornerMain = Instance.new("UICorner")
-UICornerMain.CornerRadius = UDim.new(0, 14)
-UICornerMain.Parent = Frame
-
-local MinimizedSquare = Instance.new("TextButton")
-MinimizedSquare.Name = "MinimizedSquare"
-MinimizedSquare.Size = UDim2.new(1, 0, 1, 0)
-MinimizedSquare.BackgroundTransparency = 1
-MinimizedSquare.Text = "NORMS"
-MinimizedSquare.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizedSquare.TextSize = 12
-MinimizedSquare.Font = Enum.Font.GothamBold
-MinimizedSquare.Visible = false
-MinimizedSquare.ZIndex = 50
-MinimizedSquare.Parent = Frame
-
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, 38)
-TitleBar.BackgroundTransparency = 1
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = Frame
-
-local UICornerTitle = Instance.new("UICorner")
-UICornerTitle.CornerRadius = UDim.new(0, 10)
-UICornerTitle.Parent = TitleBar
-
-local TitleText = Instance.new("TextLabel")
-TitleText.Size = UDim2.new(0, 60, 1, 0)
-TitleText.Position = UDim2.new(0, 14, 0, 0)
-TitleText.BackgroundTransparency = 1
-TitleText.Text = "NORMS"
-TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleText.TextSize = 15
-TitleText.Font = Enum.Font.GothamBold
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
-TitleText.Parent = TitleBar
-
-local MinimizeBtn = Instance.new("TextButton")
-MinimizeBtn.Name = "MinimizeBtn"
-MinimizeBtn.Size = UDim2.new(0, 28, 0, 28)
-MinimizeBtn.Position = UDim2.new(1, -36, 0, 5)
-MinimizeBtn.BackgroundTransparency = 1
-MinimizeBtn.Text = "–"
-MinimizeBtn.TextColor3 = Color3.fromRGB(139, 146, 165)
-MinimizeBtn.TextSize = 18
-MinimizeBtn.Font = Enum.Font.GothamBold
-MinimizeBtn.Parent = TitleBar
-
-local TabBar = Instance.new("Frame")
-TabBar.Name = "TabBar"
-TabBar.Size = UDim2.new(0, 230, 0, 32)
-TabBar.Position = UDim2.new(0, 12, 0, 46)
-TabBar.BackgroundColor3 = Color3.fromRGB(17, 19, 26)
-TabBar.BorderSizePixel = 0
-TabBar.Parent = Frame
-
-local MainTabBtn = Instance.new("TextButton")
-MainTabBtn.Name = "MainTabBtn"
-MainTabBtn.Size = UDim2.new(0.5, -2, 1, 0)
-MainTabBtn.Position = UDim2.new(0, 0, 0, 0)
-MainTabBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-MainTabBtn.BorderSizePixel = 0
-MainTabBtn.Text = "Main"
-MainTabBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-MainTabBtn.TextSize = 13
-MainTabBtn.Font = Enum.Font.GothamBold
-MainTabBtn.Parent = TabBar
-
-local MainTabCorner = Instance.new("UICorner")
-MainTabCorner.CornerRadius = UDim.new(0, 8)
-MainTabCorner.Parent = MainTabBtn
-
-local SettingTabBtn = Instance.new("TextButton")
-SettingTabBtn.Name = "SettingTabBtn"
-SettingTabBtn.Size = UDim2.new(0.5, -2, 1, 0)
-SettingTabBtn.Position = UDim2.new(0.5, 2, 0, 0)
-SettingTabBtn.BackgroundColor3 = Color3.fromRGB(17, 19, 26)
-SettingTabBtn.BorderSizePixel = 0
-SettingTabBtn.Text = "Setting"
-SettingTabBtn.TextColor3 = Color3.fromRGB(139, 146, 165)
-SettingTabBtn.TextSize = 13
-SettingTabBtn.Font = Enum.Font.GothamBold
-SettingTabBtn.Parent = TabBar
-
-local SettingTabCorner = Instance.new("UICorner")
-SettingTabCorner.CornerRadius = UDim.new(0, 8)
-SettingTabCorner.Parent = SettingTabBtn
-
-;(function()
-    local sub = Instance.new("TextLabel")
-    sub.Name = "Subtitle"
-    sub.Size = UDim2.new(0, 120, 1, 0)
-    sub.Position = UDim2.new(0, 76, 0, 0)
-    sub.BackgroundTransparency = 1
-    sub.Text = "Horse Tracker"
-    sub.TextColor3 = Color3.fromRGB(110, 118, 140)
-    sub.TextSize = 12
-    sub.Font = Enum.Font.Gotham
-    sub.TextXAlignment = Enum.TextXAlignment.Left
-    sub.Parent = TitleBar
-
-    local div = Instance.new("Frame")
-    div.Name = "TitleDivider"
-    div.Size = UDim2.new(1, 0, 0, 1)
-    div.Position = UDim2.new(0, 0, 1, 0)
-    div.BackgroundColor3 = Color3.fromRGB(33, 36, 48)
-    div.BorderSizePixel = 0
-    div.Parent = TitleBar
-
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 10)
-    tabCorner.Parent = TabBar
-
-    local tabPad = Instance.new("UIPadding")
-    tabPad.PaddingTop = UDim.new(0, 3)
-    tabPad.PaddingBottom = UDim.new(0, 3)
-    tabPad.PaddingLeft = UDim.new(0, 3)
-    tabPad.PaddingRight = UDim.new(0, 3)
-    tabPad.Parent = TabBar
-end)()
-
-local LeftPanel = Instance.new("ScrollingFrame")
-LeftPanel.Name = "LeftPanel"
-LeftPanel.Size = UDim2.new(0, 160, 1, -100)
-LeftPanel.Position = UDim2.new(0, 12, 0, 90)
-LeftPanel.BackgroundTransparency = 1
-LeftPanel.BorderSizePixel = 0
-LeftPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
-LeftPanel.ScrollBarThickness = 3
-LeftPanel.ScrollBarImageColor3 = Color3.fromRGB(52, 211, 153)
-LeftPanel.Parent = Frame
-
-local LeftLayout = Instance.new("UIListLayout")
-LeftLayout.SortOrder = Enum.SortOrder.LayoutOrder
-LeftLayout.Padding = UDim.new(0, 8)
-LeftLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-LeftLayout.Parent = LeftPanel
-
-local LeftPadding = Instance.new("UIPadding")
-LeftPadding.PaddingTop = UDim.new(0, 2)
-LeftPadding.PaddingBottom = UDim.new(0, 6)
-LeftPadding.PaddingLeft = UDim.new(0, 2)
-LeftPadding.PaddingRight = UDim.new(0, 2)
-LeftPadding.Parent = LeftPanel
-
-LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    LeftPanel.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 12)
-end)
-
-local ProfileCard = Instance.new("Frame")
-ProfileCard.Name = "ProfileCard"
-ProfileCard.Size = UDim2.new(1, 0, 0, 58)
-ProfileCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-ProfileCard.BorderSizePixel = 0
-ProfileCard.LayoutOrder = 1
-ProfileCard.Parent = LeftPanel
-
-local ProfileCorner = Instance.new("UICorner")
-ProfileCorner.CornerRadius = UDim.new(0, 10)
-ProfileCorner.Parent = ProfileCard
-
-local AvatarImg = Instance.new("ImageLabel")
-AvatarImg.Name = "AvatarImg"
-AvatarImg.Size = UDim2.new(0, 36, 0, 36)
-AvatarImg.Position = UDim2.new(0, 10, 0.5, -18)
-AvatarImg.BackgroundTransparency = 1
-AvatarImg.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(LocalPlayer.UserId) .. "&w=48&h=48"
-AvatarImg.Parent = ProfileCard
-
-local AvatarCorner = Instance.new("UICorner")
-AvatarCorner.CornerRadius = UDim.new(1, 0)
-AvatarCorner.Parent = AvatarImg
-
-local NameLbl = Instance.new("TextLabel")
-NameLbl.Name = "NameLbl"
-NameLbl.Size = UDim2.new(1, -58, 0, 16)
-NameLbl.Position = UDim2.new(0, 54, 0, 11)
-NameLbl.BackgroundTransparency = 1
-NameLbl.Text = LocalPlayer.Name
-NameLbl.TextColor3 = Color3.fromRGB(240, 242, 250)
-NameLbl.TextSize = 13
-NameLbl.Font = Enum.Font.GothamBold
-NameLbl.TextXAlignment = Enum.TextXAlignment.Left
-NameLbl.TextTruncate = Enum.TextTruncate.AtEnd
-NameLbl.Parent = ProfileCard
-
-local RankLbl = Instance.new("TextLabel")
-RankLbl.Name = "RankLbl"
-RankLbl.Size = UDim2.new(1, -58, 0, 14)
-RankLbl.Position = UDim2.new(0, 54, 0, 29)
-RankLbl.BackgroundTransparency = 1
-RankLbl.Text = "User"
-RankLbl.TextColor3 = Color3.fromRGB(52, 211, 153)
-RankLbl.TextSize = 11
-RankLbl.Font = Enum.Font.GothamBold
-RankLbl.TextXAlignment = Enum.TextXAlignment.Left
-RankLbl.Parent = ProfileCard
-
-local AutoToggleCard = Instance.new("Frame")
-AutoToggleCard.Name = "AutoToggleCard"
-AutoToggleCard.Size = UDim2.new(1, 0, 0, 38)
-AutoToggleCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-AutoToggleCard.BorderSizePixel = 0
-AutoToggleCard.LayoutOrder = 2
-AutoToggleCard.Parent = LeftPanel
-
-local AutoToggleCorner = Instance.new("UICorner")
-AutoToggleCorner.CornerRadius = UDim.new(0, 10)
-AutoToggleCorner.Parent = AutoToggleCard
-
-local AutoToggleBtn = Instance.new("TextButton")
-AutoToggleBtn.Name = "AutoToggleBtn"
-AutoToggleBtn.Size = UDim2.new(1, 0, 1, 0)
-AutoToggleBtn.BackgroundTransparency = 1
-AutoToggleBtn.Text = " Auto OFF"
-AutoToggleBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-AutoToggleBtn.TextSize = 12
-AutoToggleBtn.Font = Enum.Font.GothamBold
-AutoToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
-AutoToggleBtn.Parent = AutoToggleCard
-
-local ToggleSwitch = Instance.new("Frame")
-ToggleSwitch.Name = "ToggleSwitch"
-ToggleSwitch.Size = UDim2.new(0, 34, 0, 18)
-ToggleSwitch.Position = UDim2.new(1, -44, 0.5, -9)
-ToggleSwitch.BackgroundColor3 = Color3.fromRGB(55, 59, 76)
-ToggleSwitch.BorderSizePixel = 0
-ToggleSwitch.Parent = AutoToggleCard
-
-local SwitchCorner = Instance.new("UICorner")
-SwitchCorner.CornerRadius = UDim.new(1, 0)
-SwitchCorner.Parent = ToggleSwitch
-
-local SwitchCircle = Instance.new("Frame")
-SwitchCircle.Name = "SwitchCircle"
-SwitchCircle.Size = UDim2.new(0, 14, 0, 14)
-SwitchCircle.Position = UDim2.new(0, 2, 0.5, -7)
-SwitchCircle.BackgroundColor3 = Color3.fromRGB(139, 146, 165)
-SwitchCircle.BorderSizePixel = 0
-SwitchCircle.Parent = ToggleSwitch
-
-local CircleCorner = Instance.new("UICorner")
-CircleCorner.CornerRadius = UDim.new(1, 0)
-CircleCorner.Parent = SwitchCircle
-
-AutoToggleBtn.MouseButton1Click:Connect(function()
-    AutoFarmEnabled = not AutoFarmEnabled
-    if AutoFarmEnabled then
-        AutoToggleBtn.Text = " Auto ON"
-        local themeCol = Color3.fromRGB(52, 211, 153)
-        AutoToggleBtn.TextColor3 = themeCol
-        ToggleSwitch.BackgroundColor3 = themeCol
-        SwitchCircle.Position = UDim2.new(1, -16, 0.5, -7)
-        SwitchCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    else
-        AutoToggleBtn.Text = " Auto OFF"
-        AutoToggleBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(55, 59, 76)
-        SwitchCircle.Position = UDim2.new(0, 2, 0.5, -7)
-        SwitchCircle.BackgroundColor3 = Color3.fromRGB(139, 146, 165)
-        CatchWatchdogToken += 1
-        CatchWatchdogRunning = false
-        CatchCountdownRemaining = nil
-        ActiveWalkTarget = nil
-        ActiveTargetIsland = nil
-        TargetUID = nil
-    end
-    SavePersistentConfig()
-end)
-
---// 40-SECOND CATCH WATCHDOG
--- One watchdog is created for each catch cycle. tick() measures real elapsed time.
-local function StartCatchWatchdog()
-    if CatchWatchdogRunning then return end
-
-    CatchWatchdogToken += 1
-    local myToken = CatchWatchdogToken
-    local startedAt = tick()
-    CatchWatchdogRunning = true
-    CatchCountdownRemaining = CATCH_TIMEOUT_SECONDS
-
-    task.spawn(function()
-        while myToken == CatchWatchdogToken and AutoFarmEnabled and CatchWatchdogRunning do
-            local elapsed = tick() - startedAt
-            local remaining = CATCH_TIMEOUT_SECONDS - elapsed
-            local seconds = math.max(0, math.ceil(remaining))
-            CatchCountdownRemaining = seconds
-
-            if remaining <= 0 then
-                -- Force the recovery even if the horse disappeared at the exact timeout.
-                CatchWatchdogToken += 1
-                CatchWatchdogRunning = false
-                CatchCountdownRemaining = nil
-
-                AutoFarmEnabled = false
-                AutoToggleBtn.Text = " Auto OFF"
-                AutoToggleBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-                ToggleSwitch.BackgroundColor3 = Color3.fromRGB(55, 59, 76)
-                SwitchCircle.Position = UDim2.new(0, 2, 0.5, -7)
-                SwitchCircle.BackgroundColor3 = Color3.fromRGB(139, 146, 165)
-                ActiveWalkTarget = nil
-                ActiveTargetIsland = nil
-                TargetUID = nil
-                SavePersistentConfig()
-
-                task.wait(0.5)
-
-                if ScreenGui and ScreenGui.Parent then
-                    AutoFarmEnabled = true
-                    AutoToggleBtn.Text = " Auto ON"
-                    AutoToggleBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-                    ToggleSwitch.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                    SwitchCircle.Position = UDim2.new(1, -16, 0.5, -7)
-                    SwitchCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    SavePersistentConfig()
-                end
-                break
-            end
-
-            if StatusText and CatchWatchdogRunning then
-                local old = StatusText.Text or "STATUS: Catching"
-                old = old:gsub("%s*%[%d+s%]", "")
-                StatusText.Text = old .. " [" .. tostring(seconds) .. "s]"
-            end
-
-            task.wait(0.05)
-        end
-    end)
-end
-
-local SettingsPanel = Instance.new("ScrollingFrame")
-SettingsPanel.Name = "SettingsPanel"
-SettingsPanel.Size = UDim2.new(1, 0, 1, -40)
-SettingsPanel.Position = UDim2.new(0, 0, 0, 40)
-SettingsPanel.BackgroundTransparency = 1
-SettingsPanel.BorderSizePixel = 0
-SettingsPanel.Visible = false
-SettingsPanel.CanvasSize = UDim2.new(0, 0, 0, 0)
-SettingsPanel.ScrollBarThickness = 3
-SettingsPanel.ScrollBarImageColor3 = Color3.fromRGB(52, 211, 153)
-
-local SettingsLayout = Instance.new("UIListLayout")
-SettingsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-SettingsLayout.Padding = UDim.new(0, 8)
-SettingsLayout.Parent = SettingsPanel
-
-SettingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SettingsPanel.CanvasSize = UDim2.new(0, 0, 0, SettingsLayout.AbsoluteContentSize.Y + 10)
-end)
-
-local FilterCard = Instance.new("Frame")
-FilterCard.Name = "FilterCard"
-FilterCard.Size = UDim2.new(1, 0, 0, 38)
-FilterCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-FilterCard.BorderSizePixel = 0
-FilterCard.LayoutOrder = 3
-FilterCard.Parent = LeftPanel
-
-local FilterCardCorner = Instance.new("UICorner")
-FilterCardCorner.CornerRadius = UDim.new(0, 10)
-FilterCardCorner.Parent = FilterCard
-
-local FilterToggleBtn = Instance.new("TextButton")
-FilterToggleBtn.Name = "FilterToggleBtn"
-FilterToggleBtn.Size = UDim2.new(1, 0, 1, 0)
-FilterToggleBtn.BackgroundTransparency = 1
-FilterToggleBtn.Text = " Filters >"
-FilterToggleBtn.TextColor3 = Color3.fromRGB(222, 225, 236)
-FilterToggleBtn.TextSize = 12
-FilterToggleBtn.Font = Enum.Font.GothamBold
-FilterToggleBtn.TextXAlignment = Enum.TextXAlignment.Left
-FilterToggleBtn.Parent = FilterCard
-
-;(function()
-    for _, b in ipairs({AutoToggleBtn, FilterToggleBtn}) do
-        local pad = Instance.new("UIPadding")
-        pad.PaddingLeft = UDim.new(0, 10)
-        pad.Parent = b
-    end
-    for _, card in ipairs({ProfileCard, AutoToggleCard, FilterCard}) do
-        local st = Instance.new("UIStroke")
-        st.Color = Color3.fromRGB(33, 36, 48)
-        st.Thickness = 1
-        st.Parent = card
-    end
-end)()
-
-local RarityFilterContainer = Instance.new("Frame")
-RarityFilterContainer.Name = "RarityFilterContainer"
-RarityFilterContainer.Size = UDim2.new(1, 0, 0, 144)
-RarityFilterContainer.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-RarityFilterContainer.BorderSizePixel = 0
-RarityFilterContainer.Visible = false
-RarityFilterContainer.LayoutOrder = 4
-RarityFilterContainer.Parent = LeftPanel
-
-local RarityFilterCorner = Instance.new("UICorner")
-RarityFilterCorner.CornerRadius = UDim.new(0, 10)
-RarityFilterCorner.Parent = RarityFilterContainer
-
-local RarityFilterLayout = Instance.new("UIListLayout")
-RarityFilterLayout.SortOrder = Enum.SortOrder.LayoutOrder
-RarityFilterLayout.Padding = UDim.new(0, 4)
-RarityFilterLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-RarityFilterLayout.Parent = RarityFilterContainer
-
-local RarityFilterPadding = Instance.new("UIPadding")
-RarityFilterPadding.PaddingTop = UDim.new(0, 10)
-RarityFilterPadding.PaddingBottom = UDim.new(0, 10)
-RarityFilterPadding.PaddingLeft = UDim.new(0, 10)
-RarityFilterPadding.PaddingRight = UDim.new(0, 10)
-RarityFilterPadding.Parent = RarityFilterContainer
-
-local RarityHeader = Instance.new("TextLabel")
-RarityHeader.Size = UDim2.new(1, 0, 0, 12)
-RarityHeader.BackgroundTransparency = 1
-RarityHeader.Text = "RARITIES"
-RarityHeader.TextColor3 = Color3.fromRGB(110, 118, 140)
-RarityHeader.TextSize = 10
-RarityHeader.Font = Enum.Font.GothamBold
-RarityHeader.TextXAlignment = Enum.TextXAlignment.Left
-RarityHeader.LayoutOrder = 0
-RarityHeader.Parent = RarityFilterContainer
-
-local function CreateCheckbox(name, color, key, order, container, filterTable, callback)
-    local btn = Instance.new("TextButton")
-    btn.Name = key .. "Check"
-    btn.Size = UDim2.new(1, 0, 0, 24)
-    btn.BackgroundTransparency = 1
-    btn.Text = " " .. name
-    btn.TextColor3 = color
-    btn.TextSize = 12
-    btn.Font = Enum.Font.GothamBold
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-    btn.LayoutOrder = order
-    btn.Parent = container
-
-    local checkIndicator = Instance.new("Frame")
-    checkIndicator.Size = UDim2.new(0, 16, 0, 16)
-    checkIndicator.Position = UDim2.new(1, -16, 0.5, -8)
-    checkIndicator.BackgroundColor3 = filterTable[key] and Color3.fromRGB(99, 102, 241) or Color3.fromRGB(55, 59, 76)
-    checkIndicator.BorderSizePixel = 0
-    checkIndicator.Parent = btn
-
-    local checkCorner = Instance.new("UICorner")
-    checkCorner.CornerRadius = UDim.new(0, 5)
-    checkCorner.Parent = checkIndicator
-
-    local checkMark = Instance.new("TextLabel")
-    checkMark.Size = UDim2.new(1, 0, 1, 0)
-    checkMark.BackgroundTransparency = 1
-    checkMark.Text = "✓"
-    checkMark.TextColor3 = Color3.fromRGB(255, 255, 255)
-    checkMark.TextSize = 12
-    checkMark.Font = Enum.Font.GothamBold
-    checkMark.TextXAlignment = Enum.TextXAlignment.Center
-    checkMark.TextYAlignment = Enum.TextYAlignment.Center
-    checkMark.Visible = filterTable[key]
-    checkMark.Parent = checkIndicator
-
-    btn.MouseButton1Click:Connect(function()
-        filterTable[key] = not filterTable[key]
-        checkMark.Visible = filterTable[key]
-        checkIndicator.BackgroundColor3 = filterTable[key] and Color3.fromRGB(99, 102, 241) or Color3.fromRGB(55, 59, 76)
-        if callback then callback() end
-        SavePersistentConfig()
-    end)
-end
-
-CreateCheckbox("Special", Color3.fromRGB(255, 215, 0), "Special", 1, RarityFilterContainer, RarityFilters, ClearCache)
-CreateCheckbox("High", Color3.fromRGB(239, 68, 68), "High", 2, RarityFilterContainer, RarityFilters, ClearCache)
-CreateCheckbox("Mid", Color3.fromRGB(251, 191, 36), "Mid", 3, RarityFilterContainer, RarityFilters, ClearCache)
-CreateCheckbox("Low", Color3.fromRGB(52, 211, 153), "Low", 4, RarityFilterContainer, RarityFilters, ClearCache)
-
-local IsFilterOpen = false
-FilterToggleBtn.MouseButton1Click:Connect(function()
-    IsFilterOpen = not IsFilterOpen
-    RarityFilterContainer.Visible = IsFilterOpen
-    FilterToggleBtn.Text = IsFilterOpen and " Filters v" or " Filters >"
-end)
-
-local ServerHopBtn = Instance.new("TextButton")
-ServerHopBtn.Name = "ServerHopBtn"
-ServerHopBtn.Size = UDim2.new(1, 0, 0, 38)
-ServerHopBtn.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-ServerHopBtn.BorderSizePixel = 0
-ServerHopBtn.Text = "Server Hop"
-ServerHopBtn.TextColor3 = Color3.fromRGB(222, 225, 236)
-ServerHopBtn.TextSize = 12
-ServerHopBtn.Font = Enum.Font.GothamBold
-ServerHopBtn.LayoutOrder = 5
-ServerHopBtn.Parent = LeftPanel
-
-local ServerHopCorner = Instance.new("UICorner")
-ServerHopCorner.CornerRadius = UDim.new(0, 10)
-ServerHopCorner.Parent = ServerHopBtn
-
-local hopping = false
-local function executeServerHop()
-    if hopping then return end
-    hopping = true
-
-    ServerHopBtn.Text = "HOPPING..."
-    if StatusText then
-        StatusText.Text = "STATUS: Finding server..."
-        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-    end
-    task.spawn(function()
-        local success, err = pcall(function()
-            local servers = {}
-            local cursor = nil
-
-            -- Search several pages and collect available servers.
-            for page = 1, 5 do
-                -- Descending order helps find fuller servers first.
-                local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/public?sortOrder=Desc&limit=100"
-                if cursor then
-                    url = url .. "&cursor=" .. HttpService:UrlEncode(cursor)
-                end
-
-                local reqSuccess, reqResult = pcall(function()
-                    return game:HttpGet(url)
-                end)
-
-                if not reqSuccess or not reqResult then break end
-
-                local decodeSuccess, data = pcall(function() return HttpService:JSONDecode(reqResult) end)
-                if not decodeSuccess or not data or not data.data then break end
-
-                for _, s in ipairs(data.data) do
-                    if type(s) == "table"
-                        and s.id ~= game.JobId
-                        and s.playing
-                        and s.maxPlayers
-                        and s.playing < s.maxPlayers then
-                        table.insert(servers, s)
-                    end
-                end
-
-                cursor = data.nextPageCursor
-                if not cursor then break end
-            end
-
-            -- Pick the server with the MOST players while still having room.
-            local targetServer = nil
-            for _, s in ipairs(servers) do
-                if not targetServer or s.playing > targetServer.playing then
-                    targetServer = s
-                end
-            end
-
-            if targetServer then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, targetServer.id, LocalPlayer)
-            else
-                TeleportService:Teleport(game.PlaceId, LocalPlayer)
-            end
-        end)
-        if not success then
-            warn("Server hop failed:", err)
-            ServerHopBtn.Text = "Server Hop"
-            if StatusText then
-                StatusText.Text = "STATUS: Hop failed"
-                StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-            end
-            hopping = false
-        end
-    end)
-end
-
-ServerHopBtn.MouseButton1Click:Connect(executeServerHop)
-
---// GOLDEN APPLE BASKET TELEPORT
-local GoldenAppleBasketBtn = Instance.new("TextButton")
-GoldenAppleBasketBtn.Name = "GoldenAppleBasketBtn"
-GoldenAppleBasketBtn.Size = UDim2.new(1, 0, 0, 38)
-GoldenAppleBasketBtn.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-GoldenAppleBasketBtn.BorderSizePixel = 0
-GoldenAppleBasketBtn.Text = "Golden Apple Basket"
-GoldenAppleBasketBtn.TextColor3 = Color3.fromRGB(222, 225, 236)
-GoldenAppleBasketBtn.TextSize = 12
-GoldenAppleBasketBtn.Font = Enum.Font.GothamBold
-GoldenAppleBasketBtn.LayoutOrder = 6
-GoldenAppleBasketBtn.Parent = LeftPanel
-
-local GoldenAppleBasketCorner = Instance.new("UICorner")
-GoldenAppleBasketCorner.CornerRadius = UDim.new(0, 10)
-GoldenAppleBasketCorner.Parent = GoldenAppleBasketBtn
-
-local goldenAppleBasketTween = nil
-
-local function tweenToGoldenAppleBasket()
-    if goldenAppleBasketTween then
-        goldenAppleBasketTween:Cancel()
-        goldenAppleBasketTween = nil
-    end
-
-    local basket = Workspace:FindFirstChild("Golden Apple Basket", true)
-
-    if not basket then
-        GoldenAppleBasketBtn.Text = "Basket Not Found"
-        if StatusText then
-            StatusText.Text = "STATUS: Golden Apple Basket not found"
-            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-        end
-        task.delay(1.5, function()
-            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
-                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
-            end
-        end)
-        return
-    end
-
-    local character = LocalPlayer.Character
-    local rootPart = character and character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-
-    if not rootPart or not humanoid then
-        return
-    end
-
-    local targetCFrame
-
-    if basket:IsA("Model") then
-        targetCFrame = basket:GetPivot() * CFrame.new(0, 3, 0)
-    elseif basket:IsA("BasePart") then
-        targetCFrame = basket.CFrame * CFrame.new(0, 3, 0)
-    else
-        local basketPart = basket:FindFirstChildWhichIsA("BasePart", true)
-        if basketPart then
-            targetCFrame = basketPart.CFrame * CFrame.new(0, 3, 0)
-        end
-    end
-
-    if not targetCFrame then
-        GoldenAppleBasketBtn.Text = "Invalid Basket"
-        if StatusText then
-            StatusText.Text = "STATUS: Golden Apple Basket has no usable position"
-            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-        end
-        task.delay(1.5, function()
-            if GoldenAppleBasketBtn and GoldenAppleBasketBtn.Parent then
-                GoldenAppleBasketBtn.Text = "Golden Apple Basket"
-            end
-        end)
-        return
-    end
-
-    local distance = (rootPart.Position - targetCFrame.Position).Magnitude
-    local tweenTime = math.max(distance / TWEEN_SPEED, 0.1)
-
-    GoldenAppleBasketBtn.Text = "GOING..."
-    if StatusText then
-        StatusText.Text = "STATUS: Tweening to Golden Apple Basket..."
-        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-    end
-
-    rootPart.Anchored = true
-    humanoid.PlatformStand = true
-    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-
-    goldenAppleBasketTween = TweenService:Create(
-        rootPart,
-        TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
-        {CFrame = targetCFrame}
-    )
-
-    goldenAppleBasketTween:Play()
-
-    goldenAppleBasketTween.Completed:Connect(function()
-        if rootPart and rootPart.Parent then
-            rootPart.CFrame = targetCFrame
-            rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            rootPart.Anchored = false
-        end
-
-        if humanoid and humanoid.Parent and humanoid.Health > 0 then
-            humanoid.PlatformStand = false
-        end
-
-        goldenAppleBasketTween = nil
-        GoldenAppleBasketBtn.Text = "Golden Apple Basket"
-
-        if StatusText then
-            StatusText.Text = "STATUS: At Golden Apple Basket"
-            StatusText.TextColor3 = Color3.fromRGB(52, 211, 153)
-        end
-    end)
-end
-
-GoldenAppleBasketBtn.MouseButton1Click:Connect(tweenToGoldenAppleBasket)
-
---// SERVER HOP INTERVAL CARD & AUTO-HOP
-local ServerHopIntervalCard = Instance.new("Frame")
-ServerHopIntervalCard.Name = "ServerHopIntervalCard"
-ServerHopIntervalCard.Size = UDim2.new(1, 0, 0, 68)
-ServerHopIntervalCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-ServerHopIntervalCard.BorderSizePixel = 0
-ServerHopIntervalCard.LayoutOrder = 7
-ServerHopIntervalCard.Parent = LeftPanel
-
-local ServerHopIntervalCorner = Instance.new("UICorner")
-ServerHopIntervalCorner.CornerRadius = UDim.new(0, 10)
-ServerHopIntervalCorner.Parent = ServerHopIntervalCard
-
-local ServerHopIntervalTitle = Instance.new("TextLabel")
-ServerHopIntervalTitle.Size = UDim2.new(1, -20, 0, 16)
-ServerHopIntervalTitle.Position = UDim2.new(0, 10, 0, 6)
-ServerHopIntervalTitle.BackgroundTransparency = 1
-ServerHopIntervalTitle.Text = "Auto Hop Interval"
-ServerHopIntervalTitle.TextColor3 = Color3.fromRGB(110, 118, 140)
-ServerHopIntervalTitle.TextSize = 10
-ServerHopIntervalTitle.Font = Enum.Font.GothamBold
-ServerHopIntervalTitle.TextXAlignment = Enum.TextXAlignment.Left
-ServerHopIntervalTitle.Parent = ServerHopIntervalCard
-
-local AutoHopToggleBtn = Instance.new("TextButton")
-AutoHopToggleBtn.Name = "AutoHopToggleBtn"
-AutoHopToggleBtn.Size = UDim2.new(0.45, -8, 0, 28)
-AutoHopToggleBtn.Position = UDim2.new(0, 10, 0, 32)
-AutoHopToggleBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-AutoHopToggleBtn.BorderSizePixel = 0
-AutoHopToggleBtn.Text = "Auto: OFF"
-AutoHopToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-AutoHopToggleBtn.TextSize = 12
-AutoHopToggleBtn.Font = Enum.Font.GothamBold
-AutoHopToggleBtn.Parent = ServerHopIntervalCard
-
-local AutoHopBtnCorner = Instance.new("UICorner")
-AutoHopBtnCorner.CornerRadius = UDim.new(0, 7)
-AutoHopBtnCorner.Parent = AutoHopToggleBtn
-
-local HopIntervalDropdownBtn = Instance.new("TextButton")
-HopIntervalDropdownBtn.Size = UDim2.new(0.55, -14, 0, 28)
-HopIntervalDropdownBtn.Position = UDim2.new(0.45, 4, 0, 32)
-HopIntervalDropdownBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-HopIntervalDropdownBtn.BorderSizePixel = 0
-HopIntervalDropdownBtn.ZIndex = 15
-HopIntervalDropdownBtn.Text = "5 Minutes v"
-HopIntervalDropdownBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-HopIntervalDropdownBtn.TextSize = 12
-HopIntervalDropdownBtn.Font = Enum.Font.GothamBold
-HopIntervalDropdownBtn.Parent = ServerHopIntervalCard
-
-local HopIntervalCorner = Instance.new("UICorner")
-HopIntervalCorner.CornerRadius = UDim.new(0, 7)
-HopIntervalCorner.Parent = HopIntervalDropdownBtn
-
-local HopIntervalDropdownList = Instance.new("ScrollingFrame")
-HopIntervalDropdownList.Size = UDim2.new(0.55, -14, 0, 78)
-HopIntervalDropdownList.Position = UDim2.new(0.45, 4, 0, 62)
-HopIntervalDropdownList.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-HopIntervalDropdownList.BorderSizePixel = 0
-HopIntervalDropdownList.Visible = false
-HopIntervalDropdownList.ZIndex = 25
-HopIntervalDropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-HopIntervalDropdownList.ScrollBarThickness = 3
-HopIntervalDropdownList.Parent = ServerHopIntervalCard
-
-local HopIntervalListLayout = Instance.new("UIListLayout")
-HopIntervalListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-HopIntervalListLayout.Parent = HopIntervalDropdownList
-
-HopIntervalListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    HopIntervalDropdownList.CanvasSize = UDim2.new(0, 0, 0, HopIntervalListLayout.AbsoluteContentSize.Y)
-end)
-
-local autoHopEnabled = false
-local hopIntervalSeconds = 300 -- Default 5 minutes
-
-local function CreateHopIntervalOption(name, seconds)
-    local optBtn = Instance.new("TextButton")
-    optBtn.Size = UDim2.new(1, 0, 0, 26)
-    optBtn.BackgroundColor3 = Color3.fromRGB(30, 33, 45)
-    optBtn.BorderSizePixel = 0
-    optBtn.ZIndex = 26
-    optBtn.Text = name
-    optBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-    optBtn.TextSize = 12
-    optBtn.Font = Enum.Font.Gotham
-    optBtn.Parent = HopIntervalDropdownList
-
-    optBtn.MouseButton1Click:Connect(function()
-        HopIntervalDropdownBtn.Text = name .. " v"
-        hopIntervalSeconds = seconds
-        HopIntervalDropdownList.Visible = false
-        SavePersistentConfig()
-    end)
-end
-
-CreateHopIntervalOption("5 Minutes", 300)
-CreateHopIntervalOption("10 Minutes", 600)
-CreateHopIntervalOption("15 Minutes", 900)
-
-local isHopIntervalOpen = false
-HopIntervalDropdownBtn.MouseButton1Click:Connect(function()
-    isHopIntervalOpen = not isHopIntervalOpen
-    HopIntervalDropdownList.Visible = isHopIntervalOpen
-end)
-
-AutoHopToggleBtn.MouseButton1Click:Connect(function()
-    autoHopEnabled = not autoHopEnabled
-    if autoHopEnabled then
-        AutoHopToggleBtn.Text = "Auto: ON"
-        AutoHopToggleBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        AutoHopToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    else
-        AutoHopToggleBtn.Text = "Auto: OFF"
-        AutoHopToggleBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-        AutoHopToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
-    SavePersistentConfig()
-end)
-
+-- drop the current horse when a strictly higher priority one shows up (auto mode only)
 task.spawn(function()
-    while true do
-        local elapsed = 0
-        while autoHopEnabled do
-            task.wait(1)
-            elapsed += 1
-            if elapsed >= hopIntervalSeconds then
-                executeServerHop()
-                break
-            end
-        end
-        task.wait(1)
-    end
-end)
-
-local RightPanel = Instance.new("Frame")
-RightPanel.Name = "RightPanel"
-RightPanel.Size = UDim2.new(1, -196, 1, -100)
-RightPanel.Position = UDim2.new(0, 184, 0, 90)
-RightPanel.BackgroundTransparency = 1
-RightPanel.Parent = Frame
-
-local StatusCard = Instance.new("Frame")
-StatusCard.Name = "StatusCard"
-StatusCard.Size = UDim2.new(1, 0, 0, 30)
-StatusCard.Position = UDim2.new(0, 0, 0, 0)
-StatusCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-StatusCard.BorderSizePixel = 0
-StatusCard.Parent = RightPanel
-
-local StatusCorner = Instance.new("UICorner")
-StatusCorner.CornerRadius = UDim.new(0, 8)
-StatusCorner.Parent = StatusCard
-
-StatusText = Instance.new("TextLabel")
-StatusText.Name = "StatusText"
-StatusText.Size = UDim2.new(1, -20, 1, 0)
-StatusText.Position = UDim2.new(0, 10, 0, 0)
-StatusText.BackgroundTransparency = 1
-StatusText.Text = "STATUS: Idle"
-StatusText.TextColor3 = Color3.fromRGB(148, 163, 184)
-StatusText.TextSize = 11
-StatusText.Font = Enum.Font.GothamSemibold
-StatusText.TextXAlignment = Enum.TextXAlignment.Left
-StatusText.Parent = StatusCard
-
-local LiveTrackerCard = Instance.new("Frame")
-LiveTrackerCard.Name = "LiveTrackerCard"
-LiveTrackerCard.Size = UDim2.new(1, 0, 0, 28)
-LiveTrackerCard.Position = UDim2.new(0, 0, 0, 38)
-LiveTrackerCard.BackgroundTransparency = 1
-LiveTrackerCard.BorderSizePixel = 0
-LiveTrackerCard.Parent = RightPanel
-
-local LiveTrackerLayout = Instance.new("UIListLayout")
-LiveTrackerLayout.FillDirection = Enum.FillDirection.Horizontal
-LiveTrackerLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-LiveTrackerLayout.SortOrder = Enum.SortOrder.LayoutOrder
-LiveTrackerLayout.Padding = UDim.new(0, 4)
-LiveTrackerLayout.Parent = LiveTrackerCard
-
-local LiveTrackerPadding = Instance.new("UIPadding")
-LiveTrackerPadding.PaddingLeft = UDim.new(0, 4)
-LiveTrackerPadding.Parent = LiveTrackerCard
-
-local BulletLabel = Instance.new("TextLabel")
-BulletLabel.Name = "BulletLabel"
-BulletLabel.Size = UDim2.new(0, 14, 1, 0)
-BulletLabel.BackgroundTransparency = 1
-BulletLabel.Text = "●"
-BulletLabel.TextColor3 = Color3.fromRGB(52, 211, 153)
-BulletLabel.TextSize = 11
-BulletLabel.Font = Enum.Font.GothamBold
-BulletLabel.LayoutOrder = 1
-BulletLabel.Parent = LiveTrackerCard
-
-TrackerTextLabel = Instance.new("TextLabel")
-TrackerTextLabel.Name = "TrackerTextLabel"
-TrackerTextLabel.Size = UDim2.new(1, -20, 1, 0)
-TrackerTextLabel.BackgroundTransparency = 1
-TrackerTextLabel.Text = "Live Horse Tracker (0)"
-TrackerTextLabel.TextColor3 = Color3.fromRGB(52, 211, 153)
-TrackerTextLabel.TextSize = 15
-TrackerTextLabel.Font = Enum.Font.GothamBold
-TrackerTextLabel.TextXAlignment = Enum.TextXAlignment.Left
-TrackerTextLabel.LayoutOrder = 2
-TrackerTextLabel.Parent = LiveTrackerCard
-
-local HeaderCard = Instance.new("Frame")
-HeaderCard.Name = "HeaderCard"
-HeaderCard.Size = UDim2.new(1, 0, 0, 18)
-HeaderCard.Position = UDim2.new(0, 0, 0, 70)
-HeaderCard.BackgroundTransparency = 1
-HeaderCard.Parent = RightPanel
-
-local function CreateHeaderLabel(name, size, pos, alignment)
-    local lbl = Instance.new("TextLabel")
-    lbl.Name = name
-    lbl.Size = size
-    lbl.Position = pos
-    lbl.BackgroundTransparency = 1
-    lbl.Text = name
-    lbl.TextColor3 = Color3.fromRGB(110, 118, 140)
-    lbl.TextSize = 10
-    lbl.Font = Enum.Font.GothamBold
-    lbl.TextXAlignment = alignment
-    lbl.Parent = HeaderCard
-    return lbl
-end
-
-CreateHeaderLabel("Rarity", UDim2.new(0.15, 0, 1, 0), UDim2.new(0, 10, 0, 0), Enum.TextXAlignment.Left)
-CreateHeaderLabel("Name", UDim2.new(0.30, 0, 1, 0), UDim2.new(0.15, 10, 0, 0), Enum.TextXAlignment.Left)
-CreateHeaderLabel("Island", UDim2.new(0.25, 0, 1, 0), UDim2.new(0.45, 10, 0, 0), Enum.TextXAlignment.Left)
-CreateHeaderLabel("Unique Hair", UDim2.new(0.12, 0, 1, 0), UDim2.new(0.70, 10, 0, 0), Enum.TextXAlignment.Center)
-CreateHeaderLabel("Action", UDim2.new(0.17, 0, 1, 0), UDim2.new(0.82, 0, 0, 0), Enum.TextXAlignment.Center)
-
-local ScrollFrame = Instance.new("ScrollingFrame")
-ScrollFrame.Name = "HorseList"
-ScrollFrame.Size = UDim2.new(1, 0, 1, -128)
-ScrollFrame.Position = UDim2.new(0, 0, 0, 92)
-ScrollFrame.BackgroundTransparency = 1
-ScrollFrame.BorderSizePixel = 0
-ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-ScrollFrame.ScrollBarThickness = 3
-ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(52, 211, 153)
-ScrollFrame.Parent = RightPanel
-
-local ScrollFrameStroke = Instance.new("UIStroke")
-ScrollFrameStroke.Color = Color3.fromRGB(33, 36, 48)
-ScrollFrameStroke.Thickness = 1
-ScrollFrameStroke.Parent = ScrollFrame
-
-local ScrollFrameCorner = Instance.new("UICorner")
-ScrollFrameCorner.CornerRadius = UDim.new(0, 8)
-ScrollFrameCorner.Parent = ScrollFrame
-
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0, 4)
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-UIListLayout.Parent = ScrollFrame
-
-UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
-end)
-
-SettingsPanel.Parent = RightPanel
-
-local TweenSpeedCard = Instance.new("Frame")
-TweenSpeedCard.Name = "TweenSpeedCard"
-TweenSpeedCard.Size = UDim2.new(1, 0, 0, 40)
-TweenSpeedCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-TweenSpeedCard.BorderSizePixel = 0
-TweenSpeedCard.LayoutOrder = 1
-TweenSpeedCard.Parent = SettingsPanel
-
-local TweenSpeedCorner = Instance.new("UICorner")
-TweenSpeedCorner.CornerRadius = UDim.new(0, 10)
-TweenSpeedCorner.Parent = TweenSpeedCard
-
-local TweenSpeedLabel = Instance.new("TextLabel")
-TweenSpeedLabel.Size = UDim2.new(0.6, 0, 1, 0)
-TweenSpeedLabel.Position = UDim2.new(0, 10, 0, 0)
-TweenSpeedLabel.BackgroundTransparency = 1
-TweenSpeedLabel.Text = "Tween Speed (" .. tostring(TWEEN_SPEED) .. ")"
-TweenSpeedLabel.TextColor3 = Color3.fromRGB(222, 225, 236)
-TweenSpeedLabel.TextSize = 12
-TweenSpeedLabel.Font = Enum.Font.GothamBold
-TweenSpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-TweenSpeedLabel.Parent = TweenSpeedCard
-
-local SpeedDownBtn = Instance.new("TextButton")
-SpeedDownBtn.Size = UDim2.new(0, 30, 0, 26)
-SpeedDownBtn.Position = UDim2.new(1, -76, 0.5, -13)
-SpeedDownBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-SpeedDownBtn.BorderSizePixel = 0
-SpeedDownBtn.Text = "-"
-SpeedDownBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedDownBtn.TextSize = 16
-SpeedDownBtn.Font = Enum.Font.GothamBold
-SpeedDownBtn.Parent = TweenSpeedCard
-
-local SpeedDownCorner = Instance.new("UICorner")
-SpeedDownCorner.CornerRadius = UDim.new(0, 7)
-SpeedDownCorner.Parent = SpeedDownBtn
-
-local SpeedUpBtn = Instance.new("TextButton")
-SpeedUpBtn.Size = UDim2.new(0, 30, 0, 26)
-SpeedUpBtn.Position = UDim2.new(1, -40, 0.5, -13)
-SpeedUpBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-SpeedUpBtn.BorderSizePixel = 0
-SpeedUpBtn.Text = "+"
-SpeedUpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedUpBtn.TextSize = 16
-SpeedUpBtn.Font = Enum.Font.GothamBold
-SpeedUpBtn.Parent = TweenSpeedCard
-
-local SpeedUpCorner = Instance.new("UICorner")
-SpeedUpCorner.CornerRadius = UDim.new(0, 7)
-SpeedUpCorner.Parent = SpeedUpBtn
-
-SpeedDownBtn.MouseButton1Click:Connect(function()
-    TWEEN_SPEED = math.clamp(TWEEN_SPEED - 10, 10, 300)
-    TweenSpeedLabel.Text = "Tween Speed (" .. tostring(TWEEN_SPEED) .. ")"
-    SavePersistentConfig()
-end)
-
-SpeedUpBtn.MouseButton1Click:Connect(function()
-    TWEEN_SPEED = math.clamp(TWEEN_SPEED + 10, 10, 300)
-    TweenSpeedLabel.Text = "Tween Speed (" .. tostring(TWEEN_SPEED) .. ")"
-    SavePersistentConfig()
-end)
-
-local function CreateSettingsGroup(titleText, layoutOrder, height)
-    local Card = Instance.new("Frame")
-    Card.Size = UDim2.new(1, 0, 0, height)
-    Card.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-    Card.BorderSizePixel = 0
-    Card.LayoutOrder = layoutOrder
-    Card.Parent = SettingsPanel
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
-    Corner.Parent = Card
-
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, -20, 0, 16)
-    Title.Position = UDim2.new(0, 10, 0, 6)
-    Title.BackgroundTransparency = 1
-    Title.Text = titleText
-    Title.TextColor3 = Color3.fromRGB(110, 118, 140)
-    Title.TextSize = 10
-    Title.Font = Enum.Font.GothamBold
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = Card
-    return Card
-end
-
-local function MakeUncopyable(textBox)
-    local overlay = Instance.new("TextButton")
-    overlay.Size = UDim2.new(1, 0, 1, 0)
-    overlay.BackgroundTransparency = 1
-    overlay.Text = ""
-    overlay.ZIndex = 10
-    overlay.Parent = textBox
-    overlay.MouseButton1Click:Connect(function() end)
-    overlay.TouchTap:Connect(function() end)
-end
-
-local function CreateInputRow(parent, labelText, yPos, isReadOnly, defaultText, placeholder)
-    local Label = Instance.new("TextLabel")
-    Label.Size = UDim2.new(0.3, -4, 0, 24)
-    Label.Position = UDim2.new(0, 10, 0, yPos)
-    Label.BackgroundTransparency = 1
-    Label.Text = labelText
-    Label.TextColor3 = Color3.fromRGB(222, 225, 236)
-    Label.TextSize = 12
-    Label.Font = Enum.Font.Gotham
-    Label.TextXAlignment = Enum.TextXAlignment.Left
-    Label.Parent = parent
-
-    local TextBox = Instance.new("TextBox")
-    TextBox.Size = UDim2.new(0.7, -108, 0, 24)
-    TextBox.Position = UDim2.new(0.3, 8, 0, yPos)
-    TextBox.BackgroundColor3 = Color3.fromRGB(14, 15, 21)
-    TextBox.BorderSizePixel = 0
-    TextBox.Text = defaultText
-    TextBox.PlaceholderText = placeholder or ""
-    TextBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
-    TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    TextBox.TextSize = 12
-    TextBox.Font = Enum.Font.Gotham
-    TextBox.TextEditable = not isReadOnly
-    TextBox.ClearTextOnFocus = false
-    TextBox.Parent = parent
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 7)
-    Corner.Parent = TextBox
-
-    if isReadOnly then
-        MakeUncopyable(TextBox)
-    end
-    return TextBox
-end
-
-local function CreateActionRow(parent, yPos)
-    local GenerateBtn = Instance.new("TextButton")
-    GenerateBtn.Size = UDim2.new(0, 80, 0, 24)
-    GenerateBtn.Position = UDim2.new(1, -90, 0, yPos)
-    GenerateBtn.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
-    GenerateBtn.BorderSizePixel = 0
-    GenerateBtn.Text = "Generate"
-    GenerateBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    GenerateBtn.TextSize = 12
-    GenerateBtn.Font = Enum.Font.GothamBold
-    GenerateBtn.Parent = parent
-
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 7)
-    BtnCorner.Parent = GenerateBtn
-
-    local StatusLbl = Instance.new("TextLabel")
-    StatusLbl.Size = UDim2.new(1, -110, 0, 24)
-    StatusLbl.Position = UDim2.new(0, 10, 0, yPos)
-    StatusLbl.BackgroundTransparency = 1
-    StatusLbl.Text = ""
-    StatusLbl.TextColor3 = Color3.fromRGB(139, 146, 165)
-    StatusLbl.TextSize = 11
-    StatusLbl.Font = Enum.Font.Gotham
-    StatusLbl.TextXAlignment = Enum.TextXAlignment.Left
-    StatusLbl.Parent = parent
-    return GenerateBtn, StatusLbl
-end
-
-local function findUIElement(parent, name)
-    for _, child in ipairs(parent:GetChildren()) do
-        if child.Name == name then
-            return child
-        end
-        local found = findUIElement(child, name)
-        if found then return found end
-    end
-    return nil
-end
-
---// REMOTESPY TOGGLE CARD
-local RemoteSpyCard = Instance.new("Frame")
-RemoteSpyCard.Name = "RemoteSpyCard"
-RemoteSpyCard.Size = UDim2.new(1, 0, 0, 68)
-RemoteSpyCard.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-RemoteSpyCard.BorderSizePixel = 0
-RemoteSpyCard.LayoutOrder = 2
-RemoteSpyCard.Parent = SettingsPanel
-
-local RemoteSpyCorner = Instance.new("UICorner")
-RemoteSpyCorner.CornerRadius = UDim.new(0, 10)
-RemoteSpyCorner.Parent = RemoteSpyCard
-
-local RemoteSpyTitle = Instance.new("TextLabel")
-RemoteSpyTitle.Size = UDim2.new(1, -20, 0, 16)
-RemoteSpyTitle.Position = UDim2.new(0, 10, 0, 6)
-RemoteSpyTitle.BackgroundTransparency = 1
-RemoteSpyTitle.Text = "RemoteSpy"
-RemoteSpyTitle.TextColor3 = Color3.fromRGB(110, 118, 140)
-RemoteSpyTitle.TextSize = 10
-RemoteSpyTitle.Font = Enum.Font.GothamBold
-RemoteSpyTitle.TextXAlignment = Enum.TextXAlignment.Left
-RemoteSpyTitle.Parent = RemoteSpyCard
-
-local RemoteSpyBtn = Instance.new("TextButton")
-RemoteSpyBtn.Name = "RemoteSpyToggleBtn"
-RemoteSpyBtn.Size = UDim2.new(1, -20, 0, 28)
-RemoteSpyBtn.Position = UDim2.new(0, 10, 0, 32)
-RemoteSpyBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-RemoteSpyBtn.BorderSizePixel = 0
-RemoteSpyBtn.Text = "RemoteSpy: OFF"
-RemoteSpyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-RemoteSpyBtn.TextSize = 12
-RemoteSpyBtn.Font = Enum.Font.GothamBold
-RemoteSpyBtn.Parent = RemoteSpyCard
-
-local RemoteSpyBtnCorner = Instance.new("UICorner")
-RemoteSpyBtnCorner.CornerRadius = UDim.new(0, 7)
-RemoteSpyBtnCorner.Parent = RemoteSpyBtn
-
-local remoteSpyEnabled = false
-RemoteSpyBtn.MouseButton1Click:Connect(function()
-    remoteSpyEnabled = not remoteSpyEnabled
-    if remoteSpyEnabled then
-        RemoteSpyBtn.Text = "RemoteSpy: ON"
-        RemoteSpyBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        RemoteSpyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+    while ScreenGui.Parent do
+        task.wait(0.3)
         pcall(function()
-            loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-SimpleSpy-PLUS-204560"))()
-        end)
-    else
-        RemoteSpyBtn.Text = "RemoteSpy: OFF"
-        RemoteSpyBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-        RemoteSpyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    end
-    SavePersistentConfig()
-end)
-
--- 1. Lasso Configuration
-local LassoConfigCard = CreateSettingsGroup("Lasso Configuration", 3, 122)
-local LassoNameBox = CreateInputRow(LassoConfigCard, "Lasso Type", 28, true, SelectedLasso)
-
-local LassoSideDropdownBtn = Instance.new("TextButton")
-LassoSideDropdownBtn.Size = UDim2.new(0, 80, 0, 24)
-LassoSideDropdownBtn.Position = UDim2.new(1, -90, 0, 28)
-LassoSideDropdownBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-LassoSideDropdownBtn.BorderSizePixel = 0
-LassoSideDropdownBtn.ZIndex = 15
-LassoSideDropdownBtn.Text = "Select v"
-LassoSideDropdownBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-LassoSideDropdownBtn.TextSize = 12
-LassoSideDropdownBtn.Font = Enum.Font.GothamBold
-LassoSideDropdownBtn.Parent = LassoConfigCard
-
-local LassoSideCorner = Instance.new("UICorner")
-LassoSideCorner.CornerRadius = UDim.new(0, 7)
-LassoSideCorner.Parent = LassoSideDropdownBtn
-
-local LassoSideDropdownList = Instance.new("ScrollingFrame")
-LassoSideDropdownList.Size = UDim2.new(0, 120, 0, 130)
-LassoSideDropdownList.Position = UDim2.new(1, -130, 0, 54)
-LassoSideDropdownList.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-LassoSideDropdownList.BorderSizePixel = 0
-LassoSideDropdownList.Visible = false
-LassoSideDropdownList.ZIndex = 25
-LassoSideDropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-LassoSideDropdownList.ScrollBarThickness = 3
-LassoSideDropdownList.Parent = LassoConfigCard
-
-local LassoSideListLayout = Instance.new("UIListLayout")
-LassoSideListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-LassoSideListLayout.Parent = LassoSideDropdownList
-
-LassoSideListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    LassoSideDropdownList.CanvasSize = UDim2.new(0, 0, 0, LassoSideListLayout.AbsoluteContentSize.Y)
-end)
-
-local function CreateLassoOption(name)
-    local optBtn = Instance.new("TextButton")
-    optBtn.Size = UDim2.new(1, 0, 0, 24)
-    optBtn.BackgroundColor3 = Color3.fromRGB(30, 33, 45)
-    optBtn.BorderSizePixel = 0
-    optBtn.ZIndex = 26
-    optBtn.Text = name
-    optBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-    optBtn.TextSize = 12
-    optBtn.Font = Enum.Font.Gotham
-    optBtn.Parent = LassoSideDropdownList
-
-    optBtn.MouseButton1Click:Connect(function()
-        SelectedLasso = name
-        LassoNameBox.Text = name
-        LassoSideDropdownList.Visible = false
-        SavePersistentConfig()
-    end)
-end
-
-CreateLassoOption("Lasso")
-CreateLassoOption("Wooden Lasso")
-CreateLassoOption("Tin Lasso")
-CreateLassoOption("Cooper Lasso")
-CreateLassoOption("Bronze Lasso")
-CreateLassoOption("Iron Lasso")
-CreateLassoOption("Silver Lasso")
-CreateLassoOption("Clear Quartz Lasso")
-CreateLassoOption("Gold Lasso")
-CreateLassoOption("Ruby Lasso")
-CreateLassoOption("Ice Lasso")
-CreateLassoOption("Diamond Lasso")
-CreateLassoOption("Obsidian Lasso")
-CreateLassoOption("Moonstone Lasso")
-CreateLassoOption("Topaz Lasso")
-CreateLassoOption("Emerald Lasso")
-CreateLassoOption("Amethyst Lasso")
-
-local IsLassoSideOpen = false
-LassoSideDropdownBtn.MouseButton1Click:Connect(function()
-    IsLassoSideOpen = not IsLassoSideOpen
-    LassoSideDropdownList.Visible = IsLassoSideOpen
-end)
-
-local UidTextBox = CreateInputRow(LassoConfigCard, "Generated UID", 60, true, "READ ONLY")
-local LassoGenBtn, LassoStatus = CreateActionRow(LassoConfigCard, 90)
-
-LassoGenBtn.MouseButton1Click:Connect(function()
-    LassoStatus.Text = "Scanning..."
-    LassoStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
-    local targetName = LassoNameBox.Text
-    local foundUID = nil
-
-    local success = pcall(function()
-        local References = require(ReplicatedStorage:WaitForChild("References"))
-        local Data = require(References.PlayerScripts.Priority.Data)
-        local inventory = Data.GetLocal({"inventory"})
-        for uid, item in pairs(inventory or {}) do
-            if type(item) == "table" then
-                local infoSuccess, info = pcall(function()
-                    return References.Items.GetInfo(item.id)
-                end)
-                if infoSuccess and info and info.name:lower() == targetName:lower() then
-                    foundUID = tostring(uid)
-                    break
-                end
-            end
-        end
-    end)
-
-    if not foundUID then
-        local searchSpaces = {LocalPlayer, ReplicatedStorage}
-        for _, space in ipairs(searchSpaces) do
-            for _, obj in ipairs(space:GetDescendants()) do
-                if obj.Name:lower() == targetName:lower() or (obj:IsA("StringValue") and obj.Value:lower() == targetName:lower()) then
-                    local possibleUID = obj:GetAttribute("UID") or obj:GetAttribute("ID") or obj:GetAttribute("Id")
-                    if possibleUID then
-                        foundUID = tostring(possibleUID)
-                        break
-                    end
-                    local idChild = obj:FindFirstChild("UID") or obj:FindFirstChild("ID")
-                    if idChild and (idChild:IsA("StringValue") or idChild:IsA("NumberValue")) then
-                        foundUID = tostring(idChild.Value)
-                        break
+            if AutoFarmEnabled and ActiveWalkTarget and ActiveWalkTarget.Parent then
+                local cur = horseStats(ActiveWalkTarget).Priority
+                if cur > 1 then
+                    for _, h in ipairs(GetWorldHorses()) do
+                        if h.Model ~= ActiveWalkTarget and h.Model.Parent and h.Stats and h.Stats.Priority < cur then
+                            ActiveWalkTarget = nil
+                            ActiveTargetIsland = nil
+                            TargetUID = nil
+                            break
+                        end
                     end
                 end
             end
-            if foundUID then break end
-        end
-    end
-
-    if foundUID then
-        ConfiguredLassoUID = foundUID
-        UidTextBox.Text = foundUID
-        LassoStatus.Text = "UID Found"
-        LassoStatus.TextColor3 = Color3.fromRGB(52, 211, 153)
-        local lassoUI = findUIElement(LocalPlayer:WaitForChild("PlayerGui"), "Lasso Read Only")
-        if lassoUI and (lassoUI:IsA("TextBox") or lassoUI:IsA("TextLabel")) then
-            lassoUI.Text = foundUID
-        end
-        SavePersistentConfig()
-    else
-        LassoStatus.Text = "UID not found"
-        LassoStatus.TextColor3 = Color3.fromRGB(239, 68, 68)
-    end
-end)
-
--- 2. Catch Remote Configuration (Dropdown pops ABOVE)
-local CatchConfigCard = CreateSettingsGroup("Catch Remote", 4, 96)
-local CatchRemoteBox = CreateInputRow(CatchConfigCard, "Catch Remote", 28, true, "", "Select Event...")
-CatchRemoteBox.Size = UDim2.new(0.7, -100, 0, 24)
-
-local CatchDropdownBtn = Instance.new("TextButton")
-CatchDropdownBtn.Size = UDim2.new(0, 72, 0, 24)
-CatchDropdownBtn.Position = UDim2.new(1, -82, 0, 28)
-CatchDropdownBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-CatchDropdownBtn.BorderSizePixel = 0
-CatchDropdownBtn.ZIndex = 15
-CatchDropdownBtn.Text = "Select v"
-CatchDropdownBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-CatchDropdownBtn.TextSize = 12
-CatchDropdownBtn.Font = Enum.Font.GothamBold
-CatchDropdownBtn.Parent = CatchConfigCard
-
-local CatchDropdownCorner = Instance.new("UICorner")
-CatchDropdownCorner.CornerRadius = UDim.new(0, 7)
-CatchDropdownCorner.Parent = CatchDropdownBtn
-
-local CatchDropdownList = Instance.new("ScrollingFrame")
-CatchDropdownList.Size = UDim2.new(0.7, -100, 0, 110)
-CatchDropdownList.Position = UDim2.new(0.3, 8, 0, -88)
-CatchDropdownList.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-CatchDropdownList.BorderSizePixel = 0
-CatchDropdownList.Visible = false
-CatchDropdownList.ZIndex = 50
-CatchDropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-CatchDropdownList.ScrollBarThickness = 3
-CatchDropdownList.Parent = CatchConfigCard
-
-local CatchListLayout = Instance.new("UIListLayout")
-CatchListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-CatchListLayout.Parent = CatchDropdownList
-
-CatchListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    CatchDropdownList.CanvasSize = UDim2.new(0, 0, 0, CatchListLayout.AbsoluteContentSize.Y)
-end)
-
-for i = 1, 90 do
-    local evName = "Event" .. i
-    local opt = Instance.new("TextButton")
-    opt.Size = UDim2.new(1, 0, 0, 24)
-    opt.BackgroundColor3 = Color3.fromRGB(30, 33, 45)
-    opt.BorderSizePixel = 0
-    opt.ZIndex = 51
-    opt.Text = evName
-    opt.TextColor3 = Color3.fromRGB(160, 166, 186)
-    opt.TextSize = 12
-    opt.Font = Enum.Font.Gotham
-    opt.Parent = CatchDropdownList
-
-    opt.MouseButton1Click:Connect(function()
-        CatchRemoteBox.Text = evName
-        CatchDropdownList.Visible = false
-        SavePersistentConfig()
-    end)
-end
-
-local IsCatchOpen = false
-CatchDropdownBtn.MouseButton1Click:Connect(function()
-    IsCatchOpen = not IsCatchOpen
-    CatchDropdownList.Visible = IsCatchOpen
-end)
-
-local SaveCatchBtn = Instance.new("TextButton")
-SaveCatchBtn.Size = UDim2.new(0, 72, 0, 24)
-SaveCatchBtn.Position = UDim2.new(1, -82, 0, 60)
-SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
-SaveCatchBtn.BorderSizePixel = 0
-SaveCatchBtn.Text = "Save"
-SaveCatchBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SaveCatchBtn.TextSize = 12
-SaveCatchBtn.Font = Enum.Font.GothamBold
-SaveCatchBtn.Parent = CatchConfigCard
-
-local SaveCatchCorner = Instance.new("UICorner")
-SaveCatchCorner.CornerRadius = UDim.new(0, 7)
-SaveCatchCorner.Parent = SaveCatchBtn
-
-SaveCatchBtn.MouseButton1Click:Connect(function()
-    if CatchRemoteBox.Text ~= "" then
-        CatchRemoteBox.TextEditable = false
-        MakeUncopyable(CatchRemoteBox)
-        SaveCatchBtn.Text = "Saved"
-        SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        SaveCatchBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        SavePersistentConfig()
-    end
-end)
-
--- 3. Travel Remote Configuration (Dropdown pops ABOVE)
-local TravelConfigCard = CreateSettingsGroup("Travel Remote", 5, 96)
-local TravelRemoteBox = CreateInputRow(TravelConfigCard, "Travel Remote", 28, true, "", "Select Function...")
-TravelRemoteBox.Size = UDim2.new(0.7, -100, 0, 24)
-
-local TravelDropdownBtn = Instance.new("TextButton")
-TravelDropdownBtn.Size = UDim2.new(0, 72, 0, 24)
-TravelDropdownBtn.Position = UDim2.new(1, -82, 0, 28)
-TravelDropdownBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-TravelDropdownBtn.BorderSizePixel = 0
-TravelDropdownBtn.ZIndex = 15
-TravelDropdownBtn.Text = "Select v"
-TravelDropdownBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-TravelDropdownBtn.TextSize = 12
-TravelDropdownBtn.Font = Enum.Font.GothamBold
-TravelDropdownBtn.Parent = TravelConfigCard
-
-local TravelDropdownCorner = Instance.new("UICorner")
-TravelDropdownCorner.CornerRadius = UDim.new(0, 7)
-TravelDropdownCorner.Parent = TravelDropdownBtn
-
-local TravelDropdownList = Instance.new("ScrollingFrame")
-TravelDropdownList.Size = UDim2.new(0.7, -100, 0, 110)
-TravelDropdownList.Position = UDim2.new(0.3, 8, 0, -88)
-TravelDropdownList.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-TravelDropdownList.BorderSizePixel = 0
-TravelDropdownList.Visible = false
-TravelDropdownList.ZIndex = 50
-TravelDropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-TravelDropdownList.ScrollBarThickness = 3
-TravelDropdownList.Parent = TravelConfigCard
-
-local TravelListLayout = Instance.new("UIListLayout")
-TravelListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-TravelListLayout.Parent = TravelDropdownList
-
-TravelListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    TravelDropdownList.CanvasSize = UDim2.new(0, 0, 0, TravelListLayout.AbsoluteContentSize.Y)
-end)
-
-for i = 1, 90 do
-    local funcName = "Function" .. i
-    local opt = Instance.new("TextButton")
-    opt.Size = UDim2.new(1, 0, 0, 24)
-    opt.BackgroundColor3 = Color3.fromRGB(30, 33, 45)
-    opt.BorderSizePixel = 0
-    opt.ZIndex = 51
-    opt.Text = funcName
-    opt.TextColor3 = Color3.fromRGB(160, 166, 186)
-    opt.TextSize = 12
-    opt.Font = Enum.Font.Gotham
-    opt.Parent = TravelDropdownList
-
-    opt.MouseButton1Click:Connect(function()
-        TravelRemoteBox.Text = funcName
-        TravelDropdownList.Visible = false
-        SavePersistentConfig()
-    end)
-end
-
-local IsTravelOpen = false
-TravelDropdownBtn.MouseButton1Click:Connect(function()
-    IsTravelOpen = not IsTravelOpen
-    TravelDropdownList.Visible = IsTravelOpen
-end)
-
-local SaveTravelBtn = Instance.new("TextButton")
-SaveTravelBtn.Size = UDim2.new(0, 72, 0, 24)
-SaveTravelBtn.Position = UDim2.new(1, -82, 0, 60)
-SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
-SaveTravelBtn.BorderSizePixel = 0
-SaveTravelBtn.Text = "Save"
-SaveTravelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-SaveTravelBtn.TextSize = 12
-SaveTravelBtn.Font = Enum.Font.GothamBold
-SaveTravelBtn.Parent = TravelConfigCard
-
-local SaveTravelCorner = Instance.new("UICorner")
-SaveTravelCorner.CornerRadius = UDim.new(0, 7)
-SaveTravelCorner.Parent = SaveTravelBtn
-
-SaveTravelBtn.MouseButton1Click:Connect(function()
-    if TravelRemoteBox.Text ~= "" then
-        TravelRemoteBox.TextEditable = false
-        MakeUncopyable(TravelRemoteBox)
-        SaveTravelBtn.Text = "Saved"
-        SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        SaveTravelBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-        SavePersistentConfig()
-    end
-end)
-
---// UI TABS & SORTING
-local SortContainer = Instance.new("Frame")
-SortContainer.Name = "SortContainer"
-SortContainer.Size = UDim2.new(1, 0, 0, 30)
-SortContainer.Position = UDim2.new(0, 0, 1, -30)
-SortContainer.BackgroundTransparency = 1
-SortContainer.ZIndex = 5
-SortContainer.Parent = RightPanel
-
-local SortBtn = Instance.new("TextButton")
-SortBtn.Name = "SortBtn"
-SortBtn.Size = UDim2.new(1, 0, 1, 0)
-SortBtn.BackgroundColor3 = Color3.fromRGB(26, 28, 38)
-SortBtn.BorderSizePixel = 0
-SortBtn.Text = "Island: All Islands v"
-SortBtn.TextColor3 = Color3.fromRGB(222, 225, 236)
-SortBtn.TextSize = 12
-SortBtn.Font = Enum.Font.GothamBold
-SortBtn.ZIndex = 5
-SortBtn.Parent = SortContainer
-
-local SortCorner = Instance.new("UICorner")
-SortCorner.CornerRadius = UDim.new(0, 8)
-SortCorner.Parent = SortBtn
-
-local IsSortDropdownOpen = false
-local SortDropdownList = Instance.new("ScrollingFrame")
-SortDropdownList.Name = "SortDropdownList"
-SortDropdownList.Size = UDim2.new(1, 0, 0, 132)
-SortDropdownList.Position = UDim2.new(0, 0, 0, -136)
-SortDropdownList.BackgroundColor3 = Color3.fromRGB(22, 24, 33)
-SortDropdownList.BorderSizePixel = 0
-SortDropdownList.Visible = false
-SortDropdownList.ZIndex = 25
-SortDropdownList.CanvasSize = UDim2.new(0, 0, 0, 0)
-SortDropdownList.ScrollBarThickness = 3
-SortDropdownList.Parent = SortContainer
-
-local SortDropdownCorner = Instance.new("UICorner")
-SortDropdownCorner.CornerRadius = UDim.new(0, 10)
-SortDropdownCorner.Parent = SortDropdownList
-
-local SortListLayout = Instance.new("UIListLayout")
-SortListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-SortListLayout.Parent = SortDropdownList
-
-SortListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SortDropdownList.CanvasSize = UDim2.new(0, 0, 0, SortListLayout.AbsoluteContentSize.Y)
-end)
-
-local function RebuildDropdownOptions()
-    for _, child in ipairs(SortDropdownList:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
-    end
-    
-    local options = {"All Islands"}
-    local seen = {["All Islands"] = true}
-    
-    local islands = Workspace:FindFirstChild("Islands")
-    if islands then
-        for _, folder in ipairs(islands:GetChildren()) do
-            if (folder:IsA("Folder") or folder:IsA("Model")) and not seen[folder.Name] then
-                seen[folder.Name] = true
-                table.insert(options, folder.Name)
-            end
-        end
-    end
-    
-    for _, islandName in ipairs(ManualIslandList) do
-        if not seen[islandName] then
-            seen[islandName] = true
-            table.insert(options, islandName)
-        end
-    end
-
-    for _, mode in ipairs(options) do
-        local sOptBtn = Instance.new("TextButton")
-        sOptBtn.Name = mode
-        sOptBtn.Size = UDim2.new(1, 0, 0, 24)
-        sOptBtn.BackgroundColor3 = Color3.fromRGB(30, 33, 45)
-        sOptBtn.BorderSizePixel = 0
-        sOptBtn.ZIndex = 26
-        sOptBtn.Text = mode
-        sOptBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-        sOptBtn.TextSize = 12
-        sOptBtn.Font = Enum.Font.Gotham
-        sOptBtn.Parent = SortDropdownList
-
-        sOptBtn.MouseButton1Click:Connect(function()
-            SelectedMainIsland = mode
-            SortBtn.Text = "Island: " .. mode .. " v"
-            IsSortDropdownOpen = false
-            SortDropdownList.Visible = false
-            ClearCache()
-            SavePersistentConfig()
         end)
     end
-end
-RebuildDropdownOptions()
-
-SortBtn.MouseButton1Click:Connect(function()
-    if CurrentTab ~= "Main" then return end
-    IsSortDropdownOpen = not IsSortDropdownOpen
-    SortDropdownList.Visible = IsSortDropdownOpen
 end)
 
-local function SwitchTab(tabName)
-    CurrentTab = tabName
-    ActiveWalkTarget = nil
-    ActiveTargetIsland = nil
-    TargetUID = nil
-    ClearCache()
+--// ============================================================================
+--// 3) BETTER CURRENT-ISLAND DETECTION (nearest cached point)
+--// ============================================================================
+local IP = {points = {}, time = 0, rebuilding = false, lastName = nil, lastTime = 0, lastPos = nil}
+local CELL = 48
 
-    if tabName == "Main" then
-        MainTabBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-        MainTabBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-        SettingTabBtn.BackgroundColor3 = Color3.fromRGB(17, 19, 26)
-        SettingTabBtn.TextColor3 = Color3.fromRGB(139, 146, 165)
-        BulletLabel.Visible = true
-        TrackerTextLabel.Visible = true
-        HeaderCard.Visible = true
-        ScrollFrame.Visible = true
-        SortContainer.Visible = true
-        SettingsPanel.Visible = false
-        BulletLabel.TextColor3 = Color3.fromRGB(52, 211, 153)
-        TrackerTextLabel.TextColor3 = Color3.fromRGB(52, 211, 153)
-        ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(52, 211, 153)
-        SortBtn.Text = "Island: " .. SelectedMainIsland .. " v"
-        if AutoFarmEnabled then
-            AutoToggleBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-            ToggleSwitch.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-        end
-    else
-        MainTabBtn.BackgroundColor3 = Color3.fromRGB(17, 19, 26)
-        MainTabBtn.TextColor3 = Color3.fromRGB(139, 146, 165)
-        SettingTabBtn.BackgroundColor3 = Color3.fromRGB(36, 39, 52)
-        SettingTabBtn.TextColor3 = Color3.fromRGB(52, 211, 153)
-        BulletLabel.Visible = false
-        TrackerTextLabel.Visible = false
-        HeaderCard.Visible = false
-        ScrollFrame.Visible = false
-        SortContainer.Visible = false
-        SettingsPanel.Visible = true
-    end
-    IsSortDropdownOpen = false
-    SortDropdownList.Visible = false
-    RebuildDropdownOptions()
-end
-
-MainTabBtn.MouseButton1Click:Connect(function() SwitchTab("Main") end)
-SettingTabBtn.MouseButton1Click:Connect(function() SwitchTab("Setting") end)
-
-local function ToggleMinimize()
-    if IsAnimating then return end
-    IsAnimating = true
-
-    if not IsMinimized then
-        TabBar.Visible = false
-        LeftPanel.Visible = false
-        RightPanel.Visible = false
-        local tween1 = TweenService:Create(
-            Frame,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(2, 380), Position = UDim2.new(0.5, -1, 0.5, -190) }
-        )
-        tween1:Play()
-        tween1.Completed:Wait()
-        local tween2 = TweenService:Create(
-            Frame,
-            TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            { Size = UDim2.fromOffset(60, 60), Position = UDim2.new(0.5, -30, 0.5, -30) }
-        )
-        tween2:Play()
-        tween2.Completed:Wait()
-        TitleBar.Visible = false
-        MinimizedSquare.Visible = true
-        IsMinimized = true
-    else
-        MinimizedSquare.Visible = false
-        local tween1 = TweenService:Create(
-            Frame,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(2, 380), Position = UDim2.new(0.5, -1, 0.5, -190) }
-        )
-        tween1:Play()
-        tween1.Completed:Wait()
-        local tween2 = TweenService:Create(
-            Frame,
-            TweenInfo.new(0.35, Enum.EasingStyle.Quint, Enum.EasingDirection.InOut),
-            { Size = UDim2.fromOffset(580, 380), Position = UDim2.new(0.5, -290, 0.5, -190) }
-        )
-        tween2:Play()
-        tween2.Completed:Wait()
-        TitleBar.Visible = true
-        TabBar.Visible = true
-        LeftPanel.Visible = true
-        RightPanel.Visible = true
-        IsMinimized = false
-    end
-    IsAnimating = false
-end
-
-MinimizeBtn.MouseButton1Click:Connect(ToggleMinimize)
-
-local Dragging, DragStart, StartPos
-local minDragStart = nil
-local hasMoved = false
-
-TitleBar.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not IsMinimized then
-        Dragging = true
-        DragStart = input.Position
-        StartPos = Frame.Position
-    end
-end)
-
-MinimizedSquare.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and IsMinimized then
-        Dragging = true
-        minDragStart = input.Position
-        StartPos = Frame.Position
-        hasMoved = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        if IsMinimized and minDragStart then
-            local delta = input.Position - minDragStart
-            if delta.Magnitude > 5 then
-                hasMoved = true
+local function rebuildIslands(async)
+    if IP.rebuilding then return end
+    IP.rebuilding = true
+    pcall(function()
+        local cache = {}
+        local islands = Workspace:FindFirstChild("Islands")
+        if islands then
+            local walked = 0
+            for _, island in ipairs(islands:GetChildren()) do
+                if island:IsA("Folder") or island:IsA("Model") then
+                    local pts, seen = {}, {}
+                    local stack = {island}
+                    while #stack > 0 do
+                        local node = table.remove(stack)
+                        for _, obj in ipairs(node:GetChildren()) do
+                            walked += 1
+                            if async and walked % 1500 == 0 then task.wait() end
+                            if obj:IsA("BasePart") then
+                                local pos = obj.Position
+                                local key = (math.floor(pos.X / CELL) + 4000)
+                                    + (math.floor(pos.Y / CELL) + 4000) * 8001
+                                    + (math.floor(pos.Z / CELL) + 4000) * 64016001
+                                if not seen[key] then
+                                    seen[key] = true
+                                    pts[#pts + 1] = pos
+                                end
+                            end
+                            if #obj:GetChildren() > 0 then stack[#stack + 1] = obj end
+                        end
+                    end
+                    if island:IsA("Model") then
+                        local ok, pivot = pcall(function() return island:GetPivot() end)
+                        if ok and pivot then pts[#pts + 1] = pivot.Position end
+                    end
+                    cache[island.Name] = pts
+                end
             end
-            Frame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + delta.X, StartPos.Y.Scale, StartPos.Y.Offset + delta.Y)
-        elseif not IsMinimized and DragStart then
-            local delta = input.Position - DragStart
-            Frame.Position = UDim2.new(StartPos.X.Scale, StartPos.X.Offset + delta.X, StartPos.Y.Scale, StartPos.Y.Offset + delta.Y)
         end
-    end
-end)
+        IP.points = cache
+        IP.time = tick()
+    end)
+    IP.rebuilding = false
+end
 
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if Dragging then
-            if IsMinimized and not hasMoved then
-                ToggleMinimize()
+GetCurrentPlayerIsland = function()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return nil end
+    local pos = root.Position
+    local now = tick()
+    if IP.lastPos and now - IP.lastTime < 0.4 and (pos - IP.lastPos).Magnitude < 40 then
+        return IP.lastName
+    end
+    if next(IP.points) == nil then
+        rebuildIslands(false)
+    elseif now - IP.time > 180 and not IP.rebuilding then
+        task.spawn(rebuildIslands, true)
+    end
+    local bestName, bestSq = nil, math.huge
+    for name, pts in pairs(IP.points) do
+        for i = 1, #pts do
+            local d = pos - pts[i]
+            local dsq = d:Dot(d)
+            if dsq < bestSq then
+                bestSq = dsq
+                bestName = name
             end
-            Dragging = false
-            minDragStart = nil
         end
     end
-end)
+    IP.lastName = (bestName and bestSq <= 2800 * 2800) and bestName or nil
+    IP.lastTime = now
+    IP.lastPos = pos
+    return IP.lastName
+end
 
-local function IsInShop(node)
-    local current = node
-    while current and current ~= Workspace do
-        local nameLower = string.lower(current.Name)
-        if nameLower:find("shop") or nameLower:find("barn") or nameLower:find("store") then
-            return true
-        end
-        current = current.Parent
+--// ============================================================================
+--// 4) SELLING TAB
+--// ============================================================================
+local BREED_KEYWORDS = {
+    "tennessee walking horse", "dutch warmblood", "mammoth donkey", "standard donkey", "paint horse",
+    "quarter horse", "akhal teke", "andalusian", "appaloosa", "arabian", "clydesdale", "connemara",
+    "fjord", "friesian", "hinny", "icelandic", "marwari", "morgan", "mule", "mustang", "percheron",
+    "reindeer", "shire", "standardbred", "thoroughbred", "welsh cob", "unicorn", "donkey",
+}
+local BREED_FIELDS = {
+    "breed", "Breed", "breedName", "BreedName", "horseBreed", "HorseBreed", "breedType", "BreedType",
+    "horseType", "HorseType", "animalType", "AnimalType", "species", "Species", "type", "Type",
+    "name", "Name", "itemName", "ItemName", "displayName", "DisplayName", "Display", "display",
+}
+local KEY_HINTS = {"breed", "horse", "animal", "species", "type", "name", "item"}
+
+local function normText(v)
+    if v == nil then return "" end
+    local t = tostring(v):lower():gsub("_", " "):gsub("%-", " "):gsub("%s+", " ")
+    return (t:match("^%s*(.-)%s*$"))
+end
+
+local function hasKeyword(v)
+    local text = normText(v)
+    if text == "" then return false end
+    for _, kw in ipairs(BREED_KEYWORDS) do
+        if text == kw or text:find(kw, 1, true) then return true end
     end
     return false
 end
 
---// RECURSIVE HORSE SCAN ENGINE
-local function GetWorldHorses()
-    local currentTime = tick()
-    if currentTime - LastScanTick < 0.03 and next(HorseCache) ~= nil then
-        return HorseCache
+local function searchBreed(tbl, depth, visited)
+    if type(tbl) ~= "table" then return false end
+    depth = depth or 0
+    visited = visited or {}
+    if depth > 10 or visited[tbl] then return false end
+    visited[tbl] = true
+    for _, f in ipairs(BREED_FIELDS) do
+        local v = tbl[f]
+        if v ~= nil and hasKeyword(v) then return true end
     end
-
-    local horses = {}
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return horses end
-
-    local foldersToScan = {}
-    if SelectedMainIsland == "All Islands" then
-        for _, folder in ipairs(islands:GetChildren()) do
-            if folder:IsA("Folder") or folder:IsA("Model") then
-                table.insert(foldersToScan, folder)
-            end
-        end
-    else
-        local targetFolder = islands:FindFirstChild(SelectedMainIsland)
-        if targetFolder then
-            table.insert(foldersToScan, targetFolder)
-        end
-    end
-
-    local function ScanContainer(container, islandName)
-        for _, node in ipairs(container:GetChildren()) do
-            if node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal")) then
-                ScanContainer(node, islandName)
-            else
-                local isAnimal = CollectionService:HasTag(node, "Animal")
-                local behaviourAttr = node:GetAttribute("behaviour")
-                if isAnimal or behaviourAttr == "WanderingAnimal" then
-                    local hasOwner = false
-                    for attrKey, attrVal in pairs(node:GetAttributes()) do
-                        if attrKey:lower() == "owner" and attrVal ~= nil and attrVal ~= "" then
-                            hasOwner = true
-                            break
-                        end
-                    end
-
-                    --// LAST LASSO PLAYER FILTER
-                    -- Only target horses that either have no lastPlayerToThrowLasso
-                    -- attribute, or were last lassoed by the current player.
-                    -- Horses lassoed by another player are ignored.
-                    local lastLassoPlayer = node:GetAttribute("lastPlayerToThrowLasso")
-                    local lassoAllowed = (
-                        lastLassoPlayer == nil
-                        or tostring(lastLassoPlayer) == LocalPlayer.Name
-                    )
-
-                    if not hasOwner and lassoAllowed and not IsInShop(node) then
-                        if node.Parent then
-                            local pivot = node:IsA("Model") and node:GetPivot() or (node:IsA("BasePart") and node.CFrame)
-                            if pivot then
-                                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                                local dist = hrp and math.floor((hrp.Position - pivot.Position).Magnitude) or 0
-                                local displayBreedName = node.Name
-                                pcall(function()
-                                    local overheadPart = node:FindFirstChild("OverheadPart")
-                                    if overheadPart then
-                                        local overhead = overheadPart:FindFirstChild("Overhead")
-                                        if overhead then
-                                            local breedLabel = overhead:FindFirstChild("BreedLabel")
-                                            if breedLabel and breedLabel:IsA("TextLabel") and breedLabel.Text ~= "" then
-                                                displayBreedName = breedLabel.Text
-                                            end
-                                        end
-                                    end
-                                end)
-                                local finalBreedName, rarityName, rarityColor = GetHorseInfo(displayBreedName)
-                                local hasUniqueHair, uniqueHairText = checkUniqueHair(node)
-                                if RarityFilters[rarityName] then
-                                    table.insert(horses, {
-                                        Model = node,
-                                        UID = node.Name .. "_" .. tostring(math.floor(pivot.Position.X)) .. "_" .. tostring(math.floor(pivot.Position.Z)),
-                                        Name = finalBreedName,
-                                        Rarity = rarityName,
-                                        RarityColor = rarityColor,
-                                        Island = islandName,
-                                        UniqueHairText = uniqueHairText,
-                                        Position = pivot.Position,
-                                        Pivot = pivot,
-                                        Distance = dist
-                                    })
-                                end
-                            end
-                        end
-                    end
+    for key, value in pairs(tbl) do
+        if type(value) == "table" then
+            if searchBreed(value, depth + 1, visited) then return true end
+        elseif type(value) == "string" then
+            local k = normText(key)
+            for _, hint in ipairs(KEY_HINTS) do
+                if k:find(hint, 1, true) then
+                    if hasKeyword(value) then return true end
+                    break
                 end
             end
         end
     end
-
-    for _, islandFolder in ipairs(foldersToScan) do
-        ScanContainer(islandFolder, islandFolder.Name)
-    end
-
-    HorseCache = horses
-    LastScanTick = currentTime
-    return horses
+    return false
 end
 
---// LIVE SCAN INVALIDATION
--- Invalidate the cached horse list whenever the world changes.
--- This keeps the Tracker responsive to newly spawned/removed horses without
--- forcing the Auto engine to be toggled off and on again.
-local function HookIslandFolderForLiveRefresh(islandsFolder)
-    if not islandsFolder then return end
-
-    local function hook(container)
-        if not container then return end
-        container.ChildAdded:Connect(function()
-            ClearCache()
-        end)
-        container.ChildRemoved:Connect(function()
-            ClearCache()
-        end)
-    end
-
-    hook(islandsFolder)
-    for _, island in ipairs(islandsFolder:GetChildren()) do
-        if island:IsA("Folder") or island:IsA("Model") then
-            hook(island)
-        end
-    end
-
-    islandsFolder.ChildAdded:Connect(function(island)
-        ClearCache()
-        if island:IsA("Folder") or island:IsA("Model") then
-            hook(island)
-        end
-    end)
-    islandsFolder.ChildRemoved:Connect(function()
-        ClearCache()
-    end)
+function A.getInfo(id)
+    if not (S.Refs and S.Refs.Items and type(S.Refs.Items.GetInfo) == "function") then return nil end
+    local ok, r = pcall(function() return S.Refs.Items.GetInfo(id) end)
+    if ok and type(r) == "table" then return r end
+    return nil
 end
 
-local IslandsForLiveRefresh = Workspace:FindFirstChild("Islands")
-if IslandsForLiveRefresh then
-    HookIslandFolderForLiveRefresh(IslandsForLiveRefresh)
-else
+function A.isHorse(item)
+    if type(item) ~= "table" then return false end
+    if searchBreed(item) then return true end
+    local itemId = item.id or item.ID or item.Id
+    local info = itemId and A.getInfo(itemId) or nil
+    if info and searchBreed(info) then return true end
+    local pId = item.pId or item.PId or item.pid
+    if info then pId = pId or info.pId or info.PId or info.pid end
+    if pId then
+        local r = A.getInfo(pId)
+        if r and searchBreed(r) then return true end
+    end
+    return false
+end
+
+function A.itemTraits(item)
+    return traitsFrom(item.variants or item.Variants, item.isNatDyed)
+end
+
+function A.matches(cat, u, co, m, d, h)
+    if cat == "All" then return true end
+    if cat == "Normal Horse" then return not (u or co or m or d or h) end
+    if cat == "Natural Dyed Hair" then return d end
+    if cat == "Island Unique Hair" then return u end
+    if cat == "Island Unique Coat" then return co end
+    if cat == "Mismatched Hair" then return m end
+    if cat == "Horned" then return h end
+    return false
+end
+
+function A.readInv()
+    local ok, inv = pcall(function()
+        local refs = require(ReplicatedStorage:WaitForChild("References"))
+        S.Refs = refs
+        local data = require(refs.PlayerScripts.Priority.Data)
+        return data.GetLocal({"inventory"})
+    end)
+    if ok and type(inv) == "table" then return inv end
+    return nil
+end
+
+--// ---- selling UI
+local CATS = {"Normal Horse", "Natural Dyed Hair", "Island Unique Hair", "Island Unique Coat", "Mismatched Hair", "Horned", "All"}
+local COUNT_ROWS = {
+    {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
+    {"Island Unique Coat", Color3.fromRGB(255, 150, 40)},
+    {"Mismatched Hair", Color3.fromRGB(60, 175, 255)},
+    {"Natural Dyed Hair", Color3.fromRGB(70, 230, 90)},
+    {"Horned", Color3.fromRGB(185, 80, 255)},
+    {"Normal Horse", Color3.fromRGB(180, 185, 195)},
+    {"Total Horse", Color3.fromRGB(235, 235, 240)},
+}
+
+local countsCard = cardFrame(SellPanel, 1, 172)
+cardTitle(countsCard, "INVENTORY COUNTS")
+S.RefreshBtn = btn(countsCard, "Refresh", UDim2.new(1, -84, 0, 4), UDim2.new(0, 74, 0, 20), C.indigo)
+S.RefreshBtn.TextSize = 11
+S.CountLabels = {}
+for i, r in ipairs(COUNT_ROWS) do
+    local y = 28 + (i - 1) * 18
+    lbl(countsCard, r[1], UDim2.new(0, 10, 0, y), UDim2.new(0.7, 0, 0, 16), 11, r[2], Enum.Font.GothamBold)
+    S.CountLabels[r[1]] = lbl(countsCard, "0", UDim2.new(1, -70, 0, y), UDim2.new(0, 60, 0, 16), 11, C.white, Enum.Font.GothamBold, Enum.TextXAlignment.Right)
+end
+S.InvStatus = lbl(countsCard, "Inventory not loaded yet", UDim2.new(0, 10, 0, 154), UDim2.new(1, -20, 0, 14), 10, C.dim)
+
+local sellCard = cardFrame(SellPanel, 2, 172)
+cardTitle(sellCard, "SELL FILTER")
+S.CatBtn = btn(sellCard, "Filter: " .. S.Category .. " (tap to change)", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 26))
+lbl(sellCard, "Sell Remote", UDim2.new(0, 10, 0, 64), UDim2.new(0, 90, 0, 20), 12, C.text)
+S.RemoteBox = mk("TextBox", {
+    Position = UDim2.new(0, 104, 0, 60),
+    Size = UDim2.new(1, -114, 0, 26),
+    BackgroundColor3 = C.field,
+    BorderSizePixel = 0,
+    ClearTextOnFocus = false,
+    Text = S.Remote,
+    PlaceholderText = "Event1",
+    TextColor3 = C.white,
+    TextSize = 12,
+    Font = Enum.Font.Gotham,
+    TextXAlignment = Enum.TextXAlignment.Left,
+}, sellCard)
+corner(S.RemoteBox, 7)
+mk("UIPadding", {PaddingLeft = UDim.new(0, 8)}, S.RemoteBox)
+S.SellBtn = btn(sellCard, "SELL FILTERED", UDim2.new(0, 10, 0, 94), UDim2.new(1, -20, 0, 30), C.dark)
+S.SellStatus = lbl(sellCard, "Remote: " .. S.Remote .. " | Filter: " .. S.Category, UDim2.new(0, 10, 0, 130), UDim2.new(1, -20, 0, 38), 10, C.dim)
+
+local autoCard = cardFrame(SellPanel, 3, 92)
+cardTitle(autoCard, "AUTO SELL")
+S.AutoBtn = btn(autoCard, "Auto sell filter every 5 min: OFF", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 28))
+S.AutoInfo = lbl(autoCard, "Auto sell is off. It never runs when the filter is All.", UDim2.new(0, 10, 0, 60), UDim2.new(1, -20, 0, 28), 10, C.dim)
+
+local findCard = cardFrame(SellPanel, 4, 108)
+cardTitle(findCard, "FIND SELL REMOTE")
+S.FindBtn = btn(findCard, "Auto Find Sell Remote (sells 1 Normal Horse)", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 28))
+S.FindBtn.TextSize = 11
+S.FindStatus = lbl(findCard, "Not tested", UDim2.new(0, 10, 0, 60), UDim2.new(1, -20, 0, 44), 10, C.dim)
+
+--// ---- selling logic
+function A.refreshCounts()
+    local c = {u = 0, co = 0, m = 0, d = 0, h = 0, n = 0, t = 0}
+    if S.Loaded and type(S.Inventory) == "table" then
+        for _, item in pairs(S.Inventory) do
+            if type(item) == "table" and A.isHorse(item) then
+                c.t += 1
+                local u, co, m, d, h = A.itemTraits(item)
+                if u then c.u += 1 end
+                if co then c.co += 1 end
+                if m then c.m += 1 end
+                if d then c.d += 1 end
+                if h then c.h += 1 end
+                if not (u or co or m or d or h) then c.n += 1 end
+            end
+        end
+    end
+    local L = S.CountLabels
+    L["Island Unique Hair"].Text = tostring(c.u)
+    L["Island Unique Coat"].Text = tostring(c.co)
+    L["Mismatched Hair"].Text = tostring(c.m)
+    L["Natural Dyed Hair"].Text = tostring(c.d)
+    L["Horned"].Text = tostring(c.h)
+    L["Normal Horse"].Text = tostring(c.n)
+    L["Total Horse"].Text = tostring(c.t)
+end
+
+function A.refreshInv()
+    if S.Busy then return end
+    S.Busy = true
+    S.RefreshBtn.Text = "..."
     task.spawn(function()
-        local islands = Workspace:WaitForChild("Islands", 10)
-        if islands then
-            HookIslandFolderForLiveRefresh(islands)
-        end
-    end)
-end
-
-local function CreateHorseEntry(data)
-    local Entry = Instance.new("Frame")
-    Entry.Name = tostring(data.UID)
-    Entry.Size = UDim2.new(1, 0, 0, 34)
-    Entry.BackgroundColor3 = Color3.fromRGB(26, 28, 38)
-    Entry.BorderSizePixel = 0
-
-    local EntryCorner = Instance.new("UICorner")
-    EntryCorner.CornerRadius = UDim.new(0, 8)
-    EntryCorner.Parent = Entry
-
-    local RarityLabel = Instance.new("TextLabel")
-    RarityLabel.Name = "RarityLabel"
-    RarityLabel.Size = UDim2.new(0.15, 0, 1, 0)
-    RarityLabel.Position = UDim2.new(0, 10, 0, 0)
-    RarityLabel.BackgroundTransparency = 1
-    RarityLabel.TextSize = 12
-    RarityLabel.Font = Enum.Font.GothamBold
-    RarityLabel.TextXAlignment = Enum.TextXAlignment.Left
-    RarityLabel.Parent = Entry
-
-    local NameLabel = Instance.new("TextLabel")
-    NameLabel.Name = "NameLabel"
-    NameLabel.Size = UDim2.new(0.30, 0, 1, 0)
-    NameLabel.Position = UDim2.new(0.15, 10, 0, 0)
-    NameLabel.BackgroundTransparency = 1
-    NameLabel.TextColor3 = Color3.fromRGB(220, 220, 230)
-    NameLabel.TextSize = 12
-    NameLabel.Font = Enum.Font.GothamBold
-    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    NameLabel.Parent = Entry
-
-    local IslandLabel = Instance.new("TextLabel")
-    IslandLabel.Name = "IslandLabel"
-    IslandLabel.Size = UDim2.new(0.25, 0, 1, 0)
-    IslandLabel.Position = UDim2.new(0.45, 10, 0, 0)
-    IslandLabel.BackgroundTransparency = 1
-    IslandLabel.TextColor3 = Color3.fromRGB(160, 166, 186)
-    IslandLabel.TextSize = 12
-    IslandLabel.Font = Enum.Font.Gotham
-    IslandLabel.TextXAlignment = Enum.TextXAlignment.Left
-    IslandLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    IslandLabel.Parent = Entry
-
-    local UniqueHairLabel = Instance.new("TextLabel")
-    UniqueHairLabel.Name = "UniqueHairLabel"
-    UniqueHairLabel.Size = UDim2.new(0.12, 0, 1, 0)
-    UniqueHairLabel.Position = UDim2.new(0.70, 10, 0, 0)
-    UniqueHairLabel.BackgroundTransparency = 1
-    UniqueHairLabel.TextColor3 = Color3.fromRGB(52, 211, 153)
-    UniqueHairLabel.TextSize = 13
-    UniqueHairLabel.Font = Enum.Font.GothamBold
-    UniqueHairLabel.TextXAlignment = Enum.TextXAlignment.Center
-    UniqueHairLabel.Parent = Entry
-
-    local CatchBtn = Instance.new("TextButton")
-    CatchBtn.Name = "WalkBtn"
-    CatchBtn.Size = UDim2.new(0.16, 0, 0, 24)
-    CatchBtn.Position = UDim2.new(0.825, 0, 0.5, -12)
-    CatchBtn.BorderSizePixel = 0
-    CatchBtn.Text = "Catch"
-    CatchBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-    CatchBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-    CatchBtn.TextSize = 12
-    CatchBtn.Font = Enum.Font.GothamBold
-    CatchBtn.Parent = Entry
-
-    local BtnCorner = Instance.new("UICorner")
-    BtnCorner.CornerRadius = UDim.new(0, 7)
-    BtnCorner.Parent = CatchBtn
-
-    CatchBtn.MouseButton1Click:Connect(function()
-        if ActiveWalkTarget == data.Model then
-            ActiveWalkTarget = nil
-            ActiveTargetIsland = nil
-            TargetUID = nil
+        local inv = A.readInv()
+        if inv then
+            S.Inventory = inv
+            S.Loaded = true
+            A.refreshCounts()
+            setStatus(S.InvStatus, "Inventory refreshed", C.green)
         else
-            ActiveWalkTarget = data.Model
-            ActiveTargetIsland = data.Island
-            TargetUID = data.UID
+            setStatus(S.InvStatus, "Inventory refresh failed", C.red)
         end
+        S.RefreshBtn.Text = "Refresh"
+        S.Busy = false
     end)
-    return Entry
 end
 
-local function RefreshList()
-    local horses = GetWorldHorses()
-    TrackerTextLabel.Text = "Live Horse Tracker (" .. tostring(#horses) .. ")"
+function A.updateSellStatus()
+    setStatus(S.SellStatus, "Remote: " .. S.Remote .. " | Filter: " .. S.Category, C.dim)
+end
 
-    table.sort(horses, function(a, b)
-        local uniqueA = (a.UniqueHairText == "✓")
-        local uniqueB = (b.UniqueHairText == "✓")
-        if uniqueA ~= uniqueB then
-            return uniqueA
-        end
-        local weightA = RarityPriority[a.Rarity] or 0
-        local weightB = RarityPriority[b.Rarity] or 0
-        if weightA ~= weightB then
-            return weightA > weightB
-        end
-        return a.Distance < b.Distance
-    end)
-
-    local currentHorses = {}
-    for index, horseData in ipairs(horses) do
-        local uid = tostring(horseData.UID)
-        currentHorses[uid] = horseData
-
-        local entry = ScrollFrame:FindFirstChild(uid)
-        if not entry then
-            entry = CreateHorseEntry(horseData)
-            entry.Parent = ScrollFrame
-        end
-
-        entry.LayoutOrder = index
-        entry.Visible = true
-        entry.RarityLabel.Text = horseData.Rarity
-        entry.RarityLabel.TextColor3 = horseData.RarityColor
-        entry.NameLabel.Text = horseData.Name
-        entry.IslandLabel.Text = horseData.Island
-        entry.UniqueHairLabel.Text = horseData.UniqueHairText
-        entry.UniqueHairLabel.TextColor3 = (horseData.UniqueHairText == "✓") and Color3.fromRGB(52, 211, 153) or Color3.fromRGB(239, 68, 68)
-
-        local isTargeting = (ActiveWalkTarget == horseData.Model)
-        local themeColor = Color3.fromRGB(52, 211, 153)
-        entry.WalkBtn.BackgroundColor3 = isTargeting and Color3.fromRGB(244, 63, 94) or themeColor
-        entry.WalkBtn.TextColor3 = isTargeting and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(0, 0, 0)
-        entry.WalkBtn.Text = isTargeting and "Stop" or "Catch"
+function A.sell(isAuto)
+    local st = S.SellStatus
+    if isAuto and S.Category == "All" then
+        setStatus(st, "Auto sell skipped: filter is All", C.amber)
+        return
     end
-
-    for _, child in ipairs(ScrollFrame:GetChildren()) do
-        if child:IsA("Frame") then
-            local uid = child.Name
-            if not currentHorses[uid] then
-                child:Destroy()
+    if isAuto then
+        local inv = A.readInv()
+        if inv then
+            S.Inventory = inv
+            S.Loaded = true
+        end
+    end
+    if not S.Loaded or type(S.Inventory) ~= "table" then
+        setStatus(st, "Inventory unavailable - press Refresh", C.red)
+        return
+    end
+    local remote = Events:FindFirstChild(S.Remote)
+    if not remote or not remote:IsA("RemoteEvent") then
+        setStatus(st, S.Remote .. " is not a RemoteEvent. Use Auto Find Sell Remote.", C.red)
+        return
+    end
+    local items, count = {}, 0
+    for uid, item in pairs(S.Inventory) do
+        if type(item) == "table" and A.isHorse(item) then
+            local u, co, m, d, h = A.itemTraits(item)
+            if A.matches(S.Category, u, co, m, d, h) then
+                items[tostring(uid)] = 1
+                count += 1
             end
         end
     end
+    if count == 0 then
+        setStatus(st, "Nothing matches: " .. S.Category, C.amber)
+        return
+    end
+    local ok, err = pcall(function() remote:FireServer("SellItems", items) end)
+    if not ok then
+        setStatus(st, "Sell failed: " .. tostring(err), C.red)
+        return
+    end
+    setStatus(st, "Sent sell request: " .. count .. " horse(s) | " .. S.Category .. " | " .. S.Remote, C.green)
+    task.delay(0.75, function()
+        local inv = A.readInv()
+        if inv then
+            S.Inventory = inv
+            S.Loaded = true
+            A.refreshCounts()
+        end
+    end)
 end
 
---// HELPER FUNCTION: GET PLAYER'S CURRENT ISLAND NAME
-local function GetCurrentPlayerIsland()
-    local char = LocalPlayer.Character
-    local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-    if not rootPart then return nil end
+S.RefreshBtn.MouseButton1Click:Connect(A.refreshInv)
 
-    local islandsFolder = Workspace:FindFirstChild("Islands")
-    if not islandsFolder then return nil end
+S.CatBtn.MouseButton1Click:Connect(function()
+    local idx = table.find(CATS, S.Category) or 0
+    S.Category = CATS[(idx % #CATS) + 1]
+    S.CatBtn.Text = "Filter: " .. S.Category .. " (tap to change)"
+    S.ConfirmAll = nil
+    A.updateSellStatus()
+    A.save()
+end)
 
-    for _, islandObj in ipairs(islandsFolder:GetChildren()) do
-        if islandObj:IsA("Model") or islandObj:IsA("Folder") then
-            local pPart = islandObj:IsA("Model") and islandObj.PrimaryPart or islandObj:FindFirstChildWhichIsA("BasePart", true)
-            if pPart then
-                local dist = (rootPart.Position - pPart.Position).Magnitude
-                if dist < 2000 then
-                    return islandObj.Name
-                end
+S.RemoteBox.FocusLost:Connect(function()
+    local name = S.RemoteBox.Text:match("^%s*(.-)%s*$")
+    if name ~= "" and Events:FindFirstChild(name) then
+        S.Remote = name
+        A.save()
+    end
+    S.RemoteBox.Text = S.Remote
+    A.updateSellStatus()
+end)
+
+S.SellBtn.MouseButton1Click:Connect(function()
+    if S.Category == "All" then
+        if not S.ConfirmAll or tick() - S.ConfirmAll > 3 then
+            S.ConfirmAll = tick()
+            setStatus(S.SellStatus, "Filter is ALL - this sells every horse. Tap again within 3s to confirm.", C.amber)
+            return
+        end
+        S.ConfirmAll = nil
+    end
+    A.sell(false)
+end)
+
+S.AutoBtn.MouseButton1Click:Connect(function()
+    S.AutoOn = not S.AutoOn
+    if S.AutoOn then
+        S.AutoNext = tick() + 300
+        S.AutoBtn.Text = "Auto sell filter every 5 min: ON"
+        S.AutoBtn.TextColor3 = C.green
+    else
+        S.AutoBtn.Text = "Auto sell filter every 5 min: OFF"
+        S.AutoBtn.TextColor3 = C.white
+        S.AutoInfo.Text = "Auto sell is off. It never runs when the filter is All."
+    end
+end)
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(1)
+        if S.AutoOn then
+            local left = S.AutoNext - tick()
+            if left <= 0 then
+                S.AutoNext = tick() + 300
+                pcall(A.sell, true)
+                left = 300
             end
+            if CurrentTab == "Selling" then
+                S.AutoInfo.Text = string.format("Next auto sell (%s) in %d:%02d", S.Category, math.floor(left / 60), math.floor(left % 60))
+            end
+        end
+    end
+end)
+
+function A.findNormalKey(inv)
+    for uid, item in pairs(inv) do
+        if type(item) == "table" and A.isHorse(item) then
+            local u, co, m, d, h = A.itemTraits(item)
+            if not (u or co or m or d or h) then return uid end
         end
     end
     return nil
 end
 
---// CENTRALIZED PERSISTENT CONFIG FUNCTIONS
-SavePersistentConfig = function()
-    pcall(function()
-        if writefile then
-            local configData = {
-                CatchRemote = CatchRemoteBox.Text,
-                TravelRemote = TravelRemoteBox.Text,
-                LassoType = LassoNameBox.Text,
-                LassoUID = ConfiguredLassoUID or "",
-                SelectedIsland = SelectedMainIsland,
-                TweenSpeed = TWEEN_SPEED,
-                RarityFilters = RarityFilters,
-                AutoFarmEnabled = AutoFarmEnabled,
-                AutoHopEnabled = autoHopEnabled,
-                HopIntervalSeconds = hopIntervalSeconds,
-                RemoteSpyEnabled = remoteSpyEnabled
-            }
-            writefile(CONFIG_FILE_NAME, HttpService:JSONEncode(configData))
-        end
-    end)
-end
+function A.findSellRemote()
+    if S.FindBusy then return end
+    S.FindBusy = true
+    S.FindBtn.Text = "Finding sell remote..."
+    setStatus(S.FindStatus, "Getting a Normal Horse as the test target...", C.amber)
 
-LoadPersistentConfig = function()
-    pcall(function()
-        if isfile and isfile(CONFIG_FILE_NAME) then
-            local success, decoded = pcall(function()
-                return HttpService:JSONDecode(readfile(CONFIG_FILE_NAME))
-            end)
-            if success and type(decoded) == "table" then
-                if decoded.CatchRemote then
-                    CatchRemoteBox.Text = decoded.CatchRemote
-                    if decoded.CatchRemote ~= "" then
-                        CatchRemoteBox.TextEditable = false
-                        MakeUncopyable(CatchRemoteBox)
-                        SaveCatchBtn.Text = "Saved"
-                        SaveCatchBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                        SaveCatchBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                    end
-                end
-                if decoded.TravelRemote then
-                    TravelRemoteBox.Text = decoded.TravelRemote
-                    if decoded.TravelRemote ~= "" then
-                        TravelRemoteBox.TextEditable = false
-                        MakeUncopyable(TravelRemoteBox)
-                        SaveTravelBtn.Text = "Saved"
-                        SaveTravelBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                        SaveTravelBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                    end
-                end
-                if decoded.LassoType then
-                    SelectedLasso = decoded.LassoType
-                    LassoNameBox.Text = decoded.LassoType
-                end
-                if decoded.LassoUID and decoded.LassoUID ~= "" then
-                    ConfiguredLassoUID = decoded.LassoUID
-                    UidTextBox.Text = decoded.LassoUID
-                    LassoStatus.Text = "UID Loaded"
-                    LassoStatus.TextColor3 = Color3.fromRGB(52, 211, 153)
-                    local lassoUI = findUIElement(LocalPlayer:WaitForChild("PlayerGui"), "Lasso Read Only")
-                    if lassoUI and (lassoUI:IsA("TextBox") or lassoUI:IsA("TextLabel")) then
-                        lassoUI.Text = decoded.LassoUID
-                    end
-                end
-                if decoded.SelectedIsland then
-                    SelectedMainIsland = decoded.SelectedIsland
-                    SortBtn.Text = "Island: " .. SelectedMainIsland .. " v"
-                end
-                if decoded.TweenSpeed then
-                    TWEEN_SPEED = tonumber(decoded.TweenSpeed) or 90
-                    TweenSpeedLabel.Text = "Tween Speed (" .. tostring(TWEEN_SPEED) .. ")"
-                end
-                if decoded.RarityFilters and type(decoded.RarityFilters) == "table" then
-                    for k, v in pairs(decoded.RarityFilters) do
-                        if RarityFilters[k] ~= nil then
-                            RarityFilters[k] = v
-                            local checkContainer = RarityFilterContainer
-                            if checkContainer then
-                                local chkBtn = checkContainer:FindFirstChild(k .. "Check")
-                                if chkBtn then
-                                    local indicator = chkBtn:FindFirstChildOfClass("Frame")
-                                    if indicator then
-                                        indicator.BackgroundColor3 = v and Color3.fromRGB(99, 102, 241) or Color3.fromRGB(55, 59, 76)
-                                        local mark = indicator:FindFirstChildOfClass("TextLabel")
-                                        if mark then
-                                            mark.Visible = v
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-                if decoded.AutoFarmEnabled ~= nil then
-                    AutoFarmEnabled = decoded.AutoFarmEnabled
-                    if AutoFarmEnabled then
-                        AutoToggleBtn.Text = " Auto ON"
-                        local themeCol = Color3.fromRGB(52, 211, 153)
-                        AutoToggleBtn.TextColor3 = themeCol
-                        ToggleSwitch.BackgroundColor3 = themeCol
-                        SwitchCircle.Position = UDim2.new(1, -16, 0.5, -7)
-                        SwitchCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    else
-                        AutoToggleBtn.Text = " Auto OFF"
-                        AutoToggleBtn.TextColor3 = Color3.fromRGB(160, 166, 186)
-                        ToggleSwitch.BackgroundColor3 = Color3.fromRGB(55, 59, 76)
-                        SwitchCircle.Position = UDim2.new(0, 2, 0.5, -7)
-                        SwitchCircle.BackgroundColor3 = Color3.fromRGB(139, 146, 165)
-                    end
-                end
-                if decoded.AutoHopEnabled ~= nil then
-                    autoHopEnabled = decoded.AutoHopEnabled
-                    if autoHopEnabled then
-                        AutoHopToggleBtn.Text = "Auto: ON"
-                        AutoHopToggleBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                        AutoHopToggleBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                    else
-                        AutoHopToggleBtn.Text = "Auto: OFF"
-                        AutoHopToggleBtn.BackgroundColor3 = Color3.fromRGB(239, 68, 68)
-                        AutoHopToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    end
-                end
-                if decoded.HopIntervalSeconds then
-                    hopIntervalSeconds = tonumber(decoded.HopIntervalSeconds) or 300
-                    local intervalName = "5 Minutes"
-                    if hopIntervalSeconds == 600 then intervalName = "10 Minutes"
-                    elseif hopIntervalSeconds == 900 then intervalName = "15 Minutes" end
-                    HopIntervalDropdownBtn.Text = intervalName .. " v"
-                end
-                if decoded.RemoteSpyEnabled ~= nil and decoded.RemoteSpyEnabled then
-                    remoteSpyEnabled = true
-                    RemoteSpyBtn.Text = "RemoteSpy: ON"
-                    RemoteSpyBtn.BackgroundColor3 = Color3.fromRGB(52, 211, 153)
-                    RemoteSpyBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-                    pcall(function()
-                        loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-SimpleSpy-PLUS-204560"))()
-                    end)
-                end
+    local function finish(msg, color)
+        setStatus(S.FindStatus, msg, color)
+        S.FindBtn.Text = "Auto Find Sell Remote (sells 1 Normal Horse)"
+        S.FindBusy = false
+    end
+
+    task.spawn(function()
+        local key
+        for attempt = 1, 20 do
+            local inv = A.readInv()
+            if inv then
+                S.Inventory = inv
+                S.Loaded = true
+                key = A.findNormalKey(inv)
+                if key ~= nil then break end
             end
+            setStatus(S.FindStatus, "Looking for a Normal Horse... " .. attempt .. "/20", C.amber)
+            task.wait(0.5)
         end
-    end)
-end
-
--- Load persistent configuration upon script startup
-LoadPersistentConfig()
-
---// MAIN ENGINE LOOP
-task.spawn(function()
-    while ScreenGui.Parent do
-        local char = LocalPlayer.Character
-        local rootPart = char and char:FindFirstChild("HumanoidRootPart")
-        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-
-        if AutoFarmEnabled and not ActiveWalkTarget and rootPart and humanoid and humanoid.Health > 0 then
-            local horses = GetWorldHorses()
-            if #horses > 0 then
-                table.sort(horses, function(a, b)
-                    local uniqueA = (a.UniqueHairText == "✓")
-                    local uniqueB = (b.UniqueHairText == "✓")
-                    if uniqueA ~= uniqueB then
-                        return uniqueA
-                    end
-                    local weightA = RarityPriority[a.Rarity] or 0
-                    local weightB = RarityPriority[b.Rarity] or 0
-                    if weightA ~= weightB then
-                        return weightA > weightB
-                    end
-                    return a.Distance < b.Distance
+        if key == nil then
+            finish("No Normal Horse available for testing.", C.amber)
+            return
+        end
+        for i = 1, 90 do
+            local ev = Events:FindFirstChild("Event" .. i)
+            if ev and ev:IsA("RemoteEvent") then
+                setStatus(S.FindStatus, "Testing Event" .. i .. " ...", C.amber)
+                local okFire = pcall(function()
+                    ev:FireServer("SellItems", {[tostring(key)] = 1})
                 end)
-                ActiveWalkTarget = horses[1].Model
-                ActiveTargetIsland = horses[1].Island
-                TargetUID = horses[1].UID
+                task.wait(0.35)
+                local inv2 = A.readInv()
+                if inv2 then
+                    S.Inventory = inv2
+                    if okFire and inv2[key] == nil then
+                        S.Remote = "Event" .. i
+                        S.RemoteBox.Text = S.Remote
+                        A.updateSellStatus()
+                        A.refreshCounts()
+                        A.save()
+                        finish("FOUND: " .. S.Remote .. " (test horse is gone)", C.green)
+                        return
+                    end
+                end
             end
+            task.wait(0.5)
         end
+        finish("No working sell remote in Event1-90.", C.red)
+    end)
+end
+S.FindBtn.MouseButton1Click:Connect(A.findSellRemote)
 
-        if ActiveWalkTarget and rootPart and humanoid and humanoid.Health > 0 then
-            local activeHorse = ActiveWalkTarget
-            local activeWeld = nil
-            local activeTween = nil
+--// ============================================================================
+--// 5) SERVERS TAB
+--// ============================================================================
+A.tried = {}
 
-            local successRun = pcall(function()
-                if not (activeHorse and activeHorse.Parent) then return end
+A.Here = mk("TextLabel", {
+    AutomaticSize = Enum.AutomaticSize.Y,
+    Size = UDim2.new(1, 0, 0, 0),
+    BackgroundColor3 = C.card,
+    BorderSizePixel = 0,
+    TextWrapped = true,
+    TextXAlignment = Enum.TextXAlignment.Left,
+    TextYAlignment = Enum.TextYAlignment.Top,
+    Font = Enum.Font.Gotham,
+    TextSize = 11,
+    TextColor3 = C.text,
+    Text = "",
+    LayoutOrder = 1,
+}, SrvPanel)
+corner(A.Here, 10)
+mk("UIPadding", {
+    PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10),
+    PaddingTop = UDim.new(0, 8), PaddingBottom = UDim.new(0, 8),
+}, A.Here)
 
-                local targetIslandName = ActiveTargetIsland
-                if not targetIslandName then
-                    local currentObj = activeHorse
-                    while currentObj and currentObj ~= Workspace do
-                        if currentObj.Parent == Workspace:FindFirstChild("Islands") then
-                            targetIslandName = currentObj.Name
+A.SrvRefreshBtn = btn(SrvPanel, "REFRESH SERVER LIST", UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 0, 28))
+A.SrvRefreshBtn.LayoutOrder = 2
+A.SrvStatus = lbl(SrvPanel, "Tap a server to join it.", UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 0, 16), 10, C.dim)
+A.SrvStatus.LayoutOrder = 3
+A.SrvHeader = lbl(SrvPanel, "OTHER SERVERS", UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 0, 16), 10, C.muted, Enum.Font.GothamBold)
+A.SrvHeader.LayoutOrder = 4
+
+function A.updateHere()
+    local names = {}
+    for _, p in ipairs(Players:GetPlayers()) do names[#names + 1] = p.Name end
+    A.Here.Text = "THIS SERVER (" .. #names .. "): " .. table.concat(names, ", ")
+end
+A.updateHere()
+Players.PlayerAdded:Connect(A.updateHere)
+Players.PlayerRemoving:Connect(function() task.defer(A.updateHere) end)
+
+local function httpGet(url)
+    local req = nil
+    if typeof(request) == "function" then
+        req = request
+    elseif syn and typeof(syn.request) == "function" then
+        req = syn.request
+    elseif http and typeof(http.request) == "function" then
+        req = http.request
+    end
+    if req then
+        local r = req({Url = url, Method = "GET"})
+        return r.Body
+    end
+    return game:HttpGet(url)
+end
+
+function A.fetchServers()
+    local out = {}
+    local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId)
+        .. "/servers/Public?sortOrder=Desc&excludeFullGames=true&limit=50"
+    local ok, body = pcall(httpGet, url)
+    if not ok or not body then return out end
+    local okD, data = pcall(function() return HttpService:JSONDecode(body) end)
+    if not okD or type(data) ~= "table" or not data.data then return out end
+    for _, s in ipairs(data.data) do
+        local playing = tonumber(s.playing) or 0
+        local maxP = tonumber(s.maxPlayers) or 0
+        if s.id and s.id ~= game.JobId and playing < maxP then
+            out[#out + 1] = {id = s.id, playing = playing, max = maxP, ping = tonumber(s.ping)}
+        end
+    end
+    table.sort(out, function(a, b) return a.playing > b.playing end)
+    return out
+end
+
+function A.join(id, playing, maxP)
+    if A.joining then return end
+    A.joining = true
+    A.tried[id] = true
+    setStatus(A.SrvStatus, string.format("Joining %d/%d players...", playing, maxP), C.amber)
+    local failed = false
+    local conn = TeleportService.TeleportInitFailed:Connect(function() failed = true end)
+    pcall(function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, id, LocalPlayer)
+    end)
+    task.wait(6)
+    conn:Disconnect()
+    if failed then setStatus(A.SrvStatus, "Teleport failed (server full?).", C.red) end
+    A.joining = false
+end
+
+function A.refreshServers()
+    if A.srvBusy then return end
+    A.srvBusy = true
+    A.SrvRefreshBtn.Text = "LOADING..."
+    task.spawn(function()
+        local list = A.fetchServers()
+        for _, c in ipairs(SrvPanel:GetChildren()) do
+            if c.Name == "ServerRow" then c:Destroy() end
+        end
+        for i, s in ipairs(list) do
+            if i > 30 then break end
+            local pingText = s.ping and (math.floor(s.ping) .. " ms") or "? ms"
+            local row = btn(SrvPanel, string.format("%d/%d players  |  %s%s", s.playing, s.max, pingText, A.tried[s.id] and "  (tried)" or ""),
+                UDim2.new(0, 0, 0, 0), UDim2.new(1, 0, 0, 28), C.card, C.text)
+            row.Name = "ServerRow"
+            row.TextSize = 11
+            row.LayoutOrder = 10 + i
+            row.MouseButton1Click:Connect(function() A.join(s.id, s.playing, s.max) end)
+        end
+        A.SrvHeader.Text = "OTHER SERVERS (" .. #list .. ") - tap to join"
+        A.SrvRefreshBtn.Text = "REFRESH SERVER LIST"
+        A.srvBusy = false
+    end)
+end
+A.SrvRefreshBtn.MouseButton1Click:Connect(A.refreshServers)
+
+--// ============================================================================
+--// 6) SETTINGS CARDS: auto-find remotes + anti-lag
+--// ============================================================================
+local findRemCard = cardFrame(SettingsPanel, 6, 160)
+cardTitle(findRemCard, "AUTO FIND REMOTES")
+A.TravelBtn = btn(findRemCard, "Auto Find Travel Remote", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 26))
+A.TravelStatus = lbl(findRemCard, "Travel remote: not tested", UDim2.new(0, 10, 0, 54), UDim2.new(1, -20, 0, 26), 10, C.dim)
+A.CatchBtn = btn(findRemCard, "Auto Detect Catch Remote (20s)", UDim2.new(0, 10, 0, 86), UDim2.new(1, -20, 0, 26))
+A.CatchStatus = lbl(findRemCard, "Equip your lasso, press this, then catch any horse by hand.", UDim2.new(0, 10, 0, 114), UDim2.new(1, -20, 0, 42), 10, C.dim)
+
+function A.findTravel()
+    if A.travelBusy then return end
+    A.travelBusy = true
+    A.TravelBtn.Text = "Finding travel remote..."
+    local function finish(msg, color)
+        setStatus(A.TravelStatus, msg, color)
+        A.TravelBtn.Text = "Auto Find Travel Remote"
+        A.travelBusy = false
+    end
+    task.spawn(function()
+        local island = GetCurrentPlayerIsland()
+        if not island then
+            finish("Could not detect your current island.", C.red)
+            return
+        end
+        setStatus(A.TravelStatus, "Testing Travel on: " .. island, C.amber)
+        task.wait(0.25)
+        for i = 1, 36 do
+            local name = "Function" .. i
+            local remote = Functions:FindFirstChild(name)
+            if remote and remote:IsA("RemoteFunction") then
+                A.TravelBtn.Text = "Testing " .. name
+                local char = LocalPlayer.Character
+                local root = char and char:FindFirstChild("HumanoidRootPart")
+                local beforePos = root and root.Position
+                local beforeCF = root and root.CFrame
+                local invokeOK = pcall(function()
+                    remote:InvokeServer("Travel", island, 1)
+                end)
+                local moved = false
+                local elapsed = 0
+                while elapsed < 1 do
+                    task.wait(0.05)
+                    elapsed += 0.05
+                    local c2 = LocalPlayer.Character
+                    local r2 = c2 and c2:FindFirstChild("HumanoidRootPart")
+                    if r2 and beforePos and beforeCF then
+                        local posChanged = (r2.Position - beforePos).Magnitude > 0.05
+                        local rotChanged = (r2.CFrame.LookVector - beforeCF.LookVector).Magnitude > 0.001
+                        if posChanged or rotChanged then
+                            moved = true
                             break
                         end
-                        currentObj = currentObj.Parent
                     end
                 end
-
-                local currentIslandName = GetCurrentPlayerIsland()
-                if targetIslandName and currentIslandName == targetIslandName then
-                    print("[TRAVEL LOG] Player is ALREADY on target island ('" .. tostring(targetIslandName) .. "'). Skipping travel sequence.")
-                elseif targetIslandName then
-                    local manualTravelRemote = TravelRemoteBox.Text
-                    if manualTravelRemote == "" then
-                        warn("[TRAVEL ERROR] Travel Remote field is empty in settings!")
-                        if StatusText then
-                            StatusText.Text = "STATUS: Enter Travel Remote first"
-                            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-                        end
-                        ActiveWalkTarget = nil
-                        ActiveTargetIsland = nil
-                        TargetUID = nil
-                        return
-                    end
-
-                    local travelFunc = Functions:FindFirstChild(manualTravelRemote)
-                    if not travelFunc then
-                        warn("[TRAVEL ERROR] RemoteFunction '" .. tostring(manualTravelRemote) .. "' was NOT found inside ReplicatedStorage.Communication.Functions!")
-                        if StatusText then
-                            StatusText.Text = "STATUS: Travel Remote not found"
-                            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-                        end
-                        ActiveWalkTarget = nil
-                        ActiveTargetIsland = nil
-                        TargetUID = nil
-                        return
-                    end
-
-                    if StatusText then
-                        StatusText.Text = "STATUS: Traveling to " .. targetIslandName .. "..."
-                        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-                    end
-
-                    local invokeSuccess, serverResult = pcall(function()
-                        return travelFunc:InvokeServer("Travel", targetIslandName, 1)
-                    end)
-
-                    if not invokeSuccess then
-                        if StatusText then
-                            StatusText.Text = "STATUS: Travel Failed"
-                            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-                        end
-                        ActiveWalkTarget = nil
-                        ActiveTargetIsland = nil
-                        TargetUID = nil
-                        return
-                    end
-
-                    if StatusText then
-                        StatusText.Text = "STATUS: Waiting for Island Arrival..."
-                        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-                    end
-
-                    local travelWaitStart = tick()
-                    local arrived = false
-                    while tick() - travelWaitStart < 15 do
-                        if ActiveWalkTarget ~= activeHorse or not (activeHorse and activeHorse.Parent) then return end
-                        local islandFolder = Workspace:FindFirstChild("Islands") and Workspace.Islands:FindFirstChild(targetIslandName)
-                        local currentIsland = GetCurrentPlayerIsland()
-                        if (islandFolder and currentIsland == targetIslandName) or (islandFolder and (tick() - travelWaitStart > 3)) then
-                            arrived = true
-                            break
-                        end
-                        task.wait(0.2)
-                    end
-                    char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                    rootPart = char:WaitForChild("HumanoidRootPart")
-                    humanoid = char:WaitForChild("Humanoid")
-                end
-
-                if not (activeHorse and activeHorse.Parent) or humanoid.Health <= 0 then
-                    ActiveWalkTarget = nil
-                    ActiveTargetIsland = nil
-                    TargetUID = nil
+                if invokeOK and moved then
+                    TravelRemoteBox.Text = name
+                    SaveTravelBtn.Text = "Saved"
+                    SaveTravelBtn.BackgroundColor3 = C.green
+                    SaveTravelBtn.TextColor3 = C.black
+                    SavePersistentConfig()
+                    finish("FOUND: " .. name .. " (character moved on " .. island .. ")", C.green)
                     return
                 end
-
-                EnableNoClip(char)
-                humanoid.PlatformStand = true
-                rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                rootPart.Anchored = true
-
-                local targetPart = activeHorse:IsA("Model") and (activeHorse.PrimaryPart or activeHorse:FindFirstChildWhichIsA("BasePart")) or activeHorse
-                if targetPart then
-                    local targetCFrame = targetPart.CFrame * CFrame.new(0, 3, 0)
-                    local distance = (rootPart.Position - targetCFrame.Position).Magnitude
-                    local tweenTime = distance / TWEEN_SPEED
-
-                    if StatusText then
-                        StatusText.Text = "STATUS: Tweening to Horse..."
-                        StatusText.TextColor3 = Color3.fromRGB(251, 191, 36)
-                    end
-
-                    local tweenInfo = TweenInfo.new(tweenTime, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-                    activeTween = TweenService:Create(rootPart, tweenInfo, {CFrame = targetCFrame})
-                    activeTween:Play()
-
-                    while activeTween and activeTween.PlaybackState == Enum.PlaybackState.Playing do
-                        if ActiveWalkTarget ~= activeHorse or not (activeHorse and activeHorse.Parent) or humanoid.Health <= 0 then
-                            activeTween:Cancel()
-                            break
-                        end
-                        rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                        rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                        task.wait(0.03)
-                    end
-
-                    if ActiveWalkTarget == activeHorse and activeHorse and activeHorse.Parent and humanoid.Health > 0 then
-                        rootPart.CFrame = targetPart.CFrame * CFrame.new(0, 3, 0)
-                        activeWeld = Instance.new("WeldConstraint")
-                        activeWeld.Name = "HorseTrackerWeld"
-                        activeWeld.Part0 = rootPart
-                        activeWeld.Part1 = targetPart
-                        activeWeld.Parent = rootPart
-                        rootPart.Anchored = true
-                    end
-                end
-
-                while ActiveWalkTarget == activeHorse and activeHorse and activeHorse.Parent and humanoid.Health > 0 do
-                    local manualCatchRemote = CatchRemoteBox.Text
-                    if manualCatchRemote == "" or not ConfiguredLassoUID then
-                        if StatusText then
-                            StatusText.Text = "STATUS: Enter Catch Remote & Lasso UID first"
-                            StatusText.TextColor3 = Color3.fromRGB(239, 68, 68)
-                        end
-                        ActiveWalkTarget = nil
-                        ActiveTargetIsland = nil
-                        TargetUID = nil
-                        break
-                    end
-
-                    if not CatchWatchdogRunning then
-                        StartCatchWatchdog()
-                    end
-                    if StatusText then
-                        local lName = LassoNameBox and LassoNameBox.Text ~= "" and LassoNameBox.Text or SelectedLasso
-                        local countdown = CatchCountdownRemaining or CATCH_TIMEOUT_SECONDS
-                        StatusText.Text = "STATUS: Catching (" .. lName .. ")... [" .. tostring(countdown) .. "s]"
-                        StatusText.TextColor3 = Color3.fromRGB(52, 211, 153)
-                    end
-
-                    pcall(function()
-                        local catchEvent = Events:FindFirstChild(manualCatchRemote)
-                        if catchEvent then
-                            catchEvent:FireServer(
-                                ConfiguredLassoUID,
-                                "Activate",
-                                activeHorse
-                            )
-                        end
-                    end)
-                    task.wait(0.2)
-                end
-                CatchWatchdogToken += 1
-                CatchWatchdogRunning = false
-                CatchCountdownRemaining = nil
-            end)
-
-            if activeTween then pcall(function() activeTween:Cancel() end) end
-            if activeWeld then activeWeld:Destroy() end
-
-            pcall(function()
-                if rootPart then
-                    rootPart.Anchored = false
-                    rootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    rootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                end
-                if humanoid then
-                    humanoid.PlatformStand = false
-                end
-            end)
-            DisableNoClip(char)
-
-            ActiveWalkTarget = nil
-            ActiveTargetIsland = nil
-            TargetUID = nil
-        else
-            if not AutoFarmEnabled then
-                StatusText.Text = "STATUS: Idle"
-                StatusText.TextColor3 = Color3.fromRGB(148, 163, 184)
+                setStatus(A.TravelStatus, name .. (invokeOK and " did not move you; next..." or " errored; next..."), C.amber)
             else
-                StatusText.Text = "STATUS: Searching on " .. SelectedMainIsland .. "..."
-                StatusText.TextColor3 = Color3.fromRGB(52, 211, 153)
+                task.wait(0.3)
             end
         end
-
-        task.wait(0.03)
+        finish("No travel remote found in Function1-Function36.", C.red)
+    end)
+end
+A.TravelBtn.MouseButton1Click:Connect(function()
+    local ok, err = pcall(A.findTravel)
+    if not ok then
+        A.travelBusy = false
+        A.TravelBtn.Text = "Auto Find Travel Remote"
+        setStatus(A.TravelStatus, "Error: " .. tostring(err), C.red)
     end
 end)
 
---// INDEPENDENT LIVE TRACKER REFRESH
--- Keep the UI scanner independent from the Auto movement/catching routine.
--- The Auto routine can spend time travelling/tweening/catching, while this
--- loop continues detecting new horses and updating the Tracker list.
-task.spawn(function()
-    while ScreenGui.Parent do
-        if CurrentTab == "Main" then
-            pcall(RefreshList)
-        end
-        task.wait(0.20)
-    end
-end)
-
-
--- Delta Executor Anti-AFK Script (Integrated with PlayerAdded & Custom Handler)
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local VirtualUser = game:GetService("VirtualUser")
-
--- Global reference for cross-scope access
-_G.AFKHandlerInstance = nil
-
--- Handle native Roblox 20-minute inactivity kick
-local function setupIdled(player)
-    if player == LocalPlayer then
-        player.Idled:Connect(function()
-            VirtualUser:CaptureController()
-            VirtualUser:ClickButton2(Vector2.new())
-            
-            -- Trigger custom AFK state reset instantly on idle signal
-            if _G.AFKHandlerInstance then
-                pcall(function()
-                    _G.AFKHandlerInstance.Reset()
-                    _G.AFKHandlerInstance.isAfk = false
-                    _G.AFKHandlerInstance.isHardAfk = false
-                end)
+-- catch remote detection: watches the game's own (lassoUID, "Activate", horse) call
+function A.installHook()
+    if A.hooked then return true end
+    if not (hookmetamethod and getnamecallmethod and checkcaller) then return false end
+    local ok = pcall(function()
+        local old
+        local function hook(self, ...)
+            if A.detecting then
+                local method = getnamecallmethod()
+                if method == "FireServer" and not checkcaller() then
+                    local args = table.pack(...)
+                    if args[2] == "Activate" and typeof(args[3]) == "Instance" and typeof(self) == "Instance" then
+                        A.seen = {name = self.Name, uid = args[1]}
+                    end
+                end
             end
-        end)
+            return old(self, ...)
+        end
+        old = hookmetamethod(game, "__namecall", newcclosure and newcclosure(hook) or hook)
+    end)
+    A.hooked = ok
+    return ok
+end
+
+A.CatchBtn.MouseButton1Click:Connect(function()
+    if A.detecting then return end
+    if not A.installHook() then
+        setStatus(A.CatchStatus, "Your executor does not support hookmetamethod. Use the RemoteSpy toggle instead.", C.red)
+        return
     end
-end
-
-Players.PlayerAdded:Connect(setupIdled)
-if LocalPlayer then
-    setupIdled(LocalPlayer)
-end
-
--- Bypass the game's custom AFKHandler module
-task.spawn(function()
-    local afkHandler = nil
-    
-    pcall(function()
-        for _, mod in ipairs(getloadedmodules()) do
-            if mod.Name == "AFKHandler" then
-                afkHandler = require(mod)
+    A.seen = nil
+    A.detecting = true
+    task.spawn(function()
+        local found = nil
+        for t = 20, 1, -1 do
+            A.CatchBtn.Text = "NOW CATCH A HORSE... " .. t .. "s"
+            if A.seen then
+                found = A.seen
                 break
             end
+            task.wait(1)
+        end
+        A.detecting = false
+        A.CatchBtn.Text = "Auto Detect Catch Remote (20s)"
+        if found then
+            CatchRemoteBox.Text = found.name
+            if type(found.uid) == "string" or type(found.uid) == "number" then
+                ConfiguredLassoUID = tostring(found.uid)
+                UidTextBox.Text = ConfiguredLassoUID
+                LassoStatus.Text = "UID Found"
+                LassoStatus.TextColor3 = C.green
+            end
+            SaveCatchBtn.Text = "Saved"
+            SaveCatchBtn.BackgroundColor3 = C.green
+            SaveCatchBtn.TextColor3 = C.black
+            SavePersistentConfig()
+            setStatus(A.CatchStatus, "FOUND: " .. found.name .. " (lasso UID filled in too)", C.green)
+        else
+            setStatus(A.CatchStatus, "Nothing seen. Make sure the lasso is equipped and try again.", C.amber)
         end
     end)
-    
-    if not afkHandler then
+end)
+
+--// ---- anti-lag
+local lagCard = cardFrame(SettingsPanel, 7, 122)
+cardTitle(lagCard, "ANTI-LAG")
+A.GfxBtn = btn(lagCard, "Low Graphics: OFF", UDim2.new(0, 10, 0, 26), UDim2.new(1, -20, 0, 26))
+A.RenderBtn = btn(lagCard, "3D Render: ON", UDim2.new(0, 10, 0, 58), UDim2.new(1, -20, 0, 26))
+lbl(lagCard, "Memory cleanup runs automatically every 60s. Low Graphics lasts until you rejoin. 3D Render OFF = black screen, farm keeps running.",
+    UDim2.new(0, 10, 0, 88), UDim2.new(1, -20, 0, 32), 9, C.muted)
+
+function A.lowGfx()
+    pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+    pcall(function()
+        local L = game:GetService("Lighting")
+        L.GlobalShadows = false
+        for _, e in ipairs(L:GetChildren()) do
+            if e:IsA("PostEffect") or e:IsA("Clouds") then e.Enabled = false end
+        end
+    end)
+    pcall(function()
+        local t = Workspace:FindFirstChildOfClass("Terrain")
+        if t then
+            t.WaterWaveSize = 0
+            t.WaterWaveSpeed = 0
+            t.Decoration = false
+        end
+    end)
+    pcall(function()
+        if type(setfpscap) == "function" then setfpscap(30) end
+    end)
+    task.spawn(function()
         pcall(function()
-            local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts") or LocalPlayer:WaitForChild("PlayerScripts", 5)
-            local secondary = playerScripts and playerScripts:FindFirstChild("Secondary")
-            local mod = secondary and secondary:FindFirstChild("AFKHandler")
-            if mod then
-                afkHandler = require(mod)
+            local stack, count = {Workspace}, 0
+            while #stack > 0 do
+                local node = table.remove(stack)
+                for _, obj in ipairs(node:GetChildren()) do
+                    count += 1
+                    if count % 1500 == 0 then task.wait() end
+                    if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Beam")
+                        or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                        obj.Enabled = false
+                    elseif #obj:GetChildren() > 0 and not obj:IsA("Terrain") then
+                        stack[#stack + 1] = obj
+                    end
+                end
             end
         end)
-    end
-    
-    if afkHandler then
-        _G.AFKHandlerInstance = afkHandler
-        print("[Anti-AFK] Successfully hooked game AFKHandler!")
-        while task.wait(15) do
-            pcall(function()
-                afkHandler.Reset()
-                afkHandler.isAfk = false
-                afkHandler.isHardAfk = false
-            end)
-        end
-    else
-        warn("[Anti-AFK] AFKHandler module not found automatically; native Idled bypass active.")
+    end)
+end
+
+A.GfxBtn.MouseButton1Click:Connect(function()
+    if A.gfxOn then return end
+    A.gfxOn = true
+    A.lowGfx()
+    A.GfxBtn.Text = "Low Graphics: ON (rejoin to undo)"
+    A.GfxBtn.TextColor3 = C.green
+end)
+
+A.renderOn = true
+A.RenderBtn.MouseButton1Click:Connect(function()
+    A.renderOn = not A.renderOn
+    pcall(function() RunService:Set3dRenderingEnabled(A.renderOn) end)
+    A.RenderBtn.Text = A.renderOn and "3D Render: ON" or "3D Render: OFF (screen black)"
+    A.RenderBtn.TextColor3 = A.renderOn and C.white or C.amber
+end)
+ScreenGui.Destroying:Connect(function()
+    pcall(function() RunService:Set3dRenderingEnabled(true) end)
+end)
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(60)
+        pcall(function() collectgarbage("collect") end)
     end
 end)
 
---// THIS IS PH
---// THIS IS PH
+--// ---- load add-on config
+pcall(function()
+    if isfile and isfile(ADDON_CFG) and readfile then
+        local d = HttpService:JSONDecode(readfile(ADDON_CFG))
+        if type(d) == "table" then
+            if type(d.SellCategory) == "string" and table.find(CATS, d.SellCategory) then
+                S.Category = d.SellCategory
+                S.CatBtn.Text = "Filter: " .. S.Category .. " (tap to change)"
+            end
+            if type(d.SellRemote) == "string" and d.SellRemote ~= "" then
+                S.Remote = d.SellRemote
+                S.RemoteBox.Text = S.Remote
+            end
+            A.updateSellStatus()
+        end
+    end
+end)
+
+task.spawn(A.refreshInv)
+
+end)()
