@@ -51,6 +51,7 @@ local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
 local LocalPlayer = Players.LocalPlayer
+local N = {} -- holds helper functions/data (keeps the main chunk under the 200-local limit)
 
 if not LocalPlayer then
     warn("[NORMS] LocalPlayer is unavailable; script stopped before UI creation.")
@@ -282,7 +283,7 @@ local ribc = Instance.new("UICorner")
 ribc.CornerRadius = UDim.new(0, 6)
 ribc.Parent = RefreshInventoryButton
 
-local function RefreshInventoryManually()
+function N.RefreshInventoryManually()
     RefreshInventoryButton.Text = "REFRESHING..."
     SellingStatus.Text = "Refreshing inventory..."
     SellingStatus.TextColor3 = Color3.fromRGB(251, 191, 36)
@@ -309,9 +310,9 @@ local function RefreshInventoryManually()
     end)
 end
 
-RefreshInventoryButton.Activated:Connect(RefreshInventoryManually)
+RefreshInventoryButton.Activated:Connect(N.RefreshInventoryManually)
 
-local sellingNames = {
+N.sellingNames = {
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
     {"Island Unique Coat", Color3.fromRGB(255, 150, 40)},
     {"Mismatched Hair", Color3.fromRGB(60, 175, 255)},
@@ -321,7 +322,7 @@ local sellingNames = {
     {"Total Horse", Color3.fromRGB(235, 235, 240)},
 }
 
-for i, entry in ipairs(sellingNames) do
+for i, entry in ipairs(N.sellingNames) do
     local row = Instance.new("Frame")
     row.Size = UDim2.new(1, 0, 0, 16)
     row.Position = UDim2.fromOffset(0, 34 + ((i - 1) * 17))
@@ -372,7 +373,7 @@ local SelectedSellRemote = "Event1"
 local SelectedSellCategory = "Normal Horse"
 local SellStatus
 
-local function makeDropButton(text, position, width)
+function N.makeDropButton(text, position, width)
     local b = Instance.new("TextButton")
     b.Size = UDim2.fromOffset(width, 25)
     b.Position = position
@@ -390,8 +391,8 @@ local function makeDropButton(text, position, width)
     return b
 end
 
-local RemoteDrop = makeDropButton("Remote: Event1", UDim2.fromOffset(0, 177), 100)
-local RarityDrop = makeDropButton("Filter: Normal Horse", UDim2.fromOffset(104, 177), 100)
+local RemoteDrop = N.makeDropButton("Remote: Event1", UDim2.fromOffset(0, 177), 100)
+local RarityDrop = N.makeDropButton("Filter: Normal Horse", UDim2.fromOffset(104, 177), 100)
 
 local RemoteList = Instance.new("ScrollingFrame")
 RemoteList.Size = UDim2.fromOffset(100, 125)
@@ -441,7 +442,7 @@ RarityList.Parent = SellingFrame
 local rarc = Instance.new("UICorner"); rarc.CornerRadius = UDim.new(0, 6); rarc.Parent = RarityList
 local rarityLayout = Instance.new("UIListLayout"); rarityLayout.SortOrder = Enum.SortOrder.LayoutOrder; rarityLayout.Parent = RarityList
 
-local sellCategoryOptions = {
+N.sellCategoryOptions = {
     "All",
     "Normal Horse",
     "Natural Dyed Hair",
@@ -451,7 +452,7 @@ local sellCategoryOptions = {
     "Horned"
 }
 
-for i, category in ipairs(sellCategoryOptions) do
+for i, category in ipairs(N.sellCategoryOptions) do
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(1, 0, 0, 21)
     b.BackgroundColor3 = Color3.fromRGB(27, 27, 34)
@@ -569,7 +570,7 @@ SettingsFrame.Parent = frame
 
 --// TRAVEL REMOTE PERSISTENCE
 local CONFIG_FILE_NAME = "NORMS_Catch_Config.json"
-local function SaveCatchRemoteConfig()
+function N.SaveCatchRemoteConfig()
     pcall(function()
         if writefile then
             local data = {
@@ -582,13 +583,12 @@ end
 
 -- Consistent settings geometry for the compact UI.
 local SettingsLeft = 6
-local SettingsWidth = 222
 local SettingsFieldX = 94
 local SettingsButtonX = 210
 local SettingsFieldWidth = 112
 local SettingsButtonWidth = 40
 
-local function SettingsLabel(name, text, y, size)
+function N.SettingsLabel(name, text, y, size)
     local label = Instance.new("TextLabel")
     label.Name = name
     label.Size = UDim2.new(1, -12, 0, size or 18)
@@ -603,23 +603,23 @@ local function SettingsLabel(name, text, y, size)
     return label
 end
 
-local function SettingsBoxCorner(obj)
+function N.SettingsBoxCorner(obj)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 5)
     c.Parent = obj
 end
 
-local SettingsTitle = SettingsLabel("SettingsTitle", "SETTINGS", 3, 18)
+local SettingsTitle = N.SettingsLabel("SettingsTitle", "SETTINGS", 3, 18)
 SettingsTitle.TextSize = 11
 SettingsTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-local SettingsInfo = SettingsLabel("SettingsInfo", "Travel and sell remote controls", 23, 16)
+local SettingsInfo = N.SettingsLabel("SettingsInfo", "Travel and sell remote controls", 23, 16)
 SettingsInfo.TextSize = 8
 SettingsInfo.Font = Enum.Font.Gotham
 SettingsInfo.TextColor3 = Color3.fromRGB(130, 135, 145)
 
 --// TRAVEL REMOTE SETTING
-TravelRemoteLabel = SettingsLabel("TravelRemoteLabel", "TRAVEL REMOTE", 48, 18)
+TravelRemoteLabel = N.SettingsLabel("TravelRemoteLabel", "TRAVEL REMOTE", 48, 18)
 
 TravelRemoteBox = Instance.new("TextBox")
 TravelRemoteBox.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
@@ -635,7 +635,7 @@ TravelRemoteBox.TextSize = 8
 TravelRemoteBox.Font = Enum.Font.Gotham
 TravelRemoteBox.TextXAlignment = Enum.TextXAlignment.Left
 TravelRemoteBox.Parent = SettingsFrame
-SettingsBoxCorner(TravelRemoteBox)
+N.SettingsBoxCorner(TravelRemoteBox)
 
 -- Load the saved travel remote.
 pcall(function()
@@ -657,7 +657,7 @@ TravelDropdown.TextColor3 = Color3.fromRGB(220, 220, 225)
 TravelDropdown.TextSize = 8
 TravelDropdown.Font = Enum.Font.GothamBold
 TravelDropdown.Parent = SettingsFrame
-SettingsBoxCorner(TravelDropdown)
+N.SettingsBoxCorner(TravelDropdown)
 
 TravelList = Instance.new("ScrollingFrame")
 TravelList.Size = UDim2.fromOffset(130, 105)
@@ -690,7 +690,7 @@ for i = 1, 90 do
     opt.Activated:Connect(function()
         TravelRemoteBox.Text = funcName
         TravelList.Visible = false
-        SaveCatchRemoteConfig()
+        N.SaveCatchRemoteConfig()
     end)
 end
 TravelDropdown.Activated:Connect(function()
@@ -723,7 +723,7 @@ AutoTravelStatus.TextWrapped = true
 AutoTravelStatus.Parent = SettingsFrame
 
 --// SELL REMOTE
-SellRemoteLabel = SettingsLabel("SellRemoteLabel", "SELL REMOTE", 158, 18)
+SellRemoteLabel = N.SettingsLabel("SellRemoteLabel", "SELL REMOTE", 158, 18)
 RemoteDrop.Parent = SettingsFrame
 RemoteDrop.Position = UDim2.fromOffset(SettingsFieldX, 178)
 RemoteDrop.Size = UDim2.fromOffset(SettingsFieldWidth, 26)
@@ -771,7 +771,7 @@ HopStatus.Parent = SettingsFrame
 
 SettingsFrame.CanvasSize = UDim2.new(0, 0, 0, 320)
 
-local function GetHttpRequest()
+function N.GetHttpRequest()
     if typeof(request) == "function" then
         return function(url)
             local response = request({
@@ -1281,7 +1281,7 @@ local NoClipConnection = nil
 local NoClipStates = {}
 local NoClipParts, NoClipPartsChar, NoClipPartsTime = {}, nil, 0
 
-local function SetNoClip(enabled)
+function N.SetNoClip(enabled)
     NoClipEnabled = enabled
 
     if enabled then
@@ -1329,7 +1329,7 @@ local function SetNoClip(enabled)
 end
 
 --// ANTI-AFK
-local AntiAFKConnection = LocalPlayer.Idled:Connect(function()
+LocalPlayer.Idled:Connect(function()
     pcall(function()
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new(0, 0))
@@ -1350,7 +1350,7 @@ local ScanCache = {}
 local LastScan = 0
 
 --// RARITY DATABASE
-local RarityData = {
+N.RarityData = {
     ["Fjord"]={Rarity="Low"}, ["Mustang"]={Rarity="Low"}, ["Appaloosa"]={Rarity="Low"},
     ["Paint Horse"]={Rarity="Low"}, ["Paint"]={Rarity="Low"}, ["Morgan"]={Rarity="Low"},
     ["Quarter"]={Rarity="Low"}, ["Quarter Horse"]={Rarity="Low"}, ["Standard Donkey"]={Rarity="Low"},
@@ -1363,11 +1363,11 @@ local RarityData = {
     ["Mule"]={Rarity="Special"}, ["Hinny"]={Rarity="Special"}, ["Reindeer"]={Rarity="Special"}
 }
 
-local RarityPriority = {Special=4, High=3, Mid=2, Low=1}
+N.RarityPriority = {Special=4, High=3, Mid=2, Low=1}
 
 --// UNIQUE HAIR + PRIORITY DATA
 --// Catch priority: 1 Unique Hair, 2 Mismatched Hair, 3 Island Unique Coat, 4 Natural Dyed Hair, 5 Horned, 6 Normal
-local UniqueHairValues = {
+N.UniqueHairValues = {
     iceyblack=true, iceyblue=true, iceypink=true, iceywhite=true,
     winterstreaks=true, leafy=true, flowery=true, pearly=true, pearlygreen=true,
     pastelstreaks=true, clearquartz=true, leathery=true, pearlypink=true, cowprint=true,
@@ -1381,21 +1381,18 @@ local UniqueHairValues = {
     pearlygold=true, clearseaglass=true
 }
 
-local OrangeMainColours = {
+N.OrangeMainColours = {
     blowingSnow=true, motherOfPearl=true, royalDun=true, dustyBrindle=true,
     glacierChimera=true, mountainSunrise=true, jaguar=true, deepSpace=true, crackedLava=true
 }
 
-local function IsOrangeMainColour(mainColour)
+function N.IsOrangeMainColour(mainColour)
     local key = tostring(mainColour or ""):gsub("%s+", "")
-    return OrangeMainColours[key] == true
+    return N.OrangeMainColours[key] == true
 end
 
-local function normalizeValue(v)
-    return tostring(v or ""):lower():gsub("%s+", "")
-end
 
-local function DecodeHorseData(horse)
+function N.DecodeHorseData(horse)
     local data = horse:GetAttribute("Data")
     if type(data) == "string" then
         local ok, decoded = pcall(function()
@@ -1409,11 +1406,11 @@ local function DecodeHorseData(horse)
     return data
 end
 
-local function NormalizePriorityValue(value)
+function N.NormalizePriorityValue(value)
     return tostring(value or ""):lower():gsub("[%s_%-]", "")
 end
 
-local function ColoursMatchPriority(a, b)
+function N.ColoursMatchPriority(a, b)
     if a == b then return true end
     if type(a) == "table" and type(b) == "table" then
         local function NormalizeTable(t)
@@ -1436,8 +1433,8 @@ local function ColoursMatchPriority(a, b)
     return NormalizeColour(a) == NormalizeColour(b)
 end
 
-local function ComputeHorsePriorityStats(horse)
-    local data = DecodeHorseData(horse)
+function N.ComputeHorsePriorityStats(horse)
+    local data = N.DecodeHorseData(horse)
     if not data then
         return {UniqueHair=false, UniqueCoat=false, Mismatched=false, NaturalDyed=false, Horned=false, Priority=6, Count=0}
     end
@@ -1450,9 +1447,9 @@ local function ComputeHorsePriorityStats(horse)
     local main = variants.colour or variants.mainColour or variants.MainColour
     local mane = variants.maneColour or variants.ManeColour
     local tail = variants.tailColour or variants.TailColour
-    local unique = UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)] or false
-    local uniqueCoat = IsOrangeMainColour(main)
-    local mismatch = not ColoursMatchPriority(mane, tail)
+    local unique = N.UniqueHairValues[N.NormalizePriorityValue(mane)] or N.UniqueHairValues[N.NormalizePriorityValue(tail)] or false
+    local uniqueCoat = N.IsOrangeMainColour(main)
+    local mismatch = not N.ColoursMatchPriority(mane, tail)
     local naturalDyed = data.isNatDyed ~= nil
     local hornColour = variants.hornColour
     local horned = hornColour ~= nil and tostring(hornColour) ~= ""
@@ -1486,17 +1483,17 @@ end
 
 -- UPDATED: cache priority stats per horse so JSON isn't re-decoded every scan (anti-lag)
 local StatsCache = setmetatable({}, {__mode = "k"})
-local function GetHorsePriorityStats(horse)
+function N.GetHorsePriorityStats(horse)
     local raw = horse:GetAttribute("Data")
     local cached = StatsCache[horse]
     if cached and cached.raw == raw then return cached.stats end
-    local stats = ComputeHorsePriorityStats(horse)
+    local stats = N.ComputeHorsePriorityStats(horse)
     StatsCache[horse] = {raw = raw, stats = stats}
     return stats
 end
 
-local function checkUniqueHair(horse)
-    local stats = GetHorsePriorityStats(horse)
+function N.checkUniqueHair(horse)
+    local stats = N.GetHorsePriorityStats(horse)
     if stats.UniqueHair then
         return true, "OK"
     end
@@ -1504,7 +1501,7 @@ local function checkUniqueHair(horse)
 end
 
 --// SELLING TAB INVENTORY STATS
-local BreedDisplayNames = {
+N.BreedDisplayNames = {
     ["akhal teke"] = "Akhal-Teke Horse", ["akhal-teke"] = "Akhal-Teke Horse",
     ["andalusian"] = "Andalusian Horse", ["appaloosa"] = "Appaloosa Horse", ["arabian"] = "Arabian Horse",
     ["clydesdale"] = "Clydesdale Horse", ["connemara"] = "Connemara Horse", ["dutch warmblood"] = "Dutch Warmblood",
@@ -1517,51 +1514,51 @@ local BreedDisplayNames = {
     ["welsh cob"] = "Welsh Cob", ["unicorn"] = "Unicorn", ["donkey"] = "Donkey"
 }
 
-local BreedKeywords = {
+N.BreedKeywords = {
     "tennessee walking horse", "dutch warmblood", "mammoth donkey", "standard donkey", "paint horse", "quarter horse",
     "akhal-teke", "akhal teke", "andalusian", "appaloosa", "arabian", "clydesdale", "connemara", "fjord",
     "friesian", "hinny", "icelandic", "marwari", "morgan", "mule", "mustang", "percheron", "reindeer", "shire",
     "standardbred", "thoroughbred", "welsh cob", "unicorn", "donkey"
 }
 
-local function SellingNormalizeText(value)
+function N.SellingNormalizeText(value)
     if value == nil then return "" end
     local text = tostring(value):lower():gsub("_", " "):gsub("-", " "):gsub("%s+", " ")
     return text:match("^%s*(.-)%s*$")
 end
 
-local function SellingFindBreedKeyword(value)
-    local text = SellingNormalizeText(value)
+function N.SellingFindBreedKeyword(value)
+    local text = N.SellingNormalizeText(value)
     if text == "" then return nil end
-    for _, keyword in ipairs(BreedKeywords) do
-        local nk = SellingNormalizeText(keyword)
-        if text == nk or text:find(nk, 1, true) then return BreedDisplayNames[keyword] end
+    for _, keyword in ipairs(N.BreedKeywords) do
+        local nk = N.SellingNormalizeText(keyword)
+        if text == nk or text:find(nk, 1, true) then return N.BreedDisplayNames[keyword] end
     end
     return nil
 end
 
-local BreedFields = {"breed","Breed","breedName","BreedName","horseBreed","HorseBreed","breedType","BreedType","horseType","HorseType","animalType","AnimalType","species","Species","type","Type","name","Name","itemName","ItemName","displayName","DisplayName","Display","display"}
+N.BreedFields = {"breed","Breed","breedName","BreedName","horseBreed","HorseBreed","breedType","BreedType","horseType","HorseType","animalType","AnimalType","species","Species","type","Type","name","Name","itemName","ItemName","displayName","DisplayName","Display","display"}
 
-local function SellingSearchBreedData(tbl, depth, visited)
+function N.SellingSearchBreedData(tbl, depth, visited)
     if type(tbl) ~= "table" then return nil end
     depth = depth or 0; visited = visited or {}
     if depth > 10 or visited[tbl] then return nil end
     visited[tbl] = true
-    for _, field in ipairs(BreedFields) do
+    for _, field in ipairs(N.BreedFields) do
         local value = tbl[field]
         if value ~= nil then
-            local breed = SellingFindBreedKeyword(value)
+            local breed = N.SellingFindBreedKeyword(value)
             if breed then return breed end
         end
     end
     for key, value in pairs(tbl) do
         if type(value) == "table" then
-            local breed = SellingSearchBreedData(value, depth + 1, visited)
+            local breed = N.SellingSearchBreedData(value, depth + 1, visited)
             if breed then return breed end
         elseif type(value) == "string" then
-            local k = SellingNormalizeText(key)
+            local k = N.SellingNormalizeText(key)
             if k:find("breed",1,true) or k:find("horse",1,true) or k:find("animal",1,true) or k:find("species",1,true) or k:find("type",1,true) or k:find("name",1,true) or k:find("item",1,true) then
-                local breed = SellingFindBreedKeyword(value)
+                local breed = N.SellingFindBreedKeyword(value)
                 if breed then return breed end
             end
         end
@@ -1569,7 +1566,7 @@ local function SellingSearchBreedData(tbl, depth, visited)
     return nil
 end
 
-local function SellingGetItemInfo(item)
+function N.SellingGetItemInfo(item)
     if type(item) ~= "table" or not SellingReferences or not SellingReferences.Items then return nil end
     local itemId = item.id or item.ID or item.Id
     if not itemId then return nil end
@@ -1577,26 +1574,26 @@ local function SellingGetItemInfo(item)
     return ok and type(result) == "table" and result or nil
 end
 
-local function SellingGetBreed(item, info)
-    local breed = SellingSearchBreedData(item) or SellingSearchBreedData(info)
+function N.SellingGetBreed(item, info)
+    local breed = N.SellingSearchBreedData(item) or N.SellingSearchBreedData(info)
     if breed then return breed end
     local pId = type(item) == "table" and (item.pId or item.PId or item.pid) or nil
     if type(info) == "table" then pId = pId or info.pId or info.PId or info.pid end
     if pId and SellingReferences and SellingReferences.Items and type(SellingReferences.Items.GetInfo) == "function" then
         local ok, result = pcall(function() return SellingReferences.Items.GetInfo(pId) end)
-        if ok and type(result) == "table" then return SellingSearchBreedData(result) end
+        if ok and type(result) == "table" then return N.SellingSearchBreedData(result) end
     end
     return nil
 end
 
-local function SellingGetColours(item)
+function N.SellingGetColours(item)
     if type(item) ~= "table" then return "Unknown","Unknown","Unknown" end
     local variants = item.variants or item.Variants
     if type(variants) ~= "table" then return "Unknown","Unknown","Unknown" end
     return variants.colour or variants.mainColour or variants.MainColour or "Unknown", variants.maneColour or variants.ManeColour or "Unknown", variants.tailColour or variants.TailColour or "Unknown"
 end
 
-local function SellingColoursMatch(a,b)
+function N.SellingColoursMatch(a,b)
     if a == b then return true end
     if type(a) == "table" and type(b) == "table" then
         local function norm(t)
@@ -1620,19 +1617,19 @@ RefreshSellingStats = function()
 
     for _, item in pairs(SellingInventory) do
         if type(item) == "table" then
-            local info = SellingGetItemInfo(item)
-            if SellingGetBreed(item, info) then
+            local info = N.SellingGetItemInfo(item)
+            if N.SellingGetBreed(item, info) then
                 stats.total += 1
-                local main, mane, tail = SellingGetColours(item)
+                local main, mane, tail = N.SellingGetColours(item)
                 local variants = item.variants or item.Variants or {}
-                if UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)] then stats.uniqueHair += 1 end
-                if IsOrangeMainColour(main) then stats.uniqueCoat += 1 end
-                if not SellingColoursMatch(mane, tail) then stats.mismatched += 1 end
+                if N.UniqueHairValues[N.NormalizePriorityValue(mane)] or N.UniqueHairValues[N.NormalizePriorityValue(tail)] then stats.uniqueHair += 1 end
+                if N.IsOrangeMainColour(main) then stats.uniqueCoat += 1 end
+                if not N.SellingColoursMatch(mane, tail) then stats.mismatched += 1 end
                 if item.isNatDyed ~= nil then stats.naturalDyed += 1 end
                 if variants.hornColour ~= nil and tostring(variants.hornColour) ~= "" then stats.horned += 1 end
-                if not (UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)])
-                    and not IsOrangeMainColour(main)
-                    and SellingColoursMatch(mane, tail)
+                if not (N.UniqueHairValues[N.NormalizePriorityValue(mane)] or N.UniqueHairValues[N.NormalizePriorityValue(tail)])
+                    and not N.IsOrangeMainColour(main)
+                    and N.SellingColoursMatch(mane, tail)
                     and item.isNatDyed == nil
                     and (variants.hornColour == nil or tostring(variants.hornColour) == "") then
                     stats.normal += 1
@@ -1653,17 +1650,17 @@ RefreshSellingStats = function()
     return stats
 end
 
-local function SellingItemMatchesCategory(item, info)
+function N.SellingItemMatchesCategory(item, info)
     if type(item) ~= "table" then return false end
 
-    local breed = SellingGetBreed(item, info)
+    local breed = N.SellingGetBreed(item, info)
     if not breed then return false end
 
-    local main, mane, tail = SellingGetColours(item)
+    local main, mane, tail = N.SellingGetColours(item)
     local variants = item.variants or item.Variants or {}
-    local uniqueHair = UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)]
-    local uniqueCoat = IsOrangeMainColour(main)
-    local mismatched = not SellingColoursMatch(mane, tail)
+    local uniqueHair = N.UniqueHairValues[N.NormalizePriorityValue(mane)] or N.UniqueHairValues[N.NormalizePriorityValue(tail)]
+    local uniqueCoat = N.IsOrangeMainColour(main)
+    local mismatched = not N.SellingColoursMatch(mane, tail)
     local naturalDyed = item.isNatDyed ~= nil
     local horned = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
 
@@ -1679,7 +1676,7 @@ local function SellingItemMatchesCategory(item, info)
     return false
 end
 
-local function GetSelectedSellRemote()
+function N.GetSelectedSellRemote()
     local events = ReplicatedStorage:FindFirstChild("Communication") and ReplicatedStorage.Communication:FindFirstChild("Events")
     if not events then return nil, "Communication.Events not found" end
     local remote = events:FindFirstChild(SelectedSellRemote)
@@ -1688,7 +1685,7 @@ local function GetSelectedSellRemote()
     return remote
 end
 
-local function SellFiltered(isAuto)
+function N.SellFiltered(isAuto)
     if isAuto and SelectedSellCategory == "All" then
         -- safety: never auto-sell everything (would include priority horses)
         SellStatus.Text = "Auto sell skipped: filter is All"
@@ -1706,7 +1703,7 @@ local function SellFiltered(isAuto)
             SellingInventoryLoaded = true
         end
     end
-    local remote, err = GetSelectedSellRemote()
+    local remote, err = N.GetSelectedSellRemote()
     if not remote then
         SellStatus.Text = err
         SellStatus.TextColor3 = Color3.fromRGB(255, 110, 110)
@@ -1723,8 +1720,8 @@ local function SellFiltered(isAuto)
     local count = 0
     for uid, item in pairs(SellingInventory) do
         if type(item) == "table" then
-            local info = SellingGetItemInfo(item)
-            if SellingGetBreed(item, info) and SellingItemMatchesCategory(item, info) then
+            local info = N.SellingGetItemInfo(item)
+            if N.SellingGetBreed(item, info) and N.SellingItemMatchesCategory(item, info) then
                 itemsToSell[tostring(uid)] = 1
                 count += 1
             end
@@ -1765,7 +1762,7 @@ local function SellFiltered(isAuto)
 end
 
 SellButton.Activated:Connect(function()
-    SellFiltered(false)
+    N.SellFiltered(false)
 end)
 
 --// AUTO SELL FILTER (every 5 minutes)
@@ -1793,7 +1790,7 @@ task.spawn(function()
             local left = AutoSellNext - tick()
             if left <= 0 then
                 AutoSellNext = tick() + AutoSellInterval
-                pcall(SellFiltered, true)
+                pcall(N.SellFiltered, true)
                 left = AutoSellInterval
             end
             if ActiveTab == "Selling" and not minimized then
@@ -1818,17 +1815,17 @@ task.spawn(function()
     end
 end)
 
-local function GetHorseInfo(rawName)
+function N.GetHorseInfo(rawName)
     local name = tostring(rawName or ""):gsub("^%s+", ""):gsub("%s+$", "")
     local lower = name:lower()
 
-    for breed, info in pairs(RarityData) do
+    for breed, info in pairs(N.RarityData) do
         if lower == breed:lower() then
             return breed, info.Rarity
         end
     end
 
-    for breed, info in pairs(RarityData) do
+    for breed, info in pairs(N.RarityData) do
         local b = breed:lower()
         if lower:find(b, 1, true) or b:find(lower, 1, true) then
             return breed, info.Rarity
@@ -1838,7 +1835,7 @@ local function GetHorseInfo(rawName)
     return name, "Low"
 end
 
-local function getHorsePivot(horse)
+function N.getHorsePivot(horse)
     if horse:IsA("Model") then
         local ok, pivot = pcall(function() return horse:GetPivot() end)
         if ok then return pivot end
@@ -1847,7 +1844,7 @@ local function getHorsePivot(horse)
     end
 end
 
-local function getHorseBreed(horse)
+function N.getHorseBreed(horse)
     local displayName = horse.Name
     pcall(function()
         local overheadPart = horse:FindFirstChild("OverheadPart")
@@ -1857,10 +1854,10 @@ local function getHorseBreed(horse)
             displayName = label.Text
         end
     end)
-    return GetHorseInfo(displayName)
+    return N.GetHorseInfo(displayName)
 end
 
-local function isHorse(node)
+function N.isHorse(node)
     if not node or not node.Parent then return false end
     if not node:IsA("Model") and not node:IsA("BasePart") then return false end
 
@@ -1879,7 +1876,7 @@ local function isHorse(node)
             return true
         end
         local lower = node.Name:lower()
-        for breedName in pairs(RarityData) do
+        for breedName in pairs(N.RarityData) do
             local b = tostring(breedName):lower()
             if lower == b or lower:find(b, 1, true) then
                 return true
@@ -1891,7 +1888,7 @@ end
 
 --// LASSO OWNER FILTER
 --// Missing attribute = go. Own username = go. Another username = skip.
-local function CanGoToHorse(node)
+function N.CanGoToHorse(node)
     if not node or not node.Parent then return false end
     local owner = node:GetAttribute("lastPlayerToThrowLasso")
     if owner == nil or tostring(owner) == "" then
@@ -1908,7 +1905,7 @@ pcall(function()
 end)
 
 --// HORSE FILTER HELPERS
-local function isOwned(node)
+function N.isOwned(node)
     if not node then return false end
     for attrKey in pairs(node:GetAttributes()) do
         if tostring(attrKey):lower() == "owner" then
@@ -1918,7 +1915,7 @@ local function isOwned(node)
     return false
 end
 
-local function isInShop(node)
+function N.isInShop(node)
     local current = node
     while current and current ~= Workspace do
         local n = tostring(current.Name):lower()
@@ -1934,7 +1931,7 @@ local function isInShop(node)
 end
 
 --// BACKGROUND SCANNER (scans every island folder in Workspace.Islands)
-local function ScanHorses()
+function N.ScanHorses()
     local now = tick()
     -- UPDATED: an empty result no longer forces a rescan on every call
     if now - LastScan < SCAN_INTERVAL then
@@ -1959,14 +1956,14 @@ local function ScanHorses()
             usedTagged = true
             for _, node in ipairs(tagged) do
                 if not seen[node] and node.Parent and node:IsDescendantOf(islands)
-                    and not isOwned(node) and CanGoToHorse(node) and not isInShop(node) then
+                    and not N.isOwned(node) and N.CanGoToHorse(node) and not N.isInShop(node) then
                     seen[node] = true
                     local top = node
                     while top.Parent and top.Parent ~= islands do top = top.Parent end
-                    local pivot = getHorsePivot(node)
+                    local pivot = N.getHorsePivot(node)
                     if pivot then
-                        local breed, rarity = getHorseBreed(node)
-                        local ps = GetHorsePriorityStats(node)
+                        local breed, rarity = N.getHorseBreed(node)
+                        local ps = N.GetHorsePriorityStats(node)
                         table.insert(results, {
                             Model = node,
                             Island = top.Name,
@@ -1990,15 +1987,15 @@ local function ScanHorses()
 
     local function ScanContainer(container, islandName)
         for _, node in ipairs(container:GetChildren()) do
-            if (node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal"))) and not isHorse(node) then
+            if (node:IsA("Folder") or (node:IsA("Model") and not CollectionService:HasTag(node, "Animal"))) and not N.isHorse(node) then
                 ScanContainer(node, islandName)
-            elseif not seen[node] and isHorse(node) and not isOwned(node) and CanGoToHorse(node) and not isInShop(node) then
+            elseif not seen[node] and N.isHorse(node) and not N.isOwned(node) and N.CanGoToHorse(node) and not N.isInShop(node) then
                 seen[node] = true
-                local pivot = getHorsePivot(node)
+                local pivot = N.getHorsePivot(node)
                 if pivot then
-                    local breed, rarity = getHorseBreed(node)
-                    local unique = checkUniqueHair(node)
-                    local priorityStats = GetHorsePriorityStats(node)
+                    local breed, rarity = N.getHorseBreed(node)
+                    local unique = N.checkUniqueHair(node)
+                    local priorityStats = N.GetHorsePriorityStats(node)
                     table.insert(results, {
                         Model = node,
                         Island = islandName,
@@ -2031,7 +2028,7 @@ local function ScanHorses()
 end
 
 --// AUTO REMOTE GENERATORS
-local function ReadLocalInventory()
+function N.ReadLocalInventory()
     local ok, inv = pcall(function()
         local refs = require(ReplicatedStorage:WaitForChild("References"))
         local data = require(refs.PlayerScripts.Priority.Data)
@@ -2041,17 +2038,17 @@ local function ReadLocalInventory()
     return nil
 end
 
-local function FindNormalHorseUID(inv)
+function N.FindNormalHorseUID(inv)
     if type(inv) ~= "table" then return nil end
     for uid, item in pairs(inv) do
         if type(item) == "table" then
-            local info = SellingGetItemInfo(item)
-            if SellingGetBreed(item, info) then
-                local main, mane, tail = SellingGetColours(item)
+            local info = N.SellingGetItemInfo(item)
+            if N.SellingGetBreed(item, info) then
+                local main, mane, tail = N.SellingGetColours(item)
                 local variants = item.variants or item.Variants or {}
-                local unique = UniqueHairValues[NormalizePriorityValue(mane)] or UniqueHairValues[NormalizePriorityValue(tail)]
-                local coat = IsOrangeMainColour(main)
-                local mismatch = not SellingColoursMatch(mane, tail)
+                local unique = N.UniqueHairValues[N.NormalizePriorityValue(mane)] or N.UniqueHairValues[N.NormalizePriorityValue(tail)]
+                local coat = N.IsOrangeMainColour(main)
+                local mismatch = not N.SellingColoursMatch(mane, tail)
                 local nat = item.isNatDyed ~= nil
                 local horn = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
                 if not unique and not coat and not mismatch and not nat and not horn then
@@ -2063,13 +2060,8 @@ local function FindNormalHorseUID(inv)
     return nil
 end
 
-local function GetRootAndPosition()
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    return root, root and root.Position or nil
-end
 
-local function FindRemoteFunction(index)
+function N.FindRemoteFunction(index)
     if not Functions then return nil end
     local remote = Functions:FindFirstChild("Function" .. tostring(index))
     if remote and remote:IsA("RemoteFunction") then
@@ -2078,7 +2070,7 @@ local function FindRemoteFunction(index)
     return nil
 end
 
-local function FindRemoteEvent(index)
+function N.FindRemoteEvent(index)
     if not Events then return nil end
     local remote = Events:FindFirstChild("Event" .. tostring(index))
     if remote and remote:IsA("RemoteEvent") then
@@ -2087,132 +2079,12 @@ local function FindRemoteEvent(index)
     return nil
 end
 
--- Exact island names from the original script.
-local AutoTravelIslandNames = {
-    "Mainland", "Blizzard Island", "Forest Island", "Royal Island", "Desert Island",
-    "Glacier Island", "Mountain Island", "Jungle Island", "Lunar Islands", "Volcano Island"
-}
 
-local function GetTravelIslandObject(islandName)
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return nil end
-    return islands:FindFirstChild(islandName)
-end
 
-local function IsPlayerAtTravelIsland(islandName)
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    if not root then return false end
-    local island = GetTravelIslandObject(islandName)
-    if not island then return false end
 
-    local nearest = math.huge
-    for _, part in ipairs(island:GetDescendants()) do
-        if part:IsA("BasePart") then
-            local d = (root.Position - part.Position).Magnitude
-            if d < nearest then nearest = d end
-            if d <= 1800 then return true end
-        end
-    end
 
-    local ok, pivot = pcall(function()
-        if island:IsA("Model") then return island:GetPivot() end
-    end)
-    if ok and pivot and (root.Position - pivot.Position).Magnitude <= 1800 then
-        return true
-    end
-    return nearest <= 1800
-end
 
-local function FindOtherIslandHorse()
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return nil end
-
-    local currentIsland = GetCurrentPlayerIsland()
-    local found = nil
-    local seen = {}
-
-    local function scan(container, islandName)
-        if found then return end
-        for _, node in ipairs(container:GetChildren()) do
-            if found then return end
-
-            if (node:IsA("Folder") or node:IsA("Model")) and not isHorse(node) then
-                scan(node, islandName)
-            elseif isHorse(node) and not seen[node] and not isOwned(node) and not isInShop(node) then
-                seen[node] = true
-                local pivot = getHorsePivot(node)
-                if pivot and islandName ~= currentIsland then
-                    found = {
-                        Model = node,
-                        Island = islandName,
-                        Position = pivot.Position,
-                        Pivot = pivot,
-                        Name = getHorseBreed(node)
-                    }
-                    return
-                end
-            end
-        end
-    end
-
-    for _, island in ipairs(islands:GetChildren()) do
-        if (island:IsA("Folder") or island:IsA("Model")) and island.Name ~= currentIsland then
-            scan(island, island.Name)
-            if found then break end
-        end
-    end
-
-    return found
-end
-
-local function IsPlayerAtTargetHorseIsland(targetIsland, targetHorsePosition)
-    local char = LocalPlayer.Character
-    local root = char and char:FindFirstChild("HumanoidRootPart")
-    if not root then return false end
-
-    if targetHorsePosition then
-        local distanceToHorse = (root.Position - targetHorsePosition).Magnitude
-        if distanceToHorse <= 2000 then
-            return true
-        end
-    end
-
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return false end
-
-    local nearestIsland = nil
-    local nearestDistance = math.huge
-
-    for _, island in ipairs(islands:GetChildren()) do
-        if (island:IsA("Folder") or island:IsA("Model")) then
-            local islandNearest = math.huge
-            for _, part in ipairs(island:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    local d = (root.Position - part.Position).Magnitude
-                    if d < islandNearest then
-                        islandNearest = d
-                    end
-                end
-            end
-            if island:IsA("Model") then
-                local ok, pivot = pcall(function() return island:GetPivot() end)
-                if ok and pivot then
-                    local d = (root.Position - pivot.Position).Magnitude
-                    if d < islandNearest then islandNearest = d end
-                end
-            end
-            if islandNearest < nearestDistance then
-                nearestDistance = islandNearest
-                nearestIsland = island.Name
-            end
-        end
-    end
-
-    return nearestIsland == targetIsland and nearestDistance <= 2500
-end
-
-local function DetectTravelRemote()
+function N.DetectTravelRemote()
     if not AutoTravelButton then return end
     if AutoTravelButton:GetAttribute("Busy") then return end
     AutoTravelButton:SetAttribute("Busy", true)
@@ -2236,7 +2108,7 @@ local function DetectTravelRemote()
         task.wait(0.25)
 
         for i = 1, 36 do
-            local remote = FindRemoteFunction(i)
+            local remote = N.FindRemoteFunction(i)
             local name = "Function" .. tostring(i)
 
             if remote then
@@ -2298,11 +2170,11 @@ local function DetectTravelRemote()
     end)
 end
 
-local function InventoryHasUID(inv, uid)
+function N.InventoryHasUID(inv, uid)
     return type(inv) == "table" and inv[uid] ~= nil
 end
 
-local function DetectSellRemote()
+function N.DetectSellRemote()
     if not AutoSellRemoteButton then return end
     if AutoSellRemoteButton:GetAttribute("Busy") then return end
     AutoSellRemoteButton:SetAttribute("Busy", true)
@@ -2313,11 +2185,11 @@ local function DetectSellRemote()
     task.spawn(function()
         local testUID
         for attempt = 1, 40 do
-            local inv = ReadLocalInventory()
+            local inv = N.ReadLocalInventory()
             if type(inv) == "table" then
                 SellingInventory = inv
                 SellingInventoryLoaded = true
-                testUID = FindNormalHorseUID(inv)
+                testUID = N.FindNormalHorseUID(inv)
                 if testUID then break end
             end
             AutoSellRemoteStatus.Text = "Looking for Normal Horse... " .. tostring(attempt) .. "/40"
@@ -2335,7 +2207,7 @@ local function DetectSellRemote()
         AutoSellRemoteStatus.Text = "Target UID: " .. tostring(testUID) .. " | Testing Event1-90"
 
         for i = 1, 90 do
-            local event = FindRemoteEvent(i)
+            local event = N.FindRemoteEvent(i)
             local eventName = "Event" .. tostring(i)
 
             if event then
@@ -2346,13 +2218,13 @@ local function DetectSellRemote()
                 end)
 
                 task.wait(0.35)
-                local refreshedInventory = ReadLocalInventory()
+                local refreshedInventory = N.ReadLocalInventory()
                 local sold = false
 
                 if type(refreshedInventory) == "table" then
                     SellingInventory = refreshedInventory
                     SellingInventoryLoaded = true
-                    sold = not InventoryHasUID(refreshedInventory, testUID)
+                    sold = not N.InventoryHasUID(refreshedInventory, testUID)
                 end
 
                 if fireOK and sold then
@@ -2384,7 +2256,7 @@ local function DetectSellRemote()
 end
 
 AutoTravelButton.Activated:Connect(function()
-    local ok, err = pcall(DetectTravelRemote)
+    local ok, err = pcall(N.DetectTravelRemote)
     if not ok then
         AutoTravelButton:SetAttribute("Busy", false)
         AutoTravelButton.Text = "AUTO FIND TRAVEL REMOTE"
@@ -2393,7 +2265,7 @@ AutoTravelButton.Activated:Connect(function()
     end
 end)
 AutoSellRemoteButton.Activated:Connect(function()
-    local ok, err = pcall(DetectSellRemote)
+    local ok, err = pcall(N.DetectSellRemote)
     if not ok then
         AutoSellRemoteButton:SetAttribute("Busy", false)
         AutoSellRemoteButton.Text = "AUTO FIND SELL REMOTE"
@@ -2402,12 +2274,12 @@ AutoSellRemoteButton.Activated:Connect(function()
     end
 end)
 
-local function invalidate()
+function N.invalidate()
     ScanCache = {}
     LastScan = 0
 end
 
--- UPDATED: removed the DescendantAdded/DescendantRemoving -> invalidate hooks.
+-- UPDATED: removed the DescendantAdded/DescendantRemoving -> N.invalidate hooks.
 -- They forced a full rescan on every tiny change in the world (major lag source).
 -- The scanner already refreshes itself every SCAN_INTERVAL.
 
@@ -2419,7 +2291,7 @@ local IslandLastName, IslandLastTime, IslandLastPos = nil, 0, nil
 
 local ISLAND_CELL = 48 -- studs; one saved point per 48-stud cube (precise, but far fewer points than "every part")
 
-local function RebuildIslandPoints(async)
+function N.RebuildIslandPoints(async)
     if IslandRebuilding then return end
     IslandRebuilding = true
     pcall(function()
@@ -2474,9 +2346,9 @@ GetCurrentPlayerIsland = function()
         return IslandLastName
     end
     if next(IslandPoints) == nil then
-        RebuildIslandPoints(false)
+        N.RebuildIslandPoints(false)
     elseif now - IslandPointsTime > 180 and not IslandRebuilding then
-        task.spawn(RebuildIslandPoints, true)
+        task.spawn(N.RebuildIslandPoints, true)
     end
     local bestName, bestDistSq = nil, math.huge
     for name, pts in pairs(IslandPoints) do
@@ -2500,17 +2372,17 @@ end
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local GuiService = game:GetService("GuiService")
 
-local function GetSightScreenPosition()
+function N.GetSightScreenPosition()
     local cam = Workspace.CurrentCamera
     local size = cam and cam.ViewportSize or Vector2.new(800, 600)
     local inset = GuiService:GetGuiInset()
     return math.floor(size.X * 0.5), math.floor(size.Y * 0.5 + inset.Y)
 end
 
-local function ScreenClick()
+function N.ScreenClick()
     -- UPDATED: no clicking while the UI is open (farm keeps running)
     if not minimized then return true end
-    local x, y = GetSightScreenPosition()
+    local x, y = N.GetSightScreenPosition()
 
     return pcall(function()
         VirtualInputManager:SendMouseButtonEvent(x, y, 0, true, game, 0)
@@ -2519,7 +2391,7 @@ local function ScreenClick()
     end)
 end
 
-local function SetCharacterAnchored(anchored)
+function N.SetCharacterAnchored(anchored)
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
     local humanoid = char and char:FindFirstChildOfClass("Humanoid")
@@ -2549,8 +2421,8 @@ end
 
 stopFarm = function()
     Farming = false
-    SetNoClip(false)
-    SetCharacterAnchored(false)
+    N.SetNoClip(false)
+    N.SetCharacterAnchored(false)
     FarmGeneration += 1
     CurrentTarget = nil
     CurrentTargetUID = nil
@@ -2564,9 +2436,9 @@ end
 
 --// NEW: true if a strictly higher-priority horse exists than the current target
 --// (1 Unique Hair > 2 Mismatched > 3 Unique Coat > 4 Natural Dyed > 5 Horned > 6 Normal)
-local function BetterTargetExists(target)
+function N.BetterTargetExists(target)
     if not target or target.Priority <= 1 then return false end
-    for _, h in ipairs(ScanHorses()) do
+    for _, h in ipairs(N.ScanHorses()) do
         if h.Model ~= target.Model and h.Model and h.Model.Parent and h.Priority < target.Priority then
             return true
         end
@@ -2576,7 +2448,7 @@ end
 
 --// NEW: one-time low graphics pass when farming starts (anti-lag)
 local LowGfxApplied = false
-local function ApplyLowGraphics()
+function N.ApplyLowGraphics()
     if LowGfxApplied then return end
     LowGfxApplied = true
     pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
@@ -2619,13 +2491,13 @@ local function ApplyLowGraphics()
     end)
 end
 
-local function startFarm()
+function N.startFarm()
     if Farming then return end
     Farming = true
-    SetNoClip(true)
+    N.SetNoClip(true)
     FarmGeneration += 1
     local myGeneration = FarmGeneration
-    ApplyLowGraphics()
+    N.ApplyLowGraphics()
     button.Text = "STOP"
     button.BackgroundColor3 = Color3.fromRGB(239,68,68)
     button.TextColor3 = Color3.fromRGB(255,255,255)
@@ -2642,9 +2514,9 @@ local function startFarm()
                 continue
             end
 
-            -- ScanHorses() already scans every island loaded in the current server.
+            -- N.ScanHorses() already scans every island loaded in the current server.
             local candidates = {}
-            for _, horse in ipairs(ScanHorses()) do
+            for _, horse in ipairs(N.ScanHorses()) do
                 if horse.Model and horse.Model.Parent then
                     table.insert(candidates, horse)
                 end
@@ -2654,8 +2526,8 @@ local function startFarm()
                 -- Catch priority: Unique Hair (1) > Mismatched Hair (2) > Island Unique Coat (3) > Natural Dyed Hair (4) > Horned (5) > Normal (6).
                 if a.Priority ~= b.Priority then return a.Priority < b.Priority end
                 if a.PriorityCount ~= b.PriorityCount then return a.PriorityCount > b.PriorityCount end
-                local pa = RarityPriority[a.Rarity] or 0
-                local pb = RarityPriority[b.Rarity] or 0
+                local pa = N.RarityPriority[a.Rarity] or 0
+                local pb = N.RarityPriority[b.Rarity] or 0
                 if pa ~= pb then return pa > pb end
                 local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
                 if not root then return false end
@@ -2671,7 +2543,7 @@ local function startFarm()
                 continue
             end
 
-            if not CanGoToHorse(target.Model) then
+            if not N.CanGoToHorse(target.Model) then
                 CurrentTarget = nil
                 status.Text = "Skipping horse: lasso owner is another player"
                 status.TextColor3 = Color3.fromRGB(239, 68, 68)
@@ -2771,7 +2643,7 @@ local function startFarm()
                 end
 
                 -- Anchor the character BEFORE tweening to avoid physics shake.
-                SetNoClip(true)
+                N.SetNoClip(true)
                 humanoid.PlatformStand = true
                 root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -2790,7 +2662,7 @@ local function startFarm()
                     -- NEW: drop this horse if a higher-priority one appeared
                     if tick() - lastBetterCheck > 0.25 then
                         lastBetterCheck = tick()
-                        if BetterTargetExists(target) then
+                        if N.BetterTargetExists(target) then
                             abandoned = true
                             tween:Cancel()
                             break
@@ -2808,8 +2680,8 @@ local function startFarm()
                 if abandoned then
                     status.Text = "Switching to higher priority horse..."
                     status.TextColor3 = Color3.fromRGB(251, 191, 36)
-                    SetCharacterAnchored(false)
-                    invalidate()
+                    N.SetCharacterAnchored(false)
+                    N.invalidate()
                 elseif Farming and myGeneration == FarmGeneration and target.Model.Parent then
                     pcall(function()
                         root.CFrame = targetPart.CFrame * HORSE_OFFSET
@@ -2836,7 +2708,7 @@ local function startFarm()
                         -- NEW: drop this horse if a higher-priority one appeared
                         if tick() - lastBetter2 > 0.25 then
                             lastBetter2 = tick()
-                            if BetterTargetExists(target) then
+                            if N.BetterTargetExists(target) then
                                 abandoned = true
                                 status.Text = "Switching to higher priority horse..."
                                 break
@@ -2858,14 +2730,14 @@ local function startFarm()
                             end)
                             status.Text = "Catching (remote): " .. target.Name
                         else
-                            -- ScreenClick() itself skips the click while the UI is open.
-                            ScreenClick()
+                            -- N.ScreenClick() itself skips the click while the UI is open.
+                            N.ScreenClick()
                             status.Text = (minimized and "Catching: " or "Click paused (UI open): ") .. target.Name
                             if not minimized then catchDeadline = tick() + 8 end
                         end
                         status.TextColor3 = Color3.fromRGB(52,211,153)
 
-                        if not target.Model.Parent or isOwned(target.Model) then
+                        if not target.Model.Parent or N.isOwned(target.Model) then
                             caught = true
                             break
                         end
@@ -2875,7 +2747,7 @@ local function startFarm()
                     -- After a successful catch, stay exactly where the last horse was.
                     if caught and root and root.Parent then
                         local lastStandCFrame = root.CFrame
-                        SetCharacterAnchored(false)
+                        N.SetCharacterAnchored(false)
                         pcall(function()
                             root.CFrame = lastStandCFrame
                             root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
@@ -2884,9 +2756,9 @@ local function startFarm()
                         status.Text = "Caught: " .. target.Name .. " | Waiting for new horse..."
                         status.TextColor3 = Color3.fromRGB(52,211,153)
                     else
-                        SetCharacterAnchored(false)
+                        N.SetCharacterAnchored(false)
                     end
-                    invalidate()
+                    N.invalidate()
                 end
             end
 
@@ -2908,7 +2780,7 @@ button.Activated:Connect(function()
             stopFarm()
             SetMinimized(false)
         else
-            startFarm()
+            N.startFarm()
             -- Starting the farm automatically minimizes the UI.
             SetMinimized(true)
         end
@@ -2935,7 +2807,7 @@ end)
 task.spawn(function()
     while gui.Parent do
         if Farming then
-            ScanHorses()
+            N.ScanHorses()
             local island = GetCurrentPlayerIsland()
             islandText.Text = "Island: " .. tostring(island or "?")
         end
@@ -3069,7 +2941,7 @@ do
     local DashLastSig = ""
     local function RefreshDashboard()
         local horses = {}
-        for _, h in ipairs(ScanHorses()) do
+        for _, h in ipairs(N.ScanHorses()) do
             if h.Model and h.Model.Parent then table.insert(horses, h) end
         end
         table.sort(horses, function(a, b)
@@ -3263,7 +3135,7 @@ do
 
     -- Fetch public servers, fullest first
     local function FetchServers()
-        local httpGet = GetHttpRequest()
+        local httpGet = N.GetHttpRequest()
         local list, cursor = {}, ""
         for _ = 1, 1 do
             local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId)
@@ -3822,7 +3694,7 @@ end
 LocalPlayer.CharacterAdded:Connect(function(char)
     task.defer(function()
         if Farming then
-            SetNoClip(true)
+            N.SetNoClip(true)
         end
     end)
 end)
