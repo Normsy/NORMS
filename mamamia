@@ -3148,19 +3148,12 @@ end
 
 function A.sell(isAuto)
     local st = S.SellStatus
-    if isAuto and S.Category == "All" then
-        setStatus(st, "Auto sell skipped: filter is All", C.amber)
+    if S.Selling then
+        setStatus(st, "Already selling, please wait...", C.amber)
         return
     end
-    if isAuto then
-        local inv = A.readInv()
-        if inv then
-            S.Inventory = inv
-            S.Loaded = true
-        end
-    end
-    if not S.Loaded or type(S.Inventory) ~= "table" then
-        setStatus(st, "Inventory unavailable - press Refresh", C.red)
+    if isAuto and S.Category == "All" then
+        setStatus(st, "Auto sell skipped: filter is All", C.amber)
         return
     end
     local remote = Events:FindFirstChild(S.Remote)
@@ -3168,33 +3161,101 @@ function A.sell(isAuto)
         setStatus(st, S.Remote .. " is not a RemoteEvent. Press Generate in Settings > Sell Remote.", C.red)
         return
     end
-    local items, count = {}, 0
-    for uid, item in pairs(S.Inventory) do
-        if type(item) == "table" and A.isHorse(item) then
-            local u, co, m, d, h = A.itemTraits(item)
-            if A.matches(S.Category, u, co, m, d, h) then
-                items[tostring(uid)] = 1
-                count += 1
+
+    S.Selling = true
+    S.SellBtn.Text = "SELLING..."
+    local category = S.Category
+
+    task.spawn(function()
+        local sold, skipped = 0, 0
+        local skip = {}
+        local size = math.huge   -- first try: ALL matching horses in one request
+
+        local function collect(inv)
+            local list = {}
+            for uid, item in pairs(inv) do
+                if not skip[uid] and type(item) == "table" and A.isHorse(item) then
+                    local u, co, m, d, h = A.itemTraits(item)
+                    if A.matches(category, u, co, m, d, h) then
+                        list[#list + 1] = uid
+                    end
+                end
             end
+            return list
         end
-    end
-    if count == 0 then
-        setStatus(st, "Nothing matches: " .. S.Category, C.amber)
-        return
-    end
-    local ok, err = pcall(function() remote:FireServer("SellItems", items) end)
-    if not ok then
-        setStatus(st, "Sell failed: " .. tostring(err), C.red)
-        return
-    end
-    setStatus(st, "Sent sell request: " .. count .. " horse(s) | " .. S.Category .. " | " .. S.Remote, C.green)
-    task.delay(0.75, function()
+
+        -- send a list, then wait until the inventory shows them gone (or timeout)
+        local function sendAndVerify(list)
+            local payload = {}
+            for _, uid in ipairs(list) do payload[tostring(uid)] = 1 end
+            remote:FireServer("SellItems", payload)
+
+            local deadline = tick() + math.clamp(2 + #list * 0.05, 2, 8)
+            local stuck = list
+            repeat
+                task.wait(0.4)
+                local inv = A.readInv()
+                if inv then
+                    S.Inventory = inv
+                    S.Loaded = true
+                    stuck = {}
+                    for _, uid in ipairs(list) do
+                        if inv[uid] ~= nil then stuck[#stuck + 1] = uid end
+                    end
+                end
+            until #stuck == 0 or tick() > deadline
+            return stuck
+        end
+
+        local ok, err = pcall(function()
+            for _ = 1, 500 do
+                local inv = A.readInv()
+                if not inv then error("inventory unavailable") end
+                S.Inventory = inv
+                S.Loaded = true
+
+                local list = collect(inv)
+                if #list == 0 then break end
+
+                local chunk = list
+                if #list > size then
+                    chunk = table.move(list, 1, size, 1, {})
+                end
+
+                setStatus(st, "Selling " .. #chunk .. " of " .. #list .. " " .. category .. "...", C.amber)
+                local stuck = sendAndVerify(chunk)
+                sold += (#chunk - #stuck)
+
+                if #stuck > 0 then
+                    if #chunk == 1 then
+                        skip[chunk[1]] = true      -- single horse rejected (locked/favorited)
+                        skipped += 1
+                    else
+                        size = math.max(1, math.floor(#chunk / 2))  -- server refused: shrink and retry
+                    end
+                end
+                A.refreshCounts()
+            end
+        end)
+
+        if not ok then
+            setStatus(st, "Sell error: " .. tostring(err), C.red)
+        elseif sold == 0 and skipped == 0 then
+            setStatus(st, "Nothing matches: " .. category, C.amber)
+        else
+            local msg = "Sold " .. sold .. " horse(s) | " .. category
+            if skipped > 0 then msg = msg .. " | skipped " .. skipped .. " (rejected)" end
+            setStatus(st, msg, C.green)
+        end
+
         local inv = A.readInv()
         if inv then
             S.Inventory = inv
             S.Loaded = true
-            A.refreshCounts()
         end
+        A.refreshCounts()
+        S.SellBtn.Text = "SELL FILTERED"
+        S.Selling = false
     end)
 end
 
