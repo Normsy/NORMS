@@ -460,9 +460,6 @@ LeftPadding.PaddingLeft = UDim.new(0, 2)
 LeftPadding.PaddingRight = UDim.new(0, 2)
 LeftPadding.Parent = LeftPanel
 
-LeftLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    LeftPanel.CanvasSize = UDim2.new(0, 0, 0, LeftLayout.AbsoluteContentSize.Y + 12)
-end)
 
 local ProfileCard = Instance.new("Frame")
 ProfileCard.Name = "ProfileCard"
@@ -661,9 +658,6 @@ SettingsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SettingsLayout.Padding = UDim.new(0, 8)
 SettingsLayout.Parent = SettingsPanel
 
-SettingsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SettingsPanel.CanvasSize = UDim2.new(0, 0, 0, SettingsLayout.AbsoluteContentSize.Y + 10)
-end)
 
 local FilterCard = Instance.new("Frame")
 FilterCard.Name = "FilterCard"
@@ -1079,9 +1073,6 @@ local HopIntervalListLayout = Instance.new("UIListLayout")
 HopIntervalListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 HopIntervalListLayout.Parent = HopIntervalDropdownList
 
-HopIntervalListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    HopIntervalDropdownList.CanvasSize = UDim2.new(0, 0, 0, HopIntervalListLayout.AbsoluteContentSize.Y)
-end)
 
 local autoHopEnabled = false
 local hopIntervalSeconds = 300 -- Default 5 minutes
@@ -1271,9 +1262,6 @@ UIListLayout.Padding = UDim.new(0, 4)
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 UIListLayout.Parent = ScrollFrame
 
-UIListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y)
-end)
 
 SettingsPanel.Parent = RightPanel
 
@@ -1549,9 +1537,6 @@ local LassoSideListLayout = Instance.new("UIListLayout")
 LassoSideListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 LassoSideListLayout.Parent = LassoSideDropdownList
 
-LassoSideListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    LassoSideDropdownList.CanvasSize = UDim2.new(0, 0, 0, LassoSideListLayout.AbsoluteContentSize.Y)
-end)
 
 local function CreateLassoOption(name)
     local optBtn = Instance.new("TextButton")
@@ -1696,9 +1681,6 @@ local CatchListLayout = Instance.new("UIListLayout")
 CatchListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 CatchListLayout.Parent = CatchDropdownList
 
-CatchListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    CatchDropdownList.CanvasSize = UDim2.new(0, 0, 0, CatchListLayout.AbsoluteContentSize.Y)
-end)
 
 for i = 1, 90 do
     local evName = "Event" .. i
@@ -1730,7 +1712,7 @@ end)
 local SaveCatchBtn, CatchGenStatus = CreateActionRow(CatchConfigCard, 60)
 SaveCatchBtn.Size = UDim2.new(0, 72, 0, 24)
 SaveCatchBtn.Position = UDim2.new(1, -82, 0, 60)
-CatchGenStatus.Text = "Equip lasso, press Generate"
+CatchGenStatus.Text = "Equip lasso, then Generate"
 
 -- 3. Travel Remote Configuration (Generate button auto-finds + auto-saves; wired up in the add-on)
 local TravelConfigCard = CreateSettingsGroup("Travel Remote", 5, 96)
@@ -1768,9 +1750,6 @@ local TravelListLayout = Instance.new("UIListLayout")
 TravelListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TravelListLayout.Parent = TravelDropdownList
 
-TravelListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    TravelDropdownList.CanvasSize = UDim2.new(0, 0, 0, TravelListLayout.AbsoluteContentSize.Y)
-end)
 
 for i = 1, 90 do
     local funcName = "Function" .. i
@@ -1850,9 +1829,6 @@ local SortListLayout = Instance.new("UIListLayout")
 SortListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 SortListLayout.Parent = SortDropdownList
 
-SortListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-    SortDropdownList.CanvasSize = UDim2.new(0, 0, 0, SortListLayout.AbsoluteContentSize.Y)
-end)
 
 local function RebuildDropdownOptions()
     for _, child in ipairs(SortDropdownList:GetChildren()) do
@@ -3560,42 +3536,155 @@ function A.installHook()
     return ok
 end
 
-A.CatchBtn.MouseButton1Click:Connect(function()
-    if A.detecting then return end
-    if not A.installHook() then
-        setStatus(A.CatchStatus, "Executor has no hookmetamethod. Use RemoteSpy.", C.red)
+-- Generate (Catch): tween to the nearest horse -> anchor on it -> test Event1..90 with the
+-- real catch call (lassoUID, "Activate", horse) -> auto save the first one that works.
+function A.findCatch()
+    if A.catchBusy then return end
+    if AutoFarmEnabled then
+        setStatus(A.CatchStatus, "Turn Auto OFF first.", C.red)
         return
     end
-    A.seen = nil
-    A.detecting = true
-    setStatus(A.CatchStatus, "Equip lasso, catch a horse by hand!", C.amber)
-    task.spawn(function()
-        local found = nil
-        local deadline = tick() + 20
-        while tick() < deadline do
-            A.CatchBtn.Text = math.ceil(deadline - tick()) .. "s"
-            if A.seen then
-                found = A.seen
-                break
+    if not ConfiguredLassoUID then
+        setStatus(A.CatchStatus, "Generate the Lasso UID first (Lasso card).", C.red)
+        return
+    end
+    A.catchBusy = true
+    A.CatchBtn.Text = "..."
+
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local weld, tween
+    local conns = {}
+
+    local function finish(msg, color)
+        for _, c in ipairs(conns) do pcall(function() c:Disconnect() end) end
+        if tween then pcall(function() tween:Cancel() end) end
+        if weld then pcall(function() weld:Destroy() end) end
+        pcall(function()
+            if root then
+                root.Anchored = false
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
             end
-            task.wait(0.1)
-        end
-        A.detecting = false
+            if hum then hum.PlatformStand = false end
+        end)
+        DisableNoClip(char)
+        setStatus(A.CatchStatus, msg, color)
         A.CatchBtn.Text = "Generate"
-        if found then
-            CatchRemoteBox.Text = found.name
-            if type(found.uid) == "string" or type(found.uid) == "number" then
-                ConfiguredLassoUID = tostring(found.uid)
-                UidTextBox.Text = ConfiguredLassoUID
-                LassoStatus.Text = "UID Found"
-                LassoStatus.TextColor3 = C.green
+        A.catchBusy = false
+    end
+
+    task.spawn(function()
+        local ok, msg, color = pcall(function()
+            if not (root and hum) or hum.Health <= 0 then
+                return "Character not ready.", C.red
             end
-            SavePersistentConfig()                   -- auto save
-            setStatus(A.CatchStatus, "Saved: " .. found.name .. " (+ lasso UID)", C.green)
+
+            -- 1) nearest horse (same island first, untouched horses first)
+            setStatus(A.CatchStatus, "Finding nearest horse...", C.amber)
+            local here = GetCurrentPlayerIsland()
+            local best, bestScore = nil, math.huge
+            for _, h in ipairs(GetWorldHorses()) do
+                local m = h.Model
+                if m and m.Parent then
+                    local okP, pivot = pcall(function() return m:GetPivot() end)
+                    if okP and pivot then
+                        local score = (root.Position - pivot.Position).Magnitude
+                        if here and h.Island ~= here then score += 1e6 end
+                        if m:GetAttribute("lastPlayerToThrowLasso") ~= nil then score += 1e5 end
+                        if score < bestScore then
+                            bestScore = score
+                            best = h
+                        end
+                    end
+                end
+            end
+            if not best then return "No horse found (check island/filters).", C.amber end
+            local horse = best.Model
+            local part = horse:IsA("Model") and (horse.PrimaryPart or horse:FindFirstChildWhichIsA("BasePart")) or horse
+            if not part then return "Horse has no usable part.", C.red end
+
+            -- 2) tween to it and anchor
+            setStatus(A.CatchStatus, "Tweening to " .. best.Name .. "...", C.amber)
+            EnableNoClip(char)
+            hum.PlatformStand = true
+            root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            root.Anchored = true
+
+            local targetCF = part.CFrame * CFrame.new(0, 3, 0)
+            local dist = (root.Position - targetCF.Position).Magnitude
+            tween = TweenService:Create(root,
+                TweenInfo.new(math.max(dist / TWEEN_SPEED, 0.1), Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+                {CFrame = targetCF})
+            tween:Play()
+            while tween.PlaybackState == Enum.PlaybackState.Playing do
+                if not horse.Parent or hum.Health <= 0 then
+                    return "Horse disappeared. Try again.", C.amber
+                end
+                root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                task.wait(0.03)
+            end
+            if not horse.Parent then return "Horse disappeared. Try again.", C.amber end
+
+            root.CFrame = part.CFrame * CFrame.new(0, 3, 0)
+            weld = Instance.new("WeldConstraint")
+            weld.Name = "HorseTrackerWeld"
+            weld.Part0 = root
+            weld.Part1 = part
+            weld.Parent = root
+            root.Anchored = true
+
+            -- 3) test the catch remotes
+            local flag = false
+            conns[#conns + 1] = horse.AttributeChanged:Connect(function(attr)
+                local l = tostring(attr):lower()
+                if l:find("lasso") or l:find("owner") or l:find("caught") or l:find("tame") then
+                    flag = true
+                end
+            end)
+            conns[#conns + 1] = horse.AncestryChanged:Connect(function(_, parent)
+                if not parent then flag = true end
+            end)
+
+            for i = 1, 90 do
+                local ev = Events:FindFirstChild("Event" .. i)
+                if ev and ev:IsA("RemoteEvent") then
+                    if not horse.Parent then return "Horse disappeared mid-test. Try again.", C.amber end
+                    if hum.Health <= 0 then return "Character died.", C.red end
+                    flag = false
+                    setStatus(A.CatchStatus, "Testing Event" .. i .. " ...", C.amber)
+                    for _ = 1, 3 do
+                        pcall(function() ev:FireServer(ConfiguredLassoUID, "Activate", horse) end)
+                        local t0 = tick()
+                        while tick() - t0 < 0.27 and not flag do task.wait(0.03) end
+                        if flag then break end
+                    end
+                    if flag then
+                        CatchRemoteBox.Text = "Event" .. i
+                        SavePersistentConfig()          -- auto save
+                        return "Saved: Event" .. i, C.green
+                    end
+                end
+            end
+            return "No catch remote worked in Event1-90.", C.red
+        end)
+        if not ok then
+            finish("Error: " .. tostring(msg), C.red)
         else
-            setStatus(A.CatchStatus, "Nothing seen. Equip lasso and retry.", C.amber)
+            finish(msg, color)
         end
     end)
+end
+
+A.CatchBtn.MouseButton1Click:Connect(function()
+    local ok, err = pcall(A.findCatch)
+    if not ok then
+        A.catchBusy = false
+        A.CatchBtn.Text = "Generate"
+        setStatus(A.CatchStatus, "Error: " .. tostring(err), C.red)
+    end
 end)
 
 --// ---- anti-lag
@@ -3690,6 +3779,19 @@ pcall(function()
         end
     end
 end)
+
+--// SCROLL FIX: let Roblox size every scroll area itself (works correctly with the UI scale,
+--// so you can no longer scroll past the content)
+pcall(function()
+    mk("UIPadding", {PaddingBottom = UDim.new(0, 8)}, SettingsPanel)
+end)
+for _, o in ipairs(Frame:GetDescendants()) do
+    if o:IsA("ScrollingFrame") then
+        o.CanvasSize = UDim2.new(0, 0, 0, 0)
+        o.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        o.ScrollingDirection = Enum.ScrollingDirection.Y
+    end
+end
 
 task.spawn(A.refreshInv)
 
