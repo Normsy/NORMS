@@ -2049,11 +2049,9 @@ local function IsInShop(node)
 end
 
 --// RECURSIVE HORSE SCAN ENGINE
+--// (cache check removed: every call is a fresh, accurate scan)
 local function GetWorldHorses()
     local currentTime = tick()
-    if currentTime - LastScanTick < 0.03 and next(HorseCache) ~= nil then
-        return HorseCache
-    end
 
     local horses = {}
     local islands = Workspace:FindFirstChild("Islands")
@@ -2506,7 +2504,7 @@ LoadPersistentConfig()
 --//   Tabs: Main | Inventory | Server | Settings
 --//   * Inventory tab  (counts, sell filter, auto sell)  -- kept clean
 --//   * Server tab     (players in this server, server list, tap to join)
---//   * Smart priority (Unique Hair > Mismatched > Unique Coat > Natural Dyed > Horned > Normal)
+--//   * Smart priority (Unique Hair > Autumn > Mismatched > Unique Coat > Natural Dyed > Horned > Normal)
 --//   * Settings tab   (Catch / Travel / Sell remotes: press Generate, it finds + saves by itself)
 --//   * Better "current island" detection (nearest-point, cached)
 --//
@@ -2691,14 +2689,18 @@ SrvTabBtn.MouseButton1Click:Connect(function() SwitchTab("Server") end)
 
 --// ============================================================================
 --// 2) SMART PRIORITY
---//    1 Unique Hair, 2 Mismatched Hair, 3 Island Unique Coat, 4 Natural Dyed,
---//    5 Horned, 6 Normal.   Main list tags: C=coat M=mismatch D=dyed H=horned
+--//    1 Unique Hair, 2 Autumn, 3 Mismatched Hair, 4 Island Unique Coat,
+--//    5 Natural Dyed, 6 Horned, 7 Normal.
+--//    Main list tags: A=autumn C=coat M=mismatch D=dyed H=horned
 --// ============================================================================
 local UNIQUE = UNIQUE_HAIR_VALUES
 local ORANGE = {
     blowingSnow = true, motherOfPearl = true, royalDun = true, dustyBrindle = true,
     glacierChimera = true, mountainSunrise = true, jaguar = true, deepSpace = true, crackedLava = true,
 }
+
+-- Autumn: main colour / mane / tail is one of these (compared lowercase, no spaces)
+local AUTUMN = {pumpkin = true, applepie = true, autumnsilhouette = true}
 
 local function norm(v)
     if v == nil then return "" end
@@ -2732,7 +2734,7 @@ local function isOrange(main)
     return ORANGE[(tostring(main or ""):gsub("%s+", ""))] == true
 end
 
--- returns unique, coat, mismatch, natDyed, horned
+-- returns unique, coat, mismatch, natDyed, horned, autumn
 local function traitsFrom(variants, natDyed)
     if type(variants) ~= "table" then variants = {} end
     local main = variants.colour or variants.mainColour or variants.MainColour
@@ -2743,18 +2745,20 @@ local function traitsFrom(variants, natDyed)
     local mismatch = not coloursMatch(mane, tail)
     local dyed = natDyed ~= nil
     local horned = variants.hornColour ~= nil and tostring(variants.hornColour) ~= ""
-    return unique, coat, mismatch, dyed, horned
+    local autumn = (AUTUMN[norm(main)] or AUTUMN[norm(mane)] or AUTUMN[norm(tail)]) and true or false
+    return unique, coat, mismatch, dyed, horned, autumn
 end
 
-local function priorityOf(u, co, m, d, h)
-    local p = 6
+local function priorityOf(u, co, m, d, h, a)
+    local p = 7
     if u then p = 1
-    elseif m then p = 2
-    elseif co then p = 3
-    elseif d then p = 4
-    elseif h then p = 5 end
+    elseif a then p = 2
+    elseif m then p = 3
+    elseif co then p = 4
+    elseif d then p = 5
+    elseif h then p = 6 end
     local n = 0
-    for _, f in ipairs({u, co, m, d, h}) do
+    for _, f in ipairs({u, co, m, d, h, a}) do
         if f then n += 1 end
     end
     return p, n
@@ -2770,12 +2774,12 @@ local function horseStats(model)
         local ok, dec = pcall(function() return HttpService:JSONDecode(raw) end)
         data = ok and dec or nil
     end
-    local u, co, m, d, h = false, false, false, false, false
+    local u, co, m, d, h, a = false, false, false, false, false, false
     if type(data) == "table" and type(data.variants) == "table" then
-        u, co, m, d, h = traitsFrom(data.variants, data.isNatDyed)
+        u, co, m, d, h, a = traitsFrom(data.variants, data.isNatDyed)
     end
-    local p, n = priorityOf(u, co, m, d, h)
-    c = {raw = raw, Unique = u, Coat = co, Mismatch = m, Dyed = d, Horned = h, Priority = p, Count = n}
+    local p, n = priorityOf(u, co, m, d, h, a)
+    c = {raw = raw, Unique = u, Coat = co, Mismatch = m, Dyed = d, Horned = h, Autumn = a, Priority = p, Count = n}
     statsCache[model] = c
     return c
 end
@@ -2799,12 +2803,9 @@ ClearCache = function()
     A.lastWrap = 0
 end
 
--- also throttles the world scan to every 0.5s (the original rescanned every 0.03s = lag)
+-- every call is a fresh scan (no throttling) so the list is always accurate
 GetWorldHorses = function()
     local now = tick()
-    if A.wrapCache and now - A.lastWrap < 0.5 then
-        return A.wrapCache
-    end
     local list = origGetHorses()
     for _, h in ipairs(list) do
         local st = horseStats(h.Model)
@@ -2828,11 +2829,12 @@ RefreshList = function()
     if not list then return end
     for _, h in ipairs(list) do
         local st = h.Stats
-        if st and st.Priority < 6 then
+        if st and st.Priority < 7 then
             local entry = ScrollFrame:FindFirstChild(tostring(h.UID))
             local nl = entry and entry:FindFirstChild("NameLabel")
             if nl then
                 local tags = ""
+                if st.Autumn then tags = tags .. "A" end
                 if st.Coat then tags = tags .. "C" end
                 if st.Mismatch then tags = tags .. "M" end
                 if st.Dyed then tags = tags .. "D" end
@@ -3035,14 +3037,15 @@ function A.itemTraits(item)
     return traitsFrom(item.variants or item.Variants, item.isNatDyed)
 end
 
-function A.matches(cat, u, co, m, d, h)
+function A.matches(cat, u, co, m, d, h, a)
     if cat == "All" then return true end
-    if cat == "Normal Horse" then return not (u or co or m or d or h) end
+    if cat == "Normal Horse" then return not (u or co or m or d or h or a) end
     if cat == "Natural Dyed Hair" then return d end
     if cat == "Island Unique Hair" then return u end
     if cat == "Island Unique Coat" then return co end
     if cat == "Mismatched Hair" then return m end
     if cat == "Horned" then return h end
+    if cat == "Autumn" then return a end
     return false
 end
 
@@ -3058,9 +3061,10 @@ function A.readInv()
 end
 
 --// ---- inventory UI
-local CATS = {"Normal Horse", "Natural Dyed Hair", "Island Unique Hair", "Island Unique Coat", "Mismatched Hair", "Horned", "All"}
+local CATS = {"Normal Horse", "Natural Dyed Hair", "Island Unique Hair", "Island Unique Coat", "Mismatched Hair", "Horned", "Autumn", "All"}
 local COUNT_ROWS = {
     {"Island Unique Hair", Color3.fromRGB(255, 70, 70)},
+    {"Autumn", Color3.fromRGB(255, 215, 0)},
     {"Island Unique Coat", Color3.fromRGB(255, 150, 40)},
     {"Mismatched Hair", Color3.fromRGB(60, 175, 255)},
     {"Natural Dyed Hair", Color3.fromRGB(70, 230, 90)},
@@ -3069,7 +3073,7 @@ local COUNT_ROWS = {
     {"Total Horse", Color3.fromRGB(235, 235, 240)},
 }
 
-local countsCard = cardFrame(SellPanel, 1, 172)
+local countsCard = cardFrame(SellPanel, 1, 190)
 cardTitle(countsCard, "INVENTORY COUNTS")
 S.RefreshBtn = btn(countsCard, "Refresh", UDim2.new(1, -84, 0, 4), UDim2.new(0, 74, 0, 20), C.indigo)
 S.RefreshBtn.TextSize = 11
@@ -3079,7 +3083,7 @@ for i, r in ipairs(COUNT_ROWS) do
     lbl(countsCard, r[1], UDim2.new(0, 10, 0, y), UDim2.new(0.7, 0, 0, 16), 11, r[2], Enum.Font.GothamBold)
     S.CountLabels[r[1]] = lbl(countsCard, "0", UDim2.new(1, -70, 0, y), UDim2.new(0, 60, 0, 16), 11, C.white, Enum.Font.GothamBold, Enum.TextXAlignment.Right)
 end
-S.InvStatus = lbl(countsCard, "Inventory not loaded yet", UDim2.new(0, 10, 0, 154), UDim2.new(1, -20, 0, 14), 10, C.dim)
+S.InvStatus = lbl(countsCard, "Inventory not loaded yet", UDim2.new(0, 10, 0, 172), UDim2.new(1, -20, 0, 14), 10, C.dim)
 
 local sellCard = cardFrame(SellPanel, 2, 132)
 cardTitle(sellCard, "SELL FILTER")
@@ -3104,23 +3108,25 @@ S.FindStatus.Text = "Sells 1 Normal Horse to test"
 
 --// ---- selling logic
 function A.refreshCounts()
-    local c = {u = 0, co = 0, m = 0, d = 0, h = 0, n = 0, t = 0}
+    local c = {u = 0, co = 0, m = 0, d = 0, h = 0, a = 0, n = 0, t = 0}
     if S.Loaded and type(S.Inventory) == "table" then
         for _, item in pairs(S.Inventory) do
             if type(item) == "table" and A.isHorse(item) then
                 c.t += 1
-                local u, co, m, d, h = A.itemTraits(item)
+                local u, co, m, d, h, a = A.itemTraits(item)
                 if u then c.u += 1 end
                 if co then c.co += 1 end
                 if m then c.m += 1 end
                 if d then c.d += 1 end
                 if h then c.h += 1 end
-                if not (u or co or m or d or h) then c.n += 1 end
+                if a then c.a += 1 end
+                if not (u or co or m or d or h or a) then c.n += 1 end
             end
         end
     end
     local L = S.CountLabels
     L["Island Unique Hair"].Text = tostring(c.u)
+    L["Autumn"].Text = tostring(c.a)
     L["Island Unique Coat"].Text = tostring(c.co)
     L["Mismatched Hair"].Text = tostring(c.m)
     L["Natural Dyed Hair"].Text = tostring(c.d)
@@ -3187,8 +3193,8 @@ function A.sell(isAuto)
             local list = {}
             for uid, item in pairs(inv) do
                 if not failed[uid] and type(item) == "table" and A.isHorse(item) then
-                    local u, co, m, d, h = A.itemTraits(item)
-                    if A.matches(category, u, co, m, d, h) then
+                    local u, co, m, d, h, a = A.itemTraits(item)
+                    if A.matches(category, u, co, m, d, h, a) then
                         list[#list + 1] = uid
                     end
                 end
@@ -3354,13 +3360,14 @@ end)
 function A.findNormalKey(inv)
     for uid, item in pairs(inv) do
         if type(item) == "table" and A.isHorse(item) then
-            local u, co, m, d, h = A.itemTraits(item)
-            if not (u or co or m or d or h) then return uid end
+            local u, co, m, d, h, a = A.itemTraits(item)
+            if not (u or co or m or d or h or a) then return uid end
         end
     end
     return nil
 end
 
+--// SELL REMOTE FINDER: 2 seconds per test
 function A.findSellRemote()
     if S.FindBusy then return end
     S.FindBusy = true
@@ -3397,7 +3404,7 @@ function A.findSellRemote()
                 local okFire = pcall(function()
                     ev:FireServer("SellItems", {[tostring(key)] = 1})
                 end)
-                task.wait(0.35)
+                task.wait(2) -- 2 seconds per test
                 local inv2 = A.readInv()
                 if inv2 then
                     S.Inventory = inv2
@@ -3412,7 +3419,6 @@ function A.findSellRemote()
                     end
                 end
             end
-            task.wait(0.5)
         end
         finish("No working sell remote in Event1-90.", C.red)
     end)
@@ -3640,8 +3646,9 @@ function A.installHook()
     return ok
 end
 
--- Generate (Catch): tween to the nearest LOWEST-rarity horse -> anchor on it -> 20s countdown
--- -> you catch it manually -> the remote used is printed, typed into the box and auto saved.
+-- Generate (Catch): tween to the NEAREST horse (any rarity). If it is on another island,
+-- use the Travel remote first. Then anchor on it -> 20s countdown -> you catch it manually
+-- -> the remote used is printed, typed into the box and auto saved.
 function A.findCatch()
     if A.catchBusy then return end
     if AutoFarmEnabled then
@@ -3685,21 +3692,19 @@ function A.findCatch()
                 return "Character not ready.", C.red
             end
 
-            -- 1) nearest horse of the LOWEST rarity available (Low > Mid > High > Special)
-            setStatus(A.CatchStatus, "Finding nearest lowest-rarity horse...", C.amber)
+            -- 1) nearest horse, whatever its rarity
+            setStatus(A.CatchStatus, "Finding nearest horse...", C.amber)
             ClearCache()
             local here = GetCurrentPlayerIsland()
-            local best, bestKey = nil, math.huge
+            local best, bestDist = nil, math.huge
             for _, h in ipairs(GetWorldHorses()) do
                 local m = h.Model
                 if m and m.Parent then
                     local okP, pivot = pcall(function() return m:GetPivot() end)
                     if okP and pivot then
-                        local key = (RANK[h.Rarity] or 9) * 1e9
-                            + ((here and h.Island ~= here) and 1e8 or 0)
-                            + (root.Position - pivot.Position).Magnitude
-                        if key < bestKey then
-                            bestKey = key
+                        local d = (root.Position - pivot.Position).Magnitude
+                        if d < bestDist then
+                            bestDist = d
                             best = h
                         end
                     end
@@ -3707,6 +3712,31 @@ function A.findCatch()
             end
             if not best then return "No horse found (check island/filters).", C.amber end
             local horse = best.Model
+
+            -- 1b) horse is on another island -> Travel first
+            if best.Island and best.Island ~= here then
+                local travelName = TravelRemoteBox.Text
+                local travelFunc = travelName ~= "" and Functions:FindFirstChild(travelName)
+                if not travelFunc then
+                    return "Horse is on " .. best.Island .. ". Generate Travel Remote first.", C.red
+                end
+                setStatus(A.CatchStatus, "Traveling to " .. best.Island .. "...", C.amber)
+                local okT = pcall(function()
+                    return travelFunc:InvokeServer("Travel", best.Island, 1)
+                end)
+                if not okT then return "Travel failed.", C.red end
+                local t0 = tick()
+                while tick() - t0 < 15 do
+                    if not horse.Parent then return "Horse disappeared. Try again.", C.amber end
+                    if GetCurrentPlayerIsland() == best.Island or tick() - t0 > 3 then break end
+                    task.wait(0.2)
+                end
+                char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                root = char:WaitForChild("HumanoidRootPart")
+                hum = char:WaitForChild("Humanoid")
+            end
+            if not horse.Parent then return "Horse disappeared. Try again.", C.amber end
+
             local part = horse:IsA("Model") and (horse.PrimaryPart or horse:FindFirstChildWhichIsA("BasePart")) or horse
             if not part then return "Horse has no usable part.", C.red end
 
