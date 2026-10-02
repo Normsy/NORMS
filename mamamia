@@ -2950,7 +2950,7 @@ end
 --// 4) INVENTORY TAB  (counts + sell filter + auto sell only; remote lives in Settings)
 --// ============================================================================
 local BREED_KEYWORDS = {
-    "tennessee walking horse", "dutch warmblood", "mammoth donkey", "standard donkey", "paint horse",
+    "tennessee walking horse", "tennessee walker", "dutch warmblood", "mammoth donkey", "standard donkey", "paint horse",
     "quarter horse", "akhal teke", "andalusian", "appaloosa", "arabian", "clydesdale", "connemara",
     "fjord", "friesian", "hinny", "icelandic", "marwari", "morgan", "mule", "mustang", "percheron",
     "reindeer", "shire", "standardbred", "thoroughbred", "welsh cob", "unicorn", "donkey",
@@ -3012,6 +3012,12 @@ end
 
 function A.isHorse(item)
     if type(item) ~= "table" then return false end
+    -- FIX: any inventory entry that has mane/tail colour variants is a horse,
+    -- even when its breed name is not in BREED_KEYWORDS.
+    local v = item.variants or item.Variants
+    if type(v) == "table" and (v.maneColour or v.tailColour or v.ManeColour or v.TailColour) then
+        return true
+    end
     if searchBreed(item) then return true end
     local itemId = item.id or item.ID or item.Id
     local info = itemId and A.getInfo(itemId) or nil
@@ -3146,6 +3152,11 @@ function A.updateSellStatus()
     setStatus(S.SellStatus, "Remote: " .. S.Remote .. " | Filter: " .. S.Category, C.dim)
 end
 
+--// FIXED SELL FUNCTION
+--// Pass 1 sends EVERY matching horse in one request (same as the reference selling script).
+--// Anything still in the inventory afterwards is retried in batches of 40; a batch that sells
+--// nothing is split in half to find the horse the server refuses (locked / favorited).
+--// A horse is only skipped after it was refused twice, so nothing is dropped by mistake.
 function A.sell(isAuto)
     local st = S.SellStatus
     if S.Selling then
@@ -3168,13 +3179,14 @@ function A.sell(isAuto)
 
     task.spawn(function()
         local sold, skipped = 0, 0
-        local skip = {}
-        local size = math.huge   -- first try: ALL matching horses in one request
+        local BATCH = 40
+        local batchSize = math.huge   -- first pass: ONE request with every match
+        local failed = {}             -- uid -> true (refused twice)
 
         local function collect(inv)
             local list = {}
             for uid, item in pairs(inv) do
-                if not skip[uid] and type(item) == "table" and A.isHorse(item) then
+                if not failed[uid] and type(item) == "table" and A.isHorse(item) then
                     local u, co, m, d, h = A.itemTraits(item)
                     if A.matches(category, u, co, m, d, h) then
                         list[#list + 1] = uid
@@ -3184,31 +3196,74 @@ function A.sell(isAuto)
             return list
         end
 
-        -- send a list, then wait until the inventory shows them gone (or timeout)
+        -- which of these uids are still in the inventory right now
+        local function stillThere(list)
+            local inv = A.readInv()
+            if not inv then return list end
+            S.Inventory = inv
+            S.Loaded = true
+            local out = {}
+            for _, uid in ipairs(list) do
+                if inv[uid] ~= nil then out[#out + 1] = uid end
+            end
+            return out
+        end
+
+        -- fire one sell request, then wait until those horses leave the inventory
         local function sendAndVerify(list)
             local payload = {}
             for _, uid in ipairs(list) do payload[tostring(uid)] = 1 end
             remote:FireServer("SellItems", payload)
 
-            local deadline = tick() + math.clamp(2 + #list * 0.05, 2, 8)
+            local deadline = tick() + math.clamp(2.5 + #list * 0.08, 2.5, 10)
             local stuck = list
             repeat
                 task.wait(0.4)
-                local inv = A.readInv()
-                if inv then
-                    S.Inventory = inv
-                    S.Loaded = true
-                    stuck = {}
-                    for _, uid in ipairs(list) do
-                        if inv[uid] ~= nil then stuck[#stuck + 1] = uid end
-                    end
-                end
+                stuck = stillThere(list)
             until #stuck == 0 or tick() > deadline
             return stuck
         end
 
+        -- sell a group; leftovers are retried, a group that sold nothing is split in half
+        local function sellGroup(list)
+            if #list == 0 then return end
+            setStatus(st, "Selling " .. #list .. " | " .. category .. " | sold so far: " .. sold, C.amber)
+            local stuck = sendAndVerify(list)
+
+            -- the inventory data can lag behind the server: give it one more look before judging
+            if #stuck == #list and #list > 1 then
+                task.wait(2.5)
+                stuck = stillThere(list)
+            end
+
+            sold += (#list - #stuck)
+            A.refreshCounts()
+            if #stuck == 0 then return end
+
+            if #list == 1 then
+                -- a single horse was refused: one more try, then skip it
+                task.wait(1)
+                local again = sendAndVerify(list)
+                if #again == 0 then
+                    sold += 1
+                else
+                    failed[list[1]] = true
+                    skipped += 1
+                end
+                return
+            end
+
+            if #stuck < #list then
+                sellGroup(stuck)                       -- some sold: retry only the leftovers
+            else
+                local mid = math.floor(#stuck / 2)     -- none sold: a bad horse is in here, split
+                sellGroup(table.move(stuck, 1, mid, 1, {}))
+                sellGroup(table.move(stuck, mid + 1, #stuck, 1, {}))
+            end
+        end
+
         local ok, err = pcall(function()
-            for _ = 1, 500 do
+            for _ = 1, 200 do
                 local inv = A.readInv()
                 if not inv then error("inventory unavailable") end
                 S.Inventory = inv
@@ -3217,24 +3272,8 @@ function A.sell(isAuto)
                 local list = collect(inv)
                 if #list == 0 then break end
 
-                local chunk = list
-                if #list > size then
-                    chunk = table.move(list, 1, size, 1, {})
-                end
-
-                setStatus(st, "Selling " .. #chunk .. " of " .. #list .. " " .. category .. "...", C.amber)
-                local stuck = sendAndVerify(chunk)
-                sold += (#chunk - #stuck)
-
-                if #stuck > 0 then
-                    if #chunk == 1 then
-                        skip[chunk[1]] = true      -- single horse rejected (locked/favorited)
-                        skipped += 1
-                    else
-                        size = math.max(1, math.floor(#chunk / 2))  -- server refused: shrink and retry
-                    end
-                end
-                A.refreshCounts()
+                sellGroup(table.move(list, 1, math.min(batchSize, #list), 1, {}))
+                batchSize = BATCH       -- leftovers are cleaned up in smaller batches
             end
         end)
 
@@ -3244,7 +3283,7 @@ function A.sell(isAuto)
             setStatus(st, "Nothing matches: " .. category, C.amber)
         else
             local msg = "Sold " .. sold .. " horse(s) | " .. category
-            if skipped > 0 then msg = msg .. " | skipped " .. skipped .. " (rejected)" end
+            if skipped > 0 then msg = msg .. " | skipped " .. skipped .. " (locked/rejected)" end
             setStatus(st, msg, C.green)
         end
 
