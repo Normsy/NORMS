@@ -3928,27 +3928,71 @@ task.spawn(A.refreshInv)
 
 end)()
 
+
 --// ============================================================================
---// NORMS CLONES ADD-ON
+--// NORMS CLONES ADD-ON (route points version)
 --// Paste this AFTER the "NORMS ADD-ON" block ends (right above
---//   "--// AUTO PATROL ADD-ON"), so SettingsPanel already exists and the scroll
---// fix has already run.
+--//   "--// AUTO PATROL ADD-ON").
 --//
---// Adds a card in Settings with one button:
---//   "Clone Me to Spawns"  -> copies your avatar + humanoid and places one copy at
---//                            every spawn point / checkpoint found under Workspace.Islands
---//   "Remove Clones"       -> deletes all copies
+--// Adds a card in Settings:
+--//   "Clone Me to Spawns" -> copies your avatar + humanoid to EVERY spawn point of
+--//                           Jungle Island, Lunar Islands and Volcano Island
+--//                           (the same points your patrol uses)
+--//   "Remove Clones"      -> deletes all copies
 --//
---// NOTE: clones are created on YOUR client, so only you can see them.
---// Wrapped in a function so it does not use any of the main chunk's local slots.
+--// Clones are made on YOUR client, so only you can see them.
 --// ============================================================================
 ;(function()
 
 local CLONE_FOLDER_NAME = "NORMS_Clones"
-local MAX_CLONES = 80            -- safety cap so a huge island list can't lag you
-local DEDUPE_RADIUS = 12         -- spawn points closer than this (studs) count as one
-local NAME_KEYWORDS = {"spawn", "checkpoint"}   -- part/model names that count as a spawn point
-local STAND_OFFSET = 3           -- studs above the spawn part so clones stand on it
+local STAND_OFFSET = 3   -- studs above each point (same as PATROL_HEIGHT_OFFSET)
+
+local ClonePoints = {
+    {
+        Island = "Jungle Island",
+        Points = {
+            Vector3.new(3392.639, 135.120, 495.501),
+            Vector3.new(3149.913, 86.353, 1264.443),
+            Vector3.new(4229.571, 14.163, 1416.618),
+            Vector3.new(3736.722, 17.342, 2399.393),
+            Vector3.new(3218.987, 64.760, 3338.779),
+            Vector3.new(4066.746, 145.321, 4176.036),
+        },
+    },
+    {
+        Island = "Lunar Islands",
+        Points = {
+            Vector3.new(-2941.683, 37.467, -800.954),
+            Vector3.new(-2370.482, 91.831, -909.365),
+            Vector3.new(-2115.634, 180.011, -1381.102),
+            Vector3.new(-2233.735, 227.798, -1827.806),
+            Vector3.new(-3526.374, 29.006, -1521.367),
+            Vector3.new(-3811.113, 19.983, -2104.928),
+            Vector3.new(-3079.905, 45.559, -2870.747),
+            Vector3.new(-2722.115, 181.603, -3106.787),
+            Vector3.new(-2615.817, 185.529, -3505.007),
+            Vector3.new(-3494.043, 10.145, -3960.324),
+            Vector3.new(-3874.062, 94.935, -4249.368),
+        },
+    },
+    {
+        Island = "Volcano Island",
+        Points = {
+            Vector3.new(3209.099, 25.768, -6918.553),
+            Vector3.new(3613.677, 59.086, -6748.134),
+            Vector3.new(4152.240, 23.770, -6657.722),
+            Vector3.new(4607.225, 43.641, -6927.897),
+            Vector3.new(5084.318, 15.036, -7258.539),
+            Vector3.new(4894.092, 24.152, -7402.486),
+            Vector3.new(4897.738, 24.898, -8166.541),
+            Vector3.new(4726.584, 38.401, -8839.368),
+            Vector3.new(4135.837, 26.382, -8858.480),
+            Vector3.new(3459.506, 27.196, -8892.804),
+            Vector3.new(2861.112, 37.133, -8294.792),
+            Vector3.new(2723.383, 24.445, -7632.720),
+        },
+    },
+}
 
 local col = {
     card = Color3.fromRGB(22, 24, 33),
@@ -3987,45 +4031,32 @@ title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = card
 
-local cloneBtn = Instance.new("TextButton")
-cloneBtn.Name = "CloneSelfBtn"
-cloneBtn.Position = UDim2.new(0, 10, 0, 26)
-cloneBtn.Size = UDim2.new(0.5, -14, 0, 28)
-cloneBtn.BackgroundColor3 = col.indigo
-cloneBtn.BorderSizePixel = 0
-cloneBtn.Text = "Clone Me to Spawns"
-cloneBtn.TextColor3 = col.white
-cloneBtn.TextSize = 12
-cloneBtn.Font = Enum.Font.GothamBold
-cloneBtn.Parent = card
-do
+local function makeButton(name, text, pos, size, bg)
+    local b = Instance.new("TextButton")
+    b.Name = name
+    b.Position = pos
+    b.Size = size
+    b.BackgroundColor3 = bg
+    b.BorderSizePixel = 0
+    b.Text = text
+    b.TextColor3 = col.white
+    b.TextSize = 12
+    b.Font = Enum.Font.GothamBold
+    b.Parent = card
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, 7)
-    c.Parent = cloneBtn
+    c.Parent = b
+    return b
 end
 
-local removeBtn = Instance.new("TextButton")
-removeBtn.Name = "RemoveClonesBtn"
-removeBtn.Position = UDim2.new(0.5, 4, 0, 26)
-removeBtn.Size = UDim2.new(0.5, -14, 0, 28)
-removeBtn.BackgroundColor3 = col.btn
-removeBtn.BorderSizePixel = 0
-removeBtn.Text = "Remove Clones"
-removeBtn.TextColor3 = col.white
-removeBtn.TextSize = 12
-removeBtn.Font = Enum.Font.GothamBold
-removeBtn.Parent = card
-do
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, 7)
-    c.Parent = removeBtn
-end
+local cloneBtn = makeButton("CloneSelfBtn", "Clone Me to Spawns", UDim2.new(0, 10, 0, 26), UDim2.new(0.5, -14, 0, 28), col.indigo)
+local removeBtn = makeButton("RemoveClonesBtn", "Remove Clones", UDim2.new(0.5, 4, 0, 26), UDim2.new(0.5, -14, 0, 28), col.btn)
 
 local statusLbl = Instance.new("TextLabel")
 statusLbl.BackgroundTransparency = 1
 statusLbl.Position = UDim2.new(0, 10, 0, 60)
 statusLbl.Size = UDim2.new(1, -20, 0, 40)
-statusLbl.Text = "Copies your avatar + humanoid to every island spawn/checkpoint. Only you can see them."
+statusLbl.Text = "Copies your avatar + humanoid to every Jungle, Lunar and Volcano spawn point. Only you can see them."
 statusLbl.TextColor3 = col.dim
 statusLbl.TextSize = 10
 statusLbl.Font = Enum.Font.Gotham
@@ -4050,96 +4081,23 @@ local function getFolder(create)
     return f
 end
 
-local function nameMatches(inst)
-    local n = inst.Name:lower()
-    for _, kw in ipairs(NAME_KEYWORDS) do
-        if n:find(kw, 1, true) then return true end
+local function removeClones()
+    local f = getFolder(false)
+    local n = 0
+    if f then
+        n = #f:GetChildren()
+        f:Destroy()
     end
-    return false
+    return n
 end
 
-local function isSpawnLike(inst)
-    if inst:IsA("SpawnLocation") then return true end
-    if (inst:IsA("BasePart") or inst:IsA("Model")) and nameMatches(inst) then
-        return true
-    end
-    return false
-end
-
--- returns { {Pos = Vector3, Size = number, Island = string}, ... }
-local function findSpawnPoints()
-    local found = {}
-    local islands = Workspace:FindFirstChild("Islands")
-    if not islands then return found end
-
-    local walked = 0
-    for _, island in ipairs(islands:GetChildren()) do
-        if island:IsA("Folder") or island:IsA("Model") then
-            local islandPoints = {}
-            local stack = {island}
-            while #stack > 0 do
-                local node = table.remove(stack)
-                for _, obj in ipairs(node:GetChildren()) do
-                    walked += 1
-                    if walked % 1500 == 0 then task.wait() end
-
-                    local skip = false
-                    -- never treat our own clones or animals as spawn points
-                    if obj.Name == "NORMSClone" or CollectionService:HasTag(obj, "Animal") then
-                        skip = true
-                    end
-
-                    if not skip and isSpawnLike(obj) then
-                        local pos, topY
-                        if obj:IsA("Model") then
-                            local ok, pivot = pcall(function() return obj:GetPivot() end)
-                            if ok and pivot then
-                                pos = pivot.Position
-                                local okS, size = pcall(function() return obj:GetExtentsSize() end)
-                                topY = pos.Y + (okS and size.Y / 2 or 0)
-                            end
-                        else
-                            pos = obj.Position
-                            topY = pos.Y + obj.Size.Y / 2
-                        end
-                        if pos then
-                            local dupe = false
-                            for _, p in ipairs(islandPoints) do
-                                if (p.Pos - pos).Magnitude < DEDUPE_RADIUS then
-                                    dupe = true
-                                    break
-                                end
-                            end
-                            if not dupe then
-                                islandPoints[#islandPoints + 1] = {
-                                    Pos = Vector3.new(pos.X, topY, pos.Z),
-                                    Island = island.Name,
-                                }
-                            end
-                        end
-                    end
-
-                    -- keep digging (a spawn Model can contain more spawns, folders hold more)
-                    if not skip and #obj:GetChildren() > 0 then
-                        stack[#stack + 1] = obj
-                    end
-                end
-            end
-            for _, p in ipairs(islandPoints) do
-                found[#found + 1] = p
-            end
-        end
-    end
-    return found
-end
-
--- makes one frozen copy of the avatar at the given position
-local function makeClone(char, position)
+-- one frozen copy of the avatar standing at `position`
+local function makeClone(char, position, islandName)
     local clone = char:Clone()
     if not clone then return nil end
 
     for _, d in ipairs(clone:GetDescendants()) do
-        if d:IsA("LocalScript") or d:IsA("Script") or d:IsA("WeldConstraint") and d.Name == "HorseTrackerWeld" then
+        if d:IsA("LocalScript") or d:IsA("Script") or d.Name == "HorseTrackerWeld" then
             d:Destroy()
         end
     end
@@ -4160,6 +4118,7 @@ local function makeClone(char, position)
     end
 
     clone.Name = "NORMSClone"
+    clone:SetAttribute("CloneIsland", islandName)
     clone:PivotTo(CFrame.new(position + Vector3.new(0, STAND_OFFSET, 0)))
     clone.Parent = getFolder(true)
     return clone
@@ -4167,16 +4126,6 @@ end
 
 --// ---------------------------------------------------------------- actions
 local busy = false
-
-local function removeClones()
-    local f = getFolder(false)
-    local n = 0
-    if f then
-        n = #f:GetChildren()
-        f:Destroy()
-    end
-    return n
-end
 
 local function spawnClones()
     if busy then return end
@@ -4193,47 +4142,33 @@ local function spawnClones()
                 return
             end
 
-            setStatus("Scanning islands for spawn points / checkpoints...", col.amber)
-            local points = findSpawnPoints()
-            if #points == 0 then
-                setStatus("No spawn points or checkpoints found under Workspace.Islands.", col.red)
-                return
-            end
-
             removeClones() -- start fresh so pressing twice never stacks copies
 
             local wasArchivable = char.Archivable
             char.Archivable = true
 
-            local made = 0
-            local perIsland = {}
-            for i, p in ipairs(points) do
-                if made >= MAX_CLONES then break end
-                local c = makeClone(char, p.Pos)
-                if c then
-                    made += 1
-                    perIsland[p.Island] = (perIsland[p.Island] or 0) + 1
-                end
-                if i % 4 == 0 then
-                    setStatus("Placing clones... " .. made .. "/" .. math.min(#points, MAX_CLONES), col.amber)
-                    task.wait()
+            local total = 0
+            for _, stop in ipairs(ClonePoints) do
+                for i, pos in ipairs(stop.Points) do
+                    if makeClone(char, pos, stop.Island) then
+                        total += 1
+                    end
+                    if total % 4 == 0 then
+                        setStatus("Placing clones... " .. total .. " (" .. stop.Island .. " " .. i .. "/" .. #stop.Points .. ")", col.amber)
+                        task.wait()
+                    end
                 end
             end
 
             char.Archivable = wasArchivable
 
-            if made == 0 then
+            if total == 0 then
                 setStatus("Clone failed (character could not be copied).", col.red)
-                return
+            else
+                setStatus("Placed " .. total .. " clones: Jungle " .. #ClonePoints[1].Points
+                    .. " | Lunar " .. #ClonePoints[2].Points
+                    .. " | Volcano " .. #ClonePoints[3].Points, col.green)
             end
-
-            local islandCount = 0
-            for _ in pairs(perIsland) do islandCount += 1 end
-            local msg = "Placed " .. made .. " clone(s) across " .. islandCount .. " island(s)."
-            if #points > MAX_CLONES then
-                msg = msg .. " (capped at " .. MAX_CLONES .. ")"
-            end
-            setStatus(msg, col.green)
         end)
 
         if not ok then
@@ -4251,7 +4186,6 @@ removeBtn.MouseButton1Click:Connect(function()
     setStatus(n > 0 and ("Removed " .. n .. " clone(s).") or "No clones to remove.", n > 0 and col.green or col.dim)
 end)
 
--- clean up if the UI is destroyed / script re-executed
 ScreenGui.Destroying:Connect(function()
     pcall(removeClones)
 end)
@@ -4260,6 +4194,7 @@ end)
 pcall(removeClones)
 
 end)()
+
 
 
 --// ============================================================================
