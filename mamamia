@@ -3941,25 +3941,30 @@ end)()
 
 local Route = {
     {
-        Island = "Jungle Island",
-        Points = {
-            Vector3.new(3366.415, 120.311, 492.058),
-            Vector3.new(2878.611, 19.484, 996.970),
-            Vector3.new(3370.034, 23.241, 1201.248),
-            Vector3.new(4078.061, 22.453, 1051.333),
-            Vector3.new(3884.206, 119.345, 1955.391),
-            Vector3.new(3308.781, 74.125, 2435.043),
-            Vector3.new(3228.903, 26.496, 2941.189),
-            Vector3.new(3096.656, 19.812, 3840.263),
-            Vector3.new(3281.414, 73.628, 2497.434),
-            Vector3.new(4003.677, 121.697, 1933.776),
-            Vector3.new(4417.396, 25.998, 2347.649),
-            Vector3.new(4295.845, 135.525, 3289.077),
-            Vector3.new(3657.509, 23.214, 3726.062),
-            Vector3.new(4093.417, 14.024, 4417.149),
-            Vector3.new(4307.898, 123.138, 3739.563),
-        },
+    Island = "Jungle Island",
+    Points = {
+        Vector3.new(3248, 50, 1384),
+        Vector3.new(3608, 50, 1592),
+        Vector3.new(3381, 50, 1100),
+        Vector3.new(3372, 50, 492),
+        Vector3.new(4215, 50, 1520),
+        Vector3.new(3773, 50, 2151),
+        Vector3.new(4169, 50, 2314),
+        Vector3.new(4417, 50, 2521),
+        Vector3.new(3744, 50, 2593),
+        Vector3.new(3591, 50, 2896),
+        Vector3.new(4013, 50, 2805),
+        Vector3.new(4454, 50, 3096),
+        Vector3.new(4363, 50, 3776),
+        Vector3.new(4120, 50, 3743),
+        Vector3.new(4141, 50, 4362),
+        Vector3.new(3905, 50, 4419),
+        Vector3.new(3781, 50, 3474),
+        Vector3.new(3302, 50, 3444),
+        Vector3.new(2918, 50, 3633),
     },
+},
+
     {
         Island = "Lunar Islands",
         Points = {
