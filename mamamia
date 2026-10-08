@@ -3929,6 +3929,340 @@ task.spawn(A.refreshInv)
 end)()
 
 --// ============================================================================
+--// NORMS CLONES ADD-ON
+--// Paste this AFTER the "NORMS ADD-ON" block ends (right above
+--//   "--// AUTO PATROL ADD-ON"), so SettingsPanel already exists and the scroll
+--// fix has already run.
+--//
+--// Adds a card in Settings with one button:
+--//   "Clone Me to Spawns"  -> copies your avatar + humanoid and places one copy at
+--//                            every spawn point / checkpoint found under Workspace.Islands
+--//   "Remove Clones"       -> deletes all copies
+--//
+--// NOTE: clones are created on YOUR client, so only you can see them.
+--// Wrapped in a function so it does not use any of the main chunk's local slots.
+--// ============================================================================
+;(function()
+
+local CLONE_FOLDER_NAME = "NORMS_Clones"
+local MAX_CLONES = 80            -- safety cap so a huge island list can't lag you
+local DEDUPE_RADIUS = 12         -- spawn points closer than this (studs) count as one
+local NAME_KEYWORDS = {"spawn", "checkpoint"}   -- part/model names that count as a spawn point
+local STAND_OFFSET = 3           -- studs above the spawn part so clones stand on it
+
+local col = {
+    card = Color3.fromRGB(22, 24, 33),
+    btn = Color3.fromRGB(36, 39, 52),
+    muted = Color3.fromRGB(110, 118, 140),
+    dim = Color3.fromRGB(139, 146, 165),
+    green = Color3.fromRGB(52, 211, 153),
+    red = Color3.fromRGB(239, 68, 68),
+    amber = Color3.fromRGB(251, 191, 36),
+    indigo = Color3.fromRGB(99, 102, 241),
+    white = Color3.fromRGB(255, 255, 255),
+}
+
+--// ---------------------------------------------------------------- UI
+local card = Instance.new("Frame")
+card.Name = "CloneCard"
+card.Size = UDim2.new(1, 0, 0, 104)
+card.BackgroundColor3 = col.card
+card.BorderSizePixel = 0
+card.LayoutOrder = 8
+card.Parent = SettingsPanel
+do
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 10)
+    c.Parent = card
+end
+
+local title = Instance.new("TextLabel")
+title.BackgroundTransparency = 1
+title.Position = UDim2.new(0, 10, 0, 6)
+title.Size = UDim2.new(1, -20, 0, 16)
+title.Text = "AVATAR CLONES"
+title.TextColor3 = col.muted
+title.TextSize = 10
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = card
+
+local cloneBtn = Instance.new("TextButton")
+cloneBtn.Name = "CloneSelfBtn"
+cloneBtn.Position = UDim2.new(0, 10, 0, 26)
+cloneBtn.Size = UDim2.new(0.5, -14, 0, 28)
+cloneBtn.BackgroundColor3 = col.indigo
+cloneBtn.BorderSizePixel = 0
+cloneBtn.Text = "Clone Me to Spawns"
+cloneBtn.TextColor3 = col.white
+cloneBtn.TextSize = 12
+cloneBtn.Font = Enum.Font.GothamBold
+cloneBtn.Parent = card
+do
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 7)
+    c.Parent = cloneBtn
+end
+
+local removeBtn = Instance.new("TextButton")
+removeBtn.Name = "RemoveClonesBtn"
+removeBtn.Position = UDim2.new(0.5, 4, 0, 26)
+removeBtn.Size = UDim2.new(0.5, -14, 0, 28)
+removeBtn.BackgroundColor3 = col.btn
+removeBtn.BorderSizePixel = 0
+removeBtn.Text = "Remove Clones"
+removeBtn.TextColor3 = col.white
+removeBtn.TextSize = 12
+removeBtn.Font = Enum.Font.GothamBold
+removeBtn.Parent = card
+do
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 7)
+    c.Parent = removeBtn
+end
+
+local statusLbl = Instance.new("TextLabel")
+statusLbl.BackgroundTransparency = 1
+statusLbl.Position = UDim2.new(0, 10, 0, 60)
+statusLbl.Size = UDim2.new(1, -20, 0, 40)
+statusLbl.Text = "Copies your avatar + humanoid to every island spawn/checkpoint. Only you can see them."
+statusLbl.TextColor3 = col.dim
+statusLbl.TextSize = 10
+statusLbl.Font = Enum.Font.Gotham
+statusLbl.TextWrapped = true
+statusLbl.TextXAlignment = Enum.TextXAlignment.Left
+statusLbl.TextYAlignment = Enum.TextYAlignment.Top
+statusLbl.Parent = card
+
+local function setStatus(text, color)
+    statusLbl.Text = text
+    statusLbl.TextColor3 = color or col.dim
+end
+
+--// ---------------------------------------------------------------- helpers
+local function getFolder(create)
+    local f = Workspace:FindFirstChild(CLONE_FOLDER_NAME)
+    if not f and create then
+        f = Instance.new("Folder")
+        f.Name = CLONE_FOLDER_NAME
+        f.Parent = Workspace
+    end
+    return f
+end
+
+local function nameMatches(inst)
+    local n = inst.Name:lower()
+    for _, kw in ipairs(NAME_KEYWORDS) do
+        if n:find(kw, 1, true) then return true end
+    end
+    return false
+end
+
+local function isSpawnLike(inst)
+    if inst:IsA("SpawnLocation") then return true end
+    if (inst:IsA("BasePart") or inst:IsA("Model")) and nameMatches(inst) then
+        return true
+    end
+    return false
+end
+
+-- returns { {Pos = Vector3, Size = number, Island = string}, ... }
+local function findSpawnPoints()
+    local found = {}
+    local islands = Workspace:FindFirstChild("Islands")
+    if not islands then return found end
+
+    local walked = 0
+    for _, island in ipairs(islands:GetChildren()) do
+        if island:IsA("Folder") or island:IsA("Model") then
+            local islandPoints = {}
+            local stack = {island}
+            while #stack > 0 do
+                local node = table.remove(stack)
+                for _, obj in ipairs(node:GetChildren()) do
+                    walked += 1
+                    if walked % 1500 == 0 then task.wait() end
+
+                    local skip = false
+                    -- never treat our own clones or animals as spawn points
+                    if obj.Name == "NORMSClone" or CollectionService:HasTag(obj, "Animal") then
+                        skip = true
+                    end
+
+                    if not skip and isSpawnLike(obj) then
+                        local pos, topY
+                        if obj:IsA("Model") then
+                            local ok, pivot = pcall(function() return obj:GetPivot() end)
+                            if ok and pivot then
+                                pos = pivot.Position
+                                local okS, size = pcall(function() return obj:GetExtentsSize() end)
+                                topY = pos.Y + (okS and size.Y / 2 or 0)
+                            end
+                        else
+                            pos = obj.Position
+                            topY = pos.Y + obj.Size.Y / 2
+                        end
+                        if pos then
+                            local dupe = false
+                            for _, p in ipairs(islandPoints) do
+                                if (p.Pos - pos).Magnitude < DEDUPE_RADIUS then
+                                    dupe = true
+                                    break
+                                end
+                            end
+                            if not dupe then
+                                islandPoints[#islandPoints + 1] = {
+                                    Pos = Vector3.new(pos.X, topY, pos.Z),
+                                    Island = island.Name,
+                                }
+                            end
+                        end
+                    end
+
+                    -- keep digging (a spawn Model can contain more spawns, folders hold more)
+                    if not skip and #obj:GetChildren() > 0 then
+                        stack[#stack + 1] = obj
+                    end
+                end
+            end
+            for _, p in ipairs(islandPoints) do
+                found[#found + 1] = p
+            end
+        end
+    end
+    return found
+end
+
+-- makes one frozen copy of the avatar at the given position
+local function makeClone(char, position)
+    local clone = char:Clone()
+    if not clone then return nil end
+
+    for _, d in ipairs(clone:GetDescendants()) do
+        if d:IsA("LocalScript") or d:IsA("Script") or d:IsA("WeldConstraint") and d.Name == "HorseTrackerWeld" then
+            d:Destroy()
+        end
+    end
+
+    local hum = clone:FindFirstChildOfClass("Humanoid")
+    if hum then
+        hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
+        hum.HealthDisplayType = Enum.HumanoidHealthDisplayType.AlwaysOff
+    end
+
+    for _, d in ipairs(clone:GetDescendants()) do
+        if d:IsA("BasePart") then
+            d.Anchored = true
+            d.CanCollide = false
+            d.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            d.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end
+    end
+
+    clone.Name = "NORMSClone"
+    clone:PivotTo(CFrame.new(position + Vector3.new(0, STAND_OFFSET, 0)))
+    clone.Parent = getFolder(true)
+    return clone
+end
+
+--// ---------------------------------------------------------------- actions
+local busy = false
+
+local function removeClones()
+    local f = getFolder(false)
+    local n = 0
+    if f then
+        n = #f:GetChildren()
+        f:Destroy()
+    end
+    return n
+end
+
+local function spawnClones()
+    if busy then return end
+    busy = true
+    cloneBtn.Text = "WORKING..."
+
+    task.spawn(function()
+        local ok, err = pcall(function()
+            local char = LocalPlayer.Character
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+            local root = char and char:FindFirstChild("HumanoidRootPart")
+            if not (char and hum and root) or hum.Health <= 0 then
+                setStatus("Character not ready.", col.red)
+                return
+            end
+
+            setStatus("Scanning islands for spawn points / checkpoints...", col.amber)
+            local points = findSpawnPoints()
+            if #points == 0 then
+                setStatus("No spawn points or checkpoints found under Workspace.Islands.", col.red)
+                return
+            end
+
+            removeClones() -- start fresh so pressing twice never stacks copies
+
+            local wasArchivable = char.Archivable
+            char.Archivable = true
+
+            local made = 0
+            local perIsland = {}
+            for i, p in ipairs(points) do
+                if made >= MAX_CLONES then break end
+                local c = makeClone(char, p.Pos)
+                if c then
+                    made += 1
+                    perIsland[p.Island] = (perIsland[p.Island] or 0) + 1
+                end
+                if i % 4 == 0 then
+                    setStatus("Placing clones... " .. made .. "/" .. math.min(#points, MAX_CLONES), col.amber)
+                    task.wait()
+                end
+            end
+
+            char.Archivable = wasArchivable
+
+            if made == 0 then
+                setStatus("Clone failed (character could not be copied).", col.red)
+                return
+            end
+
+            local islandCount = 0
+            for _ in pairs(perIsland) do islandCount += 1 end
+            local msg = "Placed " .. made .. " clone(s) across " .. islandCount .. " island(s)."
+            if #points > MAX_CLONES then
+                msg = msg .. " (capped at " .. MAX_CLONES .. ")"
+            end
+            setStatus(msg, col.green)
+        end)
+
+        if not ok then
+            setStatus("Clone error: " .. tostring(err), col.red)
+        end
+        cloneBtn.Text = "Clone Me to Spawns"
+        busy = false
+    end)
+end
+
+cloneBtn.MouseButton1Click:Connect(spawnClones)
+
+removeBtn.MouseButton1Click:Connect(function()
+    local n = removeClones()
+    setStatus(n > 0 and ("Removed " .. n .. " clone(s).") or "No clones to remove.", n > 0 and col.green or col.dim)
+end)
+
+-- clean up if the UI is destroyed / script re-executed
+ScreenGui.Destroying:Connect(function()
+    pcall(removeClones)
+end)
+
+-- remove leftovers from a previous execution
+pcall(removeClones)
+
+end)()
+
+
+--// ============================================================================
 --// AUTO PATROL ADD-ON
 --// Paste this right ABOVE:  --// MAIN ENGINE LOOP
 --//
