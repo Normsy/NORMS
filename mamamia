@@ -3928,6 +3928,241 @@ task.spawn(A.refreshInv)
 
 end)()
 
+--// ============================================================================
+--// AUTO PATROL ADD-ON
+--// Paste this right ABOVE:  --// MAIN ENGINE LOOP
+--//
+--// Only runs when Auto is ON, nothing is being caught, and NO horse is scanned.
+--// Route: Jungle -> Lunar -> Volcano -> Jungle -> ...
+--// If a horse shows up while patrolling, the tween stops, the main engine
+--// catches it, and when no horse is left the patrol resumes at the same point.
+--// ============================================================================
+;(function()
+
+local Route = {
+    {
+        Island = "Jungle Island",
+        Points = {
+            Vector3.new(3366.415, 120.311, 492.058),
+            Vector3.new(2878.611, 19.484, 996.970),
+            Vector3.new(3370.034, 23.241, 1201.248),
+            Vector3.new(4078.061, 22.453, 1051.333),
+            Vector3.new(3884.206, 119.345, 1955.391),
+            Vector3.new(3308.781, 74.125, 2435.043),
+            Vector3.new(3228.903, 26.496, 2941.189),
+            Vector3.new(3096.656, 19.812, 3840.263),
+            Vector3.new(3281.414, 73.628, 2497.434),
+            Vector3.new(4003.677, 121.697, 1933.776),
+            Vector3.new(4417.396, 25.998, 2347.649),
+            Vector3.new(4295.845, 135.525, 3289.077),
+            Vector3.new(3657.509, 23.214, 3726.062),
+            Vector3.new(4093.417, 14.024, 4417.149),
+            Vector3.new(4307.898, 123.138, 3739.563),
+        },
+    },
+    {
+        Island = "Lunar Islands",
+        Points = {
+            Vector3.new(-2941.683, 37.467, -800.954),
+            Vector3.new(-2370.482, 91.831, -909.365),
+            Vector3.new(-2115.634, 180.011, -1381.102),
+            Vector3.new(-2233.735, 227.798, -1827.806),
+            Vector3.new(-3526.374, 29.006, -1521.367),
+            Vector3.new(-3811.113, 19.983, -2104.928),
+            Vector3.new(-3079.905, 45.559, -2870.747),
+            Vector3.new(-2722.115, 181.603, -3106.787),
+            Vector3.new(-2615.817, 185.529, -3505.007),
+            Vector3.new(-3494.043, 10.145, -3960.324),
+            Vector3.new(-3874.062, 94.935, -4249.368),
+        },
+    },
+    {
+        Island = "Volcano Island",
+        Points = {
+            Vector3.new(3209.099, 25.768, -6918.553),
+            Vector3.new(3613.677, 59.086, -6748.134),
+            Vector3.new(4152.240, 23.770, -6657.722),
+            Vector3.new(4607.225, 43.641, -6927.897),
+            Vector3.new(5084.318, 15.036, -7258.539),
+            Vector3.new(4894.092, 24.152, -7402.486),
+            Vector3.new(4897.738, 24.898, -8166.541),
+            Vector3.new(4726.584, 38.401, -8839.368),
+            Vector3.new(4135.837, 26.382, -8858.480),
+            Vector3.new(3459.506, 27.196, -8892.804),
+            Vector3.new(2861.112, 37.133, -8294.792),
+            Vector3.new(2723.383, 24.445, -7632.720),
+        },
+    },
+}
+
+local PATROL_HEIGHT_OFFSET = 3     -- studs above each spawn point
+local SCAN_PAUSE = 0.7             -- seconds to wait at each point so horses can stream in/scan
+
+local routeIdx, pointIdx = 1, 1
+local patrolTween = nil
+
+local function patrolStatus(text)
+    if StatusText then
+        StatusText.Text = text
+        StatusText.TextColor3 = Color3.fromRGB(96, 165, 250)
+    end
+end
+
+local function anyHorse()
+    local ok, list = pcall(GetWorldHorses)
+    return ok and type(list) == "table" and #list > 0
+end
+
+-- true when patrol must stop what it is doing
+local function interrupted()
+    return (not AutoFarmEnabled) or ActiveWalkTarget ~= nil or anyHorse()
+end
+
+local function getChar()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    if root and hum and hum.Health > 0 then
+        return char, root, hum
+    end
+    return nil
+end
+
+local function release()
+    if patrolTween then
+        pcall(function() patrolTween:Cancel() end)
+        patrolTween = nil
+    end
+    local char, root, hum = getChar()
+    pcall(function()
+        if root then
+            root.Anchored = false
+            root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end
+        if hum then hum.PlatformStand = false end
+    end)
+    DisableNoClip(char or LocalPlayer.Character)
+end
+
+-- returns true if we are on the island (or got there), false if interrupted / failed
+local function ensureIsland(island)
+    if GetCurrentPlayerIsland() == island then return true end
+
+    local travelName = TravelRemoteBox.Text
+    local travelFunc = travelName ~= "" and Functions:FindFirstChild(travelName)
+    if not travelFunc then
+        patrolStatus("PATROL: Generate Travel Remote first")
+        task.wait(2)
+        return false
+    end
+
+    patrolStatus("PATROL: Traveling to " .. island .. "...")
+    local ok = pcall(function()
+        return travelFunc:InvokeServer("Travel", island, 1)
+    end)
+    if not ok then
+        patrolStatus("PATROL: Travel failed")
+        task.wait(2)
+        return false
+    end
+
+    local t0 = tick()
+    while tick() - t0 < 15 do
+        if interrupted() then return false end
+        if GetCurrentPlayerIsland() == island or tick() - t0 > 3 then break end
+        task.wait(0.2)
+    end
+    return true
+end
+
+-- returns true if we reached the point, false if interrupted
+local function tweenToPoint(pos, label)
+    local char, root, hum = getChar()
+    if not root then task.wait(1) return false end
+
+    EnableNoClip(char)
+    hum.PlatformStand = true
+    root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    root.Anchored = true
+
+    local targetCF = CFrame.new(pos + Vector3.new(0, PATROL_HEIGHT_OFFSET, 0))
+    local dist = (root.Position - targetCF.Position).Magnitude
+    patrolTween = TweenService:Create(
+        root,
+        TweenInfo.new(math.max(dist / TWEEN_SPEED, 0.1), Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+        {CFrame = targetCF}
+    )
+    patrolTween:Play()
+    patrolStatus("PATROL: " .. label)
+
+    local lastScan = 0
+    while patrolTween and patrolTween.PlaybackState == Enum.PlaybackState.Playing do
+        if not AutoFarmEnabled or ActiveWalkTarget or hum.Health <= 0 then
+            return false
+        end
+        root.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        if tick() - lastScan > 0.25 then
+            lastScan = tick()
+            if anyHorse() then return false end
+        end
+        task.wait(0.03)
+    end
+    patrolTween = nil
+
+    -- short pause so nearby horses can load and get scanned
+    local t0 = tick()
+    while tick() - t0 < SCAN_PAUSE do
+        if interrupted() then return false end
+        task.wait(0.1)
+    end
+    return true
+end
+
+local function advance()
+    pointIdx += 1
+    if pointIdx > #Route[routeIdx].Points then
+        pointIdx = 1
+        routeIdx = routeIdx % #Route + 1
+        -- Jungle -> Lunar -> Volcano -> back to Jungle
+    end
+end
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(0.25)
+
+        if AutoFarmEnabled and not ActiveWalkTarget and getChar() and not anyHorse() then
+            pcall(function()
+                local stop = Route[routeIdx]
+                local pos = stop.Points[pointIdx]
+                local label = string.format("%s point %d/%d", stop.Island, pointIdx, #stop.Points)
+
+                if not ensureIsland(stop.Island) then return end
+                if interrupted() then return end
+
+                if tweenToPoint(pos, label) then
+                    advance()          -- reached it, nothing found -> next spawn point
+                end
+                -- if interrupted, pointIdx is NOT advanced: the patrol resumes at this
+                -- same point once the horse is caught and nothing else is scanned
+            end)
+
+            -- if the main engine took over a horse, leave movement/noclip to it
+            if not interrupted() or not AutoFarmEnabled then
+                release()
+            else
+                task.wait(0.2)
+                if not ActiveWalkTarget then release() end
+            end
+        end
+    end
+end)
+
+end)()
+
+
 --// MAIN ENGINE LOOP
 task.spawn(function()
     while ScreenGui.Parent do
