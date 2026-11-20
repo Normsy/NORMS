@@ -2565,8 +2565,6 @@ local C = {
 local A = {}                       -- add-on functions / state
 local S = {                        -- selling state
     Remote = "Event1",
-    ShopRemote = "Event17",
-    ShopAmount = "1000",
     Category = "Normal Horse",
     Loaded = false,
     AutoOn = false,
@@ -2660,8 +2658,6 @@ function A.save()
             writefile(ADDON_CFG, HttpService:JSONEncode({
                 SellRemote = S.Remote,
                 SellCategory = S.Category,
-                ShopRemote = S.ShopRemote,
-                ShopAmount = S.ShopAmount,
             }))
         end
     end)
@@ -2672,7 +2668,6 @@ end
 --// ============================================================================
 local SellPanel = newPanel("InventoryPanel")
 local SrvPanel = newPanel("ServerPanel")
-A.ShopPanel = newPanel("ShopPanel")
 
 local SellTabBtn = MainTabBtn:Clone()
 SellTabBtn.Name = "InventoryTabBtn"
@@ -2684,22 +2679,15 @@ SrvTabBtn.Name = "ServerTabBtn"
 SrvTabBtn.Text = "Server"
 SrvTabBtn.Parent = TabBar
 
-A.ShopTabBtn = MainTabBtn:Clone()
-A.ShopTabBtn.Name = "ShopTabBtn"
-A.ShopTabBtn.Text = "Shop & Craft"
-A.ShopTabBtn.Parent = TabBar
-
 TabBar.Size = UDim2.new(0, 340, 0, 32)
-for i, b in ipairs({MainTabBtn, SellTabBtn, A.ShopTabBtn, SrvTabBtn, SettingTabBtn}) do
-    b.Size = UDim2.new(0.2, -3, 1, 0)
-    b.Position = UDim2.new(0.2 * (i - 1), 0, 0, 0)
-    b.TextSize = 10
-    b.TextScaled = false
+for i, b in ipairs({MainTabBtn, SellTabBtn, SrvTabBtn, SettingTabBtn}) do
+    b.Size = UDim2.new(0.25, -3, 1, 0)
+    b.Position = UDim2.new(0.25 * (i - 1), 0, 0, 0)
+    b.TextSize = 12
 end
-A.ShopTabBtn.TextSize = 9
 
 local function setTabColors(active)
-    local map = {Main = MainTabBtn, Inventory = SellTabBtn, Shop = A.ShopTabBtn, Server = SrvTabBtn, Settings = SettingTabBtn}
+    local map = {Main = MainTabBtn, Inventory = SellTabBtn, Server = SrvTabBtn, Settings = SettingTabBtn}
     for name, b in pairs(map) do
         local on = (name == active)
         b.BackgroundColor3 = on and C.btn or Color3.fromRGB(17, 19, 26)
@@ -2713,11 +2701,7 @@ SwitchTab = function(tabName)
     origSwitchTab(tabName)
     SellPanel.Visible = false
     SrvPanel.Visible = false
-    A.ShopPanel.Visible = false
-    if tabName == "Shop" then
-        SettingsPanel.Visible = false
-        A.ShopPanel.Visible = true
-    elseif tabName == "Inventory" then
+    if tabName == "Inventory" then
         SettingsPanel.Visible = false
         SellPanel.Visible = true
         if not S.Loaded then A.refreshInv() end
@@ -2735,144 +2719,6 @@ end
 
 SellTabBtn.MouseButton1Click:Connect(function() SwitchTab("Inventory") end)
 SrvTabBtn.MouseButton1Click:Connect(function() SwitchTab("Server") end)
-A.ShopTabBtn.MouseButton1Click:Connect(function() SwitchTab("Shop") end)
-
---// ============================================================================
---// SHOP & CRAFT TAB: buy items in bulk (max 1000 per request, 0.5s between requests)
---// ============================================================================
-local shopOk, shopErr = pcall(function()
-local SHOP_ITEMS = {
-    {name = "Ice Lasso", shop = "Glacier Island Shop", id = 6},
-}
-local SHOP_MAX_PER_BUY = 1000
-local SHOP_INTERVAL = 0.5
-A.shopItem = SHOP_ITEMS[1]
-A.shopBuying = false
-A.shopStop = false
-
-local shopCard = cardFrame(A.ShopPanel, 1, 168)
-cardTitle(shopCard, "SHOP")
-
-A.ShopItemBtn = btn(shopCard, A.shopItem.name .. " v", UDim2.new(0, 10, 0, 28), UDim2.new(0.55, -10, 0, 26), C.btn, C.green)
-A.ShopAmountBox = mk("TextBox", {
-    Text = S.ShopAmount,
-    PlaceholderText = "Amount",
-    ClearTextOnFocus = false,
-    Position = UDim2.new(0.55, 4, 0, 28),
-    Size = UDim2.new(0.45, -14, 0, 26),
-    BackgroundColor3 = C.field,
-    TextColor3 = C.white,
-    PlaceholderColor3 = C.muted,
-    TextSize = 12,
-    Font = Enum.Font.GothamBold,
-    BorderSizePixel = 0,
-}, shopCard)
-corner(A.ShopAmountBox, 7)
-
-A.ShopBuyBtn = btn(shopCard, "BUY", UDim2.new(0, 10, 0, 62), UDim2.new(1, -20, 0, 30), C.indigo)
-
-lbl(shopCard, "Buy Remote", UDim2.new(0, 10, 0, 102), UDim2.new(0.4, 0, 0, 16), 10, C.dim)
-A.ShopRemoteBox = mk("TextBox", {
-    Text = S.ShopRemote,
-    ClearTextOnFocus = false,
-    Position = UDim2.new(0.4, 0, 0, 98),
-    Size = UDim2.new(0.6, -10, 0, 22),
-    BackgroundColor3 = C.field,
-    TextColor3 = C.white,
-    TextSize = 11,
-    Font = Enum.Font.Gotham,
-    BorderSizePixel = 0,
-}, shopCard)
-corner(A.ShopRemoteBox, 7)
-
-A.ShopStatus = lbl(shopCard, "Ready. Max " .. SHOP_MAX_PER_BUY .. " per buy, 0.5s between buys.", UDim2.new(0, 10, 0, 126), UDim2.new(1, -20, 0, 36), 10, C.dim)
-
--- item dropdown (opens over the card, one entry per shop item)
-A.ShopList = mk("Frame", {
-    Position = UDim2.new(0, 10, 0, 56),
-    Size = UDim2.new(0.55, -10, 0, #SHOP_ITEMS * 24),
-    BackgroundColor3 = C.card,
-    BorderSizePixel = 0,
-    Visible = false,
-    ZIndex = 20,
-}, shopCard)
-corner(A.ShopList, 7)
-for i, it in ipairs(SHOP_ITEMS) do
-    local o = btn(A.ShopList, it.name, UDim2.new(0, 0, 0, (i - 1) * 24), UDim2.new(1, 0, 0, 24), C.btn, C.text)
-    o.ZIndex = 21
-    o.MouseButton1Click:Connect(function()
-        A.shopItem = it
-        A.ShopItemBtn.Text = it.name .. " v"
-        A.ShopList.Visible = false
-    end)
-end
-A.ShopItemBtn.MouseButton1Click:Connect(function()
-    A.ShopList.Visible = not A.ShopList.Visible
-end)
-
-function A.shopBuy()
-    if A.shopBuying then
-        A.shopStop = true
-        setStatus(A.ShopStatus, "Stopping after the current buy...", C.amber)
-        return
-    end
-
-    local amount = tonumber((tostring(A.ShopAmountBox.Text):gsub("[%s,]", "")))
-    if not amount or amount < 1 then
-        setStatus(A.ShopStatus, "Enter an amount of 1 or more.", C.red)
-        return
-    end
-    amount = math.floor(amount)
-
-    local remoteName = tostring(A.ShopRemoteBox.Text):gsub("%s", "")
-    local remote = Events:FindFirstChild(remoteName)
-    if not remote or not remote:IsA("RemoteEvent") then
-        setStatus(A.ShopStatus, remoteName .. " is not a RemoteEvent in Communication.Events.", C.red)
-        return
-    end
-    S.ShopRemote = remoteName
-    S.ShopAmount = tostring(amount)
-    A.save()
-
-    local item = A.shopItem
-    A.shopBuying = true
-    A.shopStop = false
-    A.ShopBuyBtn.Text = "STOP"
-    A.ShopBuyBtn.BackgroundColor3 = C.dark
-
-    task.spawn(function()
-        local remaining, bought, buys = amount, 0, 0
-        local totalBuys = math.ceil(amount / SHOP_MAX_PER_BUY)
-        while remaining > 0 and not A.shopStop do
-            local n = math.min(SHOP_MAX_PER_BUY, remaining)
-            buys += 1
-            setStatus(A.ShopStatus, string.format("Buying %s: buy %d/%d (%d)...  total so far: %d", item.name, buys, totalBuys, n, bought), C.amber)
-            local ok = pcall(function()
-                remote:FireServer("BuyShopItem", item.shop, item.id, n)
-            end)
-            if not ok then
-                setStatus(A.ShopStatus, "Buy request failed.", C.red)
-                break
-            end
-            bought += n
-            remaining -= n
-            if remaining > 0 then task.wait(SHOP_INTERVAL) end
-        end
-
-        if A.shopStop then
-            setStatus(A.ShopStatus, string.format("Stopped. Sent %d x %s.", bought, item.name), C.amber)
-        elseif remaining <= 0 then
-            setStatus(A.ShopStatus, string.format("Done. Sent %d x %s in %d buy(s).", bought, item.name, buys), C.green)
-        end
-        A.shopBuying = false
-        A.shopStop = false
-        A.ShopBuyBtn.Text = "BUY"
-        A.ShopBuyBtn.BackgroundColor3 = C.indigo
-    end)
-end
-A.ShopBuyBtn.MouseButton1Click:Connect(A.shopBuy)
-end)
-if not shopOk then warn("[NORMS] Shop & Craft tab failed: " .. tostring(shopErr)) end
 
 --// ============================================================================
 --// 2) SMART PRIORITY
@@ -4186,14 +4032,6 @@ pcall(function()
                 S.Remote = d.SellRemote
                 S.RemoteBox.Text = S.Remote
                 setStatus(S.FindStatus, "Saved: " .. S.Remote, C.green)
-            end
-            if type(d.ShopRemote) == "string" and d.ShopRemote ~= "" then
-                S.ShopRemote = d.ShopRemote
-                A.ShopRemoteBox.Text = d.ShopRemote
-            end
-            if type(d.ShopAmount) == "string" and d.ShopAmount ~= "" then
-                S.ShopAmount = d.ShopAmount
-                A.ShopAmountBox.Text = d.ShopAmount
             end
             A.updateSellStatus()
         end
