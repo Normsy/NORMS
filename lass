@@ -1,0 +1,230 @@
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local EventsFolder = ReplicatedStorage:WaitForChild("Communication"):WaitForChild("Events")
+local ShopEvent = EventsFolder:WaitForChild("Event17")
+local CraftEvent = EventsFolder:WaitForChild("Event8")
+
+if CoreGui:FindFirstChild("IceLassoCraftUI") then
+	CoreGui.IceLassoCraftUI:Destroy()
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "IceLassoCraftUI"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Size = UDim2.new(0, 270, 0, 168)
+MainFrame.BorderSizePixel = 0
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(40, 40, 40)
+Stroke.Thickness = 1
+Stroke.Parent = MainFrame
+
+-- Dragging support
+local dragging, dragInput, dragStart, startPos
+MainFrame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = MainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+MainFrame.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	end
+end)
+
+local Container = Instance.new("Frame")
+Container.Parent = MainFrame
+Container.BackgroundTransparency = 1
+Container.Position = UDim2.new(0, 10, 0, 10)
+Container.Size = UDim2.new(1, -20, 1, -20)
+
+local Layout = Instance.new("UIListLayout")
+Layout.Parent = Container
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Padding = UDim.new(0, 8)
+
+local function parseAmount(text)
+	local digits = tostring(text or ""):gsub("[^%d]", "")
+	return tonumber(digits)
+end
+
+local function createToggleRow(name, placeholderText, callback)
+	local Row = Instance.new("Frame")
+	Row.Parent = Container
+	Row.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	Row.Size = UDim2.new(1, 0, 0, 44)
+	Row.BorderSizePixel = 0
+	Instance.new("UICorner", Row).CornerRadius = UDim.new(0, 6)
+
+	local Label = Instance.new("TextLabel")
+	Label.Parent = Row
+	Label.BackgroundTransparency = 1
+	Label.Position = UDim2.new(0, 10, 0, 0)
+	Label.Size = UDim2.new(0, 92, 1, 0)
+	Label.Font = Enum.Font.GothamBold
+	Label.Text = name
+	Label.TextColor3 = Color3.fromRGB(240, 240, 240)
+	Label.TextSize = 11
+	Label.TextXAlignment = Enum.TextXAlignment.Left
+
+	local AmountBox = Instance.new("TextBox")
+	AmountBox.Parent = Row
+	AmountBox.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
+	AmountBox.Position = UDim2.new(0, 106, 0.5, -12)
+	AmountBox.Size = UDim2.new(0, 84, 0, 24)
+	AmountBox.Font = Enum.Font.Gotham
+	AmountBox.PlaceholderText = placeholderText
+	AmountBox.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+	AmountBox.Text = ""
+	AmountBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+	AmountBox.TextSize = 10
+	AmountBox.ClearTextOnFocus = false
+	Instance.new("UICorner", AmountBox).CornerRadius = UDim.new(0, 5)
+
+	local BoxStroke = Instance.new("UIStroke")
+	BoxStroke.Color = Color3.fromRGB(50, 50, 50)
+	BoxStroke.Thickness = 1
+	BoxStroke.Parent = AmountBox
+
+	local Switch = Instance.new("TextButton")
+	Switch.Parent = Row
+	Switch.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Switch.Position = UDim2.new(1, -46, 0.5, -10)
+	Switch.Size = UDim2.new(0, 38, 0, 20)
+	Switch.Text = ""
+	Switch.AutoButtonColor = false
+	Instance.new("UICorner", Switch).CornerRadius = UDim.new(1, 0)
+
+	local Knob = Instance.new("Frame")
+	Knob.Parent = Switch
+	Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	Knob.Position = UDim2.new(0, 3, 0.5, -7)
+	Knob.Size = UDim2.new(0, 14, 0, 14)
+	Instance.new("UICorner", Knob).CornerRadius = UDim.new(1, 0)
+
+	local state = false
+	local function setState(newState)
+		if state == newState then return end
+		state = newState
+		TweenService:Create(Switch, TweenInfo.new(0.15), {
+			BackgroundColor3 = state and Color3.fromRGB(52, 199, 89) or Color3.fromRGB(50, 50, 50)
+		}):Play()
+		TweenService:Create(Knob, TweenInfo.new(0.15), {
+			Position = state and UDim2.new(1, -17, 0.5, -7) or UDim2.new(0, 3, 0.5, -7)
+		}):Play()
+		if callback then
+			callback(state, AmountBox, setState)
+		end
+	end
+
+	Switch.MouseButton1Click:Connect(function()
+		setState(not state)
+	end)
+
+	return setState
+end
+
+local function runShopBatchLoop(itemId, isActiveFn, amountBox, setState)
+	task.spawn(function()
+		local targetAmount = parseAmount(amountBox.Text)
+		if not targetAmount or targetAmount <= 0 then
+			setState(false)
+			return
+		end
+
+		local bought = 0
+		while isActiveFn() and bought < targetAmount do
+			local batchAmt = math.min(1000, targetAmount - bought)
+			local args = {
+				[1] = "BuyShopItem",
+				[2] = "Glacier Island Shop",
+				[3] = itemId,
+				[4] = batchAmt
+			}
+			ShopEvent:FireServer(unpack(args))
+			bought += batchAmt
+			task.wait(0.2)
+		end
+
+		if isActiveFn() then
+			setState(false)
+		end
+	end)
+end
+
+-- 1. Buy Ice Shard (Item ID = 6, max 1000 per buy)
+local iceShardActive = false
+createToggleRow("Buy Ice Shard", "Amount", function(state, amountBox, setState)
+	iceShardActive = state
+	if state then
+		runShopBatchLoop(6, function() return iceShardActive end, amountBox, setState)
+	end
+end)
+
+-- 2. Buy Lasso (Item ID = 1, max 1000 per buy)
+local lassoActive = false
+createToggleRow("Buy Lasso", "Amount", function(state, amountBox, setState)
+	lassoActive = state
+	if state then
+		runShopBatchLoop(1, function() return lassoActive end, amountBox, setState)
+	end
+end)
+
+-- 3. Craft (Spams if blank/0, or runs specified count if > 0)
+local craftActive = false
+createToggleRow("Craft", "Spam / Amt", function(state, amountBox, setState)
+	craftActive = state
+	if state then
+		task.spawn(function()
+			local limit = parseAmount(amountBox.Text)
+			local count = 0
+
+			while craftActive do
+				local args = {
+					[1] = "Craft",
+					[2] = {
+						["id"] = 1243,
+						["variants"] = {},
+						["amt"] = 250
+					}
+				}
+				CraftEvent:FireServer(unpack(args))
+				count += 1
+
+				if limit and limit > 0 and count >= limit then
+					break
+				end
+
+				task.wait(0.15)
+			end
+
+			if craftActive then
+				setState(false)
+			end
+		end)
+	end
+end)
