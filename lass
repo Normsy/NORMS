@@ -21,7 +21,7 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.Size = UDim2.new(0, 270, 0, 168)
+MainFrame.Size = UDim2.new(0, 270, 0, 186)
 MainFrame.BorderSizePixel = 0
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 10)
 
@@ -29,6 +29,19 @@ local Stroke = Instance.new("UIStroke")
 Stroke.Color = Color3.fromRGB(40, 40, 40)
 Stroke.Thickness = 1
 Stroke.Parent = MainFrame
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Name = "CloseBtn"
+CloseBtn.Parent = MainFrame
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 69, 58)
+CloseBtn.Position = UDim2.new(1, -26, 0, 7)
+CloseBtn.Size = UDim2.new(0, 18, 0, 18)
+CloseBtn.Font = Enum.Font.GothamBold
+CloseBtn.Text = "X"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 10
+CloseBtn.AutoButtonColor = true
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(1, 0)
 
 -- Dragging support
 local dragging, dragInput, dragStart, startPos
@@ -59,8 +72,8 @@ end)
 local Container = Instance.new("Frame")
 Container.Parent = MainFrame
 Container.BackgroundTransparency = 1
-Container.Position = UDim2.new(0, 10, 0, 10)
-Container.Size = UDim2.new(1, -20, 1, -20)
+Container.Position = UDim2.new(0, 10, 0, 30)
+Container.Size = UDim2.new(1, -20, 1, -40)
 
 local Layout = Instance.new("UIListLayout")
 Layout.Parent = Container
@@ -227,4 +240,11 @@ createToggleRow("Craft", "Spam / Amt", function(state, amountBox, setState)
 			end
 		end)
 	end
+end)
+
+CloseBtn.MouseButton1Click:Connect(function()
+	iceShardActive = false
+	lassoActive = false
+	craftActive = false
+	ScreenGui:Destroy()
 end)
